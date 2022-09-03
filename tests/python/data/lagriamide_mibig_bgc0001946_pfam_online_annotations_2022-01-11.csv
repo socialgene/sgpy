@@ -1,0 +1,125 @@
+,scoreName,score,description,accession,end,database,aliEnd,identifier,type,aliStart,start,protein
+0,e-value,0.00011,Nitronate monooxygenase,PF03060,297,pfam,291,NMO,Domain,28,22,A0A2Z4XG13
+1,e-value,0.036,Sigma-70 region 2 ,PF04542,66,pfam,65,Sigma70_r2,Domain,16,4,A0A2Z4XFZ8
+2,e-value,0.000000055,"Sigma-70, region 4",PF08281,147,pfam,147,Sigma70_r4_2,Domain,96,95,A0A2Z4XFZ8
+3,e-value,0.0000000094,SnoaL-like domain,PF12680,117,pfam,116,SnoaL_2,Domain,10,10,A0A2Z4XG49
+4,e-value,0.0028,Phosphopantetheine attachment site,PF00550,123,pfam,123,PP-binding,Domain,59,58,A0A2Z4XFZ7
+5,e-value,6.8e-77,"Beta-ketoacyl synthase, N-terminal domain",PF00109,450,pfam,450,ketoacyl-synt,Domain,198,197,A0A2Z4XFZ7
+6,e-value,2.3e-34,"Beta-ketoacyl synthase, C-terminal domain",PF02801,576,pfam,575,Ketoacyl-synt_C,Domain,458,458,A0A2Z4XFZ7
+7,e-value,0.00013,Ketoacyl-synthetase C-terminal extension,PF16197,686,pfam,672,KAsynt_C_assoc,Family,579,579,A0A2Z4XFZ7
+8,e-value,1.9e-46,Polyketide synthase dehydratase,PF14765,1186,pfam,1184,PS-DH,Domain,907,907,A0A2Z4XFZ7
+9,e-value,1.8e-47,KR domain,PF08659,1556,pfam,1556,KR,Family,1375,1375,A0A2Z4XFZ7
+10,e-value,0.0000000000044,Phosphopantetheine attachment site,PF00550,1716,pfam,1716,PP-binding,Domain,1651,1650,A0A2Z4XFZ7
+11,e-value,1.1e-78,"Beta-ketoacyl synthase, N-terminal domain",PF00109,2031,pfam,2028,ketoacyl-synt,Domain,1784,1782,A0A2Z4XFZ7
+12,e-value,2.7e-33,"Beta-ketoacyl synthase, C-terminal domain",PF02801,2164,pfam,2163,Ketoacyl-synt_C,Domain,2039,2039,A0A2Z4XFZ7
+13,e-value,0.000000000096,Ketoacyl-synthetase C-terminal extension,PF16197,2287,pfam,2276,KAsynt_C_assoc,Family,2167,2167,A0A2Z4XFZ7
+14,e-value,1.1e-39,KR domain,PF08659,2809,pfam,2809,KR,Family,2626,2625,A0A2Z4XFZ7
+15,e-value,0.00000036,Phosphopantetheine attachment site,PF00550,2968,pfam,2968,PP-binding,Domain,2905,2902,A0A2Z4XFZ7
+16,e-value,3.7e-74,"Beta-ketoacyl synthase, N-terminal domain",PF00109,3276,pfam,3275,ketoacyl-synt,Domain,3035,3034,A0A2Z4XFZ7
+17,e-value,1.2e-28,"Beta-ketoacyl synthase, C-terminal domain",PF02801,3402,pfam,3400,Ketoacyl-synt_C,Domain,3285,3284,A0A2Z4XFZ7
+18,e-value,0.0000024,Ketoacyl-synthetase C-terminal extension,PF16197,3521,pfam,3521,KAsynt_C_assoc,Family,3408,3405,A0A2Z4XFZ7
+19,e-value,2.1e-51,Polyketide synthase dehydratase,PF14765,3947,pfam,3943,PS-DH,Domain,3669,3656,A0A2Z4XFZ7
+20,e-value,4.7e-34,KR domain,PF08659,4421,pfam,4420,KR,Family,4242,4242,A0A2Z4XFZ7
+21,e-value,0.000000015,Methyltransferase domain,PF08242,4791,pfam,4791,Methyltransf_12,Domain,4687,4687,A0A2Z4XFZ7
+22,e-value,0.0000000061,Phosphopantetheine attachment site,PF00550,4999,pfam,4999,PP-binding,Domain,4935,4933,A0A2Z4XFZ7
+23,e-value,0.093,Alcohol dehydrogenase GroES-like domain,PF08240,5177,pfam,5159,ADH_N,Domain,5091,5090,A0A2Z4XFZ7
+24,e-value,4.7e-18,Zinc-binding dehydrogenase,PF13602,5383,pfam,5383,ADH_zinc_N_2,Domain,5244,5244,A0A2Z4XFZ7
+25,e-value,9.8e-70,"Beta-ketoacyl synthase, N-terminal domain",PF00109,5653,pfam,5653,ketoacyl-synt,Domain,5420,5419,A0A2Z4XFZ7
+26,e-value,2.7e-33,"Beta-ketoacyl synthase, C-terminal domain",PF02801,5779,pfam,5778,Ketoacyl-synt_C,Domain,5661,5661,A0A2Z4XFZ7
+27,e-value,0.000000007,Ketoacyl-synthetase C-terminal extension,PF16197,5894,pfam,5892,KAsynt_C_assoc,Family,5782,5781,A0A2Z4XFZ7
+28,e-value,0.00000036,Phosphopantetheine attachment site,PF00550,6115,pfam,6115,PP-binding,Domain,6051,6050,A0A2Z4XFZ7
+29,e-value,1.1e-72,"Beta-ketoacyl synthase, N-terminal domain",PF00109,6422,pfam,6422,ketoacyl-synt,Domain,6189,6187,A0A2Z4XFZ7
+30,e-value,1.3e-26,"Beta-ketoacyl synthase, C-terminal domain",PF02801,6548,pfam,6547,Ketoacyl-synt_C,Domain,6430,6430,A0A2Z4XFZ7
+31,e-value,0.00049,Ketoacyl-synthetase C-terminal extension,PF16197,6664,pfam,6637,KAsynt_C_assoc,Family,6551,6550,A0A2Z4XFZ7
+32,e-value,6.8e-33,Acyl transferase domain,PF00698,335,pfam,303,Acyl_transf_1,Domain,22,22,A0A2Z4XG47
+33,e-value,0.00032,Phosphopantetheine attachment site,PF00550,81,pfam,81,PP-binding,Domain,16,15,A0A2Z4XG06
+34,e-value,5.9e-69,Condensation domain,PF00668,550,pfam,549,Condensation,Family,112,109,A0A2Z4XG06
+35,e-value,1.6e-95,AMP-binding enzyme,PF00501,955,pfam,954,AMP-binding,Family,568,568,A0A2Z4XG06
+36,e-value,0.19,AMP-binding enzyme C-terminal domain,PF13193,1044,pfam,1044,AMP-binding_C,Domain,963,963,A0A2Z4XG06
+37,e-value,0.0000045,Phosphopantetheine attachment site,PF00550,1143,pfam,1143,PP-binding,Domain,1080,1079,A0A2Z4XG06
+38,e-value,8.8e-52,"Beta-ketoacyl synthase, N-terminal domain",PF00109,1424,pfam,1424,ketoacyl-synt,Domain,1179,1176,A0A2Z4XG06
+39,e-value,1.9e-38,"Beta-ketoacyl synthase, C-terminal domain",PF02801,1551,pfam,1550,Ketoacyl-synt_C,Domain,1432,1432,A0A2Z4XG06
+40,e-value,0.00000000075,Ketoacyl-synthetase C-terminal extension,PF16197,1666,pfam,1661,KAsynt_C_assoc,Family,1553,1553,A0A2Z4XG06
+41,e-value,4.6e-17,KR domain,PF08659,2197,pfam,2197,KR,Family,2014,2014,A0A2Z4XG06
+42,e-value,0.0000000000069,Methyltransferase domain,PF08242,2568,pfam,2568,Methyltransf_12,Domain,2464,2464,A0A2Z4XG06
+43,e-value,0.00000000014,Phosphopantetheine attachment site,PF00550,2758,pfam,2758,PP-binding,Domain,2693,2692,A0A2Z4XG06
+44,e-value,3.1e-61,"Beta-ketoacyl synthase, N-terminal domain",PF00109,3034,pfam,3034,ketoacyl-synt,Domain,2809,2807,A0A2Z4XG06
+45,e-value,1.1e-28,"Beta-ketoacyl synthase, C-terminal domain",PF02801,3160,pfam,3160,Ketoacyl-synt_C,Domain,3042,3042,A0A2Z4XG06
+46,e-value,0.000029,Phosphopantetheine attachment site,PF00550,3491,pfam,3491,PP-binding,Domain,3426,3425,A0A2Z4XG06
+47,e-value,0.000034,Cytochrome P450,PF00067,359,pfam,356,p450,Domain,270,267,A0A2Z4XG52
+48,e-value,1.1e-21,"PEP-utilising enzyme, N-terminal",PF05524,129,pfam,129,PEP-utilisers_N,Family,6,6,A0A2Z4XG53
+49,e-value,4.7e-18,"PEP-utilising enzyme, mobile domain",PF00391,233,pfam,233,PEP-utilizers,Domain,161,159,A0A2Z4XG53
+50,e-value,5.2e-102,"PEP-utilising enzyme, PEP-binding domain",PF02896,550,pfam,548,PEP-utilizers_C,Domain,261,258,A0A2Z4XG53
+51,e-value,1.6e-46,short chain dehydrogenase,PF00106,197,pfam,194,adh_short,Domain,5,3,A0A2Z4XG54
+52,e-value,2.7e-41,Squalene/phytoene synthase,PF00494,268,pfam,265,SQS_PSY,Domain,16,12,A0A2Z4XG65
+53,e-value,1.4e-72,"Beta-ketoacyl synthase, N-terminal domain",PF00109,270,pfam,270,ketoacyl-synt,Domain,39,37,A0A2Z4XG05
+54,e-value,1.8e-32,"Beta-ketoacyl synthase, C-terminal domain",PF02801,396,pfam,395,Ketoacyl-synt_C,Domain,278,278,A0A2Z4XG05
+55,e-value,0.00000015,Ketoacyl-synthetase C-terminal extension,PF16197,512,pfam,484,KAsynt_C_assoc,Family,399,399,A0A2Z4XG05
+56,e-value,7.6e-48,KR domain,PF08659,993,pfam,993,KR,Family,812,812,A0A2Z4XG05
+57,e-value,0.00000036,Phosphopantetheine attachment site,PF00550,1141,pfam,1140,PP-binding,Domain,1074,1073,A0A2Z4XG05
+58,e-value,0.00000048,Phosphopantetheine attachment site,PF00550,1254,pfam,1245,PP-binding,Domain,1187,1186,A0A2Z4XG05
+59,e-value,1.2e-104,Squalene-hopene cyclase N-terminal domain,PF13249,309,pfam,308,SQHop_cyclase_N,Repeat,22,20,A0A2Z4XG50
+60,e-value,3.5e-118,Squalene-hopene cyclase C-terminal domain,PF13243,657,pfam,656,SQHop_cyclase_C,Repeat,318,318,A0A2Z4XG50
+61,e-value,6.2e-30,Acyl transferase domain,PF00698,307,pfam,279,Acyl_transf_1,Domain,3,3,A0A2Z4XG02
+62,e-value,9.5e-24,MatE,PF01554,179,pfam,179,MatE,Family,19,19,A0A2Z4XG48
+63,e-value,1.3e-22,MatE,PF01554,405,pfam,405,MatE,Family,244,244,A0A2Z4XG48
+64,e-value,2.8e-70,Condensation domain,PF00668,485,pfam,482,Condensation,Family,43,40,A0A2Z4XG45
+65,e-value,1.2e-92,AMP-binding enzyme,PF00501,889,pfam,888,AMP-binding,Family,503,503,A0A2Z4XG45
+66,e-value,0.000016,Phosphopantetheine attachment site,PF00550,1078,pfam,1078,PP-binding,Domain,1015,1014,A0A2Z4XG45
+67,e-value,6e-54,"Beta-ketoacyl synthase, N-terminal domain",PF00109,1355,pfam,1355,ketoacyl-synt,Domain,1110,1107,A0A2Z4XG45
+68,e-value,6.7e-37,"Beta-ketoacyl synthase, C-terminal domain",PF02801,1482,pfam,1481,Ketoacyl-synt_C,Domain,1363,1363,A0A2Z4XG45
+69,e-value,0.0000029,Ketoacyl-synthetase C-terminal extension,PF16197,1602,pfam,1592,KAsynt_C_assoc,Family,1484,1484,A0A2Z4XG45
+70,e-value,1e-49,Polyketide synthase dehydratase,PF14765,1987,pfam,1982,PS-DH,Domain,1701,1701,A0A2Z4XG45
+71,e-value,4.4e-45,KR domain,PF08659,2354,pfam,2354,KR,Family,2171,2171,A0A2Z4XG45
+72,e-value,0.00000001,Phosphopantetheine attachment site,PF00550,2527,pfam,2527,PP-binding,Domain,2463,2462,A0A2Z4XG45
+73,e-value,5.4e-88,"Beta-ketoacyl synthase, N-terminal domain",PF00109,2814,pfam,2814,ketoacyl-synt,Domain,2566,2565,A0A2Z4XG45
+74,e-value,3.3e-35,"Beta-ketoacyl synthase, C-terminal domain",PF02801,2942,pfam,2942,Ketoacyl-synt_C,Domain,2822,2822,A0A2Z4XG45
+75,e-value,0.00000000049,Ketoacyl-synthetase C-terminal extension,PF16197,3058,pfam,3054,KAsynt_C_assoc,Family,2945,2945,A0A2Z4XG45
+76,e-value,7.4e-36,KR domain,PF08659,3693,pfam,3692,KR,Family,3514,3514,A0A2Z4XG45
+77,e-value,0.000000000028,Methyltransferase domain,PF08242,4029,pfam,4029,Methyltransf_12,Domain,3925,3925,A0A2Z4XG45
+78,e-value,0.000000052,Phosphopantetheine attachment site,PF00550,4232,pfam,4231,PP-binding,Domain,4167,4166,A0A2Z4XG45
+79,e-value,5.3e-66,"Beta-ketoacyl synthase, N-terminal domain",PF00109,4529,pfam,4529,ketoacyl-synt,Domain,4298,4297,A0A2Z4XG45
+80,e-value,6.4e-33,"Beta-ketoacyl synthase, C-terminal domain",PF02801,4655,pfam,4654,Ketoacyl-synt_C,Domain,4537,4537,A0A2Z4XG45
+81,e-value,0.00000012,Ketoacyl-synthetase C-terminal extension,PF16197,4771,pfam,4764,KAsynt_C_assoc,Family,4658,4658,A0A2Z4XG45
+82,e-value,4.1e-48,Polyketide synthase dehydratase,PF14765,5168,pfam,5166,PS-DH,Domain,4885,4885,A0A2Z4XG45
+83,e-value,7.7e-43,KR domain,PF08659,5532,pfam,5532,KR,Family,5348,5348,A0A2Z4XG45
+84,e-value,0.000000000025,Phosphopantetheine attachment site,PF00550,5689,pfam,5689,PP-binding,Domain,5625,5623,A0A2Z4XG45
+85,e-value,3.6e-81,"Beta-ketoacyl synthase, N-terminal domain",PF00109,5991,pfam,5990,ketoacyl-synt,Domain,5744,5742,A0A2Z4XG45
+86,e-value,1.1e-32,"Beta-ketoacyl synthase, C-terminal domain",PF02801,6124,pfam,6123,Ketoacyl-synt_C,Domain,5999,5999,A0A2Z4XG45
+87,e-value,0.00000000079,Ketoacyl-synthetase C-terminal extension,PF16197,6248,pfam,6244,KAsynt_C_assoc,Family,6126,6126,A0A2Z4XG45
+88,e-value,2.7,Acetyltransferase (GNAT) family,PF00583,435,pfam,427,Acetyltransf_1,Family,332,310,A0A2Z4XG51
+89,e-value,0.22,Phosphopantetheine attachment site,PF00550,589,pfam,589,PP-binding,Domain,523,522,A0A2Z4XG51
+90,e-value,3.3e-77,"Beta-ketoacyl synthase, N-terminal domain",PF00109,864,pfam,864,ketoacyl-synt,Domain,625,624,A0A2Z4XG51
+91,e-value,5.4e-34,"Beta-ketoacyl synthase, C-terminal domain",PF02801,990,pfam,989,Ketoacyl-synt_C,Domain,873,872,A0A2Z4XG51
+92,e-value,0.000000000000061,Ketoacyl-synthetase C-terminal extension,PF16197,1105,pfam,1102,KAsynt_C_assoc,Family,992,992,A0A2Z4XG51
+93,e-value,6.3e-41,Polyketide synthase dehydratase,PF14765,1501,pfam,1499,PS-DH,Domain,1227,1227,A0A2Z4XG51
+94,e-value,7.5e-45,KR domain,PF08659,1861,pfam,1861,KR,Family,1676,1676,A0A2Z4XG51
+95,e-value,0.00000033,Phosphopantetheine attachment site,PF00550,2019,pfam,2018,PP-binding,Domain,1955,1954,A0A2Z4XG51
+96,e-value,1.5e-81,"Beta-ketoacyl synthase, N-terminal domain",PF00109,2339,pfam,2339,ketoacyl-synt,Domain,2085,2084,A0A2Z4XG51
+97,e-value,2.4e-35,"Beta-ketoacyl synthase, C-terminal domain",PF02801,2465,pfam,2464,Ketoacyl-synt_C,Domain,2347,2347,A0A2Z4XG51
+98,e-value,0.00000000065,Ketoacyl-synthetase C-terminal extension,PF16197,2591,pfam,2589,KAsynt_C_assoc,Family,2468,2468,A0A2Z4XG51
+99,e-value,2.5e-24,Polyketide synthase dehydratase,PF14765,2973,pfam,2964,PS-DH,Domain,2706,2706,A0A2Z4XG51
+100,e-value,5.4e-44,KR domain,PF08659,3337,pfam,3337,KR,Family,3152,3152,A0A2Z4XG51
+101,e-value,0.00000046,Phosphopantetheine attachment site,PF00550,3496,pfam,3493,PP-binding,Domain,3433,3431,A0A2Z4XG51
+102,e-value,1.7e-66,"Beta-ketoacyl synthase, N-terminal domain",PF00109,3787,pfam,3787,ketoacyl-synt,Domain,3552,3551,A0A2Z4XG51
+103,e-value,3e-34,"Beta-ketoacyl synthase, C-terminal domain",PF02801,3913,pfam,3913,Ketoacyl-synt_C,Domain,3795,3795,A0A2Z4XG51
+104,e-value,0.00000000097,Ketoacyl-synthetase C-terminal extension,PF16197,4033,pfam,4033,KAsynt_C_assoc,Family,3918,3916,A0A2Z4XG51
+105,e-value,6.3e-44,Polyketide synthase dehydratase,PF14765,4433,pfam,4429,PS-DH,Domain,4163,4163,A0A2Z4XG51
+106,e-value,4.1e-44,KR domain,PF08659,4790,pfam,4790,KR,Family,4605,4605,A0A2Z4XG51
+107,e-value,0.0001,Phosphopantetheine attachment site,PF00550,4945,pfam,4944,PP-binding,Domain,4881,4880,A0A2Z4XG51
+108,e-value,1.7e-80,"Beta-ketoacyl synthase, N-terminal domain",PF00109,5273,pfam,5273,ketoacyl-synt,Domain,5019,5018,A0A2Z4XG51
+109,e-value,8.3e-36,"Beta-ketoacyl synthase, C-terminal domain",PF02801,5399,pfam,5398,Ketoacyl-synt_C,Domain,5281,5281,A0A2Z4XG51
+110,e-value,0.000000001,Ketoacyl-synthetase C-terminal extension,PF16197,5525,pfam,5523,KAsynt_C_assoc,Family,5402,5402,A0A2Z4XG51
+111,e-value,8.5e-35,Polyketide synthase dehydratase,PF14765,5915,pfam,5913,PS-DH,Domain,5642,5642,A0A2Z4XG51
+112,e-value,2e-28,KR domain,PF08659,6309,pfam,6308,KR,Family,6130,6130,A0A2Z4XG51
+113,e-value,0.0000000000019,Methyltransferase domain,PF08242,6656,pfam,6656,Methyltransf_12,Domain,6552,6552,A0A2Z4XG51
+114,e-value,0.000000029,Phosphopantetheine attachment site,PF00550,6862,pfam,6862,PP-binding,Domain,6796,6796,A0A2Z4XG51
+115,e-value,0.0021,Alcohol dehydrogenase GroES-like domain,PF08240,7062,pfam,7040,ADH_N,Domain,6977,6977,A0A2Z4XG51
+116,e-value,2.4e-18,Zinc-binding dehydrogenase,PF13602,7273,pfam,7273,ADH_zinc_N_2,Domain,7134,7134,A0A2Z4XG51
+117,e-value,9.4e-74,"Beta-ketoacyl synthase, N-terminal domain",PF00109,7531,pfam,7531,ketoacyl-synt,Domain,7293,7292,A0A2Z4XG51
+118,e-value,7.8e-35,"Beta-ketoacyl synthase, C-terminal domain",PF02801,7660,pfam,7660,Ketoacyl-synt_C,Domain,7539,7539,A0A2Z4XG51
+119,e-value,0.000000039,Ketoacyl-synthetase C-terminal extension,PF16197,7775,pfam,7771,KAsynt_C_assoc,Family,7663,7663,A0A2Z4XG51
+120,e-value,2.5e-44,KR domain,PF08659,8263,pfam,8263,KR,Family,8078,8078,A0A2Z4XG51
+121,e-value,0.0000059,Phosphopantetheine attachment site,PF00550,8414,pfam,8414,PP-binding,Domain,8349,8348,A0A2Z4XG51
+122,e-value,4e-48,"Beta-ketoacyl synthase, N-terminal domain",PF00109,8710,pfam,8710,ketoacyl-synt,Domain,8463,8462,A0A2Z4XG51
+123,e-value,3.9e-19,"Beta-ketoacyl synthase, C-terminal domain",PF02801,8835,pfam,8833,Ketoacyl-synt_C,Domain,8736,8718,A0A2Z4XG51
