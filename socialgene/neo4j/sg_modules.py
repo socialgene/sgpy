@@ -71,21 +71,21 @@ class Neo4jImportData:
             "assembly": {
                 "neo4j_label": "assembly",
                 "header_filename": "assembly.header",
-                "target_subdirectory": "mainfilesthing",
+                "target_subdirectory": "genomic_info",
                 "target_extension": "assemblies",
                 "header": ["id:ID(assembly)"],
             },
             "nucleotide": {
                 "neo4j_label": "nucleotide",
                 "header_filename": "locus.header",
-                "target_subdirectory": "mainfilesthing",
+                "target_subdirectory": "genomic_info",
                 "target_extension": "loci",
                 "header": ["internal_id:ID(nucleotide)", "id"],
             },
             "protein": {
                 "neo4j_label": "protein",
                 "header_filename": "protein_info.header",
-                "target_subdirectory": "mainfilesthing",
+                "target_subdirectory": "protein_info",
                 "target_extension": "protein_info",
                 "header": [
                     "id:ID(protein)",
@@ -195,14 +195,14 @@ class Neo4jImportData:
             "assembles_to": {
                 "neo4j_label": "ASSEMBLES_TO",
                 "header_filename": "assembly_to_locus.header",
-                "target_subdirectory": "mainfilesthing",
+                "target_subdirectory": "genomic_info",
                 "target_extension": "assembly_to_locus",
                 "header": [":END_ID(assembly)", ":START_ID(nucleotide)"],
             },
             "contains": {
                 "neo4j_label": "CONTAINS",
                 "header_filename": "locus_to_protein.header",
-                "target_subdirectory": "mainfilesthing",
+                "target_subdirectory": "genomic_info",
                 "target_extension": "locus_to_protein",
                 "header": [
                     ":START_ID(nucleotide)",
@@ -250,7 +250,7 @@ class Neo4jImportData:
             "assembly_to_taxid": {
                 "neo4j_label": "TAXONOMY",
                 "header_filename": "assembly_to_taxid.header",
-                "target_subdirectory": "mainfilesthing",
+                "target_subdirectory": "genomic_info",
                 "target_extension": "assembly_to_taxid",
                 "header": [":START_ID(assembly)", ":END_ID(taxid)"],
             },
