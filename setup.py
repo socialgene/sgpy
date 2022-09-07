@@ -17,7 +17,7 @@ long_description = Path(this_directory / "README.md").read_text()
 
 setup(
     name="socialgene",
-    version="0.1.0",
+    version="0.1.1",
     license="MIT",
     description="Creating and interacting with graph databases of protein domains and their genome coordinates",
     long_description=long_description,
