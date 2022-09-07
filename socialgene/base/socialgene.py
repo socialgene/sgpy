@@ -11,6 +11,7 @@ import itertools
 from functools import partial
 import gzip
 from collections import defaultdict
+from operator import attrgetter
 
 # external dependencies
 from rich.progress import Progress
@@ -452,7 +453,11 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             )
             for ak, av in self.assemblies.items():
                 for k, loci in av.loci.items():
-                    for feature in loci.features:
+                    temp_list = list(loci.features)
+                    # sort features by id then start to maintain consistent output
+                    temp_list.sort(key=attrgetter("id"))
+                    temp_list.sort(key=attrgetter("start"))
+                    for feature in temp_list:
                         if feature.feature_is_protein():
                             # ["locus_id", "hash_id", "start", "end", "strand"]
                             tsv_writer.writerow(
