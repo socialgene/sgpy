@@ -336,6 +336,7 @@ class Neo4jImportData:
                     ":IGNORE",
                     f":END_ID({i})",
                     ":IGNORE",
+                    ":IGNORE",
                 ],
             }
 
