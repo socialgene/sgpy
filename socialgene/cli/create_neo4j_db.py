@@ -68,6 +68,13 @@ parser.add_argument(
     required=False,
     default=None,
 )
+parser.add_argument(
+    "--dryrun",
+    metavar="bool",
+    help="just write to file instead of running ",
+    required=False,
+    default=None,
+)
 
 
 def main():
@@ -94,7 +101,14 @@ def main():
         uid=uid,
         gid=gid,
     )
-    temp.run_neo4j_admin_import()
+    if args.dryrun:
+        temp.arg_builder(temp.input_sg_modules, temp.hmmlist)
+        temp._check_files()
+        temp._escape_arg_glob()
+        with open("build_db.sh", "w") as handle:
+            handle.writelines(" ".join(temp._neo4j_admin_import_args()))
+    else:
+        temp.run_neo4j_admin_import()
 
 
 if __name__ == "__main__":
