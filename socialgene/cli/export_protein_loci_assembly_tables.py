@@ -2,16 +2,13 @@
 import argparse
 import glob
 from pathlib import Path
-from multiprocessing import Pool, cpu_count
 
 # external dependencies
-from rich.progress import Progress
 
 # internal dependencies
 from socialgene.base.socialgene import SocialGene
 from socialgene.utils.logging import log
 from socialgene.config import env_vars
-from socialgene.utils.chunker import chunk_a_list_with_numpy
 
 
 parser = argparse.ArgumentParser(

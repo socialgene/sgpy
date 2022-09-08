@@ -170,7 +170,7 @@ class Domain:
         hmm_to: int = None,
         ali_from: int = None,
         ali_to: int = None,
-        **kwargs, # this kwarg isn't accessed but is here so that calling Domain with dict unpacking with extra args doesn't fail
+        **kwargs,  # this kwarg isn't accessed but is here so that calling Domain with dict unpacking with extra args doesn't fail
     ):
         """Class for holding information about a domain/motif annotation
 
