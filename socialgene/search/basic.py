@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from typing import List
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import platform
 import argparse

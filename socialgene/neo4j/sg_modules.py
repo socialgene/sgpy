@@ -2,7 +2,7 @@ from socialgene.utils.logging import log
 from pathlib import Path
 import csv
 
-# `sgModules` groups `Neo4jImportData`
+# `SocialgeneModules` groups `Neo4jImportData`
 # `Neo4jImportData` defines information and structure about data that will be imported into Neo4j
 
 
@@ -336,11 +336,12 @@ class Neo4jImportData:
                     ":IGNORE",
                     f":END_ID({i})",
                     ":IGNORE",
+                    ":IGNORE",
                 ],
             }
 
 
-class sgModules:
+class SocialgeneModules:
     def __init__(
         self,
     ):
@@ -400,7 +401,8 @@ class sgModules:
     def relationship_keylist(self):
         return list(self.relationships.keys())
 
-    def _filter(self, input_sg_modules, input_dict):
+    @staticmethod
+    def _filter(input_sg_modules, input_dict):
         temp = {k: v for k, v in input_dict.items() if k in input_sg_modules}
         # had warning for user if node/relationship is missing, but can't since not all groups have a node or vice versa
         return temp
@@ -430,7 +432,7 @@ def _writer(outdir, header_dict):
 
 
 def write_neo4j_headers(sg_modules: list, hmmlist: list, outdir: str):
-    sg_mod_object = sgModules()
+    sg_mod_object = SocialgeneModules()
     header_object = Neo4jImportData()
     reduced_dict = {
         "nodes": sg_mod_object.filter_nodes(sg_modules),

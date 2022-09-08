@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import bz2
 import gzip
@@ -54,21 +52,6 @@ def open_file(filepath: Path) -> TextIO:
 
 def check_if_tar(filepath):
     return tarfile.is_tarfile(filepath)
-
-
-def check_if_parseddomtblout(input_1, input_2):
-    """Check if headers are maybe from a parsed domtblout file
-
-    Args:
-        input_1 (str): first line of file
-        input_2 (str): second line of file
-
-    Returns:
-        bool: true/false
-    """
-    a = input_1.count("\t")
-    b = input_2.count("\t")
-    return all(i == 13 for i in [a, b])
 
 
 def guess_filetype(filepath):

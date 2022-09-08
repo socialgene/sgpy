@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from typing import Dict, List
 
@@ -10,11 +8,11 @@ from socialgene.utils.logging import log
 from socialgene.neo4j.neo4j import Neo4jQuery
 
 
-def find_similar_proteins(sg_prot) -> Dict:
+def find_similar_proteins(sg_prot: List) -> Dict:
     """Find proteins in the neo4j database that have a list of hmms with a jaccard similarity > x with the input protein
 
     Args:
-        sg_prot_list (List): list of socialgene Protein class objects (eg `[sg_object.proteins['qEcFCOXPHpf_D6FiGPea8DkV_AWWZjMy']]` )
+        sg_prot (List): list of socialgene Protein class objects (eg `[sg_object.proteins['qEcFCOXPHpf_D6FiGPea8DkV_AWWZjMy']]` )
 
     Returns:
         Dict: {query_prot_id:[target_prot_ids]}

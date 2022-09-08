@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from uuid import uuid4
 from collections import OrderedDict
@@ -172,7 +170,6 @@ class Domain:
         hmm_to: int = None,
         ali_from: int = None,
         ali_to: int = None,
-        **kwargs,
     ):
         """Class for holding information about a domain/motif annotation
 
@@ -286,7 +283,7 @@ class Protein(
             other_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
             domains (Set, optional): Set of Domain() objects.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__()
         self.description = description
         self.other_id = other_id
         self.domains = domains if domains is not None else set()
@@ -409,11 +406,7 @@ class Locus:
         self.features = set()
 
     def add_feature(self, **kwargs):
-        """Add a feature to a locus
-        Args:
-            id (str, optional): Feature identifier. Defaults to None.
-            name (str, optional): Feature name. Defaults to None.
-        """
+        """Add a feature to a locus"""
         self.features.add(Feature(**kwargs))
 
     def sort_by_middle(self):
@@ -451,6 +444,9 @@ class Loci:
 class Assembly:
     """Methods for assembly handling in higher functions"""
 
+    def __init__(self):
+        pass
+
     def add_assembly(self, id: str = None, verbose=False):
         """Add an assembly to a SocialGene object
 
@@ -470,6 +466,8 @@ class Molbio(Assembly):
     """Class for inheriting by SocialGene()"""
 
     def __init__(self):
+        super().__init__()
+
         self.assemblies = {}
         self.proteins = {}
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from collections import OrderedDict
 
@@ -36,13 +34,15 @@ def mod_score(input_list_1, input_list_2):
     # jaccard_score: 1= most similar; 0=most dissimilar
     jaccard_score = jaccard(input_list_1, input_list_2)
     # change levenshtein so 0=worst, 1 = best
-    max_edit = max(len(input_list_1), len(input_list_2))
+    max_edit = max(length_input_list_1, length_input_list_2)
     if max_edit == 0:
         # Neither protein had HMMs
-        mod_score_value = -2
-    if len(input_list_1) == 0 or len(input_list_2) == 0:
+        mod_score_value = 0
+        mod_levenshtein_score = 0
+    elif length_input_list_1 == 0 or length_input_list_2 == 0:
         # One protein didn't have HMMs
-        mod_score_value = -1
+        mod_score_value = 0
+        mod_levenshtein_score = 0
     else:
         mod_levenshtein_score = 1 - (levenshtein_score / max_edit)
         if jaccard_score == 0:
@@ -54,7 +54,7 @@ def mod_score(input_list_1, input_list_2):
         {
             "l1": length_input_list_1,
             "l2": length_input_list_2,
-            "levenshtein": round(levenshtein_score, 2),
+            "levenshtein": round(mod_levenshtein_score, 2),
             "jaccard": round(jaccard_score, 2),
             "mod_score": round(mod_score_value, 2),
         }

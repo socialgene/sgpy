@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from typing import List
 from collections import defaultdict
@@ -29,10 +27,13 @@ class SingleProteinSearch(SocialGene):
         self, protein_object: Protein, modscore_threshold: float = 0.5, max_matches=None
     ):
         """Search a database for similar proteins (crude search using domain content only)
+
         Args:
             protein_object (Protein): socialgene protein object
-            modscore_threshold (float): will ignore comparisons with a mod_score below this
+            modscore_threshold (float, optional): will ignore comparisons with a mod_score below this. Defaults to 0.5.
+            max_matches (_type_, optional): Limit return to x-matches. Defaults to None.
         """
+
         log.info(f"Input {protein_object.other_id}: begin database search")
         self.query_targets[protein_object.hash_id] = set()
         targets = [
@@ -114,7 +115,6 @@ class NewFindMyBGC:
                 for k3, v3 in v2.loci.items():
                     if [i.id for i in v3.features if i.id in v1]:
                         a[k1].add(k2)
-        self.count_of_inputs_per_assembly
         for k, v in a.items():
             for i in v:
                 self.count_of_inputs_per_assembly[i] += 1
@@ -130,15 +130,6 @@ class NewFindMyBGC:
                     if k3 not in self.count_of_inputs_per_locus[k2]:
                         self.count_of_inputs_per_locus[k2][k3] = 0
                     self.count_of_inputs_per_locus[k2][k3] += 1
-
-    def intactness(self):
-        # Finds the locus in each assembly with the most non-redundant matches to input proteins
-        # returns that count of input proteins per assembly
-        return {
-            k2: v2.get(max(v2))
-            for k2, v2 in self.count_of_inputs_per_locus.items()
-            for k, v in v2.items()
-        }
 
     def drop_assemblies_by_count(self, min_matches):
         """Drop assemblies based on the number of input proteins matched to an assembly
