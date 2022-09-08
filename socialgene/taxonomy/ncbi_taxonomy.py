@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from pathlib import Path
 import argparse

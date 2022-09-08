@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import csv
 from pathlib import Path
@@ -15,10 +13,13 @@ import socialgene.utils.file_handling as fh
 
 
 class IndividualHmmDbParsers:
+    def __init__(self):
+        self.category = None
+        self.subcategory = None
+
     def parse_parent_folder_is_name(self):
         """Extract/Define categories based on parent folder"""
         # init to None for case of no subcategory
-        category = None
         subcategory = None
         temp = str(self.rel_path)
         temp_split = temp.split("/")
@@ -85,6 +86,7 @@ class HMMParser(IndividualHmmDbParsers):
     ]
 
     def __init__(self):
+        super().__init__()
         self.rel_path = None
         self.model_source = None
         self.source_counter = 0
@@ -94,11 +96,10 @@ class HMMParser(IndividualHmmDbParsers):
         self.single_model_dict = self.blank_model_dict()
         self.temp_list = []
         self.temp_list2 = []
-        self.category = None
-        self.subcategory = None
         self.nr_models = {}
 
-    def blank_model_dict(self):
+    @staticmethod
+    def blank_model_dict():
         """Template dictionary to hold the desired info of a single hmm model"""
         return {
             "source": None,
@@ -114,7 +115,8 @@ class HMMParser(IndividualHmmDbParsers):
             "subcategory": None,
         }
 
-    def check_if_hmmer3(self, input_str):
+    @staticmethod
+    def check_if_hmmer3(input_str):
         """Check model to ensure that it has been upconverted to HMMER3
 
         Args:
@@ -200,6 +202,7 @@ class HMMParser(IndividualHmmDbParsers):
             input_dir (Path): Path to top hmm directory, used to help categorize hmm models
             input_path (Path): Path to a single file of hmm models
             model_source (str): source of the models (e.g. 'antismash', 'pfam')
+            input_rel_path (str): ignore, for testing
         """
         self.source_counter = 0
         self.model_source = model_source

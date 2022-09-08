@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from pathlib import Path
 import gzip
@@ -22,6 +20,8 @@ import socialgene.utils.file_handling as fh
 
 class GenbankParser:
     # TODO: https://github.com/kblin/ncbi-acc-download/blob/master/ncbi_acc_download/validate.py
+    def __init__(self):
+        pass
 
     def _gbk_to_sg(
         self,
@@ -91,13 +91,16 @@ class GenbankParser:
                 try:
                     if "translation" in seq_feature.qualifiers:
                         translation = seq_feature.qualifiers["translation"][0]
+                    elif "pseudo" in seq_feature.qualifiers:
+                        translation = str(
+                            seq_feature.extract(seq_record).seq.translate()
+                        )
+                        product = f"pseudo_{product}"
+                        protein_id = seq_feature.qualifiers["locus_tag"][0]
                     else:
-                        if "pseudo" in seq_feature.qualifiers:
-                            translation = str(
-                                seq_feature.extract(seq_record).seq.translate()
-                            )
-                            product = f"pseudo_{product}"
-                            protein_id = seq_feature.qualifiers["locus_tag"][0]
+                        raise ValueError(
+                            f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
+                        )
                     hash_id = self.add_protein(
                         description=product,
                         other_id=protein_id,
@@ -123,7 +126,6 @@ class GenbankParser:
                     pass
             else:
                 # use incremented counter to id non-protein loci
-                hash_id = total_locus_counter
                 total_locus_counter += 1
 
     def parse_genbank(self, input_path, **kwargs):
@@ -181,7 +183,8 @@ class GenbankParser:
                     )
         log.info(f"Read {count_loci_in_file} from {input_path}")
 
-    def extract_from_dbxrefs(self, input_list, prefix):
+    @staticmethod
+    def extract_from_dbxrefs(input_list, prefix):
         """Helper function for genbank parser, extract a prefixed string from list
 
         Args:
@@ -200,6 +203,9 @@ class GenbankParser:
 
 
 class FastaParser:
+    def __init__(self):
+        pass
+
     # havent tested/worked on this since lots of updates
     def parse_fasta_file(self, input=None):
         """Parse a protein fasta file
@@ -238,7 +244,7 @@ class FastaParser:
         """Parse a protein fasta file from a string
 
         Args:
-            input_path (str): path to fasta file
+            input (str): path to fasta file
         """
         # if not appending, reset self.records
         record_counter = 0
@@ -269,7 +275,7 @@ class SequenceParser(GenbankParser, FastaParser):
     def __init__(self):
         super().__init__()
 
-    def parse(self, filepath, hmmsearch_or_hmmscan="hmmsearch", **kwargs):
+    def parse(self, filepath, **kwargs):
         """Parse sequence files (main function)
 
         Args:

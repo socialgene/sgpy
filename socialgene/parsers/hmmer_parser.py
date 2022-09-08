@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from pathlib import Path
 
@@ -11,6 +9,9 @@ import socialgene.utils.file_handling as fh
 
 
 class Domtblout:
+    def __init__(self):
+        pass
+
     def parse_domtblout(self, input_path, hmmsearch_or_hmmscan="hmmsearch"):
         """Parse a HMMER domtblout file
 
@@ -29,7 +30,7 @@ class Domtblout:
             target_name = "protein_id"
             query_name = "hmm_id"
         else:
-            ValueError
+            raise ValueError
         all_columns = (
             target_name,
             "target_acc",
@@ -76,9 +77,12 @@ class Domtblout:
 class ParsedDomtblout:
     """For HMMER domtblout files already processed and rewritten with class Domtblout()"""
 
+    def __init__(self):
+        pass
+
     def parse_parseddomtblout(self, input_path):
         input_path = Path(input_path)
-        with fh.open_file(input_path, "r") as f:
+        with fh.open_file(input_path) as f:
             for line in f:
                 line = line.strip().split("\t")
                 self.add_protein(
@@ -125,18 +129,21 @@ class HmmerParser(Domtblout, ParsedDomtblout):
             )
 
 
-def check_if_parseddomtblout(input_1, input_2):
+def check_if_parseddomtblout(filepath):
     """Check if headers are maybe from a parsed domtblout file
 
     Args:
-        input_1 (str): first line of file
-        input_2 (str): second line of file
+        filepath (str): path to sequence file
 
     Returns:
         bool: true/false
     """
-    a = input_1.count("\t")
-    b = input_2.count("\t")
+    log.info(filepath)
+    with fh.open_file(filepath) as f:
+        l1 = f.readline()
+        l2 = f.readline()
+        a = l1.count("\t")
+        b = l2.count("\t")
     return all(i == 13 for i in [a, b])
 
 

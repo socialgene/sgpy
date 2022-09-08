@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import pickle
 from pathlib import Path
@@ -143,12 +141,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         return search_result
 
     def annotate(
-        self, use_neo4j_precalc: bool = False, neo4j_chunk_size=1000, **kwargs
+        self, use_neo4j_precalc: bool = False, neo4j_chunk_size: int = 1000, **kwargs
     ):
         """Convenience function to get HMMER annotation for all proteins in a Socialgene() object
 
         Args:
             use_neo4j_precalc (bool, optional): If True, domains info will be retrieved from Neo4j, proteins not in Neo4j will be analyzed with HMMER. Defaults to False.
+            neo4j_chunk_size (int, optional): Send x-proteins at a time to Neo4j for annotation
         """
         if use_neo4j_precalc:
             db_res = self.annotate_proteins_with_neo4j(
@@ -164,17 +163,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 **kwargs,
             )
 
-    def _shim_function(self, input_fasta, hmm_filepath, filepath):
-        # shim function to run hmmscan in parallel
-        run_hmmscan(
-            fasta_path="-",
-            input="\n".join(input_fasta).encode(),
-            hmm_filepath=hmm_filepath,
-            domtblout_path=filepath,
-            overwrite=True,
-        )
-
-    def annotate_with_hmmscan(self, protein_id_list, hmm_filepath, cpus=None):
+    def annotate_with_hmmscan(self, protein_id_list, hmm_filepath, cpus=None, **kwargs):
         """Run hmmscan in parallel (meant to be when the number of proteins is relatively small)
 
         Args:
@@ -206,13 +195,16 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # create tempfiles for hmmscan to write domtblout files to
         files = [tempfile.NamedTemporaryFile() for i in temp2]
         filenames = [i.name for i in files]
-        # run hmmscan in parallel
-        print([Path(i).exists() for i in filenames])
-        if cpus == 1:
-            for i in zip(temp2, itertools.repeat(hmm_filepath), filenames):
-                self._shim_function(input_fasta=i[0], hmm_filepath=i[1], filepath=i[2])
+        for i in zip(temp2, itertools.repeat(hmm_filepath), filenames):
+            run_hmmscan(
+                fasta_path="-",
+                input="\n".join(i[0]).encode(),
+                hmm_filepath=i[1],
+                domtblout_path=i[2],
+                overwrite=True,
+                **kwargs,
+            )
         # parse the resulting domtblout files, saving results to the class proteins/domains
-        print([Path(i).exists() for i in filenames])
         for i, ii in zip(filenames, files):
             print(i)
             self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
@@ -260,10 +252,16 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         _domain_counter = 0
         with open(outpath, "a") as f:
             tsv_writer = csv.writer(f, delimiter="\t")
-            for k, v in self.proteins.items():
-                for domain in v.domains:
+            # sort to standardize the write order
+            ordered_prot_ids = list(self.proteins.keys())
+            ordered_prot_ids.sort()
+            for prot_id in ordered_prot_ids:
+                # sort to standardize the write order
+                for domain in self.proteins[
+                    prot_id
+                ].sort_domains_by_mean_envelope_position():
                     _domain_counter += 1
-                    _temp = [k]
+                    _temp = [prot_id]
                     _temp.extend(list(domain.get_dict().values()))
                     tsv_writer.writerow(_temp)
         log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
@@ -435,8 +433,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     ########################################
     # OUTPUTS FOR NEXTFLOW
     ########################################
-
-    def _create_internal_locus_id(self, assembly_id, locus_id):
+    @staticmethod
+    def _create_internal_locus_id(assembly_id, locus_id):
         # because locus id can't be assured to be unique across assemblies
         return hasher.sha512_hash(f"{assembly_id}___{locus_id}")
 

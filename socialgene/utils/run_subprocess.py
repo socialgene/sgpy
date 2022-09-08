@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import subprocess
 
@@ -28,7 +26,7 @@ def run_subprocess(
     Raises:
         ValueError: [description]
     """
-    if command_list == []:
+    if not command_list:
         log.error("Attempted to pass an empty command to subprocess.run()")
         raise ValueError
     if isinstance(command_list, list):

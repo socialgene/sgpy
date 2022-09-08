@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-
 # python dependencies
 from pathlib import Path
 import subprocess
+import gzip
+import shutil
 
 # external dependencies
 
@@ -10,8 +10,10 @@ import subprocess
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
 from socialgene.utils.run_subprocess import run_subprocess
+import socialgene.utils.file_handling as fh
 
 
+# Check if the hmm file is still compressed (needs to be decompressed for hmmpress)
 def check_pressed_files(hmm_filepath, fail_on_missing=False):
     hmm_filepath = Path(hmm_filepath)
     expected_files = [
@@ -23,7 +25,7 @@ def check_pressed_files(hmm_filepath, fail_on_missing=False):
     if not all([i.exists() for i in expected_files]):
         message = f"Missing hmmpress files for: {hmm_filepath}\n HMMER's hmmpress can be run using the hmmpress() function in socialgene.hmm.hmmscan"
         if fail_on_missing:
-            log.critical(message)
+            log.error(message)
             raise FileNotFoundError(message)
         else:
             log.info(message)
@@ -48,9 +50,15 @@ def hmmpress(hmm_filepath, overwrite=False):
                 "Partial hmmpress outputs found; which means hmmpress(overwrite=False), will fail.\n Figure out what your deal is, or run again with hmmpress(force=True)"
             )
             raise FileNotFoundError
-        else:
-            command_list = ["hmmpress", str(hmm_filepath)]
-    command_list = [str(i) for i in command_list]
+        #  Decompress first if hmm file is gzipped
+        if fh.is_compressed(hmm_filepath).name == "gzip":
+            new_hmm_path = Path(hmm_filepath.parents[0], hmm_filepath.stem)
+            with gzip.open(hmm_filepath, "rb") as f_in:
+                with open(new_hmm_path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            hmm_filepath = new_hmm_path
+        command_list = ["hmmpress", str(hmm_filepath)]
+        command_list = [str(i) for i in command_list]
     run_subprocess(
         command_list=command_list,
         stdout=subprocess.DEVNULL,
@@ -64,14 +72,14 @@ def run_hmmscan(
     input: str,
     hmm_filepath: str,
     domtblout_path: str,
-    F1: float = env_vars["HMMSEARCH_F1"],
-    F2: float = env_vars["HMMSEARCH_F2"],
-    F3: float = env_vars["HMMSEARCH_F3"],
-    domE=env_vars["HMMSEARCH_DOME"],
-    incE=env_vars["HMMSEARCH_INCE"],
-    incdomE=env_vars["HMMSEARCH_INCDOME"],
-    E=env_vars["HMMSEARCH_E"],
-    Z=env_vars["HMMSEARCH_Z"],
+    f1: float = env_vars["HMMSEARCH_F1"],
+    f2: float = env_vars["HMMSEARCH_F2"],
+    f3: float = env_vars["HMMSEARCH_F3"],
+    dom_e=env_vars["HMMSEARCH_DOME"],
+    inc_e=env_vars["HMMSEARCH_INCE"],
+    incdom_e=env_vars["HMMSEARCH_INCDOME"],
+    e=env_vars["HMMSEARCH_E"],
+    z=env_vars["HMMSEARCH_Z"],
     seed: int = env_vars["HMMSEARCH_SEED"],
     cpus: int = 1,
     overwrite=False,
@@ -90,21 +98,21 @@ def run_hmmscan(
         "--cpu",
         int(cpus),
         "-Z",
-        Z,
+        z,
         "-E",
-        E,
+        e,
         "--incE",
-        incE,
+        inc_e,
         "--incdomE",
-        incdomE,
+        incdom_e,
         "--domE",
-        domE,
+        dom_e,
         "--F1",
-        F1,
+        f1,
         "--F2",
-        F2,
+        f2,
         "--F3",
-        F3,
+        f3,
         "--domtblout",
         domtblout_path,
         hmm_filepath,
@@ -118,6 +126,3 @@ def run_hmmscan(
         stderr=subprocess.DEVNULL,
         shell=False,
     )
-
-
-# TODO: calls to annotate_with_hmmscan should warn if no hmmpressed files

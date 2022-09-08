@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import argparse
 import glob
@@ -57,7 +55,7 @@ def export_tables(sequence_files_glob, outdir, n_fasta_splits):
     # find files using the input glob
     sequence_files = glob.glob(sequence_files_glob)
     sequence_files = [Path(i).resolve() for i in sequence_files]
-    if sequence_files == []:
+    if not sequence_files:
         raise IOError("No matching file(s)")
     for i in sequence_files:
         socialgene_object.parse(Path(i))

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import base64
 import hashlib

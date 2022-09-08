@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import os
 import pwd
@@ -10,7 +8,7 @@ from pathlib import Path
 # internal dependencies
 from socialgene.utils.run_subprocess import run_subprocess
 from socialgene.utils.logging import log
-from socialgene.neo4j.sg_modules import sgModules, Neo4jImportData
+from socialgene.neo4j.sg_modules import SocialgeneModules, Neo4jImportData
 
 
 class Neo4jAdminImport:
@@ -23,7 +21,6 @@ class Neo4jAdminImport:
         additional_args: str = "",
         uid: int = None,
         gid: int = None,
-        sg_modules: list = None,
         input_sg_modules: list = None,
         hmmlist: list = None,
         dbms_connector_http_listen_address: int = 7474,
@@ -85,12 +82,12 @@ class Neo4jAdminImport:
         dirs_to_check = ["data", "logs"]
         for single_dir in dirs_to_check:
             dir_to_check = os.path.join(neo4j_top_dir, single_dir)
-        if len(os.listdir(dir_to_check)) > 0:
-            # make sure the directory is empty
-            log.exception(
-                f"Directory ({dir_to_check}) must be empty for Neo4j admin import to work"
-            )
-            raise IOError
+            if len(os.listdir(dir_to_check)) > 0:
+                # make sure the directory is empty
+                log.exception(
+                    f"Directory ({dir_to_check}) must be empty for Neo4j admin import to work"
+                )
+                raise IOError
         files_to_check = ["import.report"]
         for single_file in files_to_check:
             file_to_check = os.path.join(neo4j_top_dir, single_file)
@@ -106,9 +103,8 @@ class Neo4jAdminImport:
                 )
 
     # while building arguments, make a list of data filepaths to check for
-
+    @staticmethod
     def _single_arg_string_builder(
-        self,
         label,
         header_filename,
         target_subdirectory,
@@ -147,7 +143,7 @@ class Neo4jAdminImport:
             hmmlist (list): if hmms are in input_sg_modules then filter which HMM arguments to create for Neo4j admin import
         """
         self.node_relationship_argument_list = []
-        sg_mod_object = sgModules()
+        sg_mod_object = SocialgeneModules()
         header_object = Neo4jImportData()
         # retrieve the nodes and relationships that correspond to the input sg_modules
         reduced_dict = {
@@ -198,8 +194,10 @@ class Neo4jAdminImport:
         if missing_input_headers or missing_input_data:
             if missing_input_headers:
                 message = f"Couldn't find expected header files for neo4j admin import:\n{missing_input_headers}"
-            if missing_input_data:
+            elif missing_input_data:
                 message = f"Couldn't find expected data files for neo4j admin import:\n{missing_input_data}"
+            else:
+                message = "??"
             raise ValueError(message)
         else:
             log.info("Found all expected input files. Huzzah!")
@@ -244,7 +242,8 @@ class Neo4jAdminImport:
         ]
         return pre + list(set(joined_args)) + post
 
-    def _run(self, docker_args):
+    @staticmethod
+    def _run(docker_args):
         run_subprocess(
             command_list=" ".join(docker_args),
             check=False,

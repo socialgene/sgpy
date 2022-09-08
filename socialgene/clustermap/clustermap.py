@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 import uuid
 import json
@@ -89,8 +87,8 @@ class ClustermapUuids(UuidCount):
 
 
 class Clustermap(ClustermapUuids, CompareProtein):
-    def __init__(self, primary_assembly=None, **kwargs):
-        super(Clustermap, self).__init__(**kwargs)
+    def __init__(self, primary_assembly=None):
+        super().__init__()
         self.primary_assembly = primary_assembly
         self.clusters = []
         self.groups = []
@@ -147,7 +145,7 @@ class Clustermap(ClustermapUuids, CompareProtein):
                         )
                         _gene_starts.append(feature.start)
                         _gene_ends.append(feature.end)
-                if _gene_starts == []:
+                if not _gene_starts:
                     # stop here if no genes
                     break
                 _loci.append(
@@ -211,6 +209,8 @@ class Clustermap(ClustermapUuids, CompareProtein):
                     label = sg_object.proteins[k].other_id
                 elif sg_object.proteins[k].description is not None:
                     label = sg_object.proteins[k].description
+                else:
+                    label = "None"
                 self.groups.append(
                     {
                         "uid": str(uuid.uuid4()),

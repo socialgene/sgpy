@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from collections import defaultdict
 
@@ -12,8 +10,8 @@ from socialgene.neo4j.single_protein_search import SingleProteinSearch
 
 
 class SearchNeo4j(CompareProtein, SingleProteinSearch):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         # used for parsing/holding input protein(s)
         self.input_sg_object = SocialGene()
         # used for holding result protein(s)

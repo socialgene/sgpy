@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # python dependencies
 from itertools import combinations
 from multiprocessing import Pool, cpu_count
@@ -38,6 +36,7 @@ class CompareProtein(Neo4jQuery):
     def __init__(
         self,
     ):
+        super().__init__()
         self.protein_comparison = []
 
     def _calculate_mod_score_from_protein_class(
@@ -63,13 +62,12 @@ class CompareProtein(Neo4jQuery):
             **kwargs,
         )
 
+    @staticmethod
     def _calculate_mod_score_from_domain_lists(
-        self,
         protein_id_1,
         protein_id_2,
         input_list_1,
         input_list_2,
-        append=False,
     ):
         return [
             protein_id_1,

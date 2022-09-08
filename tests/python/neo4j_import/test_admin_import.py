@@ -1,15 +1,15 @@
-from socialgene.neo4j.sg_modules import sgModules, Neo4jImportData
+from socialgene.neo4j.sg_modules import SocialgeneModules, Neo4jImportData
 
 
 def test_no_overlapping_node_keys():
-    a = list(sgModules().nodes.keys())
+    a = list(SocialgeneModules().nodes.keys())
     assert len(a) == len(set(a))
 
 
 def test_sgmodules_in_Neo4jImportData():
     # check that all sg_modules actually point to something
     nid = Neo4jImportData()
-    sgm = sgModules()
+    sgm = SocialgeneModules()
     sgm_list = set([x for xs in sgm.nodes.values() for x in xs])
     sgm_list.update(set([x for xs in sgm.relationships.values() for x in xs]))
     nid_list = set(nid.nodes.keys())

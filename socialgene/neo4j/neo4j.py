@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-
 # python dependencies
 import os
 import importlib.resources
 import atexit
+from typing import Any
 
 # external dependencies
 from neo4j import GraphDatabase
@@ -116,12 +115,15 @@ class GraphDriver(object):
 
 
 class Neo4jQuery:
+    def __init__(self):
+        pass
+
     @staticmethod
     def print_query(query_name):  # pragma: no cover
         log.info(import_queries()[query_name]["query"])
 
-    @classmethod
-    def print_queries(self):  # pragma: no cover
+    @staticmethod
+    def print_queries():  # pragma: no cover
         resolved_query_dict = import_queries()
         for k in resolved_query_dict.keys():
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -131,17 +133,18 @@ class Neo4jQuery:
             log.info(f'Query: {resolved_query_dict[k]["query"]}')
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-    # See queries.py
-    def query_neo4j(self, cypher_name, param):
+    @staticmethod
+    def query_neo4j(cypher_name: str, param: Any):
         """Run a provided cypher query on {param}
-        Parameters
-        ----------
-        cypher_query : string
-            Neo4j Cypher query
-        Returns
-        -------
-        json dump TODO: check for empty result TODO: add result length backup limiter
+
+        Args:
+            cypher_name (str): Neo4j Cypher query
+            param (Any): paramter passed to Neo4j query, type depends on query
+
+        Returns:
+            Any: type depends on query
         """
+        # See queries.py
         resolved_query_dict = import_queries()
         # grab the the neo4j connection
         with GraphDriver() as db:
