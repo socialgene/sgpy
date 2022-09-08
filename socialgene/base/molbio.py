@@ -170,6 +170,7 @@ class Domain:
         hmm_to: int = None,
         ali_from: int = None,
         ali_to: int = None,
+        **kwargs, # this kwarg isn't accessed but is here so that calling Domain with dict unpacking with extra args doesn't fail
     ):
         """Class for holding information about a domain/motif annotation
 
@@ -283,7 +284,7 @@ class Protein(
             other_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
             domains (Set, optional): Set of Domain() objects.
         """
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.description = description
         self.other_id = other_id
         self.domains = domains if domains is not None else set()
@@ -466,7 +467,7 @@ class Molbio(Assembly):
     """Class for inheriting by SocialGene()"""
 
     def __init__(self):
-        super().__init__()
+        pass
 
         self.assemblies = {}
         self.proteins = {}
