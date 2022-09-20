@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.2](https://github.com/socialgene/sgpy/compare/v0.1.1...v0.1.2) (2022-09-20)
+
+
+### Bug Fixes
+
+* add missing column to fix warning on neo4j import ([305d02a](https://github.com/socialgene/sgpy/commit/305d02a3653d4eb60c74a1ea9b47a50d940921b5))
+* dict unpacking ([e9b43e3](https://github.com/socialgene/sgpy/commit/e9b43e3d05342296498959ef5f0392c3b80b1f53))
+* generalize hmm input suffixes ([9905048](https://github.com/socialgene/sgpy/commit/9905048f41e912defb8e37695e9201f9bc44bfea))
+* ievalue ([4df803e](https://github.com/socialgene/sgpy/commit/4df803ee51943d316b2c2be600cd644676fa610f))
+* lint ([a72d751](https://github.com/socialgene/sgpy/commit/a72d751e83451bfe1d09ea5b520d201a7ced2358))
+* loci to assembly ([305be23](https://github.com/socialgene/sgpy/commit/305be235e14b2306adab9a4972a9747bd3a6b176))
+* qodana check ([efd72ad](https://github.com/socialgene/sgpy/commit/efd72adda2bd0661e613a00a01e41a3c386772d9))
+* simplify/remove unused parallel ([50bea3f](https://github.com/socialgene/sgpy/commit/50bea3fbc51c9627368b61f18a4da64788d6ea02))
+* sort feature outputs to standardize outputs ([fb326db](https://github.com/socialgene/sgpy/commit/fb326db9d57448fe21df5e993a02dc2cc4bffeb5))
+
 ## [0.1.1](https://github.com/socialgene/sgpy/compare/v0.1.0...v0.1.1) (2022-09-07)
 
 
