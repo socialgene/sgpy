@@ -377,7 +377,7 @@ class Feature(Location):
         return any([True for i in types_list if i == self.type])
 
     def __hash__(self):
-        """Used to prevent adding duplicate features to a locus (for hash in set() in Loci.add_locus())
+        """Used to prevent adding duplicate features to a locus (for hash in set() in Assembly.add_locus())
 
         Returns:
             hash: hash for set()
@@ -385,7 +385,7 @@ class Feature(Location):
         return hash((self.end, self.start, self.id, self.strand, self.type))
 
     def __eq__(self, other):
-        """Used for set() in Loci.add_locus()"""
+        """Used for set() in Assembly.add_locus()"""
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
@@ -416,7 +416,7 @@ class Locus:
         self.features.sort(key=lambda i: int((i.end + i.start) / 2))
 
 
-class Loci:
+class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
     __slots__ = ["loci", "taxid"]
@@ -440,27 +440,6 @@ class Loci:
             k: (min([i.start for i in v]), max([i.start for i in v]))
             for k, v in self.loci.items()
         }
-
-
-class Assembly:
-    """Methods for assembly handling in higher functions"""
-
-    def __init__(self):
-        pass
-
-    def add_assembly(self, id: str = None, verbose=False):
-        """Add an assembly to a SocialGene object
-
-        Args:
-            id (str, optional): Assembly identifier, should be unique across parsed input. Defaults to None.
-            verbose (bool, optional): Print extra logging? Defaults to False.
-        """
-        if id is None:
-            id = str(uuid4())
-        if id not in self.assemblies:
-            self.assemblies[id] = Loci()
-        elif verbose:
-            log.debug(f"{id} already present")
 
 
 class Molbio(Assembly):
@@ -500,3 +479,17 @@ class Molbio(Assembly):
             self.proteins[temp_protein.hash_id] = temp_protein
         if not no_return:
             return temp_protein.hash_id
+
+    def add_assembly(self, id: str = None, verbose=False):
+        """Add an assembly to a SocialGene object
+
+        Args:
+            id (str, optional): Assembly identifier, should be unique across parsed input. Defaults to None.
+            verbose (bool, optional): Print extra logging? Defaults to False.
+        """
+        if id is None:
+            id = str(uuid4())
+        if id not in self.assemblies:
+            self.assemblies[id] = Assembly()
+        elif verbose:
+            log.debug(f"{id} already present")

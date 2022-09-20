@@ -35,47 +35,13 @@ expected_proteins = [
     "ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn",
 ]
 
-expected_annotations = {
-    "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl": [
-        {
-            "hmm_id": "DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5",
-            "env_from": 4,
-            "env_to": 66,
-            "seq_pro_score": 28.6,
-            "evalue": -3,
-            "i_evalue": -3,
-            "domain_bias": 0.1,
-            "domain_score": 26.9,
-            "seq_pro_bias": 0.2,
-            "hmm_from": 19,
-            "hmm_to": 69,
-            "ali_from": 16,
-            "ali_to": 65,
-        },
-        {
-            "hmm_id": "xJwofaGb0EIZrSxSeZL5xS6thEM7ck7U",
-            "env_from": 95,
-            "env_to": 147,
-            "seq_pro_score": 45.5,
-            "evalue": -8,
-            "i_evalue": -8,
-            "domain_bias": 0.1,
-            "domain_score": 45.5,
-            "seq_pro_bias": 0.1,
-            "hmm_from": 3,
-            "hmm_to": 54,
-            "ali_from": 96,
-            "ali_to": 147,
-        },
-    ]
-}
-
 
 def test_hmmscan():
     # have to set env here because other tests change it
     from socialgene.config import env_vars
 
     env_vars["HMMSEARCH_IEVALUE"] = 0.1
+    env_vars["HMMSEARCH_Z"] = 4
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
@@ -101,7 +67,7 @@ def test_hmmscan():
                 "env_to": 66,
                 "seq_pro_score": 28.6,
                 "evalue": -3,
-                "i_evalue": -3,
+                "i_evalue": -2,
                 "domain_bias": 0.1,
                 "domain_score": 26.9,
                 "seq_pro_bias": 0.2,

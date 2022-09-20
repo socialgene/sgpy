@@ -1,5 +1,5 @@
 from socialgene.base.socialgene import SocialGene
-from socialgene.base.molbio import Loci
+from socialgene.base.molbio import Assembly
 import socialgene
 
 temp = SocialGene()
@@ -46,9 +46,9 @@ def test_add_protein():
 
 def test_add_assembly():
     assert isinstance(temp.assemblies, dict)
-    assert isinstance(temp.assemblies["myassembly"], socialgene.base.molbio.Loci)
+    assert isinstance(temp.assemblies["myassembly"], socialgene.base.molbio.Assembly)
     assert list(temp.assemblies.keys()) == ["myassembly"]
-    assert isinstance(list(temp.assemblies.values())[0], Loci)
+    assert isinstance(list(temp.assemblies.values())[0], Assembly)
     assert len(list(temp.assemblies.values())) == 1
 
 
