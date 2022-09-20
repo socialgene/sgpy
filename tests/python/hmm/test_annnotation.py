@@ -67,7 +67,7 @@ def test_hmmscan():
                 "env_to": 66,
                 "seq_pro_score": 28.6,
                 "evalue": -3,
-                "i_evalue": -2,
+                "i_evalue": -3,
                 "domain_bias": 0.1,
                 "domain_score": 26.9,
                 "seq_pro_bias": 0.2,
