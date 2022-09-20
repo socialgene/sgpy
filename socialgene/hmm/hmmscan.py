@@ -12,13 +12,20 @@ from socialgene.utils.logging import log
 from socialgene.utils.run_subprocess import run_subprocess
 import socialgene.utils.file_handling as fh
 
+HMMPRESS_OUTPUT_SUFFIXES = ["h3f", "h3i", "h3m", "h3p"]
+
+
+def append_hmmpress_suffix(
+    hmm_filepath, HMMPRESS_OUTPUT_SUFFIXES=HMMPRESS_OUTPUT_SUFFIXES
+):
+    return (f"{hmm_filepath.suffix}.{i}" for i in HMMPRESS_OUTPUT_SUFFIXES)
+
 
 # Check if the hmm file is still compressed (needs to be decompressed for hmmpress)
 def check_pressed_files(hmm_filepath, fail_on_missing=False):
     hmm_filepath = Path(hmm_filepath)
     expected_files = [
-        Path(hmm_filepath.with_suffix(i))
-        for i in [".hmm.h3f", ".hmm.h3i", ".hmm.h3m", ".hmm.h3p"]
+        Path(hmm_filepath.with_suffix(i)) for i in append_hmmpress_suffix(hmm_filepath)
     ]
     if not hmm_filepath.exists():
         raise FileNotFoundError(hmm_filepath)
@@ -34,8 +41,7 @@ def check_pressed_files(hmm_filepath, fail_on_missing=False):
 def hmmpress(hmm_filepath, overwrite=False):
     hmm_filepath = Path(hmm_filepath)
     expected_files = [
-        Path(hmm_filepath.with_suffix(i))
-        for i in [".hmm", ".hmm.h3f", ".hmm.h3i", ".hmm.h3m", ".hmm.h3p"]
+        Path(hmm_filepath.with_suffix(i)) for i in append_hmmpress_suffix(hmm_filepath)
     ]
     if overwrite:
         command_list = ["hmmpress", "-f", str(hmm_filepath)]
@@ -45,7 +51,7 @@ def hmmpress(hmm_filepath, overwrite=False):
                 "hmmpress outputs found and hmmpress(overwrite=False), skipping hmmpress"
             )
             return
-        elif any([i.exists() for i in expected_files[1:]]):
+        elif any([i.exists() for i in expected_files]):
             log.info(
                 "Partial hmmpress outputs found; which means hmmpress(overwrite=False), will fail.\n Figure out what your deal is, or run again with hmmpress(force=True)"
             )
