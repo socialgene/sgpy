@@ -4,7 +4,7 @@ Note: This is all pre-alpha stuff (i.e. being worked on extensively, there will 
 [![Continuous integration](https://github.com/socialgene/sgpy/actions/workflows/pr_ci.yml/badge.svg)](https://github.com/socialgene/sgpy/actions/workflows/pr_ci.yml)
 [![Continuous deployment](https://github.com/socialgene/sgpy/actions/workflows/pypi_autodeploy_python.yml/badge.svg?branch=main)](https://github.com/socialgene/sgpy/actions/workflows/pypi_autodeploy_python.yml)
 
-Documentation can  be found here: <https://socialgene.github.io>
+Documentation can be found here: <https://socialgene.github.io>
 
 <!---
 To create the UML diagram of the library:
