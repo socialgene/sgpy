@@ -7,7 +7,7 @@ Note: This is all pre-alpha stuff (i.e. being worked on extensively, there will 
 Documentation can be found here: <https://socialgene.github.io>
 
 <!---
-To create the UML diagram of the library:
+To create  the UML diagram of the library:
 ```bash
 pyreverse -o png -p sgpy socialgene
 ```
