@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/socialgene/sgpy/compare/v0.1.2...v0.1.3) (2022-09-29)
+
+
+### Bug Fixes
+
+* assembly extension during parsig ([ee12349](https://github.com/socialgene/sgpy/commit/ee1234977f30d0584e7d67c3233291dcf4c98f4f))
+
 ## [0.1.2](https://github.com/socialgene/sgpy/compare/v0.1.1...v0.1.2) (2022-09-20)
 
 
