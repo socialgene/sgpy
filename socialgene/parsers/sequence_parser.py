@@ -50,7 +50,7 @@ class GenbankParser:
                 self.add_assembly(id=assembly_id)
             except Exception:
                 try:
-                    assembly_id = str(Path(input_path).stem)
+                    assembly_id = str(Path(str(input_path).removesuffix(".gz")).stem)
                 except Exception:
                     assembly_id = str(uuid4())
                 self.add_assembly(id=assembly_id)
@@ -143,6 +143,7 @@ class GenbankParser:
             log.info(tar)
             for member in tar:
                 f = tar.extractfile(member)
+                # TODO: fix reliance on extension
                 if member.name.endswith(".gbk.gz") or member.name.endswith(".gbff.gz"):
                     log.info(f"Extracting and parsing: {member.name}")
                     input_ = zlib.decompress(f.read(), 16 + zlib.MAX_WBITS).decode(
