@@ -54,8 +54,8 @@ conda:
 mamba:
 	mamba env create --file environment.yml
 
-## install_python :	Install the socialgene python package 
-install_python: 
+## install :	Install the socialgene python package 
+install: 
 	pip3 install -e .
 
 ## pytest	:	Run Python pacakge unit tests
@@ -64,10 +64,10 @@ pytest:
 	xdg-open htmlcov/index.html
 	
 ## pytestnf :	Run Nextflow pytest tests (first runs clean, install python and  nextflow test run)
-pytestnf: clean install_python testnf
+pytestnf: clean install testnf
 	coverage run --source=./socialgene --module pytest ./socialgene/tests/nextflow --neo4j_outdir $(neo4j_outdir) 
 
-run_ci: clean install_python pytest
+run_ci: clean install pytest
 	@echo "TESTING WITH FLAKE8"
 	flake8 . --ignore E203,E501,W503 --count --show-source
 	@echo "TESTING WITH BLACK"

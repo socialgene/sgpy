@@ -72,7 +72,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "socialgene = socialgene.cli:main",
+            "socialgene = socialgene.cli.__main__:main",
             "socialgene_process_domtblout = socialgene.cli.process_domtblout:main",
             "socialgene_clean_hmm = socialgene.cli.clean_hmms:main",
             "socialgene_process_genbank= socialgene.cli.export_protein_loci_assembly_tables:main",
