@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/socialgene/sgpy/compare/v1.0.0...v1.0.1) (2022-09-29)
+
+
+### Bug Fixes
+
+* a ([f0d95a8](https://github.com/socialgene/sgpy/commit/f0d95a82f4f0c8f0406d3a54963c36f21b4c5a61))
+
 ## [1.0.0](https://github.com/socialgene/sgpy/compare/v0.1.3...v1.0.0) (2022-09-29)
 
 
