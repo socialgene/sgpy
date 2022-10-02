@@ -8,28 +8,42 @@ import os
 
 # internal dependencies
 
-env_vars = dict(os.environ)
+os_vars = dict(os.environ)
+env_vars = {}
 
-if "HMMSEARCH_IEVALUE" not in env_vars:
-    env_file = pkg_resources.resource_filename(__name__, "common_parameters.env")
-    env_vars = {}
-    with open(env_file) as f:
-        for line in f:
-            if line.startswith("#") or line == "\n":
-                continue
-            key, value = line.strip().split("=", 1)
-            env_vars[key] = value
+env_file = pkg_resources.resource_filename(__name__, "common_parameters.env")
+internal_vars = {}
+with open(env_file) as f:
+    for line in f:
+        if line.startswith("#") or line == "\n":
+            continue
+        k, v = line.strip().split("=", 1)
+        internal_vars[k] = v
 
-for key, value in env_vars.items():
-    if isinstance(value, str):
+
+for k, v in internal_vars.items():
+    if isinstance(v, str):
         try:
-            env_vars[key] = int(value)
+            internal_vars[k] = int(v)
         except ValueError:
-            env_vars[key] = value
-    if isinstance(value, str):
+            internal_vars[k] = v
+
+
+for k, v in internal_vars.items():
+    if isinstance(v, str):
         try:
-            env_vars[key] = float(value)
+            internal_vars[k] = float(v)
         except ValueError:
-            env_vars[key] = value
-    if value == "NONE":
-        env_vars[key] = None
+            internal_vars[k] = v
+
+
+for k, v in internal_vars.items():
+    if v == "NONE":
+        internal_vars[k] = None
+
+
+for k, v in internal_vars.items():
+    if k in os_vars:
+        env_vars[k] = os_vars[k]
+    else:
+        env_vars[k] = v
