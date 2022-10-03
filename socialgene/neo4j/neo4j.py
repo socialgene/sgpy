@@ -42,36 +42,6 @@ def import_queries():
     return cypher_dictionary
 
 
-# class Neo4j:
-#     __slots__ = ["driver", "address"]
-#     neo4jVersion = os.getenv("NEO4J_VERSION", "4")
-#     username = os.getenv("NEO4J_USER", "neo4j")
-#     password = os.getenv("NEO4J_PASSWORD", "test")
-#     neo4jVersion = os.getenv("NEO4J_VERSION", "4")
-#     database = os.getenv("NEO4J_DATABASE", "neo4j")
-#     port = os.getenv("PORT", 8080)
-
-#     def __init__(self):
-#         self.driver = None
-#         # for non-django, run this before starting python:
-#         # export NEO4J_URI="neo4j://localhost:7687"
-#         self.address = env_vars["NEO4J_URI"]
-
-#     def __enter__(self):
-#         self.driver = GraphDatabase.driver(
-#             self.address, auth=(self.username, self.password)
-#         )
-#         try:
-#             self.driver.verify_connectivity()
-#         except Exception as e:
-#             log.error(e)
-#             self.driver.verify_connectivity()
-#         return self.driver.session()
-
-#     def __exit__(self, exc_type, exc_value, exc_traceback):
-#         self.driver.close()
-
-
 class GraphDriver(object):
     __instance = None
     __driver = None

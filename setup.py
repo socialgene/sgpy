@@ -73,16 +73,17 @@ setup(
     entry_points={
         "console_scripts": [
             "socialgene = socialgene.cli.__main__:main",
-            "socialgene_process_domtblout = socialgene.cli.process_domtblout:main",
-            "socialgene_clean_hmm = socialgene.cli.clean_hmms:main",
-            "socialgene_process_genbank= socialgene.cli.export_protein_loci_assembly_tables:main",
-            "socialgene_ncbi_taxonomy= socialgene.taxonomy.ncbi_taxonomy:main",
-            "socialgene_export_parameters = socialgene.cli.parameter_export:main",
-            "socialgene_export_neo4j_headers = socialgene.cli.export_neo4j_header_files:main",
-            "socialgene_create_neo4j_db = socialgene.cli.create_neo4j_db:main",
-            "socialgene_version = socialgene.utils.version:main",
-            "socialgene_hmm_tsv_parser= socialgene.cli.socialgene_hmm_tsv_parser:main",
-            "socialgene_prothash_sqlite= socialgene.cli.protein_sqlite:main",
+            "sg_process_domtblout = socialgene.cli.process_domtblout:main",
+            "sg_clean_hmm = socialgene.cli.clean_hmms:main",
+            "sg_process_genbank= socialgene.cli.export_protein_loci_assembly_tables:main",
+            "sg_ncbi_taxonomy= socialgene.taxonomy.ncbi_taxonomy:main",
+            "sg_export_parameters = socialgene.cli.parameter_export:main",
+            "sg_export_neo4j_headers = socialgene.cli.export_neo4j_header_files:main",
+            "sg_create_neo4j_db = socialgene.cli.create_neo4j_db:main",
+            "sg_version = socialgene.utils.version:main",
+            "sg_neo4j_version = socialgene.utils.version:neo4j",
+            "sg_hmm_tsv_parser= socialgene.cli.socialgene_hmm_tsv_parser:main",
+            "sg_prothash_sqlite= socialgene.cli.protein_sqlite:main",
         ]
     },
 )

@@ -6,6 +6,7 @@ from pathlib import Path
 # external dependencies
 
 # internal dependencies
+from socialgene.config import env_vars
 from socialgene.utils.run_subprocess import run_subprocess
 from socialgene.utils.logging import log
 from socialgene.neo4j.sg_modules import SocialgeneModules, Neo4jImportData
@@ -25,7 +26,7 @@ class Neo4jAdminImport:
         hmmlist: list = None,
         dbms_connector_http_listen_address: int = 7474,
         dbms_connector_bolt_listen_address: int = 7687,
-        neo4j_version="4.4.7",
+        neo4j_version=env_vars["NEO4J_VERSION"],
         *args,
         **kwargs,
     ):

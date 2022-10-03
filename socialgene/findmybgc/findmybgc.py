@@ -91,9 +91,11 @@ class NewFindMyBGC:
         self.input_sg_object.parse(input_path)
 
     def annotate(self, **kwargs):
+        """Annotate the input proteins with HMMs"""
         self.input_sg_object.annotate(**kwargs)
 
-    def loopit(self, **kwargs):
+    def search_database(self, **kwargs):
+        """Search the database, one protein at a time"""
         for protein_k, protein_v in self.input_sg_object.proteins.items():
             self.big_sg_list[protein_k] = SingleProteinSearch()
             self.big_sg_list[protein_k].search_a_single_protein(protein_v, **kwargs)
@@ -131,7 +133,7 @@ class NewFindMyBGC:
                         self.count_of_inputs_per_locus[k2][k3] = 0
                     self.count_of_inputs_per_locus[k2][k3] += 1
 
-    def drop_assemblies_by_count(self, min_matches):
+    def drop_assemblies(self, min_matches):
         """Drop assemblies based on the number of input proteins matched to an assembly
 
         Args:

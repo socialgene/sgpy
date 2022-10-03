@@ -237,6 +237,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     )
 
     def get_db_protein_info(self):
+        """Pull name (original identifier) and description of proteins from Neo4j"""
         for result in Neo4jQuery().query_neo4j(
             cypher_name="get_protein_info",
             param=list(self.proteins.keys()),
