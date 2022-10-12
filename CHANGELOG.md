@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0](https://github.com/socialgene/sgpy/compare/v1.0.3...v2.0.0) (2022-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* mmseqs2 header is now taken care of in the nextflow process
+
+### Bug Fixes
+
+* add seqlen to protein slots ([aca9fe8](https://github.com/socialgene/sgpy/commit/aca9fe80481707cff9cc39dc54b95697b9a816b6))
+* lint ([465a3f5](https://github.com/socialgene/sgpy/commit/465a3f54552778e12d255af64683e792b1770921))
+* mmseqs2 header is now taken care of in the nextflow process ([6032f50](https://github.com/socialgene/sgpy/commit/6032f50325fc74b4a07faf6a29b9e3618e6b4666))
+
 ## [1.0.3](https://github.com/socialgene/sgpy/compare/v1.0.2...v1.0.3) (2022-10-03)
 
 
