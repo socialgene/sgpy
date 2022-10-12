@@ -267,12 +267,13 @@ class Protein(
 ):
     """Container class for describing a single protein"""
 
-    __slots__ = ["description", "other_id", "domains"]
+    __slots__ = ["description", "other_id", "seqlen", "domains"]
 
     def __init__(
         self,
         description: str = None,
         other_id: str = None,
+        seqlen: int = None,
         domains: set = None,
         *args,
         **kwargs,
@@ -282,11 +283,13 @@ class Protein(
         Args:
             description (str, optional): Protein description.
             other_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
+            seqlen (int, optional): Amino acid sequence length
             domains (Set, optional): Set of Domain() objects.
         """
         super().__init__(*args, **kwargs)
         self.description = description
         self.other_id = other_id
+        self.seqlen = seqlen
         self.domains = domains if domains is not None else set()
 
     def only_id(self):
