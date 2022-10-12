@@ -2,7 +2,6 @@
 import base64
 import hashlib
 import argparse
-import re
 
 # external dependencies
 
