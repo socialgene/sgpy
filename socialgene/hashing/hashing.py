@@ -19,6 +19,7 @@ parser.add_argument(
 
 
 def sha512_hash(input):
+    # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7714221/
     # To standardize to caps-only input, use hash_aminos()
     data = bytes(input, "utf8")
     sha512_digest = hashlib.sha512(data).digest()[:24]
