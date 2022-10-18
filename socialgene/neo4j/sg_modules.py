@@ -320,7 +320,7 @@ class Neo4jImportData:
                 "target_extension": f"{i}_hmms_out",
                 "header": [
                     ":IGNORE",
-                    ":IGNORE",
+                    "accession",
                     f"id:ID({i})",
                     "description",
                     "category",
