@@ -1,5 +1,4 @@
 from pathlib import Path
-import hashlib
 from socialgene.neo4j.sg_modules import (
     SocialgeneModules,
     write_neo4j_headers,
