@@ -5,93 +5,84 @@ from socialgene.neo4j.sg_modules import (
     write_neo4j_headers,
     hmm_sources,
 )
-
-
+import os
+import pytest
+import itertools
+from socialgene.neo4j.sg_modules import hmm_sources as test_hmm_sources
 from socialgene.neo4j.admin_import import Neo4jAdminImport
 import tempfile
 import pathlib
 
 
-def md5(fname):
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+def read_in(fpath):
+    if os.path.getsize(fpath) > 1000:
+        raise ValueError("File larger than expected")
+    with open(fpath, "rb") as f:
+        return f.read().decode("utf-8")
 
 
-# @pytest.mark.parametrize(
-#     "test_input, expected",
-#     [
-#         (
-#             ["base"],
-#             [
-#                 "assembly.header",
-#                 "assembly_to_locus.header",
-#                 "locus.header",
-#                 "locus_to_protein.header",
-#                 "parameters.header",
-#                 "protein_info.header",
-#             ],
-#         ),
-#         (
-#             ["base", "hmms", "tigrfam"],
-#             [
-#                 "amrfinder_hmms_out.header",
-#                 "amrfinder_hmms_out_relationships.header",
-#                 "antismash_hmms_out.header",
-#                 "antismash_hmms_out_relationships.header",
-#                 "assembly.header",
-#                 "assembly_to_locus.header",
-#                 "bigslice_hmms_out.header",
-#                 "bigslice_hmms_out_relationships.header",
-#                 "classiphage_hmms_out.header",
-#                 "classiphage_hmms_out_relationships.header",
-#                 "goterm.header",
-#                 "local_hmms_out.header",
-#                 "local_hmms_out_relationships.header",
-#                 "locus.header",
-#                 "locus_to_protein.header",
-#                 "parameters.header",
-#                 "pfam_hmms_out.header",
-#                 "pfam_hmms_out_relationships.header",
-#                 "prism_hmms_out.header",
-#                 "prism_hmms_out_relationships.header",
-#                 "protein_info.header",
-#                 "protein_to_hmm_header.header",
-#                 "resfams_hmms_out.header",
-#                 "resfams_hmms_out_relationships.header",
-#                 "sg_hmm_nodes_out.header",
-#                 "tigrfam_hmms_out.header",
-#                 "tigrfam_hmms_out_relationships.header",
-#                 "tigrfam_mainrole.header",
-#                 "tigrfam_role.header",
-#                 "tigrfam_subrole.header",
-#                 "tigrfam_to_go.header",
-#                 "tigrfam_to_role.header",
-#                 "tigrfamrole_to_mainrole.header",
-#                 "tigrfamrole_to_subrole.header",
-#                 "virus_orthologous_groups_hmms_out.header",
-#                 "virus_orthologous_groups_hmms_out_relationships.header",
-#             ],
-#         ),
-#     ],
-# )
-# def test_filenames(test_input, expected):
-#     """Test that parameterized headers are writing"""
-#     with tempfile.TemporaryDirectory() as tmpdirname:
-#         a = Neo4jImportData(sg_modules=test_input)
-#         write_neo4j_headers(sg_modules: list, hmmlist: list, outdir: str)
-#         a.write_headers(tmpdirname)
-#         p = Path(tmpdirname).glob("**/*")
-#         files = [x for x in p if x.is_file()]
-#         files.sort()
-#         filenames = [i.name for i in files]
-#     assert filenames == expected
+expected_headers = {
+    "protein_info": "id:ID(protein)\tname\tdescription\tseqlen:int\r\n",
+    "amrfinder_hmms_out": ":IGNORE\taccession\tid:ID(amrfinder)\tdescription\tcategory\r\n",
+    "local_hmms_out": ":IGNORE\taccession\tid:ID(local)\tdescription\tcategory\r\n",
+    "tigrfam_subrole": "id:ID(tigrfam_subrole)\r\n",
+    "classiphage_hmms_out": ":IGNORE\taccession\tid:ID(classiphage)\tdescription\tcategory\r\n",
+    "tigrfam_mainrole": "id:ID(tigrfam_mainrole)\r\n",
+    "protein_to_hmm_header": ":END_ID(protein)\t:START_ID(hmm)\tenv_from:int\tenv_to:int\tseq_pro_score:float\tevalue:float\ti_evalue:float\tdomain_bias:float\tdomain_score:float\tseq_pro_bias:float\thmm_from:int\thmm_to:int\tali_from:int\tali_to:int\r\n",
+    "prism_hmms_out": ":IGNORE\taccession\tid:ID(prism)\tdescription\tcategory\r\n",
+    "antismash_hmms_out": ":IGNORE\taccession\tid:ID(antismash)\tdescription\tcategory\r\n",
+    "amrfinder_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(amrfinder)\t:IGNORE\t:IGNORE\r\n",
+    "pfam_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(pfam)\t:IGNORE\t:IGNORE\r\n",
+    "sg_hmm_nodes_out": "id:ID(hmm)\tmodel_length\r\n",
+    "mmseqs2": ":START_ID(protein)\t:END_ID(protein)\r\n",
+    "blastp": ":START_ID(protein)\t:END_ID(protein)\tpident:float\tlength:int\tmismatch:int\tgapopen:int\tqstart:int\tqend:int\tsstart:int\tsend:int\tevalue:float\tbitscore:float\tqcovhsp:float\r\n",
+    "parameters": "id:ID(when)\tSG_LOC_NEO4J\tSG_LOC_HMMS\tNEO4J_dbms_memory_pagecache_size\tNEO4J_dbms_memory_heap_initial__size\tNEO4J_dbms_memory_heap_max__size\tHMMSEARCH_IEVALUE\tHMMSEARCH_BACKGROUND\tHMMSEARCH_BIASFILTER\tHMMSEARCH_NULL2\tHMMSEARCH_SEED\tHMMSEARCH_Z\tHMMSEARCH_DOMZ\tHMMSEARCH_F1\tHMMSEARCH_F2\tHMMSEARCH_F3\tHMMSEARCH_E\tHMMSEARCH_DOME\tHMMSEARCH_INCE\tHMMSEARCH_INCDOME\tHMMSEARCH_BITCUTOFFS\tplatform\tarchitecture\tpy_executable\tpy_version\tgenome_download_command\r\n",
+    "locus": "internal_id:ID(nucleotide)\tid\r\n",
+    "taxid": "id:ID(taxid)\tname\trank\r\n",
+    "mz_cluster_index_nodes": "id:ID(mz_cluster_index)\tcomponent_index:int\tparent_mass:double\tprecursor_mass:double\tsum_precursor_intensity:double\tSmiles:String\trt_mean::double\trt_std_err:double\tlibrary_id:String\tmq_score:double\tmz_error_ppm:double\tmass_diff:String\r\n",
+    "resfams_hmms_out": ":IGNORE\taccession\tid:ID(resfams)\tdescription\tcategory\r\n",
+    "virus_orthologous_groups_hmms_out": ":IGNORE\taccession\tid:ID(virus_orthologous_groups)\tdescription\tcategory\r\n",
+    "tigrfam_hmms_out": ":IGNORE\taccession\tid:ID(tigrfam)\tdescription\tcategory\r\n",
+    "assembly_to_taxid": ":START_ID(assembly)\t:END_ID(taxid)\r\n",
+    "assembly_to_mz_file": ":START_ID(assembly)\t:END_ID(mz_source_file)\r\n",
+    "tigrfamrole_to_mainrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_mainrole)\r\n",
+    "prism_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(prism)\t:IGNORE\t:IGNORE\r\n",
+    "assembly_to_locus": ":END_ID(assembly)\t:START_ID(nucleotide)\r\n",
+    "resfams_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(resfams)\t:IGNORE\t:IGNORE\r\n",
+    "classiphage_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(classiphage)\t:IGNORE\t:IGNORE\r\n",
+    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\tstart:int\tend:int\tstrand:int\r\n",
+    "bigslice_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(bigslice)\t:IGNORE\t:IGNORE\r\n",
+    "assembly": "id:ID(assembly)\r\n",
+    "tigrfam_to_role": ":START_ID(tigrfam)\t:END_ID(tigrfam_role)\r\n",
+    "local_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(local)\t:IGNORE\t:IGNORE\r\n",
+    "mz_source_file": "id:ID(mz_source_file)\r\n",
+    "cluster_to_source_file": ":END_ID(mz_cluster_index)\t:START_ID(mz_source_file)\r\n",
+    "bigslice_hmms_out": ":IGNORE\taccession\tid:ID(bigslice)\tdescription\tcategory\r\n",
+    "antismash_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(antismash)\t:IGNORE\t:IGNORE\r\n",
+    "pfam_hmms_out": ":IGNORE\taccession\tid:ID(pfam)\tdescription\tcategory\r\n",
+    "tigrfam_to_go": ":START_ID(tigrfam)\t:END_ID(goterm)\r\n",
+    "goterm": "id:ID(goterm)\r\n",
+    "tigrfam_role": "id:ID(tigrfam_role)\r\n",
+    "molecular_network": ":START_ID(mz_cluster_index)\t:END_ID(mz_cluster_index)\tdelta_mz:double\tmeh:float\tcosine:float\tother_score:float\r\n",
+    "tigrfamrole_to_subrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_subrole)\r\n",
+    "tigrfam_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(tigrfam)\t:IGNORE\t:IGNORE\r\n",
+    "taxid_to_taxid": ":START_ID(taxid)\t:END_ID(taxid)\r\n",
+    "virus_orthologous_groups_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(virus_orthologous_groups)\t:IGNORE\t:IGNORE\r\n",
+}
 
 
-def test_hashes():
-    """Test all the header files' contents"""
+class Combinator(object):
+    instances = list(itertools.combinations(test_hmm_sources, 2)) + list(
+        itertools.combinations(test_hmm_sources, 9)
+    )
+
+
+@pytest.fixture(params=Combinator().instances)
+def combinator(request):
+    return request.param
+
+
+def test_creation_and_writing_of_neo4j_headers(combinator):
     temp_list = list(SocialgeneModules().nodes.keys())
     temp_list.extend(list(SocialgeneModules().relationships.keys()))
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -100,57 +91,8 @@ def test_hashes():
         )
         p = Path(tmpdirname).glob("**/*")
         files = [x for x in p if x.is_file()]
-        files.sort()
-        hashes = {i.name: md5(i) for i in files}
-    for k, v in {
-        "amrfinder_hmms_out.header": "b031f834168b13799f8a6fb6c82a5638",
-        "amrfinder_hmms_out_relationships.header": "1d0d9db15df12374a7c3fe1030742bad",
-        "antismash_hmms_out.header": "d7277102a630fdc5ccec56d2f4f6ec65",
-        "antismash_hmms_out_relationships.header": "5d3e5fd06930d3c0966bacfebd9140e2",
-        "assembly.header": "c9da874fb88e75c70dcd18b3ada3a813",
-        "assembly_to_locus.header": "14f9e0e8ffbd25b240dce27e49d9c0ae",
-        "assembly_to_mz_file.header": "4400959be4c356ff9ca97ace161293e0",
-        "assembly_to_taxid.header": "3f9af852094b60745dc22f1a36c876c8",
-        "bigslice_hmms_out.header": "62636ef084bbdc48a3dd7e62f9d0bbe4",
-        "bigslice_hmms_out_relationships.header": "68e677f21fbc20d62a9447e9a23a215f",
-        "blastp.header": "73dcdcb237ea88ed5ccff662110e9b96",
-        "classiphage_hmms_out.header": "93e9578f762871457abc220859d4d842",
-        "classiphage_hmms_out_relationships.header": "95b56d4ba160a0442e0ee3b87db88aaa",
-        "cluster_to_source_file.header": "f4de9debcc4dbafc8d5d5b6bf3871d51",
-        "goterm.header": "5871ec6e85b2a8947e14f6f1a1b203c7",
-        "local_hmms_out.header": "fb7c3134cc56544384329d1db64a3617",
-        "local_hmms_out_relationships.header": "5d8c17766c352fa3cd9f2ac8e07ea20c",
-        "locus.header": "6a58a48ab2c8d8f641280aac68d09dfd",
-        "locus_to_protein.header": "44e1aae080b0b65a9081d77511efe2c0",
-        "mmseqs2.header": "5b191c60314719d8f501c35eee7950c6",
-        "molecular_network.header": "4e0095892c523cb462677ff68bb85c69",
-        "mz_cluster_index_nodes.header": "4f8f9aa1abcc54a912eb28e94920c15c",
-        "mz_source_file.header": "5ac710b20f508bd8c2d87a2c0f1a718f",
-        "parameters.header": "bfccc8ca760cdd40b8c6faed661e0d1a",
-        "pfam_hmms_out.header": "ef274414c36618474bc9f1d677403e26",
-        "pfam_hmms_out_relationships.header": "b77127f994d20764a839a8263c0ad007",
-        "prism_hmms_out.header": "278806347d722935f178973ad8e827f3",
-        "prism_hmms_out_relationships.header": "a6a5eb0356b7514e059af18e185e621c",
-        "protein_info.header": "bf0197bca389043bd7f5be0bbddab134",
-        "protein_to_hmm_header.header": "6a600653c416e901a9f5f57850a7df57",
-        "resfams_hmms_out.header": "4ca26515cf1c7eb1360cf74625d0a90c",
-        "resfams_hmms_out_relationships.header": "7ecdebdb9876e2b9fd85bb7196865300",
-        "sg_hmm_nodes_out.header": "484071a40dcc110a1e7698ea4dbb12b6",
-        "taxid.header": "c7e0c717b4cf917544017da85f37c7eb",
-        "taxid_to_taxid.header": "cc049bd566ccc90ca64a6cf5ccbd7f5c",
-        "tigrfam_hmms_out.header": "502843b111a7d4448a9e16b976ea8fd9",
-        "tigrfam_hmms_out_relationships.header": "0f6475cc65b2d3f0fd87fee3f32ab728",
-        "tigrfam_mainrole.header": "128bdbf7acdff546dc046da3da3c3745",
-        "tigrfam_role.header": "860575661f5dc766d7bd84709acf4327",
-        "tigrfam_subrole.header": "2365fdb76ebf95329c541db265201c63",
-        "tigrfam_to_go.header": "fdd5d3e0a4dd4a5e5b2ec1bc3ebdcb27",
-        "tigrfam_to_role.header": "bfeb5ce147a7417be63e2adb943474ed",
-        "tigrfamrole_to_mainrole.header": "d9c3660b2ace6b35ac9f24db5cd92559",
-        "tigrfamrole_to_subrole.header": "597e590650456e37383dd9d061ad2666",
-        "virus_orthologous_groups_hmms_out.header": "6ddd3e7662369d3fa548b537cee6f5da",
-        "virus_orthologous_groups_hmms_out_relationships.header": "8f95b83f41992f15dddc7a46ab63f197",
-    }.items():
-        assert hashes[k] == v
+        vals = {i.stem: read_in(i) for i in files}
+        assert vals == {k: expected_headers[k] for k, v in vals.items()}
 
 
 def test_neo4j_admin_import_dir_creation():

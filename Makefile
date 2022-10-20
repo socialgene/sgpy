@@ -58,13 +58,17 @@ mamba:
 install: 
 	pip3 install -e .
 
+pipinstall_test_extras:
+	python3 -m pip install --upgrade pip setuptools wheel numpy pytest-cov
+
 ## pytest	:	Run Python pacakge unit tests
-pytest: 
+pytest: clean install pipinstall_test_extras 
 	pytest tests -v --ignore=socialgene/entrypoints/export_protein_loci_assembly_tables.py 	 --cov=./socialgene --cov-report=xml:./coverage.xml --cov-report html
 	xdg-open htmlcov/index.html
 	
 ## pytestnf :	Run Nextflow pytest tests (first runs clean, install python and  nextflow test run)
-pytestnf: clean install testnf
+pytestnf: clean install pipinstall_test_extras testnf
+	python3 -m pip install --upgrade pip setuptools wheel numpy pytest-cov
 	coverage run --source=./socialgene --module pytest ./socialgene/tests/nextflow --neo4j_outdir $(neo4j_outdir) 
 
 run_ci: clean install pytest
