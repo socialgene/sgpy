@@ -1,5 +1,4 @@
 import os
-import hashlib
 from socialgene.base.socialgene import SocialGene
 import socialgene.base.molbio as molbio
 import tempfile
