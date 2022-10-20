@@ -218,17 +218,149 @@ def test_genbank_file_parse_result():
         == 22
     )
     # check that features have their start
-    # Note this wouldn't be good outside her because diff features can same id value 
+    # Note this wouldn't be good outside her because diff features can same id value
     # This (especially {"start":i.start, "end": i.end, "strand":i.strand, "type": i.type}) is verbose
     # so it's hopefully easier to pinpoint any arising errors
     feature_check = {
-        i.id: {"start":i.start, "end": i.end, "strand":i.strand, "type": i.type}
+        i.id: {"start": i.start, "end": i.end, "strand": i.strand, "type": i.type}
         for i in sg_object.assemblies["lagriamide_mibig_bgc0001946"]
         .loci[locus_key]
         .features
     }
-    assert feature_check == {'9stFB1fGjCdZVZWHLVI3OD4A_DV3WcV6': {'start': 86717, 'end': 87112, 'strand': 1, 'type': 'CDS'}, 'iiWqYfcbDGjauCrUsdiI1pAlG5Syx_-L': {'start': 92859, 'end': 93680, 'strand': 1, 'type': 'CDS'}, 'RyDIaUZc_b21_kQalx7J3yNO4l5f-439': {'start': 53400, 'end': 57239, 'strand': 1, 'type': 'CDS'}, 'Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl': {'start': 1190, 'end': 1714, 'strand': -1, 'type': 'CDS'}, 'Qi23auOUTcBzWTmDHuGinrzIuqH7-zVn': {'start': 88580, 'end': 89593, 'strand': 1, 'type': 'CDS'}, 'WbViYzQw8y-XfCQMgQXkedGduNMJPa14': {'start': 93904, 'end': 95667, 'strand': -1, 'type': 'CDS'}, '4_8182J88axMDpFJBZI6kLNJAu8Ittm3': {'start': 95865, 'end': 97904, 'strand': 1, 'type': 'CDS'}, 'ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn': {'start': 1915, 'end': 2109, 'strand': 1, 'type': 'CDS'}, 'nk3UJUyLaWr8LochtohJ9L6eugdChZL9': {'start': 90318, 'end': 90704, 'strand': 1, 'type': 'CDS'}, 'IRqRpDzrGB9UhHJD6AzDq_6Xupj00Nte': {'start': 98026, 'end': 98871, 'strand': 1, 'type': 'CDS'}, '-l7xLyFZbiZENPLq_GML8JyTRF1Srawr': {'start': 2205, 'end': 2315, 'strand': 1, 'type': 'CDS'}, 'Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5': {'start': 33004, 'end': 53403, 'strand': 1, 'type': 'CDS'}, 'DTee9G4M8sEfnM4HaPfI37rT74pq7M_G': {'start': 57289, 'end': 58401, 'strand': 1, 'type': 'CDS'}, 'ewjVum5PbpEJA4rl-BfnCAypKl5HXb7x': {'start': 98927, 'end': 99394, 'strand': 1, 'type': 'CDS'}, 'iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh': {'start': 59909, 'end': 86623, 'strand': 1, 'type': 'CDS'}, 'du1Ncfm5UYiFYgDWD8KW1AQJNHlAcVXL': {'start': 90836, 'end': 92020, 'strand': 1, 'type': 'CDS'}, 'AStsOnOU5ZWxURs9PrTiWjddkuQXfanl': {'start': 3132, 'end': 13793, 'strand': 1, 'type': 'CDS'}, 'mB22-i4RqtslyO7_HappM4rJ4Z2Qbkfn': {'start': 58398, 'end': 59783, 'strand': 1, 'type': 'CDS'}, '5IYMhENey2WCMrKPUz3AqBIZuFSv6DPP': {'start': 92083, 'end': 92817, 'strand': 1, 'type': 'CDS'}, 'MSHRSCZfdBJP8vdJdaXfeZrThH_4EUMm': {'start': 87147, 'end': 88520, 'strand': 1, 'type': 'CDS'}, 'T_DzOorDp3ROhRRBtuXP3xyAPorpTVD0': {'start': 2828, 'end': 3118, 'strand': 1, 'type': 'CDS'}, 'IsCrCflKZgA6ghoHxXclbsOix0bbDkwZ': {'start': 13790, 'end': 33007, 'strand': 1, 'type': 'CDS'}}
-
+    assert feature_check == {
+        "9stFB1fGjCdZVZWHLVI3OD4A_DV3WcV6": {
+            "start": 86717,
+            "end": 87112,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "iiWqYfcbDGjauCrUsdiI1pAlG5Syx_-L": {
+            "start": 92859,
+            "end": 93680,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "RyDIaUZc_b21_kQalx7J3yNO4l5f-439": {
+            "start": 53400,
+            "end": 57239,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl": {
+            "start": 1190,
+            "end": 1714,
+            "strand": -1,
+            "type": "CDS",
+        },
+        "Qi23auOUTcBzWTmDHuGinrzIuqH7-zVn": {
+            "start": 88580,
+            "end": 89593,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "WbViYzQw8y-XfCQMgQXkedGduNMJPa14": {
+            "start": 93904,
+            "end": 95667,
+            "strand": -1,
+            "type": "CDS",
+        },
+        "4_8182J88axMDpFJBZI6kLNJAu8Ittm3": {
+            "start": 95865,
+            "end": 97904,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn": {
+            "start": 1915,
+            "end": 2109,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "nk3UJUyLaWr8LochtohJ9L6eugdChZL9": {
+            "start": 90318,
+            "end": 90704,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "IRqRpDzrGB9UhHJD6AzDq_6Xupj00Nte": {
+            "start": 98026,
+            "end": 98871,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "-l7xLyFZbiZENPLq_GML8JyTRF1Srawr": {
+            "start": 2205,
+            "end": 2315,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5": {
+            "start": 33004,
+            "end": 53403,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "DTee9G4M8sEfnM4HaPfI37rT74pq7M_G": {
+            "start": 57289,
+            "end": 58401,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "ewjVum5PbpEJA4rl-BfnCAypKl5HXb7x": {
+            "start": 98927,
+            "end": 99394,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh": {
+            "start": 59909,
+            "end": 86623,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "du1Ncfm5UYiFYgDWD8KW1AQJNHlAcVXL": {
+            "start": 90836,
+            "end": 92020,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "AStsOnOU5ZWxURs9PrTiWjddkuQXfanl": {
+            "start": 3132,
+            "end": 13793,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "mB22-i4RqtslyO7_HappM4rJ4Z2Qbkfn": {
+            "start": 58398,
+            "end": 59783,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "5IYMhENey2WCMrKPUz3AqBIZuFSv6DPP": {
+            "start": 92083,
+            "end": 92817,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "MSHRSCZfdBJP8vdJdaXfeZrThH_4EUMm": {
+            "start": 87147,
+            "end": 88520,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "T_DzOorDp3ROhRRBtuXP3xyAPorpTVD0": {
+            "start": 2828,
+            "end": 3118,
+            "strand": 1,
+            "type": "CDS",
+        },
+        "IsCrCflKZgA6ghoHxXclbsOix0bbDkwZ": {
+            "start": 13790,
+            "end": 33007,
+            "strand": 1,
+            "type": "CDS",
+        },
+    }
 
 
 def test_fasta_file_parse():

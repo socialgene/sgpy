@@ -81,6 +81,7 @@ parser.add_argument(
     default="./build_db.sh",
 )
 
+
 def main():
     args = parser.parse_args()
 
