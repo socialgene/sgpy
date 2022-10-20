@@ -73,7 +73,13 @@ parser.add_argument(
     required=False,
     default=None,
 )
-
+parser.add_argument(
+    "--dryrun_filepath",
+    metavar="filepath",
+    help="Filepath of neo4j import script that will be created",
+    required=False,
+    default="./build_db.sh",
+)
 
 def main():
     args = parser.parse_args()
@@ -103,7 +109,7 @@ def main():
         temp.arg_builder(temp.input_sg_modules, temp.hmmlist)
         temp._check_files()
         temp._escape_arg_glob()
-        with open("build_db.sh", "w") as handle:
+        with open(args.dryrun_filepath, "w") as handle:
             handle.writelines(" ".join(temp._neo4j_admin_import_args()))
     else:
         temp.run_neo4j_admin_import()
