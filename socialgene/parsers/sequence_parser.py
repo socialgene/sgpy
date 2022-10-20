@@ -18,6 +18,11 @@ import socialgene.utils.file_handling as fh
 # see SequenceParser at bottom for main class
 
 
+def get_seqio_start(seq_feature):
+    return seq_feature.location.start.real + 1
+
+def get_seqio_end(seq_feature):
+    return seq_feature.location.end.real
 class GenbankParser:
     # TODO: https://github.com/kblin/ncbi-acc-download/blob/master/ncbi_acc_download/validate.py
     def __init__(self):
@@ -117,8 +122,8 @@ class GenbankParser:
                     self.assemblies[assembly_id].loci[locus_id].add_feature(
                         type=seq_feature.type,
                         id=hash_id,
-                        start=seq_feature.location.start.real,
-                        end=seq_feature.location.end.real,
+                        start=get_seqio_start(seq_feature),
+                        end=get_seqio_end(seq_feature),
                         strand=seq_feature.location.strand,
                     )
                 except Exception as e:
