@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.0](https://github.com/socialgene/sgpy/compare/v2.0.0...v2.1.0) (2022-10-20)
+
+
+### Features
+
+* abstract out the +1 index for sequence start ([2ff17fe](https://github.com/socialgene/sgpy/commit/2ff17fed50ce9326ecf70581c66f3a79da5ec36d))
+* add cli flag ([3d757bb](https://github.com/socialgene/sgpy/commit/3d757bb001d93b1164031ba44a055483b0da551a))
+
+
+### Bug Fixes
+
+* add hmm accession to neo4j nodes ([d9f292e](https://github.com/socialgene/sgpy/commit/d9f292ec5c67557bad99282e89f0330025b7f6df))
+* linting ([2842302](https://github.com/socialgene/sgpy/commit/2842302ac13cb04d1af8b97ad2acb873ed3fa86a))
+* linting ([f98dc82](https://github.com/socialgene/sgpy/commit/f98dc821aa7c3e29b38c7038baa56b15c30fdd07))
+* linting ([3ac1b5a](https://github.com/socialgene/sgpy/commit/3ac1b5a2a66911847783429135e1ed6cfc382bd4))
+* tests ([3fc3bf6](https://github.com/socialgene/sgpy/commit/3fc3bf6f678a1e170d52370cf887ad31b0583875))
+
 ## [2.0.0](https://github.com/socialgene/sgpy/compare/v1.0.3...v2.0.0) (2022-10-12)
 
 
