@@ -1,5 +1,4 @@
-name: Package CD
-
+name: Continuous Deployment
 on:
   release:
     types: [published]
