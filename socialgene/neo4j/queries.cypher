@@ -33,6 +33,13 @@ CALL db.relationshipTypes() YIELD relationshipType as type
 CALL apoc.cypher.run('MATCH ()-[:`'+type+'`]->() RETURN count(*) as count',{}) YIELD value
 RETURN apoc.map.fromPairs(collect([type, value.count])) as count;
 
+
+// Name: database_parameters
+// Description: Get info about the parameters used when creating the database
+// Param: 
+MATCH (p:parameters) RETURN p;
+
+
 // Name: search_protein_hash
 // Description:
 // Param: ["8Q02h-w20QNX9aFt1mx2mZgGcXyQGCMn"]
