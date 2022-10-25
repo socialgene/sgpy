@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/socialgene/sgpy/compare/v2.2.0...v2.3.0) (2022-10-25)
+
+
+### Features
+
+* add db param query ([45bfac3](https://github.com/socialgene/sgpy/commit/45bfac36c17c3e66d8f022c5e92d9af7ab6b1e48))
+
 ## [2.2.0](https://github.com/socialgene/sgpy/compare/v2.1.0...v2.2.0) (2022-10-25)
 
 
