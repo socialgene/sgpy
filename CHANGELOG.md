@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/socialgene/sgpy/compare/v2.1.0...v2.2.0) (2022-10-25)
+
+
+### Features
+
+* add neo4j dbinfo queries ([de800bd](https://github.com/socialgene/sgpy/commit/de800bd63cb958cd201b53585b448f15e447ec85))
+
 ## [2.1.0](https://github.com/socialgene/sgpy/compare/v2.0.0...v2.1.0) (2022-10-20)
 
 
