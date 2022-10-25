@@ -12,9 +12,14 @@ query_dict = import_queries()
 # this doesn't really test anything, more just a backup to flag if the query code was modified
 def test_queries_havent_changed():
     assert {k: hasher(v["query"]) for k, v in query_dict.items()} == {
-        "minimal_example": "66ae66cb56fd2e3eaba6af149af08bca",
-        "search_protein_hash": "3abbb04be7f28318483582c1a9c5013f",
-        "get_assembly_ids": "df123e6fdb99c226d88234f2d3f1ff96",
+        "minimal_example": "8fda6dbe49a1b6a19a2cc530be815e02",
+        "total_node_count": "1498bbea6b88e57d5e0dd27c16e0f7c8",
+        "total_relationship_count": "c3fe9e1e0597080704542d0a892984f5",
+        "node_label_count": "85848555d28d250b808c637e1887cf9f",
+        "relationship_label_count": "72e5361c0989257227a0e217a1838d6f",
+        "database_parameters": "bf0fc6bbfcb2d52b41224fdd9d73d0f0",
+        "search_protein_hash": "f666aaf65441b760563a2e84588c92c9",
+        "get_assembly_ids": "5cd2cc837ed334341e74b113b91ead72",
         "find_identical_domain_content": "8818ba0221468da7348869794e915f68",
         "find_similar_bgc": "1f7ea8ac7841a13013c7461a99647507",
         "get_species_and_assembly_from_protein_list": "2599abceffe8bf0978d9e3af53dce79f",
