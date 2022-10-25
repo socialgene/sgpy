@@ -6,6 +6,33 @@ MATCH (n:protein)
 WHERE n.name in input_param
 RETURN n.id LIMIT 25;
 
+
+// Name: total_node_count
+// Description: Count all nodes
+// Param: 
+MATCH (n)
+RETURN count(n) as count; 
+
+// Name: total_relationship_count
+// Description: Count all relationships
+// Param: 
+MATCH ()-[r]->()
+RETURN count(r) as count;
+
+// Name: node_label_count
+// Description: Get count for each node label
+// Param: 
+CALL db.labels() YIELD label
+CALL apoc.cypher.run('MATCH (:`'+label+'`) RETURN count(*) as count',{}) YIELD value
+RETURN apoc.map.fromPairs(collect([label, value.count])) as count;
+
+// Name: relationship_label_count
+// Description: Get count for each relationship label
+// Param: 
+CALL db.relationshipTypes() YIELD relationshipType as type
+CALL apoc.cypher.run('MATCH ()-[:`'+type+'`]->() RETURN count(*) as count',{}) YIELD value
+RETURN apoc.map.fromPairs(collect([type, value.count])) as count;
+
 // Name: search_protein_hash
 // Description:
 // Param: ["8Q02h-w20QNX9aFt1mx2mZgGcXyQGCMn"]
@@ -13,14 +40,11 @@ OPTIONAL MATCH (n:protein)
 WHERE n.id in $param
 RETURN collect(n.id) as result;
 
-
-
 // Name: get_assembly_ids
 // Description:
 // Param: 
 MATCH (a1:assembly)
 RETURN collect(a1.id) as assemblies;
-
 
 // Name: find_identical_domain_content
 // Description: Finds a single protein with identical domain content for an input list of domains
