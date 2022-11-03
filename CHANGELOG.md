@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/socialgene/sgpy/compare/v2.3.0...v2.3.1) (2022-10-25)
+
+
+### Bug Fixes
+
+* fix test for added cypher queries ([a089b2e](https://github.com/socialgene/sgpy/commit/a089b2ee5fe431e0157f66643191bb1687b43a6f))
+
 ## [2.3.0](https://github.com/socialgene/sgpy/compare/v2.2.0...v2.3.0) (2022-10-25)
 
 
