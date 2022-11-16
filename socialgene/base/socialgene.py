@@ -553,7 +553,19 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
             )
             for k in self.assemblies.keys():
-                tsv_writer.writerow([k])
+                temp_v = []
+                for i in self.assemblies[k].info.values():
+                    if isinstance(i, list): 
+                        if len(i) > 1:
+                            temp_v.append(";".join(i))
+                        else:
+                            temp_v.append(i[0])
+                    else:
+                        temp_v.append(i)
+                tsv_writer.writerow([k] + temp_v)
+            
+
+
 
     def export_assemby_to_taxid(self, outdir: str = "."):
         """Assembly to taxid table for import into Neo4j
