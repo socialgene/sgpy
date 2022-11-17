@@ -173,7 +173,7 @@ class Clustermap(ClustermapUuids, CompareProtein):
             sg_object.protein_comparison.loc[
                 sg_object.protein_comparison["mod_score"] > cutoff
             ]
-            .groupby("query")["target"]
+            .groupby("query", group_keys=False)["target"]
             .apply(list)
             .to_dict()
             .items()
