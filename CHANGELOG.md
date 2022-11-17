@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.4.0](https://github.com/socialgene/sgpy/compare/v2.3.1...v2.4.0) (2022-11-17)
+
+
+### Features
+
+* add assembly and nucleotide info from gbk file ([ad8505a](https://github.com/socialgene/sgpy/commit/ad8505a1de80aff708b98d0f3f566e6f125700e8))
+* add assembly info ([d9d03dd](https://github.com/socialgene/sgpy/commit/d9d03ddebaa363d56f57c305e5f60893a47cd268))
+* add assembly info ([9d81e61](https://github.com/socialgene/sgpy/commit/9d81e613770b1af0cfac073dea8c7318eb258b0d))
+
 ## [2.3.1](https://github.com/socialgene/sgpy/compare/v2.3.0...v2.3.1) (2022-10-25)
 
 
