@@ -16,3 +16,23 @@ pyreverse -o png -p sgpy socialgene
 
 ![classes](classes_sgpy.png)
 ![packages](packages_sgpy.png)
+
+
+
+
+
+## Design
+
+The code is organized under a number of submodules/directories:
+
+- base: core functions of the library
+- cli: all command line interface code
+- clustermap: used to convert a socialgene object to clustermap json
+- findmybgc
+- hashing
+- hmm: code for working with HMMER
+- neo4j: code for working with SocialGene Neo4j databases
+- parsers: external file parsers (e.g. genbank, fasta, HMMER results, etc)
+- scoring: functions for measuring protein similarity
+- taxonomy
+- utils

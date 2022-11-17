@@ -28,7 +28,7 @@ from socialgene.hmm.hmmscan import run_hmmscan
 from socialgene.scoring.scoring import mod_score
 import socialgene.hashing.hashing as hasher
 from socialgene.utils.chunker import chunk_a_list_with_numpy
-from socialgene.search.basic import search_protein_hash
+from socialgene.neo4j.search.basic import search_protein_hash
 
 
 class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser):
