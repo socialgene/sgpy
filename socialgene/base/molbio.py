@@ -403,11 +403,67 @@ class Feature(Location):
 class Locus:
     """Container holding a set() of genomic features"""
 
-    __slots__ = "features"
+    SOURCE_KEYS = [
+        "mol_type",
+        "altitude",
+        "bio_material",
+        "cell_line",
+        "cell_type",
+        "chromosome",
+        "clone",
+        "clone_lib",
+        "collected_by",
+        "collection_date",
+        "country",
+        "cultivar",
+        "culture_collection",
+        "db_xref",
+        "dev_stage",
+        "ecotype",
+        "environmental_sample",
+        "focus",
+        "germline",
+        "haplogroup",
+        "haplotype",
+        "host",
+        "identified_by",
+        "isolate",
+        "isolation_source",
+        "lab_host",
+        "lat_lon",
+        "macronuclear",
+        "map",
+        "mating_type",
+        "metagenome_source",
+        "note",
+        "organelle",
+        "PCR_primers",
+        "plasmid",
+        "pop_variant",
+        "proviral",
+        "rearranged",
+        "segment",
+        "serotype",
+        "serovar",
+        "sex",
+        "specimen_voucher",
+        "strain",
+        "sub_clone",
+        "submitter_seqid",
+        "sub_species",
+        "sub_strain",
+        "tissue_lib",
+        "tissue_type",
+        "transgenic",
+        "type_material",
+        "variety",
+    ]
+    __slots__ = ["features", "info"]
 
     def __init__(self):
         super().__init__()
         self.features = set()
+        self.info = self.create_source_key_dict()
 
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
@@ -418,9 +474,70 @@ class Locus:
         self.features = list(self.features)
         self.features.sort(key=lambda i: int((i.end + i.start) / 2))
 
+    def create_source_key_dict(self):
+        return OrderedDict({i: None for i in self.SOURCE_KEYS})
+
+
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
     SOURCE_KEYS = ["mol_type","altitude","bio_material","cell_line","cell_type","chromosome","clone","clone_lib","collected_by","collection_date","country","cultivar","culture_collection","db_xref","dev_stage","ecotype","environmental_sample","focus","germline","haplogroup","haplotype","host","identified_by","isolate","isolation_source","lab_host","lat_lon","macronuclear","map","mating_type","metagenome_source","note","organelle","PCR_primers","plasmid","pop_variant","proviral","rearranged","segment","serotype","serovar","sex","specimen_voucher","strain","sub_clone","submitter_seqid","sub_species","sub_strain","tissue_lib","tissue_type","transgenic","type_material","variety"]
+    __slots__ = ["loci", "taxid", "info"]
+
+    SOURCE_KEYS = [
+        "mol_type",
+        "altitude",
+        "bio_material",
+        "cell_line",
+        "cell_type",
+        "chromosome",
+        "clone",
+        "clone_lib",
+        "collected_by",
+        "collection_date",
+        "country",
+        "cultivar",
+        "culture_collection",
+        "db_xref",
+        "dev_stage",
+        "ecotype",
+        "environmental_sample",
+        "focus",
+        "germline",
+        "haplogroup",
+        "haplotype",
+        "host",
+        "identified_by",
+        "isolate",
+        "isolation_source",
+        "lab_host",
+        "lat_lon",
+        "macronuclear",
+        "map",
+        "mating_type",
+        "metagenome_source",
+        "note",
+        "organelle",
+        "PCR_primers",
+        "plasmid",
+        "pop_variant",
+        "proviral",
+        "rearranged",
+        "segment",
+        "serotype",
+        "serovar",
+        "sex",
+        "specimen_voucher",
+        "strain",
+        "sub_clone",
+        "submitter_seqid",
+        "sub_species",
+        "sub_strain",
+        "tissue_lib",
+        "tissue_type",
+        "transgenic",
+        "type_material",
+        "variety",
+    ]
     __slots__ = ["loci", "taxid", "info"]
 
     def __init__(self):
@@ -445,6 +562,9 @@ class Assembly:
         }
         
     def create_source_key_dict(self): 
+        return OrderedDict({i: None for i in self.SOURCE_KEYS})
+
+    def create_source_key_dict(self):
         return OrderedDict({i: None for i in self.SOURCE_KEYS})
 
 

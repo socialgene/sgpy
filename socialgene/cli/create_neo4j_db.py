@@ -80,7 +80,13 @@ parser.add_argument(
     required=False,
     default="./build_db.sh",
 )
-
+parser.add_argument(
+    "--docker",
+    metavar="bool",
+    help="Use this flag to to add docker-specific commands",
+    required=False,
+    default=False,
+)
 
 def main():
     args = parser.parse_args()
@@ -108,10 +114,9 @@ def main():
     )
     if args.dryrun:
         temp.arg_builder(temp.input_sg_modules, temp.hmmlist)
-        temp._check_files()
         temp._escape_arg_glob()
         with open(args.dryrun_filepath, "w") as handle:
-            handle.writelines(" ".join(temp._neo4j_admin_import_args()))
+            handle.writelines(" \\\n\t".join(temp._neo4j_admin_import_args(docker=args.docker)))
     else:
         temp.run_neo4j_admin_import()
 

@@ -68,6 +68,9 @@ class GenbankParser:
         # because locus ids aren't guaranteed to be unique, esp across loci /files
         # track_locus_ids = {}
         for seq_feature in seq_record.features:  # feature
+            # Add locus
+            locus_id = seq_record.id
+            self.assemblies[assembly_id].add_locus(id=locus_id)
             # keep track of the number of different features
             if seq_feature.type in count_loci_in_file:
                 count_loci_in_file[seq_feature.type] += 1
@@ -88,8 +91,6 @@ class GenbankParser:
                 product = seq_feature.qualifiers["product"][0]
             else:
                 product = None
-            # for genbank/refseq, try and extract the taxon
-
             if seq_feature.type == "source":
                 print(seq_feature.type)
                 try:
@@ -107,8 +108,9 @@ class GenbankParser:
                 for k in self.assemblies[assembly_id].info.keys():
                     if k in seq_feature.qualifiers:
                         self.assemblies[assembly_id].info[k] = seq_feature.qualifiers[k]
-
-
+                        self.assemblies[assembly_id].loci[locus_id].info[
+                            k
+                        ] = seq_feature.qualifiers[k]
             if any([True for i in ["protein", "CDS"] if i == seq_feature.type]):
                 try:
                     if "translation" in seq_feature.qualifiers:
@@ -130,12 +132,7 @@ class GenbankParser:
                     )
                     if not keep_sequence:
                         self.proteins[hash_id].sequence = None
-                    locus_id = seq_record.id
-                    # if locus_id not in track_locus_ids:
-                    # prepend `assembly_id` to ensure uniqueness across files (e.g. multiple genomes annotated with prodigal will have same locus ids)
-                    # track_locus_ids[locus_id] = f"{assembly_id}___{locus_id}"
-                    # final_locus_id = track_locus_ids[locus_id]
-                    self.assemblies[assembly_id].add_locus(id=locus_id)
+
                     self.assemblies[assembly_id].loci[locus_id].add_feature(
                         type=seq_feature.type,
                         id=hash_id,
