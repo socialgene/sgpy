@@ -88,6 +88,7 @@ parser.add_argument(
     default=False,
 )
 
+
 def main():
     args = parser.parse_args()
 
@@ -116,7 +117,9 @@ def main():
         temp.arg_builder(temp.input_sg_modules, temp.hmmlist)
         temp._escape_arg_glob()
         with open(args.dryrun_filepath, "w") as handle:
-            handle.writelines(" \\\n\t".join(temp._neo4j_admin_import_args(docker=args.docker)))
+            handle.writelines(
+                " \\\n\t".join(temp._neo4j_admin_import_args(docker=args.docker))
+            )
     else:
         temp.run_neo4j_admin_import()
 

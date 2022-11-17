@@ -27,7 +27,6 @@ def get_seqio_end(seq_feature):
     return seq_feature.location.end.real
 
 
-
 class GenbankParser:
     # TODO: https://github.com/kblin/ncbi-acc-download/blob/master/ncbi_acc_download/validate.py
     def __init__(self):
