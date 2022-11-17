@@ -1,13 +1,9 @@
 # python dependencies
-from pathlib import Path
 
 # external dependencies
 import pandas as pd
 
 # internal dependencies
-from socialgene.utils.pandas_utils import write_tsv
-from socialgene.utils.untargz import untargz
-
 
 # tax_url = "ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz"
 # tax_dump_hash_url = "ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz.md5"
