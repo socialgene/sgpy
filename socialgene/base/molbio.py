@@ -619,9 +619,6 @@ class Assembly:
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in self.SOURCE_KEYS})
 
-    def create_source_key_dict(self):
-        return OrderedDict({i: None for i in self.SOURCE_KEYS})
-
 
 class Molbio(Assembly):
     """Class for inheriting by SocialGene()"""

@@ -5,7 +5,6 @@ from mimetypes import guess_type
 from functools import partial
 from uuid import uuid4
 import zlib
-from collections import OrderedDict
 
 # external dependencies
 from Bio import SeqIO
