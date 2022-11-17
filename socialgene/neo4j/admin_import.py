@@ -125,11 +125,11 @@ class Neo4jAdminImport:
             list: [first_part_of_arg_string, header_path_string, data_glob_string] want mutable because will check in later step for gz and append if needed
         """
         # chr(92) is a workaround to insert '\\'
-        # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}"
+        # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}.*"
         return [
             f"--{type}={label}=",
             f"import/neo4j_headers/{header_filename}",
-            f"import/{target_subdirectory}/*.{target_extension}",
+            f"import/{target_subdirectory}/*.{target_extension}.*",
         ]
 
     def _escape_arg_glob(self):
@@ -181,17 +181,9 @@ class Neo4jAdminImport:
         print(p)
         for i in self.node_relationship_argument_list:
             if not list(p.glob(i[1])):
-                # If the files aren't found, check for gzipped versions and change the name
-                if list(p.glob(i[1] + ".gz")):
-                    i[1] = i[1] + ".gz"
-                else:
-                    missing_input_headers.append(i[1])
-            if not list(p.glob(i[2])):
-                # If the files aren't found, check for gzipped versions and change the name
-                if list(p.glob(i[2] + ".gz")):
-                    i[2] = i[2] + ".gz"
-                else:
-                    missing_input_data.append(i[2])
+                missing_input_headers.append(i[1])
+            if not p.glob(i[2]):
+                missing_input_data.append(i[2])
         if missing_input_headers or missing_input_data:
             if missing_input_headers:
                 message = f"Couldn't find expected header files for neo4j admin import:\n{missing_input_headers}"
@@ -203,14 +195,14 @@ class Neo4jAdminImport:
         else:
             log.info("Found all expected input files. Huzzah!")
 
-    def _neo4j_admin_import_args(self):
+    def _neo4j_admin_import_args(self, docker=False):
         """Function used to create a list of all the commands/arguments for a docker/neo4j admin import run
 
         Returns:
             list: commands/arguments to pass to a subprocess
         """
 
-        pre = [
+        docker_command = [
             "docker",
             "run",
             "--rm",
@@ -223,39 +215,44 @@ class Neo4jAdminImport:
             f"--volume={self.neo4j_top_dir}/import.report:/var/lib/neo4j/import.report",
             f"--user={self.uid}:{self.gid}",
             f"neo4j:{self.neo4j_version}",
-            "neo4j-admin",
-            "import",
         ]
+
+        neo4j_admin_command = ["neo4j-admin", "database", "import", "full"]
+
         # self.node_relationship_argument_list will be inserted between pre and post
         joined_args = [
             f"{i[0]}{i[1]},{i[2]}" for i in self.node_relationship_argument_list
         ]
         post = [
             '--delimiter="\\t"',
-            "--high-io=true",
-            f"--processors={self.cpus}",
-            "--database=neo4j",
+            "--high-parallel-io=On",
+            f"--threads={self.cpus}",
             "--ignore-empty-strings=true",
             "--ignore-extra-columns=true",
             "--skip-bad-relationships",
             "--skip-duplicate-nodes",
-            # self.additional_args,
+            "neo4j",  # this is the database name. If I remember correctly this must be "neo4j" for the community edition of neo4j
         ]
+
+        if docker:
+            pre = docker_command + neo4j_admin_command
+        else:
+            pre = neo4j_admin_command
         return pre + list(set(joined_args)) + post
 
     @staticmethod
-    def _run(docker_args):
+    def _run(cmd):
         run_subprocess(
-            command_list=" ".join(docker_args),
+            command_list=" ".join(cmd),
             check=False,
             shell=True,
             capture_output=True,
         )
 
-    def run_neo4j_admin_import(self):
+    def run_neo4j_admin_import(self, docker=False):
         """Run the created commands/arguments in a separate process"""
         self.create_neo4j_directories(self.neo4j_top_dir)
         self.arg_builder(self.input_sg_modules, self.hmmlist)
         self._check_files()
         self._escape_arg_glob()
-        self._run(self._neo4j_admin_import_args())
+        self._run(self._neo4j_admin_import_args(docker))

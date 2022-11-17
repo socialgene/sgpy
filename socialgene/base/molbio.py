@@ -403,11 +403,67 @@ class Feature(Location):
 class Locus:
     """Container holding a set() of genomic features"""
 
-    __slots__ = "features"
+    SOURCE_KEYS = [
+        "mol_type",
+        "altitude",
+        "bio_material",
+        "cell_line",
+        "cell_type",
+        "chromosome",
+        "clone",
+        "clone_lib",
+        "collected_by",
+        "collection_date",
+        "country",
+        "cultivar",
+        "culture_collection",
+        "db_xref",
+        "dev_stage",
+        "ecotype",
+        "environmental_sample",
+        "focus",
+        "germline",
+        "haplogroup",
+        "haplotype",
+        "host",
+        "identified_by",
+        "isolate",
+        "isolation_source",
+        "lab_host",
+        "lat_lon",
+        "macronuclear",
+        "map",
+        "mating_type",
+        "metagenome_source",
+        "note",
+        "organelle",
+        "PCR_primers",
+        "plasmid",
+        "pop_variant",
+        "proviral",
+        "rearranged",
+        "segment",
+        "serotype",
+        "serovar",
+        "sex",
+        "specimen_voucher",
+        "strain",
+        "sub_clone",
+        "submitter_seqid",
+        "sub_species",
+        "sub_strain",
+        "tissue_lib",
+        "tissue_type",
+        "transgenic",
+        "type_material",
+        "variety",
+    ]
+    __slots__ = ["features", "info"]
 
     def __init__(self):
         super().__init__()
         self.features = set()
+        self.info = self.create_source_key_dict()
 
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
@@ -418,16 +474,75 @@ class Locus:
         self.features = list(self.features)
         self.features.sort(key=lambda i: int((i.end + i.start) / 2))
 
+    def create_source_key_dict(self):
+        return OrderedDict({i: None for i in self.SOURCE_KEYS})
+
 
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
-    __slots__ = ["loci", "taxid"]
+    SOURCE_KEYS = [
+        "mol_type",
+        "altitude",
+        "bio_material",
+        "cell_line",
+        "cell_type",
+        "chromosome",
+        "clone",
+        "clone_lib",
+        "collected_by",
+        "collection_date",
+        "country",
+        "cultivar",
+        "culture_collection",
+        "db_xref",
+        "dev_stage",
+        "ecotype",
+        "environmental_sample",
+        "focus",
+        "germline",
+        "haplogroup",
+        "haplotype",
+        "host",
+        "identified_by",
+        "isolate",
+        "isolation_source",
+        "lab_host",
+        "lat_lon",
+        "macronuclear",
+        "map",
+        "mating_type",
+        "metagenome_source",
+        "note",
+        "organelle",
+        "PCR_primers",
+        "plasmid",
+        "pop_variant",
+        "proviral",
+        "rearranged",
+        "segment",
+        "serotype",
+        "serovar",
+        "sex",
+        "specimen_voucher",
+        "strain",
+        "sub_clone",
+        "submitter_seqid",
+        "sub_species",
+        "sub_strain",
+        "tissue_lib",
+        "tissue_type",
+        "transgenic",
+        "type_material",
+        "variety",
+    ]
+    __slots__ = ["loci", "taxid", "info"]
 
     def __init__(self):
         super().__init__()
         self.loci = {}
         self.taxid = None
+        self.info = self.create_source_key_dict()
 
     def add_locus(self, id: str = None):
         """Add a locus to an assembly object"""
@@ -443,6 +558,9 @@ class Assembly:
             k: (min([i.start for i in v]), max([i.start for i in v]))
             for k, v in self.loci.items()
         }
+
+    def create_source_key_dict(self):
+        return OrderedDict({i: None for i in self.SOURCE_KEYS})
 
 
 class Molbio(Assembly):
@@ -483,16 +601,15 @@ class Molbio(Assembly):
         if not no_return:
             return temp_protein.hash_id
 
-    def add_assembly(self, id: str = None, verbose=False):
+    def add_assembly(self, id: str = None):
         """Add an assembly to a SocialGene object
 
         Args:
             id (str, optional): Assembly identifier, should be unique across parsed input. Defaults to None.
-            verbose (bool, optional): Print extra logging? Defaults to False.
         """
         if id is None:
             id = str(uuid4())
         if id not in self.assemblies:
             self.assemblies[id] = Assembly()
-        elif verbose:
+        else:
             log.debug(f"{id} already present")

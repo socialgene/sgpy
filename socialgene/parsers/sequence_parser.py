@@ -5,6 +5,7 @@ from mimetypes import guess_type
 from functools import partial
 from uuid import uuid4
 import zlib
+from collections import OrderedDict
 
 # external dependencies
 from Bio import SeqIO
@@ -31,7 +32,7 @@ class GenbankParser:
     def __init__(self):
         pass
 
-    def _gbk_to_sg(
+    def _parse_genbank(
         self,
         input_path,
         seq_record,
@@ -51,6 +52,7 @@ class GenbankParser:
         """
         if not assembly_id:
             try:
+                # try to retrieve assembly id from the seqrecord object
                 assembly_id = [
                     i for i in seq_record.dbxrefs if i.startswith("Assembly:")
                 ][0]
@@ -65,10 +67,16 @@ class GenbankParser:
         # because locus ids aren't guaranteed to be unique, esp across loci /files
         # track_locus_ids = {}
         for seq_feature in seq_record.features:  # feature
+            # Add locus
+            locus_id = seq_record.id
+            self.assemblies[assembly_id].add_locus(id=locus_id)
+            # keep track of the number of different features
             if seq_feature.type in count_loci_in_file:
                 count_loci_in_file[seq_feature.type] += 1
             else:
                 count_loci_in_file[seq_feature.type] = 1
+            # Assign a protein id if it exists, a locus tag if it doesn't (e.g. pseudogene)
+            # if neither, make something up
             if "protein_id" in seq_feature.qualifiers:
                 protein_id = seq_feature.qualifiers["protein_id"]
             elif "locus_tag" in seq_feature.qualifiers:
@@ -77,13 +85,13 @@ class GenbankParser:
                 protein_id = uuid4()
             if isinstance(protein_id, list):
                 protein_id = protein_id[0]
+            # Grab the locus/protein description if it exists
             if "product" in seq_feature.qualifiers:
                 product = seq_feature.qualifiers["product"][0]
             else:
                 product = None
-            # for genbank/refseq, try and extract the taxon
-            # TODO: shouldn't this be seqrecord?
-            if "db_xref" in seq_feature.qualifiers:
+            if seq_feature.type == "source":
+                print(seq_feature.type)
                 try:
                     taxon_list = [
                         i
@@ -95,6 +103,13 @@ class GenbankParser:
                     self.assemblies[assembly_id].taxid = int(taxon_str)
                 except Exception:
                     pass
+                # TODO: should this overwrite (current) or compare every iteration per assembly?
+                for k in self.assemblies[assembly_id].info.keys():
+                    if k in seq_feature.qualifiers:
+                        self.assemblies[assembly_id].info[k] = seq_feature.qualifiers[k]
+                        self.assemblies[assembly_id].loci[locus_id].info[
+                            k
+                        ] = seq_feature.qualifiers[k]
             if any([True for i in ["protein", "CDS"] if i == seq_feature.type]):
                 try:
                     if "translation" in seq_feature.qualifiers:
@@ -116,12 +131,7 @@ class GenbankParser:
                     )
                     if not keep_sequence:
                         self.proteins[hash_id].sequence = None
-                    locus_id = seq_record.id
-                    # if locus_id not in track_locus_ids:
-                    # prepend `assembly_id` to ensure uniqueness across files (e.g. multiple genomes annotated with prodigal will have same locus ids)
-                    # track_locus_ids[locus_id] = f"{assembly_id}___{locus_id}"
-                    # final_locus_id = track_locus_ids[locus_id]
-                    self.assemblies[assembly_id].add_locus(id=locus_id)
+
                     self.assemblies[assembly_id].loci[locus_id].add_feature(
                         type=seq_feature.type,
                         id=hash_id,
@@ -136,7 +146,7 @@ class GenbankParser:
                 # use incremented counter to id non-protein loci
                 total_locus_counter += 1
 
-    def parse_genbank(self, input_path, **kwargs):
+    def _read_genbank(self, input_path, **kwargs):
         """Parse a genbank file
         Args:
             input_path (str): path to genbank file (should be able to handle .gz and tar archives)
@@ -159,7 +169,7 @@ class GenbankParser:
                     )
                     with StringIO(input_) as handle:
                         for seq_record in SeqIO.parse(handle, "genbank"):
-                            self._gbk_to_sg(
+                            self._parse_genbank(
                                 input_path=input_path,
                                 seq_record=seq_record,
                                 count_loci_in_file=count_loci_in_file,
@@ -171,7 +181,7 @@ class GenbankParser:
                         log.info(f"Extracting: {member.name}")
                         with StringIO(input_) as handle:
                             for seq_record in SeqIO.parse(handle, "genbank"):
-                                self._gbk_to_sg(
+                                self._parse_genbank(
                                     input_path=input_path,
                                     seq_record=seq_record,
                                     count_loci_in_file=count_loci_in_file,
@@ -182,8 +192,7 @@ class GenbankParser:
         else:
             with fh.open_file(input_path) as handle:
                 for seq_record in SeqIO.parse(handle, "genbank"):
-                    # **kwargs == assembly_id
-                    self._gbk_to_sg(
+                    self._parse_genbank(
                         input_path=input_path,
                         seq_record=seq_record,
                         count_loci_in_file=count_loci_in_file,
@@ -293,7 +302,7 @@ class SequenceParser(GenbankParser, FastaParser):
         # TODO: fh.check_if_tar(filepath=filepath)
         filetype = fh.guess_filetype(filepath)
         if filetype == "genbank":
-            self.parse_genbank(filepath, **kwargs)
+            self._read_genbank(filepath, **kwargs)
         elif filetype == "fasta":
             self.parse_fasta_file(filepath)
         else:

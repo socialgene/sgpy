@@ -528,16 +528,19 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             )
             for ak, av in self.assemblies.items():
                 for k in av.loci.keys():
-                    # prepend `assembly_id` to ensure uniqueness across files (e.g. multiple genomes annotated with prodigal will have same locus ids)
-                    # take `44a64cc6-782c-4d00-bc78-59a8a8a4dce5___scaffold00001`
-                    # and turn it into: `44a64cc6-782c-4d00-bc78-59a8a8a4dce5___scaffold00001\tscaffold00001`
-                    # split_list = str(k)
-                    # split_list = split_list.split("___")
-                    # out_list = [k, split_list[1]]
-                    out_list = [
-                        self._create_internal_locus_id(assembly_id=ak, locus_id=k),
-                        k,
-                    ]
+                    internal_id = self._create_internal_locus_id(
+                        assembly_id=ak, locus_id=k
+                    )
+                    temp_v = []
+                    for i in self.assemblies[ak].loci[k].info.values():
+                        if isinstance(i, list):
+                            if len(i) > 1:
+                                temp_v.append(";".join(i))
+                            else:
+                                temp_v.append(i[0])
+                        else:
+                            temp_v.append(i)
+                    out_list = [internal_id] + [k] + temp_v
                     #  ["internal_locus_id" "locus_id"]
                     tsv_writer.writerow(out_list)
 
@@ -553,7 +556,16 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
             )
             for k in self.assemblies.keys():
-                tsv_writer.writerow([k])
+                temp_v = []
+                for i in self.assemblies[k].info.values():
+                    if isinstance(i, list):
+                        if len(i) > 1:
+                            temp_v.append(";".join(i))
+                        else:
+                            temp_v.append(i[0])
+                    else:
+                        temp_v.append(i)
+                tsv_writer.writerow([k] + temp_v)
 
     def export_assemby_to_taxid(self, outdir: str = "."):
         """Assembly to taxid table for import into Neo4j
