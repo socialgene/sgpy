@@ -112,7 +112,7 @@ class GenbankParser:
                 try:
                     if "translation" in seq_feature.qualifiers:
                         translation = seq_feature.qualifiers["translation"][0]
-                    elif "pseudo" in seq_feature.qualifiers:
+                    elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
                         translation = str(
                             seq_feature.extract(seq_record).seq.translate()
                         )
