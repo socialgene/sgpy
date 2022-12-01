@@ -90,7 +90,6 @@ class GenbankParser:
             else:
                 product = None
             if seq_feature.type == "source":
-                print(seq_feature.type)
                 try:
                     taxon_list = [
                         i
