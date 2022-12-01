@@ -311,7 +311,7 @@ class Neo4jImportData:
                 "header": [":END_ID(assembly)", ":START_ID(nucleotide)"],
             },
             "contains": {
-                "neo4j_label": "CONTAINS",
+                "neo4j_label": "ENCODES",
                 "header_filename": "locus_to_protein.header",
                 "target_subdirectory": "genomic_info",
                 "target_extension": "locus_to_protein",
