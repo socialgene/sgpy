@@ -213,7 +213,7 @@ class Domain:
 
     def __init__(
         self,
-        exponentialized: bool = False,
+        exponentialized: bool = True,
         hmm_id: str = None,
         env_from: int = None,
         env_to: int = None,
@@ -253,11 +253,11 @@ class Domain:
         self.env_to = int(env_to)
         self.seq_pro_score = round(float(seq_pro_score), 1)
         if exponentialized:
-            self.evalue = int(evalue)
-            self.i_evalue = int(i_evalue)
-        else:
             self.evalue = find_exp(evalue)
             self.i_evalue = find_exp(i_evalue)
+        else:
+            self.evalue = int(evalue)
+            self.i_evalue = int(i_evalue)
         self.domain_bias = round(float(domain_bias), 1)
         self.domain_score = round(float(domain_score), 1)
         self.seq_pro_bias = round(float(seq_pro_bias), 1)

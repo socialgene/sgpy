@@ -53,7 +53,7 @@ def hmmpress(hmm_filepath, overwrite=False):
             return
         elif any([i.exists() for i in expected_files]):
             log.info(
-                "Partial hmmpress outputs found; which means hmmpress(overwrite=False), will fail.\n Figure out what your deal is, or run again with hmmpress(force=True)"
+                "Partial hmmpress outputs found; which means hmmpress(overwrite=False), will fail.\n Figure out what the deal is, or run again with hmmpress(force=True)"
             )
             raise FileNotFoundError
         #  Decompress first if hmm file is gzipped
