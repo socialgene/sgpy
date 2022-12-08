@@ -14,6 +14,7 @@ from operator import attrgetter
 # external dependencies
 from rich.progress import Progress
 import pandas as pd
+from socialgene.hmm.hmmer import HMMER
 
 # internal dependencies
 from socialgene.parsers.sequence_parser import SequenceParser
@@ -24,7 +25,6 @@ from socialgene.base.compare_protein import CompareProtein
 
 from socialgene.neo4j.neo4j import Neo4jQuery
 
-from socialgene.hmm.hmmscan import run_hmmscan
 from socialgene.scoring.scoring import mod_score
 import socialgene.hashing.hashing as hasher
 from socialgene.utils.chunker import chunk_a_list_with_numpy
@@ -196,7 +196,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         files = [tempfile.NamedTemporaryFile() for i in temp2]
         filenames = [i.name for i in files]
         for i in zip(temp2, itertools.repeat(hmm_filepath), filenames):
-            run_hmmscan(
+            HMMER.hmmscan(
                 fasta_path="-",
                 input="\n".join(i[0]).encode(),
                 hmm_filepath=i[1],

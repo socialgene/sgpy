@@ -1,6 +1,7 @@
 import os
 from socialgene.base.socialgene import SocialGene
-from socialgene.hmm.hmmscan import hmmpress
+
+from socialgene.hmm.hmmer import HMMER
 
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -45,7 +46,9 @@ def test_hmmscan():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    hmmpress(hmm_path)
+
+    h = HMMER()
+    h.hmmpress(hmm_path)
     sg_object.annotate_with_hmmscan(
         protein_id_list=protein_id_list, hmm_filepath=hmm_path, cpus=1
     )
