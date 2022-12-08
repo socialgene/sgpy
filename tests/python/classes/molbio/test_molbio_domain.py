@@ -1,7 +1,6 @@
 import pytest
 from socialgene.base.molbio import Domain
 from socialgene.config import env_vars
-from collections import OrderedDict
 
 
 base_dict = {
