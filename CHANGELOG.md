@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/socialgene/sgpy/compare/v2.4.0...v2.4.1) (2022-12-08)
+
+
+### Bug Fixes
+
+* flake ([c8ac549](https://github.com/socialgene/sgpy/commit/c8ac549d3b40fc93356eca6c1737473a6d75a6f1))
+
 ## [2.4.0](https://github.com/socialgene/sgpy/compare/v2.3.1...v2.4.0) (2022-11-17)
 
 
