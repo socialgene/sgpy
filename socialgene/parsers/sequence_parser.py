@@ -5,7 +5,6 @@ from mimetypes import guess_type
 from functools import partial
 from uuid import uuid4
 import zlib
-from collections import OrderedDict
 
 # external dependencies
 from Bio import SeqIO
@@ -25,7 +24,6 @@ def get_seqio_start(seq_feature):
 
 def get_seqio_end(seq_feature):
     return seq_feature.location.end.real
-
 
 
 class GenbankParser:
@@ -92,7 +90,6 @@ class GenbankParser:
             else:
                 product = None
             if seq_feature.type == "source":
-                print(seq_feature.type)
                 try:
                     taxon_list = [
                         i
@@ -115,7 +112,7 @@ class GenbankParser:
                 try:
                     if "translation" in seq_feature.qualifiers:
                         translation = seq_feature.qualifiers["translation"][0]
-                    elif "pseudo" in seq_feature.qualifiers:
+                    elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
                         translation = str(
                             seq_feature.extract(seq_record).seq.translate()
                         )

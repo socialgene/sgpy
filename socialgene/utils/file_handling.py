@@ -7,10 +7,12 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import TextIO
 import tarfile
+import shutil
 
 # external dependencies
 
 # internal dependencies
+from socialgene.utils.logging import log
 
 
 class Compression(Enum):
@@ -31,6 +33,18 @@ def is_compressed(filepath: Path) -> Compression:
             return Compression.xz
         else:
             return Compression.uncompressed
+
+
+def gunzip(filepath: Path) -> None:
+    if is_compressed(filepath).name == "gzip":
+        # remove ".gz" for the new filepath
+        new_hmm_path = Path(filepath.parents[0], filepath.stem)
+        log.info(f"Start decompressing: {str(Path(filepath).stem)}")
+        # open gz, decompress, write back out to new file
+        with gzip.open(filepath, "rb") as f_in:
+            with open(new_hmm_path, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        log.info(f"Finish decompressing: {str(Path(filepath).stem)}")
 
 
 @contextmanager

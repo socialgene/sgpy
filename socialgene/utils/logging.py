@@ -2,19 +2,13 @@
 import logging
 import sys
 
-# external dependencies
-# from rich.logging import RichHandler # try/catch below
-
-# internal dependencies
-
-
 # If {rich} is installed use it, otherwise.... don't
 try:
     from rich.logging import RichHandler
 
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
-        level="NOTSET",
+        level="INFO",
         #  format="%(filename)s/%(module)s/%(funcName)s\::: %(message)s",
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",

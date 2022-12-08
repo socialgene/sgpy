@@ -11,6 +11,63 @@ from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
 
 
+SOURCE_KEYS = [
+    "mol_type",
+    "altitude",
+    "bio_material",
+    "cell_line",
+    "cell_type",
+    "chromosome",
+    "clone",
+    "clone_lib",
+    "collected_by",
+    "collection_date",
+    "country",
+    "cultivar",
+    "culture_collection",
+    "db_xref",
+    "dev_stage",
+    "ecotype",
+    "environmental_sample",
+    "focus",
+    "germline",
+    "haplogroup",
+    "haplotype",
+    "host",
+    "identified_by",
+    "isolate",
+    "isolation_source",
+    "lab_host",
+    "lat_lon",
+    "macronuclear",
+    "map",
+    "mating_type",
+    "metagenome_source",
+    "note",
+    "organelle",
+    "PCR_primers",
+    "plasmid",
+    "pop_variant",
+    "proviral",
+    "rearranged",
+    "segment",
+    "serotype",
+    "serovar",
+    "sex",
+    "specimen_voucher",
+    "strain",
+    "sub_clone",
+    "submitter_seqid",
+    "sub_species",
+    "sub_strain",
+    "tissue_lib",
+    "tissue_type",
+    "transgenic",
+    "type_material",
+    "variety",
+]
+
+
 class ProteinSequence:
     """Class for working with protein sequences"""
 
@@ -156,7 +213,7 @@ class Domain:
 
     def __init__(
         self,
-        exponentialized: bool = False,
+        exponentialized: bool = True,
         hmm_id: str = None,
         env_from: int = None,
         env_to: int = None,
@@ -196,11 +253,11 @@ class Domain:
         self.env_to = int(env_to)
         self.seq_pro_score = round(float(seq_pro_score), 1)
         if exponentialized:
-            self.evalue = int(evalue)
-            self.i_evalue = int(i_evalue)
-        else:
             self.evalue = find_exp(evalue)
             self.i_evalue = find_exp(i_evalue)
+        else:
+            self.evalue = int(evalue)
+            self.i_evalue = int(i_evalue)
         self.domain_bias = round(float(domain_bias), 1)
         self.domain_score = round(float(domain_score), 1)
         self.seq_pro_bias = round(float(seq_pro_bias), 1)
@@ -403,61 +460,7 @@ class Feature(Location):
 class Locus:
     """Container holding a set() of genomic features"""
 
-    SOURCE_KEYS = [
-        "mol_type",
-        "altitude",
-        "bio_material",
-        "cell_line",
-        "cell_type",
-        "chromosome",
-        "clone",
-        "clone_lib",
-        "collected_by",
-        "collection_date",
-        "country",
-        "cultivar",
-        "culture_collection",
-        "db_xref",
-        "dev_stage",
-        "ecotype",
-        "environmental_sample",
-        "focus",
-        "germline",
-        "haplogroup",
-        "haplotype",
-        "host",
-        "identified_by",
-        "isolate",
-        "isolation_source",
-        "lab_host",
-        "lat_lon",
-        "macronuclear",
-        "map",
-        "mating_type",
-        "metagenome_source",
-        "note",
-        "organelle",
-        "PCR_primers",
-        "plasmid",
-        "pop_variant",
-        "proviral",
-        "rearranged",
-        "segment",
-        "serotype",
-        "serovar",
-        "sex",
-        "specimen_voucher",
-        "strain",
-        "sub_clone",
-        "submitter_seqid",
-        "sub_species",
-        "sub_strain",
-        "tissue_lib",
-        "tissue_type",
-        "transgenic",
-        "type_material",
-        "variety",
-    ]
+    SOURCE_KEYS = SOURCE_KEYS
     __slots__ = ["features", "info"]
 
     def __init__(self):
@@ -480,64 +483,8 @@ class Locus:
 
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
-    SOURCE_KEYS = ["mol_type","altitude","bio_material","cell_line","cell_type","chromosome","clone","clone_lib","collected_by","collection_date","country","cultivar","culture_collection","db_xref","dev_stage","ecotype","environmental_sample","focus","germline","haplogroup","haplotype","host","identified_by","isolate","isolation_source","lab_host","lat_lon","macronuclear","map","mating_type","metagenome_source","note","organelle","PCR_primers","plasmid","pop_variant","proviral","rearranged","segment","serotype","serovar","sex","specimen_voucher","strain","sub_clone","submitter_seqid","sub_species","sub_strain","tissue_lib","tissue_type","transgenic","type_material","variety"]
-    __slots__ = ["loci", "taxid", "info"]
 
-    SOURCE_KEYS = [
-        "mol_type",
-        "altitude",
-        "bio_material",
-        "cell_line",
-        "cell_type",
-        "chromosome",
-        "clone",
-        "clone_lib",
-        "collected_by",
-        "collection_date",
-        "country",
-        "cultivar",
-        "culture_collection",
-        "db_xref",
-        "dev_stage",
-        "ecotype",
-        "environmental_sample",
-        "focus",
-        "germline",
-        "haplogroup",
-        "haplotype",
-        "host",
-        "identified_by",
-        "isolate",
-        "isolation_source",
-        "lab_host",
-        "lat_lon",
-        "macronuclear",
-        "map",
-        "mating_type",
-        "metagenome_source",
-        "note",
-        "organelle",
-        "PCR_primers",
-        "plasmid",
-        "pop_variant",
-        "proviral",
-        "rearranged",
-        "segment",
-        "serotype",
-        "serovar",
-        "sex",
-        "specimen_voucher",
-        "strain",
-        "sub_clone",
-        "submitter_seqid",
-        "sub_species",
-        "sub_strain",
-        "tissue_lib",
-        "tissue_type",
-        "transgenic",
-        "type_material",
-        "variety",
-    ]
+    SOURCE_KEYS = SOURCE_KEYS
     __slots__ = ["loci", "taxid", "info"]
 
     def __init__(self):
@@ -560,15 +507,12 @@ class Assembly:
             k: (min([i.start for i in v]), max([i.start for i in v]))
             for k, v in self.loci.items()
         }
-        
-    def create_source_key_dict(self): 
-        return OrderedDict({i: None for i in self.SOURCE_KEYS})
 
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in self.SOURCE_KEYS})
 
 
-class Molbio(Assembly):
+class Molbio:
     """Class for inheriting by SocialGene()"""
 
     def __init__(self):
