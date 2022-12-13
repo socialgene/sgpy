@@ -113,6 +113,9 @@ class HMMParser(IndividualHmmDbParsers):
             "model_length": None,
             "category": None,
             "subcategory": None,
+            "ga_cut": None,
+            "tc_cut": None,
+            "nc_cut": None,
         }
 
     @staticmethod
@@ -134,16 +137,11 @@ class HMMParser(IndividualHmmDbParsers):
         Args:
             line (str): string of text coming from file parse/read
         """
-        if line.startswith("ACC "):
-            self.single_model_dict["acc"] = line.strip().split(maxsplit=1)[1]
-            # don't include in save model (ie not supposed to have a `temp_list.append(line)`)
-        elif line.startswith("NAME "):
-            self.single_model_dict["name"] = line.strip().split(maxsplit=1)[1]
-        elif line.startswith("DESC "):
-            self.single_model_dict["description"] = line.strip().split(maxsplit=1)[1]
-            # don't include in save model (ie not supposed to have a `temp_list.append(line)`)
-        elif line.startswith("DATE "):
-            self.single_model_dict["date"] = line.strip().split(maxsplit=1)[1]
+        meta = ["ACC", "NAME", "DESC", "DATE", "GA", "NC", "TC"]
+        meta = [f"{i} " for i in meta]
+        meta = [i for i in meta if line.startswith(i)][0]
+        if meta:
+            self.single_model_dict[meta] = line.strip().split(maxsplit=1)[1]
             # don't include in save model (ie not supposed to have a `temp_list.append(line)`)
         else:
             # Create a list of lines that correspond to just the model part of the profile
