@@ -9,7 +9,7 @@ from socialgene.neo4j.sg_modules import parse_hmmlist_input
 
 
 parser = argparse.ArgumentParser(
-    description="Write the header files for neo4j admin import"
+    description="Import socialgene data into a Neo4j database using the neo4j admin import tool"
 )
 
 parser.add_argument(
