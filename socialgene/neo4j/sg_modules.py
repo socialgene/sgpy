@@ -21,6 +21,7 @@ hmm_sources = [
 
 
 def parse_hmmlist_input(input):
+    # filter input hmmlist through allowlist (if "all" get all hmms but make sure local isn't in the list)
     if input == "all" or "all" in input:
         temp = [i for i in hmm_sources if i != "local"]
         return temp
