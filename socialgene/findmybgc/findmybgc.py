@@ -12,7 +12,7 @@ from socialgene.base.molbio import Protein
 
 
 def search_domain_list(domain_list: List):
-    return Neo4jQuery().query_neo4j(
+    return Neo4jQuery.query_neo4j(
         cypher_name="find_similar_bgc4",
         param=domain_list,
     )
@@ -38,7 +38,7 @@ class SingleProteinSearch(SocialGene):
         self.query_targets[protein_object.hash_id] = set()
         targets = [
             i["target"]
-            for i in Neo4jQuery().query_neo4j(
+            for i in Neo4jQuery.query_neo4j(
                 cypher_name="search_a_single_protein",
                 param=protein_object.get_domain_vector(only_unique=True),
             )

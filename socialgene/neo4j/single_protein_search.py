@@ -20,7 +20,7 @@ def find_similar_proteins(sg_prot: List) -> Dict:
     log.info(
         "Searching the Neo4j database for proteins with similarity to the input's HMMs"
     )
-    temp = Neo4jQuery().query_neo4j(
+    temp = Neo4jQuery.query_neo4j(
         cypher_name="find_similar_bgc3",
         param=[
             {
@@ -60,7 +60,7 @@ def query_neo4j_for_related_proteins(protein_dict: Dict) -> List:
     Returns:
         List: [{"query":input_protein_id, "target":["db_protein_id"]}]
     """
-    return Neo4jQuery().query_neo4j(
+    return Neo4jQuery.query_neo4j(
         cypher_name="find_similar_bgc3",
         param=[
             {"prot": k, "domains": v.get_domain_vector(only_unique=True)}
