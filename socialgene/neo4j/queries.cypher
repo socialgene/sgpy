@@ -323,3 +323,10 @@ MATCH (p1), (p2)
 WHERE p1.id = input[0] AND p2.id = input[1]
 MERGE (p1)-[:SCORES { l1: input[2], l2: input[3], lev: input[4], jacc: input[5], mod: input[6] }]-(p2)
 
+// Name: get_mmseqs_cluster_members
+// Description: Retreive all proteins connected to an MMseqs2 cluster representative, self hits are removed
+// Param: []
+WITH $param AS input
+MATCH (p1:protein)-[:MMSEQS2]->(p2:protein)
+WHERE p1.id IN input AND p1 <> p2
+RETURN p1.id AS cluster_representative, p2.id AS member;
