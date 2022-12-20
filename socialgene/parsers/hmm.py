@@ -43,7 +43,8 @@ class IndividualHmmDbParsers:
         if temp_split[2] == "modules":
             if temp_split[3] == "nrps_pks":
                 category = temp_split[3]
-                subcategory = temp_split[6]
+                if temp_split[6]:
+                    subcategory = temp_split[6]
             elif temp_split[3] in ["sactipeptides", "thiopeptides", "lanthipeptides"]:
                 if len(temp_split) == 7:
                     category = temp_split[3]
