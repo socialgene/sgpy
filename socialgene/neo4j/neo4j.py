@@ -104,24 +104,31 @@ class Neo4jQuery:
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     @staticmethod
-    def query_neo4j(cypher_name: str, param: Any):
+    def query_neo4j(cypher_name: str =None, cypher: str=None, param: Any=None, rettype="data",*args, **kwargs):
         """Run a provided cypher query on {param}
 
         Args:
-            cypher_name (str): Neo4j Cypher query
-            param (Any): paramter passed to Neo4j query, type depends on query
-
+            cypher_name (str, optional): Neo4j Cypher query. Defaults to None.
+            cypher (str, optional): Single string of Cypher script.  Defaults to None.
+            param (Any, optional): paramter passed to Neo4j query, type depends on query. Defaults to None.
+            rettype (str, optional): output function. For available methods see (https://neo4j.com/docs/api/python-driver/current/api.html#result). Defaults to "data"
+            args/kwargs (Any): pas additional argument(s) to the rettype method
         Returns:
             Any: type depends on query
         """
         # See queries.py
         resolved_query_dict = import_queries()
         # grab the the neo4j connection
+        if cypher_name:
+            query=resolved_query_dict[cypher_name]["query"]
+        elif cypher:
+            query=cypher
         with GraphDriver() as db:
             # make the query against the db
-            results = db.read_transaction(
-                lambda tx: tx.run(
-                    resolved_query_dict[cypher_name]["query"], param=param
-                ).data()
-            )
-        return results
+            results = db.run(
+                    query, param=param
+                )
+            return getattr(results, rettype)(*args, **kwargs)
+        
+       
+       

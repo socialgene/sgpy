@@ -44,16 +44,16 @@ MMSEQS_OUT_COLUMNS = {
 }
 
 
-def search(
-    fasta_path,
-    target_database,
-):
+def search(fasta_path, target_database, argstring=""):
     """Search an input fasta file against a target database with external MMseqs2 program
 
-    Args:
-        fasta_path (str): Path to fasta file
-        target_database (str): Path to MMseqs2 database
-
+        Args:
+            fasta_path (str): Path to fasta file
+            target_database (str): Path to MMseqs2 database
+            argstring (str): additonal arguments to pass to mmseqs search, as a string
+    =
+        Returns:
+            pandas_df: dataframe of the mmseqs search result
     """
     with tempfile.TemporaryDirectory() as tmpdirname:
         outpath = os.path.join(tmpdirname, "result.m8")
@@ -67,8 +67,8 @@ def search(
             "--format-mode",
             "0",
         ]
-        cmd = " ".join(command_list)
-        logging.info(cmd)
+        if argstring:
+            command_list.extend(argstring)
         mes = run_subprocess(
             command_list=command_list, check=False, shell=False, capture_output=True
         )

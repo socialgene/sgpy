@@ -216,7 +216,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def fill_locus_assembly_from_db(self):
         """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
-        for result in Neo4jQuery().query_neo4j(
+        for result in Neo4jQuery.query_neo4j(
             cypher_name="retrieve_protein_locations",
             param=list(self.proteins.keys()),
         ):
@@ -238,7 +238,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def get_db_protein_info(self):
         """Pull name (original identifier) and description of proteins from Neo4j"""
-        for result in Neo4jQuery().query_neo4j(
+        for result in Neo4jQuery.query_neo4j(
             cypher_name="get_protein_info",
             param=list(self.proteins.keys()),
         ):
