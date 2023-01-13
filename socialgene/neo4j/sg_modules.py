@@ -479,7 +479,6 @@ class SocialgeneModules:
             "base": [
                 "contains",
                 "assembles_to",
-                "assembly_to_taxid",
             ],
             "assembly_to_taxid": ["assembly_to_taxid"],
             "base_hmm": ["annotates"],
