@@ -480,7 +480,6 @@ class SocialgeneModules:
                 "contains",
                 "assembles_to",
             ],
-            "assembly_to_taxid": ["assembly_to_taxid"],
             "base_hmm": ["annotates"],
             "hmms": [],
             "tigrfam": [
@@ -489,9 +488,7 @@ class SocialgeneModules:
                 "subrole_ann",
                 "go_ann",
             ],
-            "ncbi_taxonomy": [
-                "belongs_to",
-            ],
+            "ncbi_taxonomy": ["belongs_to", "assembly_to_taxid"],
             "paired_omics": ["cluster_to_file", "molecular_network", "metabo"],
         }
         self.nodes["hmms"].extend(hmm_sources)
