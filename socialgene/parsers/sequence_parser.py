@@ -123,9 +123,9 @@ class GenbankParser:
                             f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
                         )
                     hash_id = self.add_protein(
-                        description=product,
-                        other_id=protein_id,
-                        sequence=translation,
+                        description=product.strip(),
+                        other_id=protein_id.strip(),
+                        sequence=translation.strip(),
                     )
                     if not keep_sequence:
                         self.proteins[hash_id].sequence = None
@@ -232,26 +232,29 @@ class FastaParser:
         # if not appending, reset self.records
         record_counter = 0
         count_proteins_in_file = 0
-        try:
-            self.add_assembly(id=input.stem)
-        except Exception:
-            self.add_assembly(id=str(uuid4()))
-
         input = Path(input)
+        try:
+            assembly_id = input.stem
+        except Exception:
+            assembly_id = str(uuid4())
         encoding = guess_type(input)[1]
         if encoding == "gzip":
             _open = partial(gzip.open, mode="rt")
         else:
             _open = open
         with _open(input) as handle:
+            self.add_assembly(id=assembly_id)
+            self.assemblies[assembly_id].add_locus(id=assembly_id)
             for seq_record in SeqIO.parse(handle, "fasta"):
                 # probably could use some more defensive programming here
-                self.add_protein(
+                hash_id = self.add_protein(
                     description=seq_record.description,
                     other_id=seq_record.id,
                     sequence=str(seq_record.seq),
                 )
-
+                self.assemblies[assembly_id].loci[assembly_id].add_feature(
+                    type="protein", id=hash_id, start=0, end=0, strand=0
+                )
                 record_counter += 1
                 count_proteins_in_file += 1
         log.info(f"Read {count_proteins_in_file} proteins from {input}")

@@ -36,16 +36,6 @@ parser.add_argument(
 )
 
 
-def simple_parse(input_pathlist):
-    sg_object = SocialGene()
-    for input_path in input_pathlist:
-        try:
-            sg_object.parse(input_path, keep_sequence=False)
-        except Exception as e:
-            log.error(e)
-    return sg_object
-
-
 def export_tables(sequence_files_glob, outdir, n_fasta_splits):
     outdir = Path(outdir)
     socialgene_object = SocialGene()
