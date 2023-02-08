@@ -516,10 +516,10 @@ class Molbio:
     """Class for inheriting by SocialGene()"""
 
     def __init__(self):
-        pass
+        pass # TODO: ?
 
-        self.assemblies = {}
-        self.proteins = {}
+        self.assemblies = {}  # TODO: ?
+        self.proteins = {} # TODO: ?
 
     def get_all_protein_hashes(self):
         """Return a list of all proteins hash_ids
