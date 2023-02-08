@@ -37,14 +37,3 @@ class Neo4j_Module:
             self.target_extension == other.target_extension
             and self.target_extension == other.target_extension
         )
-
-
-class Modules:
-    nodes = set()
-    relationships = set()
-
-    def add_node(self, **kwargs):
-        self.nodes.add(Neo4j_Module(**kwargs))
-
-    def add_relationship(self, **kwargs):
-        self.relationships.add(Neo4j_Module(**kwargs))
