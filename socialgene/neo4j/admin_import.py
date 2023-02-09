@@ -147,6 +147,14 @@ class Neo4jAdminImport:
         sg_mod_object = SocialgeneModules()
         header_object = Neo4jImportData()
         # retrieve the nodes and relationships that correspond to the input sg_modules
+
+        #
+        #
+        # IMPLEMENTING node_and_rel_dict_by_module_name HERE
+        #
+        #
+        #
+
         reduced_dict = {
             "nodes": sg_mod_object.filter_nodes(input_sg_modules),
             "relationships": sg_mod_object.filter_relationships(input_sg_modules),

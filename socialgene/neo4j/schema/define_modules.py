@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Single_Group:
+class Single_Module:
     """Class for keeping track of an item in inventory."""
 
     module_id: str
@@ -11,13 +11,13 @@ class Single_Group:
     relationships: List[str]
 
 
-class ModuleGroups:
+class Modules:
     # These are used in Nextflow, here: https://github.com/socialgene/sgnf/blob/main/subworkflows/local/sg_modules.nf
     # They simply group the different files/inputs into hopefully-sensible "modules"
     # It could be coded differently, but this way will hopefully make it easier for someone to add on a group
-
-    def add_module(self, module_id: str, nodes: List[str], relationships: List[str]):
-        self.modules.update({module_id: Single_Group(module_id, nodes, relationships)})
+    def add_module(self, **kwargs):
+        _module_id = kwargs.get("module_id")
+        self.modules.update({_module_id: Single_Module(**kwargs)})
 
     def __init__(
         self,
@@ -37,9 +37,9 @@ class ModuleGroups:
             ],
         )
         self.add_module(
-            module_id="hmms",
-            nodes=[],
-            relationships=[],
+            module_id="base_hmm",
+            nodes=["hmm"],
+            relationships=["annotates"],
         )
         self.add_module(
             module_id="ncbi_taxonomy",

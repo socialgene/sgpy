@@ -1,45 +1,17 @@
-from socialgene.neo4j.socialgene_modules import SocialGeneModules
 from socialgene.utils.logging import log
 from pathlib import Path
 import csv
+
+
+bruv
 
 
 # `SocialgeneModules` groups `Neo4jImportData`
 # `Neo4jImportData` defines information and structure about data that will be imported into Neo4j
 
 
-hmm_sources = [
-    "pfam",
-    "antismash",
-    "tigrfam",
-    "amrfinder",
-    "prism",
-    "resfams",
-    "bigslice",
-    "classiphage",
-    "virus_orthologous_groups",
-    "local",
-]
-
-
-def parse_hmmlist_input(input):
-    # Filter hmm databases based on input list of hmm database names or "all"
-    # accept "all" as a list or string
-    if input == "all" or "all" in input:
-        temp = [i for i in hmm_sources if i != "local"]
-        return temp
-    else:
-        temp = [i for i in input if i in hmm_sources]
-        return temp
-
-
 class Neo4jImportData:
-    def __init__(
-        self,
-    ):
-        self.nodes = {}
-
-        self.relationships = {}
+    pass
 
 
 class SocialgeneModules:
@@ -47,40 +19,8 @@ class SocialgeneModules:
         self,
     ):
         # if adding both a node and relationship for the same module, give it the same name in both dicts
-        self.node_groups = {
-            "base": [
-                "parameters",
-                "assembly",
-                "nucleotide",
-                "protein",
-            ],
-            "hmms": [],
-            "ncbi_taxonomy": ["taxid"],
-            "base_hmm": ["hmm"],
-            "tigrfam": [
-                "goterm",
-                "tigrfam_mainrole",
-                "tigrfam_subrole",
-                "tigrfam_role",
-            ],
-            "paired_omics": ["mz_cluster_index", "mz_source_file"],
-        }
-        self.relationship_groups = {
-            "base": [
-                "contains",
-                "assembles_to",
-            ],
-            "base_hmm": ["annotates"],
-            "hmms": [],
-            "tigrfam": [
-                "mainrole_ann",
-                "role_ann",
-                "subrole_ann",
-                "go_ann",
-            ],
-            "ncbi_taxonomy": ["belongs_to", "assembly_to_taxid"],
-            "paired_omics": ["cluster_to_file", "molecular_network", "metabo"],
-        }
+        self.node_groups = {"base": ""}
+        self.relationship_groups = {"base": ""}
 
         # enable all node and relationships as individual sgmodules options
         for i in Neo4jImportData().nodes.keys():

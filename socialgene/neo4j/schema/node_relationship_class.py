@@ -2,7 +2,7 @@ from typing import List
 from socialgene.utils.logging import log
 
 
-class Neo4j_Module:
+class Neo4jElement:
     def __init__(
         self,
         neo4j_label: str,
@@ -28,12 +28,16 @@ class Neo4j_Module:
         self.header = header
 
     def __hash__(self):
-        return hash((self.target_subdirectory, self.target_extension))
+        """Node or relationship data is defined as the unique combination of:
+        neo4j LABEL and the file that LABEL data will be imported from
+        """
+        return hash((self.neo4j_label, self.target_subdirectory, self.target_extension))
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
-            self.target_subdirectory == other.target_subdirectory
+            self.neo4j_label == other.neo4j_label
+            and self.target_subdirectory == other.target_subdirectory
             and self.target_extension == other.target_extension
         )
