@@ -4,8 +4,6 @@ from pathlib import Path
 import csv
 
 
-# Populates
-
 # `SocialgeneModules` groups `Neo4jImportData`
 # `Neo4jImportData` defines information and structure about data that will be imported into Neo4j
 
@@ -42,34 +40,6 @@ class Neo4jImportData:
         self.nodes = {}
 
         self.relationships = {}
-        # create hmm source node/relationship headers
-        for i in hmm_sources:
-            self.nodes[i] = {
-                "neo4j_label": i,
-                "header_filename": f"{i}_hmms_out.header",
-                "target_subdirectory": "hmm_tsv_parse",
-                "target_extension": f"{i}_hmms_out",
-                "header": [
-                    ":IGNORE",
-                    "accession",
-                    f"id:ID({i})",
-                    "description",
-                    "category",
-                ],
-            }
-            self.relationships[i] = {
-                "neo4j_label": "SOURCE_DB",
-                "header_filename": f"{i}_hmms_out_relationships.header",
-                "target_subdirectory": "hmm_tsv_parse",
-                "target_extension": f"{i}_hmms_out",
-                "header": [
-                    ":START_ID(hmm)",
-                    ":IGNORE",
-                    f":END_ID({i})",
-                    ":IGNORE",
-                    ":IGNORE",
-                ],
-            }
 
 
 class SocialgeneModules:
@@ -77,7 +47,7 @@ class SocialgeneModules:
         self,
     ):
         # if adding both a node and relationship for the same module, give it the same name in both dicts
-        self.nodes = {
+        self.node_groups = {
             "base": [
                 "parameters",
                 "assembly",
@@ -95,7 +65,7 @@ class SocialgeneModules:
             ],
             "paired_omics": ["mz_cluster_index", "mz_source_file"],
         }
-        self.relationships = {
+        self.relationship_groups = {
             "base": [
                 "contains",
                 "assembles_to",
@@ -111,8 +81,7 @@ class SocialgeneModules:
             "ncbi_taxonomy": ["belongs_to", "assembly_to_taxid"],
             "paired_omics": ["cluster_to_file", "molecular_network", "metabo"],
         }
-        self.nodes["hmms"].extend(hmm_sources)
-        self.relationships["hmms"].extend(hmm_sources)
+
         # enable all node and relationships as individual sgmodules options
         for i in Neo4jImportData().nodes.keys():
             if i not in self.nodes:
@@ -122,16 +91,9 @@ class SocialgeneModules:
                 self.relationships[i] = [i]
         self.sg_modules = {"nodes": self.nodes, "relationships": self.relationships}
 
-    def node_keylist(self):
-        return list(self.nodes.keys())
-
-    def relationship_keylist(self):
-        return list(self.relationships.keys())
-
     @staticmethod
     def _filter(input_sg_modules, input_dict):
         temp = {k: v for k, v in input_dict.items() if k in input_sg_modules}
-        # had warning for user if node/relationship is missing, but can't since not all groups have a node or vice versa
         return temp
 
     def filter_nodes(self, input_sg_modules):

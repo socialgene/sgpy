@@ -44,5 +44,8 @@ for i in hmm_sources:
     )
 
 
-class Modules(Nodes, Relationships):
-    pass
+class Modules(Relationships, Nodes):
+    def __init__(
+        self,
+    ):
+        super().__init__()

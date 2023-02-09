@@ -17,7 +17,7 @@ class Neo4j_Module:
         Args:
             neo4j_label (str): this will become the Neo4j node or relationshipLABEL
             header_filename (str): the name of the header file used for Neo4j admin import (basically column names, but not quite)
-            ttarget_extensionarget_subdirectory (str): subdirectory the import data can be found in  (e.g. for non-redundant protein nodes it would be 'protein_info' because data is within: `$outdir/socialgene_neo4j/import/protein_info`)
+            target_subdirectory (str): subdirectory the import data can be found in  (e.g. for non-redundant protein nodes it would be 'protein_info' because data is within: `$outdir/socialgene_neo4j/import/protein_info`)
             target_extension (str): extension that is unique to the wanted data files (scoped within target_subdirectory)
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
         """
@@ -28,12 +28,12 @@ class Neo4j_Module:
         self.header = header
 
     def __hash__(self):
-        return hash((self.target_extension, self.target_extension))
+        return hash((self.target_subdirectory, self.target_extension))
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
-            self.target_extension == other.target_extension
+            self.target_subdirectory == other.target_subdirectory
             and self.target_extension == other.target_extension
         )
