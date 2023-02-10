@@ -25,8 +25,20 @@ class SocialgeneModules(Relationships, Nodes, Modules):
         self,
     ):
         super().__init__()
+
+    def add_hmms(self, hmm_list):
         # auto-generate hmm database nodes and relationship modules
-        for i in hmm_sources:
+        _hmms = []
+        if hmm_list == "all":
+            _hmms = hmm_sources
+        else:
+            _hmms = (i for i in hmm_list if i in hmm_sources)
+        self.add_module(
+            module_id="internal_hmm",
+            nodes=[],
+            relationships=["SOURCE_DB"],
+        )
+        for i in _hmms:
             self.add_node(
                 neo4j_label=i,
                 header_filename=f"{i}_hmms_out.header",
@@ -53,11 +65,7 @@ class SocialgeneModules(Relationships, Nodes, Modules):
                     ":IGNORE",
                 ],
             )
-            self.add_module(
-                module_id=i,
-                nodes=[i],
-                relationships=["SOURCE_DB"],
-            )
+            self.modules.nodes.append(i)
 
     def _get_by_label(self, x, y):
         return (i for i in x if i.neo4j_label in y)
