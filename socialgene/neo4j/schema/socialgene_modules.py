@@ -60,7 +60,7 @@ class SocialgeneModules(Relationships, Nodes, Modules):
     def get_relationships(self, input):
         return self._get_by_label(x=self.relationships, y=input)
 
-    def node_and_rel_dict_by_module_name(
+    def make_node_and_rel_dict_by_module_name(
         self, module_list: List[str]
     ) -> Dict[str, Set[Neo4jElement]]:
         """Take a list fo modules and return a dictionary containing a subset of node and relationship Neo4jElements

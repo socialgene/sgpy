@@ -7,9 +7,9 @@ from pathlib import Path
 
 # internal dependencies
 from socialgene.config import env_vars
+from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.utils.run_subprocess import run_subprocess
 from socialgene.utils.logging import log
-from socialgene.neo4j.sg_modules import SocialgeneModules, Neo4jImportData
 
 
 class Neo4jAdminImport:
@@ -145,42 +145,25 @@ class Neo4jAdminImport:
         """
         self.node_relationship_argument_list = []
         sg_mod_object = SocialgeneModules()
-        header_object = Neo4jImportData()
+
         # retrieve the nodes and relationships that correspond to the input sg_modules
 
-        #
-        #
-        # IMPLEMENTING node_and_rel_dict_by_module_name HERE
-        #
-        #
-        #
+        # n_r_dict = {'nodes': {<socialgene.neo4j.schema.node_relationship_class.Neo4jElement object at 0x7f00cb7fddb0>}, 'relationships': {<socialgene.neo4j.schema.node_relationship_class.Neo4jElement object at 0x7f00cb7fddb0>}}
+        n_r_dict = sg_mod_object.make_node_and_rel_dict_by_module_name(
+            module_list=input_sg_modules
+        )
 
-        reduced_dict = {
-            "nodes": sg_mod_object.filter_nodes(input_sg_modules),
-            "relationships": sg_mod_object.filter_relationships(input_sg_modules),
-        }
-        for rd_key, rd_value in reduced_dict.items():
-            for sg_mod_key, header_keys in rd_value.items():
-                if sg_mod_key == "hmms":
-                    keylist = [i for i in header_keys if i in hmmlist]
-                    keylist.extend(rd_value["base_hmm"])
-                else:
-                    keylist = header_keys
-                for i in keylist:
-                    dict_elem = getattr(header_object, rd_key)[i]
-                    label = dict_elem["neo4j_label"]
-                    header_filename = dict_elem["header_filename"]
-                    target_subdirectory = dict_elem["target_subdirectory"]
-                    target_extension = dict_elem["target_extension"]
-                    self.node_relationship_argument_list.append(
-                        self._single_arg_string_builder(
-                            label=label,
-                            header_filename=header_filename,
-                            target_subdirectory=target_subdirectory,
-                            target_extension=target_extension,
-                            type=rd_key,
-                        )
+        for k, v in n_r_dict.items():
+            for neo4j_element in v:
+                self.node_relationship_argument_list.append(
+                    self._single_arg_string_builder(
+                        label=neo4j_element.neo4j_label,
+                        header_filename=neo4j_element.header_filename,
+                        target_subdirectory=neo4j_element.target_subdirectory,
+                        target_extension=neo4j_element.target_extension,
+                        type=k,
                     )
+                )
 
     def _check_files(self):
         missing_input_headers = []
