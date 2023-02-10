@@ -5,7 +5,7 @@ import argparse
 
 # internal dependencies
 from socialgene.neo4j.admin_import import Neo4jAdminImport
-from socialgene.neo4j.sg_modules import parse_hmmlist_input
+from socialgene.neo4j.schema.socialgene_modules import parse_hmmlist_input
 
 
 parser = argparse.ArgumentParser(
