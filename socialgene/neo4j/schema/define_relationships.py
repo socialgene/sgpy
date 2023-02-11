@@ -1,20 +1,8 @@
-from socialgene.neo4j.schema.node_relationship_class import Neo4jElement
-
-# See Modules.add_node() for a description of what's going on here
-# Add a node by copying and modifying a Modules().add_node() below
+from socialgene.neo4j.schema.node_relationship_class import NR
 
 
-class Relationships:
-    def add_relationship(self, **kwargs):
-        self.relationships.add(Neo4jElement(**kwargs))
-
-    def __init__(
-        self,
-    ):
-        super().__init__()
-        # For "set()" info see the "__hash__" function in the Neo4jElement() class
-        self.relationships = set()
-        self._import()
+class Relationships(NR):
+    def _import(self):
 
         self.add_relationship(
             neo4j_label="ANNOTATES",
