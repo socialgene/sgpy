@@ -44,13 +44,14 @@ class SocialgeneModules(Modules):
             module_list = [module_list]
 
         for module in module_list:
-            module_def = self.modules.get(module)
-            for node in self.all_nodes.get_nodes(module_def.nodes):
-                self.nodes.add(node)
-            for rel in list(
-                self.all_relationships.get_relationships(module_def.relationships)
-            ):
-                self.relationships.add(rel)
+            if module in self.modules:
+                module_def = self.modules.get(module)
+                for node in self.all_nodes.get_nodes(module_def.nodes):
+                    self.nodes.add(node)
+                for rel in list(
+                    self.all_relationships.get_relationships(module_def.relationships)
+                ):
+                    self.relationships.add(rel)
 
     def _writer(self, outdir, header, header_filename):
         outpath = Path(outdir, header_filename)
