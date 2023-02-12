@@ -148,7 +148,7 @@ class Neo4jAdminImport(SocialgeneModules):
         self.add_hmms(hmm_list)
 
     def build_nodes_and_relationships_argument_list(self):
-        for node in self.node_relationship_argument_list:
+        for node in self.nodes:
             self.node_relationship_argument_list.append(
                 self._single_arg_string_builder(
                     label=node.neo4j_label,
@@ -158,7 +158,7 @@ class Neo4jAdminImport(SocialgeneModules):
                     type="node",
                 )
             )
-        for rel in self.node_relationship_argument_list:
+        for rel in self.relationship:
             self.node_relationship_argument_list.append(
                 self._single_arg_string_builder(
                     label=rel.neo4j_label,

@@ -5,8 +5,8 @@ import argparse
 
 # internal dependencies
 from socialgene.neo4j.admin_import import Neo4jAdminImport
-from socialgene.neo4j.schema.socialgene_modules import parse_hmmlist_input
 
+from socialgene.neo4j.schema.define_hmmlist import Hmms
 
 parser = argparse.ArgumentParser(
     description="Write the header files for neo4j admin import"
@@ -102,7 +102,7 @@ def main():
     else:
         gid = args.gid
 
-    parsed_hmmlist = parse_hmmlist_input(args.hmmlist)
+    parsed_hmmlist = Hmms.parse_hmmlist_input(args.hmmlist)
 
     temp = Neo4jAdminImport(
         neo4j_top_dir=args.neo4j_top_dir,

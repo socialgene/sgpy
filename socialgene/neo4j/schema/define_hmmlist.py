@@ -49,13 +49,14 @@ class Hmms(NR):
     def get_relationships(self, source):
         return (i for i in self.relationships if i.target_extension.startswith(source))
 
-
-def parse_hmmlist_input(input):
-    # Filter hmm databases based on input list of hmm database names or "all"
-    # accept "all" as a list or string
-    if input == "all" or "all" in input:
-        temp = [i for i in hmm_sources if i != "local"]
-        return temp
-    else:
-        temp = [i for i in input if i in hmm_sources]
-        return temp
+    @staticmethod
+    def parse_hmmlist_input(input):
+        # Filter hmm databases based on input list of hmm database names or "all"
+        # accept "all" as a list or string
+        if isinstance(hmm_list, str):
+            hmm_list = [hmm_list]
+        if "all" in input:
+            _hmms = hmm_sources
+        else:
+            _hmms = [i for i in input if i in hmm_sources]
+        return _hmms

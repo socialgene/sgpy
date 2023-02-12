@@ -1,11 +1,10 @@
 import csv
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import List
 from socialgene.neo4j.schema.define_nodes import Nodes
 from socialgene.neo4j.schema.define_relationships import Relationships
-from socialgene.neo4j.schema.define_hmmlist import Hmms, hmm_sources
+from socialgene.neo4j.schema.define_hmmlist import Hmms
 from socialgene.neo4j.schema.define_modules import Modules
-from socialgene.neo4j.schema.node_relationship_class import Neo4jElement
 from socialgene.utils.logging import log
 
 
@@ -21,14 +20,12 @@ class SocialgeneModules(Modules):
         self.all_relationships = Relationships()
 
     def add_hmms(self, hmm_list):
-        _hmms = []
-        if isinstance(hmm_list, str):
-            hmm_list = [hmm_list]
-        #  if 'all', use all hmms, otherwise filter based on input list
-        if "all" in hmm_list:
-            _hmms = hmm_sources
-        else:
-            _hmms = [i for i in hmm_list if i in hmm_sources]
+        """Take a list of the hmm sources and add the corresponding nodes/relationships
+
+        Args:
+            hmm_list (List[str]): list of HMM sources (e.g. ["antismash", "pfam"])
+        """
+        _hmms = self.all_hmms.parse_hmmlist_input(hmm_list)
         # add nodes and relationships
         if _hmms:
             for node in self.all_hmms.get_nodes(_hmms):
@@ -38,6 +35,11 @@ class SocialgeneModules(Modules):
                     self.relationships.add(rel)
 
     def add_modules(self, module_list: List[str]):
+        """Take a list of modules and add the corresponding nodes/relationships
+
+        Args:
+            module_list (List[str]): list of socialgene modules (e.g. ["base", "protein"])
+        """
         if isinstance(module_list, str):
             module_list = [module_list]
 
@@ -50,32 +52,8 @@ class SocialgeneModules(Modules):
             ):
                 self.relationships.add(rel)
 
-    def make_node_and_rel_dict_by_module_name(
-        self,
-        module_list: List[str],
-        hmm_list: List[str],
-    ) -> Dict[str, Set[Neo4jElement]]:
-        """Take a list fo modules and return a dictionary containing a subset of node and relationship Neo4jElements
-
-        Args:
-            module_list (List[str]): list of socialgene modules (e.g. ["base", "protein"])
-            hmm_list (List[str]): list of HMM sources (e.g. ["antismash", "pfam"])
-
-        Returns:
-            Dict[str, Set[Neo4jElement]]: dictionary containing a subset of node and relationship Neo4jElements
-        """
-        to_return = {"nodes": set(), "relationships": set()}
-
-        for module in module_list:
-            module_def = self.modules.get(module)
-            for n in self.get_nodes(module_def.nodes):
-                to_return["nodes"].add(n)
-            for r in self.get_nodes(module_def.nodes):
-                to_return["relationships"].add(r)
-        return to_return
-
-    def _writer(outdir, header_dict):
-        outpath = Path(outdir, f"{header_dict['header_filename']}")
+    def _writer(outdir, header, header_filename):
+        outpath = Path(outdir, header_filename)
         with open(outpath, "w") as tsv_output_con:
             tsv_writer = csv.writer(
                 tsv_output_con,
@@ -83,15 +61,13 @@ class SocialgeneModules(Modules):
                 quotechar='"',
                 quoting=csv.QUOTE_MINIMAL,
             )
-            tsv_writer.writerow(header_dict["header"])
-            log.info(f"\tWriting {header_dict['header_filename']} to: {outpath}")
+            tsv_writer.writerow(header)
+            log.info(f"\tWriting {header_filename} to: {outpath}")
 
-
-def write_neo4j_headers(self, module_list: list, hmm_list: list, outdir: str):
-    reduced_dict = self.make_node_and_rel_dict_by_module_name(
-        module_list=module_list, hmm_list=hmm_list
-    )
-    for rd_key, rd_value in reduced_dict.items():
-        for sg_mod_key, header_keys in rd_value.items():
-            for i in keylist:
-                _writer(outdir, getattr(header_object, rd_key)[i])
+    def write_neo4j_headers(self, outdir: str):
+        for node in self.nodes:
+            self._writer(
+                outdir, header=node.header, header_filename=node.header_filename
+            )
+        for rel in self.relationships:
+            self._writer(outdir, header=rel.header, header_filename=rel.header_filename)
