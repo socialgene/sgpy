@@ -1,4 +1,4 @@
-from socialgene.neo4j.schema.node_relationship_class import NR, Neo4jElement
+from socialgene.neo4j.schema.node_relationship_class import NR
 
 
 hmm_sources = [
@@ -47,9 +47,7 @@ class Hmms(NR):
             )
 
     def get_relationships(self, source):
-        return (
-            i for i in self.relationships if i.target_subdirectory.startswith(source)
-        )
+        return (i for i in self.relationships if i.target_extension.startswith(source))
 
 
 def parse_hmmlist_input(input):

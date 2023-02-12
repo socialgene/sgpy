@@ -7,7 +7,6 @@ from socialgene.neo4j.schema.define_hmmlist import Hmms, hmm_sources
 from socialgene.neo4j.schema.define_modules import Modules
 from socialgene.neo4j.schema.node_relationship_class import Neo4jElement
 from socialgene.utils.logging import log
-from rich import inspect
 
 
 class SocialgeneModules(Modules):
@@ -20,12 +19,17 @@ class SocialgeneModules(Modules):
         self.all_hmms = Hmms()
         self.all_nodes = Nodes()
         self.all_relationships = Relationships()
+
     def add_hmms(self, hmm_list):
         _hmms = []
-        if hmm_list == "all" or hmm_list == ["all"]:
+        if isinstance(hmm_list, str):
+            hmm_list = [hmm_list]
+        #  if 'all', use all hmms, otherwise filter based on input list
+        if "all" in hmm_list:
             _hmms = hmm_sources
         else:
-            _hmms = (i for i in hmm_list if i in hmm_sources)
+            _hmms = [i for i in hmm_list if i in hmm_sources]
+        # add nodes and relationships
         if _hmms:
             for node in self.all_hmms.get_nodes(_hmms):
                 self.nodes.add(node)
@@ -33,10 +37,18 @@ class SocialgeneModules(Modules):
                 for rel in self.all_hmms.get_relationships(source):
                     self.relationships.add(rel)
 
+    def add_modules(self, module_list: List[str]):
+        if isinstance(module_list, str):
+            module_list = [module_list]
 
-    def get_modules(self, module_list: List[str]):
-
-
+        for module in module_list:
+            module_def = self.modules.get(module)
+            for node in self.all_nodes.get_nodes(module_def.nodes):
+                self.nodes.add(node)
+            for rel in list(
+                self.all_relationships.get_relationships(module_def.relationships)
+            ):
+                self.relationships.add(rel)
 
     def make_node_and_rel_dict_by_module_name(
         self,

@@ -15,7 +15,7 @@ class Modules:
     # These are used in Nextflow, here: https://github.com/socialgene/sgnf/blob/main/subworkflows/local/sg_modules.nf
     # They simply group the different files/inputs into hopefully-sensible "modules"
     # It could be coded differently, but this way will hopefully make it easier for someone to add on a group
-    def add_module(self, **kwargs):
+    def _add_module(self, **kwargs):
         _module_id = kwargs.get("module_id")
         self.modules.update({_module_id: Single_Module(**kwargs)})
 
@@ -23,7 +23,7 @@ class Modules:
         self,
     ):
         self.modules = {}
-        self.add_module(
+        self._add_module(
             module_id="base",
             nodes=[
                 "parameters",
@@ -32,21 +32,21 @@ class Modules:
                 "protein",
             ],
             relationships=[
-                "contains",
-                "assembles_to",
+                "CONTAINS",
+                "ASSEMBLES_TO",
             ],
         )
-        self.add_module(
+        self._add_module(
             module_id="base_hmm",
             nodes=["hmm"],
-            relationships=["annotates"],
+            relationships=["ANNOTATES"],
         )
-        self.add_module(
+        self._add_module(
             module_id="ncbi_taxonomy",
             nodes=["taxid"],
-            relationships=["belongs_to", "assembly_to_taxid"],
+            relationships=["BELONGS_TO", "ASSEMBLY_TO_TAXID"],
         )
-        self.add_module(
+        self._add_module(
             module_id="tigrfam",
             nodes=[
                 "goterm",
@@ -55,14 +55,14 @@ class Modules:
                 "tigrfam_role",
             ],
             relationships=[
-                "mainrole_ann",
-                "role_ann",
-                "subrole_ann",
-                "go_ann",
+                "MAINROLE_ANN",
+                "ROLE_ANN",
+                "SUBROLE_ANN",
+                "GO_ANN",
             ],
         )
-        self.add_module(
+        self._add_module(
             module_id="paired_omics",
             nodes=["mz_cluster_index", "mz_source_file"],
-            relationships=["cluster_to_file", "molecular_network", "metabo"],
+            relationships=["CLUSTER_TO_FILE", "MOLECULAR_NETWORK", "METABO"],
         )
