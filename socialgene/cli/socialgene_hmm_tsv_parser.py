@@ -7,8 +7,8 @@ import pandas as pd
 
 # internal dependencies
 from socialgene.utils.pandas_utils import write_tsv
-from socialgene.neo4j.schema.define_hmmlist import hmm_sources as test_hmm_sources
 from socialgene.utils.logging import log
+from socialgene.neo4j.schema.define_hmmlist import hmm_sources
 
 parser = argparse.ArgumentParser(description="Merging tsv")
 parser.add_argument(

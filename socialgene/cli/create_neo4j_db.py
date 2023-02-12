@@ -116,7 +116,7 @@ def main():
     tmp = nai_obj.run(docker=args.docker, dryrun=args.dryrun)
     if args.dryrun:
         with open(args.dryrun_filepath, "w") as handle:
-            handle.writelines(" \\\n\t".join())
+            handle.writelines(" \\\n\t".join(tmp))
 
 
 if __name__ == "__main__":

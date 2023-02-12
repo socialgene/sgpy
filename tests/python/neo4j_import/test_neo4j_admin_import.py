@@ -1,14 +1,10 @@
 import os
-from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
-from socialgene.neo4j.schema.define_hmmlist import hmm_sources as test_hmm_sources
-
 from pathlib import Path
-import os
-import pytest
-import itertools
-from socialgene.neo4j.admin_import import Neo4jAdminImport
 import tempfile
 import pathlib
+
+from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
+from socialgene.neo4j.admin_import import Neo4jAdminImport
 
 
 def read_in(fpath):
