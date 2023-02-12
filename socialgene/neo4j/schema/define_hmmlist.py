@@ -53,8 +53,8 @@ class Hmms(NR):
     def parse_hmmlist_input(input):
         # Filter hmm databases based on input list of hmm database names or "all"
         # accept "all" as a list or string
-        if isinstance(hmm_list, str):
-            hmm_list = [hmm_list]
+        if isinstance(input, str):
+            input = [input]
         if "all" in input:
             _hmms = hmm_sources
         else:

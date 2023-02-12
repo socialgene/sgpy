@@ -52,7 +52,7 @@ class SocialgeneModules(Modules):
             ):
                 self.relationships.add(rel)
 
-    def _writer(outdir, header, header_filename):
+    def _writer(self, outdir, header, header_filename):
         outpath = Path(outdir, header_filename)
         with open(outpath, "w") as tsv_output_con:
             tsv_writer = csv.writer(

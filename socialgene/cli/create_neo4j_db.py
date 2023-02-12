@@ -104,24 +104,19 @@ def main():
 
     parsed_hmmlist = Hmms.parse_hmmlist_input(args.hmmlist)
 
-    temp = Neo4jAdminImport(
+    nai_obj = Neo4jAdminImport(
         neo4j_top_dir=args.neo4j_top_dir,
-        input_sg_modules=args.sg_modules,
-        hmmlist=parsed_hmmlist,
+        module_list=args.sg_modules,
+        hmm_list=parsed_hmmlist,
         cpus=int(args.cpus),
         additional_args=args.additional_args,
         uid=uid,
         gid=gid,
     )
+    tmp = nai_obj.run(docker=args.docker, dryrun=args.dryrun)
     if args.dryrun:
-        temp.arg_builder(temp.input_sg_modules, temp.hmmlist)
-        temp._escape_arg_glob()
         with open(args.dryrun_filepath, "w") as handle:
-            handle.writelines(
-                " \\\n\t".join(temp._neo4j_admin_import_args(docker=args.docker))
-            )
-    else:
-        temp.run_neo4j_admin_import()
+            handle.writelines(" \\\n\t".join())
 
 
 if __name__ == "__main__":

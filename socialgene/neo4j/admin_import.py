@@ -236,7 +236,7 @@ class Neo4jAdminImport(SocialgeneModules):
         return pre + list(set(joined_args)) + post
 
     @staticmethod
-    def _run(cmd):
+    def _launch_sub(cmd):
         run_subprocess(
             command_list=" ".join(cmd),
             check=False,
@@ -244,11 +244,18 @@ class Neo4jAdminImport(SocialgeneModules):
             capture_output=True,
         )
 
-    def run_neo4j_admin_import(self, docker=False):
-        """Run the created commands/arguments in a separate process"""
+    def _prerun(self):
         self.create_neo4j_directories(self.neo4j_top_dir)
-        self.get_nodes_and_relationships(self.input_sg_modules, self.hmmlist)
+        self.get_nodes_and_relationships(self.input_sg_modules, self.input_hmmlist)
         self.build_nodes_and_relationships_argument_list()
         self._check_files()
         self._escape_arg_glob()
-        self._run(self._neo4j_admin_import_args(docker))
+
+    def run(self, docker=False, dryrun=False):
+        """Run the created commands/arguments in a separate process"""
+        self._prerun()
+        cmd_arg_list = self._neo4j_admin_import_args(docker)
+        if dryrun:
+            return cmd_arg_list
+        else:
+            self._launch_sub(cmd_arg_list)

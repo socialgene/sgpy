@@ -1,13 +1,11 @@
+import os
+from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
+from socialgene.neo4j.schema.define_hmmlist import hmm_sources as test_hmm_sources
+
 from pathlib import Path
-from socialgene.neo4j.sg_modules import (
-    SocialgeneModules,
-    write_neo4j_headers,
-    hmm_sources,
-)
 import os
 import pytest
 import itertools
-from socialgene.neo4j.sg_modules import hmm_sources as test_hmm_sources
 from socialgene.neo4j.admin_import import Neo4jAdminImport
 import tempfile
 import pathlib
@@ -70,24 +68,12 @@ expected_headers = {
 }
 
 
-class Combinator(object):
-    instances = list(itertools.combinations(test_hmm_sources, 2)) + list(
-        itertools.combinations(test_hmm_sources, 9)
-    )
-
-
-@pytest.fixture(params=Combinator().instances)
-def combinator(request):
-    return request.param
-
-
-def test_creation_and_writing_of_neo4j_headers(combinator):
-    temp_list = list(SocialgeneModules().nodes.keys())
-    temp_list.extend(list(SocialgeneModules().relationships.keys()))
+def test_creation_and_writing_of_neo4j_headers():
+    sg_mod = SocialgeneModules()
+    sg_mod.add_hmms(["all"])
+    sg_mod.add_modules("base_hmm")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        write_neo4j_headers(
-            sg_modules=temp_list, hmmlist=hmm_sources, outdir=tmpdirname
-        )
+        sg_mod.write_neo4j_headers(outdir=tmpdirname)
         p = Path(tmpdirname).glob("**/*")
         files = [x for x in p if x.is_file()]
         vals = {i.stem: read_in(i) for i in files}
@@ -97,8 +83,8 @@ def test_creation_and_writing_of_neo4j_headers(combinator):
 def test_neo4j_admin_import_dir_creation():
     temp = Neo4jAdminImport(
         neo4j_top_dir="topdir",
-        input_sg_modules=["base", "hmms", "mmseqs2"],
-        hmmlist=["antismash", "amrfinder"],
+        module_list=["base", "hmms", "mmseqs2"],
+        hmm_list=["antismash", "amrfinder"],
         cpus=1,
         additional_args=None,
         uid=100,
