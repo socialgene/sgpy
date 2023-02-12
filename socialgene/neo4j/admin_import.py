@@ -158,7 +158,7 @@ class Neo4jAdminImport(SocialgeneModules):
                     type="node",
                 )
             )
-        for rel in self.relationship:
+        for rel in self.relationships:
             self.node_relationship_argument_list.append(
                 self._single_arg_string_builder(
                     label=rel.neo4j_label,
