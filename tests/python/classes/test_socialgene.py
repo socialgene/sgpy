@@ -28,7 +28,6 @@ temp.assemblies["myassembly"].loci["my_locus"].add_feature(
 
 
 def test_add_protein():
-
     assert (
         temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].description == "description"
     )

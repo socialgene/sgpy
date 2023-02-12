@@ -4,8 +4,6 @@
 import argparse
 import logging
 import os
-import pandas as pd
-import subprocess
 import tempfile
 
 # external dependencies
@@ -41,7 +39,6 @@ def index_database(database_path):
 
 
 def main():
-
     args = parser.parse_args()
     target_database = args.target_database_path
 

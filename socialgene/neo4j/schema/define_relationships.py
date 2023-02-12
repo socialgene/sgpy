@@ -3,7 +3,6 @@ from socialgene.neo4j.schema.node_relationship_class import NR
 
 class Relationships(NR):
     def _import(self):
-
         self.add_relationship(
             neo4j_label="ANNOTATES",
             header_filename="protein_to_hmm_header.header",

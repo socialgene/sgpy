@@ -94,5 +94,4 @@ class NR(ABC):
 
     @abstractmethod
     def _import():
-
         pass

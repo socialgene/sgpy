@@ -5,7 +5,6 @@ import argparse
 import logging
 import os
 import pandas as pd
-import subprocess
 import tempfile
 
 # external dependencies
@@ -82,7 +81,6 @@ def search(fasta_path, target_database, argstring=""):
 
 
 def main():
-
     args = parser.parse_args()
 
     fasta_path = args.input_fasta_path

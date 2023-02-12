@@ -166,7 +166,6 @@ class Clustermap(ClustermapUuids, CompareProtein):
             )
 
     def add_groups(self, sg_object, cutoff: int = 0):
-
         # pandas explanaton- group pandas df and return as dict = {query:[target, target, target]}
         sg_object.protein_comparison_to_df()
         for k, v in (

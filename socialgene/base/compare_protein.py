@@ -96,7 +96,6 @@ class CompareProtein(Neo4jQuery):
             raise ValueError("hash_id must be None, or a list of tuples of length two.")
 
         if isinstance(hash_id_list_of_tuples, list):
-
             for id_pair in hash_id_list_of_tuples:
                 _temp = self._calculate_mod_score_from_domain_lists(
                     protein_id_1=id_pair[0],
@@ -110,7 +109,6 @@ class CompareProtein(Neo4jQuery):
                     return _temp
 
         elif hash_id_list_of_tuples is None:
-
             if len(self.proteins) < 10:
                 if verbose:
                     log.info(

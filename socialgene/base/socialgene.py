@@ -35,7 +35,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     """Main class for building, sotring, working with protein and genomic info"""
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
         self.protein_comparison = []
 
@@ -103,7 +102,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         annotate_all=False,
         progress=False,
     ):
-
         if protein_hash_ids is None and annotate_all:
             protein_hash_ids = self.get_all_protein_hashes()
         elif isinstance(protein_hash_ids, str):
