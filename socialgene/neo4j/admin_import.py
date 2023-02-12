@@ -19,7 +19,7 @@ class Neo4jAdminImport(SocialgeneModules):
         self,
         neo4j_top_dir: str,
         cpus: int = 1,
-        additional_args_to_pass_to_neo4j: str = "",
+        additional_args: str = "",
         uid: int = None,
         gid: int = None,
         module_list: list = None,
@@ -37,7 +37,7 @@ class Neo4jAdminImport(SocialgeneModules):
             module_list (list): name of grouped nodes/relationships (socialgene/neo4j/schema/define_modules.py)
             hmm_list (list): list of hmms source databases used (socialgene/neo4j/schema/define_hmmlist.py)
             cpus (int, optional): [description]. Defaults to 1.
-            additional_args_to_pass_to_neo4j (str, optional): [description]. Defaults to "".
+            additional_args (str, optional): [description]. Defaults to "".
             uid (int, optional): [description]. Defaults to None.
             gid (int, optional): [description]. Defaults to None.
         """
@@ -46,7 +46,7 @@ class Neo4jAdminImport(SocialgeneModules):
         self.input_hmmlist = hmm_list
         self.neo4j_top_dir = neo4j_top_dir
         self.cpus = cpus
-        self.additional_args_to_pass_to_neo4j = additional_args_to_pass_to_neo4j
+        self.additional_args = additional_args
         self.node_relationship_argument_list = []
         self.dbms_connector_http_listen_address = dbms_connector_http_listen_address
         self.dbms_connector_bolt_listen_address = dbms_connector_bolt_listen_address

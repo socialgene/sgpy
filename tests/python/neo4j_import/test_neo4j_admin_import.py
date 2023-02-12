@@ -82,7 +82,7 @@ def test_neo4j_admin_import_dir_creation():
         module_list=["base", "hmms", "mmseqs2"],
         hmm_list=["antismash", "amrfinder"],
         cpus=1,
-        additional_args_to_pass_to_neo4j=None,
+        additional_args=None,
         uid=100,
         gid=200,
     )
