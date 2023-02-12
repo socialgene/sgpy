@@ -248,7 +248,6 @@ class Neo4jAdminImport(SocialgeneModules):
         self.create_neo4j_directories(self.neo4j_top_dir)
         self.get_nodes_and_relationships(self.input_sg_modules, self.input_hmmlist)
         self.build_nodes_and_relationships_argument_list()
-        self._check_files()
         self._escape_arg_glob()
 
     def run(self, docker=False, dryrun=False):
@@ -258,4 +257,5 @@ class Neo4jAdminImport(SocialgeneModules):
         if dryrun:
             return cmd_arg_list
         else:
+            self._check_files()
             self._launch_sub(cmd_arg_list)
