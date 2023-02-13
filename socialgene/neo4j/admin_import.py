@@ -155,7 +155,7 @@ class Neo4jAdminImport(SocialgeneModules):
                     header_filename=node.header_filename,
                     target_subdirectory=node.target_subdirectory,
                     target_extension=node.target_extension,
-                    type="node",
+                    type="nodes",
                 )
             )
         for rel in self.relationships:
@@ -165,7 +165,7 @@ class Neo4jAdminImport(SocialgeneModules):
                     header_filename=rel.header_filename,
                     target_subdirectory=rel.target_subdirectory,
                     target_extension=rel.target_extension,
-                    type="node",
+                    type="relationships",
                 )
             )
 
