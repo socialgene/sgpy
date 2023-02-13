@@ -63,6 +63,16 @@ class Modules:
             ],
         )
         self._add_module(
+            module_id="blastp",
+            nodes=[],
+            relationships=["BLASTP"],
+        )
+        self._add_module(
+            module_id="mmseqs",
+            nodes=[],
+            relationships=["MMSEQS2"],
+        )
+        self._add_module(
             module_id="paired_omics",
             nodes=["mz_cluster_index", "mz_source_file"],
             relationships=["CLUSTER_TO_FILE", "MOLECULAR_NETWORK", "METABO"],
