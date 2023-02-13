@@ -34,6 +34,7 @@ class Modules:
             relationships=[
                 "CONTAINS",
                 "ASSEMBLES_TO",
+                "ENCODES",
             ],
         )
         self._add_module(
