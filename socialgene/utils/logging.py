@@ -5,14 +5,18 @@ import sys
 # If {rich} is installed use it, otherwise.... don't
 try:
     from rich.logging import RichHandler
+    from rich.console import Console
 
+    c = Console(width=150)
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
         level="INFO",
         #  format="%(filename)s/%(module)s/%(funcName)s\::: %(message)s",
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[RichHandler(rich_tracebacks=True)],
+        handlers=[
+            RichHandler(rich_tracebacks=True, tracebacks_word_wrap=False, console=c)
+        ],
     )
 
     log = logging.getLogger("rich")
