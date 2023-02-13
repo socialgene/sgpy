@@ -28,6 +28,7 @@ class SocialgeneModules(Modules):
         _hmms = self.all_hmms.parse_hmmlist_input(hmm_list)
         # add nodes and relationships
         if _hmms:
+            self.add_modules(module_list=["base_hmm"])
             for node in self.all_hmms.get_nodes(_hmms):
                 self.nodes.add(node)
             for source in _hmms:
