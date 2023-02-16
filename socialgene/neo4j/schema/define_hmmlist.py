@@ -2,16 +2,17 @@ from socialgene.neo4j.schema.node_relationship_class import NR
 
 
 hmm_sources = [
-    "pfam",
-    "antismash",
-    "tigrfam",
     "amrfinder",
-    "prism",
-    "resfams",
+    "antismash",
     "bigslice",
     "classiphage",
-    "virus_orthologous_groups",
+    "ipresto",
     "local",
+    "pfam",
+    "prism",
+    "resfams",
+    "tigrfam",
+    "virus_orthologous_groups",
 ]
 
 

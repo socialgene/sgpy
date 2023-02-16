@@ -12,18 +12,7 @@ pks = os.path.join(FIXTURE_DIR, "pks.hmm")
 def test_hmms_object_structure():
     hmms_object = HMMParser()
     assert hmms_object.category is None
-    assert hmms_object.hmm_dbs == [
-        "prism",
-        "bigslice",
-        "antismash",
-        "amrfinder",
-        "resfams",
-        "tigrfam",
-        "pfam",
-        "classiphage",
-        "virus_orthologous_groups",
-        "local",
-    ]
+    assert hmms_object.hmm_dbs == hmm_sources
     assert hmms_object.model_info_dict == {}
     assert hmms_object.model_source is None
     assert hmms_object.model_text_dict == {}
