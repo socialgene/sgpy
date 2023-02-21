@@ -14,6 +14,7 @@ def run_subprocess(
     command_list,
     check=True,
     shell=False,
+    capture_output=True,
     **kwargs,
 ):
     """Run something in a separate process
@@ -38,9 +39,15 @@ def run_subprocess(
         "",
         spinner="bouncingBar",
     ) as status:
-        result = subprocess.run(command_list, check=check, shell=shell, **kwargs)
+        result = subprocess.run(
+            command_list,
+            check=check,
+            shell=shell,
+            capture_output=capture_output,
+            **kwargs,
+        )
         if result.stderr:
-            raise subprocess.CalledProcessError(
-                returncode=result.returncode, cmd=result.args, stderr=result.stderr
-            )
+            log.error(f"Error code: {result.returncode}")
+            log.error(f"Error stdout: {result.stderr.decode('utf-8')}")
+            raise SystemExit
         _ = status
