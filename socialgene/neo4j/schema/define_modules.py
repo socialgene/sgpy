@@ -26,7 +26,6 @@ class Modules:
         self._add_module(
             module_id="base",
             nodes=[
-                "parameters",
                 "assembly",
                 "nucleotide",
                 "protein",
@@ -36,6 +35,16 @@ class Modules:
                 "ASSEMBLES_TO",
                 "ENCODES",
             ],
+        )
+        self._add_module(
+            module_id="protein",
+            nodes=["protein"],
+            relationships=[],
+        )
+        self._add_module(
+            module_id="parameters",
+            nodes=["parameters"],
+            relationships=[],
         )
         self._add_module(
             module_id="base_hmm",
