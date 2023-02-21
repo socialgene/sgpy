@@ -38,5 +38,9 @@ def run_subprocess(
         "",
         spinner="bouncingBar",
     ) as status:
-        subprocess.run(command_list, check=check, shell=shell, **kwargs)
+        result = subprocess.run(command_list, check=check, shell=shell, **kwargs)
+        if result.stderr:
+            raise subprocess.CalledProcessError(
+                returncode=result.returncode, cmd=result.args, stderr=result.stderr
+            )
         _ = status
