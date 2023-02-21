@@ -274,14 +274,39 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         with open(inpath, "rb") as handle:
             return pickle.load(handle)
 
-    def write_fasta(self, outpath, other_id=False, gz=False):
+    def filter_proteins(self, hash_list: List):
+        """Filter proteins by list of hash ids
+
+        Args:
+            hash_list (List): List fo protein hash identifiers
+
+        Returns:
+            Generator: generator returning tuple of length two -> Generator[(str, 'Protein'])
+        """
+        return ((k, v) for k, v in self.proteins.items() if k in hash_list)
+
+    def write_fasta(
+        self, outpath, hash_list: List = None, other_id: bool = False, gz: bool = False
+    ):
+        """Write proteins to a FASTA file
+
+        Args:
+            outpath (str): path of file that FASTA entries will be appended to
+            hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
+            other_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
+            gz (bool, optional): Write as gzip?. Defaults to False.
+        """
         if gz:
             _open = partial(gzip.open, mode="at")
         else:
             _open = partial(open, mode="a")
         with _open(outpath) as handle:
             counter = 0
-            for k, v in self.proteins.items():
+            if hash_list:
+                temp_iter = self.filter_proteins(hash_list)
+            else:
+                temp_iter = self.proteins.items()
+            for k, v in temp_iter:
                 if v.sequence is not None:
                     counter += 1
                     if other_id:
