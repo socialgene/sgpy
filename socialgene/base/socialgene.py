@@ -10,6 +10,7 @@ from functools import partial
 import gzip
 from collections import defaultdict
 from operator import attrgetter
+from typing import Generator, List
 
 # external dependencies
 from rich.progress import Progress
