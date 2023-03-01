@@ -8,7 +8,7 @@ import pandas as pd
 # internal dependencies
 from socialgene.utils.pandas_utils import write_tsv
 from socialgene.utils.logging import log
-from socialgene.neo4j.schema.define_hmmlist import hmm_sources
+from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
 
 parser = argparse.ArgumentParser(description="Merging tsv")
 parser.add_argument(
@@ -75,7 +75,7 @@ def main():
     # Create a table for the neo4j hmm "nodes" by dropping all rows with duplicate "sha512t24u"
     write_tsv(create_hmm_nodes(all_hmms_df=all_hmms_df), "sg_hmm_nodes_out")
 
-    database_top_dirs = hmm_sources
+    database_top_dirs = HMM_SOURCES
     # split all_hmm df into dict of dbs
     dict_of_dfs = split_df_by_db(
         all_hmms_df=all_hmms_df, db_name_list=database_top_dirs

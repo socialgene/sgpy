@@ -176,4 +176,5 @@ class HMMER:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             shell=False,
+            capture_output=False,
         )

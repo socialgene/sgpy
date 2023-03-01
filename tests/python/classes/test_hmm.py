@@ -1,6 +1,7 @@
 import os
 import hashlib
 from socialgene.parsers.hmm import HMMParser
+from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -12,7 +13,7 @@ pks = os.path.join(FIXTURE_DIR, "pks.hmm")
 def test_hmms_object_structure():
     hmms_object = HMMParser()
     assert hmms_object.category is None
-    assert hmms_object.hmm_dbs == hmm_sources
+    assert hmms_object.hmm_dbs == HMM_SOURCES
     assert hmms_object.model_info_dict == {}
     assert hmms_object.model_source is None
     assert hmms_object.model_text_dict == {}

@@ -1,7 +1,7 @@
 from socialgene.neo4j.schema.node_relationship_class import NR
 
 
-hmm_sources = [
+HMM_SOURCES = [
     "amrfinder",
     "antismash",
     "bigslice",
@@ -19,7 +19,7 @@ hmm_sources = [
 class Hmms(NR):
     def _import(self):
         # auto-generate hmm database nodes and relationship modules
-        for i in hmm_sources:
+        for i in HMM_SOURCES:
             self.add_node(
                 neo4j_label=i,
                 header_filename=f"{i}_hmms_out.header",
@@ -57,7 +57,7 @@ class Hmms(NR):
         if isinstance(input, str):
             input = [input]
         if "all" in input:
-            _hmms = hmm_sources
+            _hmms = HMM_SOURCES
         else:
-            _hmms = [i for i in input if i in hmm_sources]
+            _hmms = [i for i in input if i in HMM_SOURCES]
         return _hmms

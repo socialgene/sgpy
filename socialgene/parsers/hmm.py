@@ -8,7 +8,7 @@ import os
 # internal dependencies
 import socialgene.hashing.hashing as hasher
 import socialgene.utils.file_handling as fh
-from socialgene.neo4j.schema.define_hmmlist import hmm_sources
+from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
 
 # Add new HMM parsers to IndividualHmmDbParsers
 
@@ -74,7 +74,7 @@ class IndividualHmmDbParsers:
 class HMMParser(IndividualHmmDbParsers):
     # the order of hmm_dbs is important because it dictates
     # how the nr model list is created. Later entries override earlier entries
-    hmm_dbs = hmm_sources
+    hmm_dbs = HMM_SOURCES
 
     def __init__(self):
         super().__init__()

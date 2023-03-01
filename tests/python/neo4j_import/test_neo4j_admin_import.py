@@ -28,17 +28,18 @@ expected_headers = {
     "pfam_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(pfam)\t:IGNORE\t:IGNORE\r\n",
     "sg_hmm_nodes_out": "id:ID(hmm)\tmodel_length\r\n",
     "mmseqs2": ":START_ID(protein)\t:END_ID(protein)\r\n",
+    "ipresto_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(ipresto)\t:IGNORE\t:IGNORE\r\n",
     "blastp": ":START_ID(protein)\t:END_ID(protein)\tpident:float\tlength:int\tmismatch:int\tgapopen:int\tqstart:int\tqend:int\tsstart:int\tsend:int\tevalue:float\tbitscore:float\tqcovhsp:float\r\n",
     "parameters": "id:ID(when)\tSG_LOC_NEO4J\tSG_LOC_HMMS\tNEO4J_dbms_memory_pagecache_size\tNEO4J_dbms_memory_heap_initial__size\tNEO4J_dbms_memory_heap_max__size\tHMMSEARCH_IEVALUE\tHMMSEARCH_BACKGROUND\tHMMSEARCH_BIASFILTER\tHMMSEARCH_NULL2\tHMMSEARCH_SEED\tHMMSEARCH_Z\tHMMSEARCH_DOMZ\tHMMSEARCH_F1\tHMMSEARCH_F2\tHMMSEARCH_F3\tHMMSEARCH_E\tHMMSEARCH_DOME\tHMMSEARCH_INCE\tHMMSEARCH_INCDOME\tHMMSEARCH_BITCUTOFFS\tplatform\tarchitecture\tpy_executable\tpy_version\tgenome_download_command\r\n",
-    "locus": "internal_id:ID(nucleotide)\tid\tmol_type\taltitude\tbio_material\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tnote\torganelle\tPCR_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsubmitter_seqid\tsub_species\tsub_strain\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
+    "locus": "internal_id:ID(nucleotide)\tmol_type\taltitude\tbio_material\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tnote\torganelle\tPCR_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsubmitter_seqid\tsub_species\tsub_strain\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
     "taxid": "id:ID(taxid)\tname\trank\r\n",
     "mz_cluster_index_nodes": "id:ID(mz_cluster_index)\tcomponent_index:int\tparent_mass:double\tprecursor_mass:double\tsum_precursor_intensity:double\tSmiles:String\trt_mean::double\trt_std_err:double\tlibrary_id:String\tmq_score:double\tmz_error_ppm:double\tmass_diff:String\r\n",
     "resfams_hmms_out": ":IGNORE\taccession\tid:ID(resfams)\tdescription\tcategory\r\n",
     "virus_orthologous_groups_hmms_out": ":IGNORE\taccession\tid:ID(virus_orthologous_groups)\tdescription\tcategory\r\n",
     "tigrfam_hmms_out": ":IGNORE\taccession\tid:ID(tigrfam)\tdescription\tcategory\r\n",
-    "assembly_to_taxid": ":START_ID(assembly)\t:END_ID(taxid)\r\n",
     "assembly_to_mz_file": ":START_ID(assembly)\t:END_ID(mz_source_file)\r\n",
     "tigrfamrole_to_mainrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_mainrole)\r\n",
+    "ipresto_hmms_out": ":IGNORE\taccession\tid:ID(ipresto)\tdescription\tcategory\r\n",
     "prism_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(prism)\t:IGNORE\t:IGNORE\r\n",
     "assembly_to_locus": ":END_ID(assembly)\t:START_ID(nucleotide)\r\n",
     "resfams_hmms_out_relationships": ":START_ID(hmm)\t:IGNORE\t:END_ID(resfams)\t:IGNORE\t:IGNORE\r\n",
@@ -66,8 +67,8 @@ expected_headers = {
 
 def test_creation_and_writing_of_neo4j_headers():
     sg_mod = SocialgeneModules()
+    sg_mod.add_modules(sg_mod.modules.keys())
     sg_mod.add_hmms(["all"])
-    sg_mod.add_modules("base_hmm")
     with tempfile.TemporaryDirectory() as tmpdirname:
         sg_mod.write_neo4j_headers(outdir=tmpdirname)
         p = Path(tmpdirname).glob("**/*")
