@@ -2,6 +2,7 @@
 import argparse
 import glob
 from pathlib import Path
+import csv
 
 # external dependencies
 
@@ -9,6 +10,7 @@ from pathlib import Path
 from socialgene.base.socialgene import SocialGene
 from socialgene.utils.logging import log
 from socialgene.config import env_vars
+from socialgene.utils.writers import write_tsv
 
 
 parser = argparse.ArgumentParser(
@@ -34,25 +36,90 @@ parser.add_argument(
     required=True,
     default=1,
 )
+parser.add_argument(
+    "--collect_tables_in_memory",
+    metavar="bool",
+    help="Should all tables be collected in RAM before writing to disk?",
+    required=False,
+    default=False,
+    action=argparse.BooleanOptionalAction,
+)
 
 
-def export_tables(sequence_files_glob, outdir, n_fasta_splits):
+def fasta_gen(obj):
+    for k, v in obj.proteins.items():
+        yield f">{k}\n{v.sequence}"
+
+
+def export_tables(
+    sequence_files_glob, outdir, n_fasta_splits, collect_tables_in_memory
+):
     outdir = Path(outdir)
-    socialgene_object = SocialGene()
     # find files using the input glob
     sequence_files = glob.glob(sequence_files_glob)
-    sequence_files = [Path(i).resolve() for i in sequence_files]
+    sequence_files = (Path(i).resolve() for i in sequence_files)
     if not sequence_files:
         raise IOError("No matching file(s)")
-    for i in sequence_files:
-        socialgene_object.parse(Path(i))
-    socialgene_object.write_n_fasta(outdir=outdir, n_splits=n_fasta_splits)
-    socialgene_object.export_locus_to_protein(outdir=outdir)
-    socialgene_object.export_protein_info(outdir=outdir)
-    socialgene_object.export_loci(outdir=outdir)
-    socialgene_object.export_assembly(outdir=outdir)
-    socialgene_object.export_assembly_to_locus(outdir=outdir)
-    socialgene_object.export_assemby_to_taxid(outdir=outdir)
+
+    if collect_tables_in_memory:
+        # Avoid overhead of opening file connections per each file
+        # Instead accumulate tables in memory and dump at end
+        # still parse into individual SocialGene() object to avoid overhead of
+        # appending to large lists
+        print("hi1")
+        fasta_accum = []
+        protein_info_table = []
+        assembly_to_locus_table = []
+        loci_table = []
+        assembly_table = []
+        assembly_to_taxid_table = []
+
+        for i in sequence_files:
+            socialgene_object = SocialGene()
+            socialgene_object.parse(Path(i))
+            fasta_accum.append(fasta_gen(socialgene_object))
+            protein_info_table.append(socialgene_object.protein_info_table())
+            assembly_to_locus_table.append(socialgene_object.assembly_to_locus_table())
+            loci_table.append(socialgene_object.loci_table())
+            assembly_table.append(socialgene_object.assembly_table())
+            assembly_to_taxid_table.append(socialgene_object.assembly_to_taxid_table())
+        with open("fasta.faa", "w") as handle:
+            for i in fasta_accum:
+                handle.writelines("{}\n".format(x) for x in i)
+        for i in [
+            "protein_info_table",
+            "assembly_to_locus_table",
+            "loci_table",
+            "assembly_table",
+            "assembly_to_taxid_table",
+        ]:
+            with open(i.removesuffix("_table"), "w") as handle:
+                for i in locals()[i]:
+                    tsv_writer = csv.writer(
+                        handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
+                    )
+                    for ii in i:
+                        tsv_writer.writerow(ii)
+    else:
+        print("hi2")
+        # Export tables after parsing each file
+        for i in sequence_files:
+            print("hi3")
+            socialgene_object = SocialGene()
+            socialgene_object.parse(Path(i))
+            socialgene_object.write_n_fasta(
+                outdir=outdir, n_splits=n_fasta_splits, mode="a"
+            )
+            for i in [
+                "protein_info_table",
+                "assembly_to_locus_table",
+                "loci_table",
+                "assembly_table",
+                "assembly_to_taxid_table",
+            ]:
+                socialgene_object.write_table(
+                    outdir=outdir, type=i, filename=i, mode="a"
+                )
 
 
 def main():
@@ -62,6 +129,7 @@ def main():
         sequence_files_glob=args.sequence_files_glob,
         outdir=args.outdir,
         n_fasta_splits=int(args.n_fasta_splits),
+        collect_tables_in_memory=args.collect_tables_in_memory,
     )
 
 
