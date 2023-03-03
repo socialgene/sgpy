@@ -15,6 +15,8 @@ SOURCE_KEYS = [
     "mol_type",
     "altitude",
     "bio_material",
+    "bioproject",
+    "biosample",
     "cell_line",
     "cell_type",
     "chromosome",
