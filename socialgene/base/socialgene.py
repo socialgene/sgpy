@@ -463,44 +463,22 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # because locus id can't be assured to be unique across assemblies
         return hasher.sha512_hash(f"{assembly_id}___{locus_id}")
 
-    def _create_locus_to_protein(self):
-        for ak, av in self.assemblies.items():
-            for k, loci in av.loci.items():
-                temp_list = list(loci.features)
-                # sort features by id then start to maintain consistent output
-                temp_list.sort(key=attrgetter("id"))
-                temp_list.sort(key=attrgetter("start"))
-                for feature in temp_list:
-                    if feature.feature_is_protein():
-                        yield {
-                            self._create_internal_locus_id(assembly_id=ak, locus_id=k),
-                            feature.id,
-                            feature.start,
-                            feature.end,
-                            feature.strand,
-                        }
-
-    def export_locus_to_protein(self, outdir: str = "."):
-        """Locus to protein table for import into Neo4j
-
-        Args:
-            outdir (str, optional): Defaults to ".".
-        """
-        outpath = Path(outdir, "locus_to_protein")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            for i in self._create_locus_to_protein():
-                tsv_writer.writerow(i)
+    @staticmethod
+    def tsv_tablenames():
+        yield [
+            "protein_info_table",
+            "assembly_to_locus_table",
+            "loci_table",
+            "locus_to_protein_table",
+            "assembly_table",
+            "assembly_to_taxid_table",
+        ]
 
     def write_table(self, outdir: str, type: str, filename: str = None, mode="a"):
         if not filename:
             filename = type
         if not hasattr(self, type):
-            raise ValueError(
-                'type must be one of: ["protein_info_table","assembly_to_locus_table","loci_table","assembly_table","assembly_to_taxid_table"]'
-            )
+            raise ValueError(f"type must be one of: {self.tsv_tablenames()}")
         else:
             outpath = Path(outdir, filename)
             with open(outpath, mode) as handle:
@@ -509,6 +487,23 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 )
                 for i in getattr(self, type)():
                     tsv_writer.writerow(i)
+
+    def locus_to_protein_table(self):
+        for ak, av in self.assemblies.items():
+            for k, loci in av.loci.items():
+                temp_list = list(loci.features)
+                # sort features by id then start to maintain consistent output
+                temp_list.sort(key=attrgetter("id"))
+                temp_list.sort(key=attrgetter("start"))
+                for feature in temp_list:
+                    if feature.feature_is_protein():
+                        yield (
+                            self._create_internal_locus_id(assembly_id=ak, locus_id=k),
+                            feature.id,
+                            feature.start,
+                            feature.end,
+                            feature.strand,
+                        )
 
     def protein_info_table(self):
         """Protein table for import into Neo4j
@@ -521,13 +516,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 prot_len = None
             else:
                 prot_len = len(protein.sequence)
-            yield [
+            yield (
                 protein.hash_id,
                 # TODO: add database "source" of protein?
                 protein.other_id,
                 protein.description,
                 prot_len,  # protein length
-            ]
+            )
 
     def assembly_to_locus_table(self):
         """Assembly to locus table for import into Neo4j
@@ -538,7 +533,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for ak, av in self.assemblies.items():
             for k in av.loci.keys():
                 #  ["assembly", "internal_locus_id"]
-                yield [ak, self._create_internal_locus_id(assembly_id=ak, locus_id=k)]
+                yield (ak, self._create_internal_locus_id(assembly_id=ak, locus_id=k))
 
     def loci_table(self):
         """Loci table for import into Neo4j
@@ -560,7 +555,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     else:
                         temp_v.append(i)
                 #  ["internal_locus_id" "locus_id"]
-                yield [internal_id] + [k] + temp_v
+                yield tuple([internal_id] + [k] + temp_v)
 
     def assembly_table(self):
         """Assembly table for import into Neo4j
@@ -579,7 +574,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 else:
                     temp_v.append(i)
                 #  ["internal_locus_id" "locus_id"]
-                yield [k] + temp_v
+                yield tuple([k] + temp_v)
 
     def assembly_to_taxid_table(self):
         """Assembly table for import into Neo4j
@@ -591,7 +586,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         has_no_taxid = 0
         for k, v in self.assemblies.items():
             if v.taxid:
-                yield [k, v.taxid]
+                yield (k, v.taxid)
 
     def drop_non_protein_features(self, return_removed=False):
         """Drop features that aren't proteins

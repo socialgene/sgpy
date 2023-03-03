@@ -86,13 +86,7 @@ def export_tables(
         with open("fasta.faa", "w") as handle:
             for i in fasta_accum:
                 handle.writelines("{}\n".format(x) for x in i)
-        for i in [
-            "protein_info_table",
-            "assembly_to_locus_table",
-            "loci_table",
-            "assembly_table",
-            "assembly_to_taxid_table",
-        ]:
+        for i in SocialGene.tsv_tablenames():
             with open(i.removesuffix("_table"), "w") as handle:
                 for i in locals()[i]:
                     tsv_writer = csv.writer(
@@ -110,13 +104,7 @@ def export_tables(
             socialgene_object.write_n_fasta(
                 outdir=outdir, n_splits=n_fasta_splits, mode="a"
             )
-            for i in [
-                "protein_info_table",
-                "assembly_to_locus_table",
-                "loci_table",
-                "assembly_table",
-                "assembly_to_taxid_table",
-            ]:
+            for i in SocialGene.tsv_tablenames():
                 socialgene_object.write_table(
                     outdir=outdir, type=i, filename=i, mode="a"
                 )
