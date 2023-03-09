@@ -465,7 +465,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     @staticmethod
     def tsv_tablenames():
-        yield [
+        return [
             "protein_info_table",
             "assembly_to_locus_table",
             "loci_table",

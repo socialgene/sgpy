@@ -10,8 +10,6 @@ import csv
 from socialgene.base.socialgene import SocialGene
 from socialgene.utils.logging import log
 from socialgene.config import env_vars
-from socialgene.utils.writers import write_tsv
-
 
 parser = argparse.ArgumentParser(
     description="Export Socialagene object into TSV files for Nextflow/Neo4j"

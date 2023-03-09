@@ -54,7 +54,7 @@ class Modules:
         self._add_module(
             module_id="ncbi_taxonomy",
             nodes=["taxid"],
-            relationships=["BELONGS_TO", "ASSEMBLY_TO_TAXID"],
+            relationships=["BELONGS_TO", "TAXONOMY"],
         )
         self._add_module(
             module_id="tigrfam",
