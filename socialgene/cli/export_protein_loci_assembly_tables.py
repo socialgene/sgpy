@@ -104,7 +104,7 @@ def export_tables(
             )
             for i in SocialGene.tsv_tablenames():
                 socialgene_object.write_table(
-                    outdir=outdir, type=i, filename=i, mode="a"
+                    outdir=outdir, type=i, filename=i.removesuffix("_table"), mode="a"
                 )
 
 
