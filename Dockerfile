@@ -1,7 +1,7 @@
 FROM mambaorg/micromamba:1.1.0
 
 
-COPY . .
+COPY environment.yaml environment.yaml
 
 RUN micromamba install -y -n base -f environment.yaml && \
     micromamba clean --all --yes
@@ -21,9 +21,10 @@ RUN /opt/conda/bin/wget -q https://neo4j.com/artifact.php?name=neo4j-community-5
 
 USER $MAMBA_USER
 ARG MAMBA_DOCKERFILE_ACTIVATE=1  # (otherwise python will not be found)
-
-RUN /opt/conda/bin/pip3 install -e .
+COPY . .
 
 ENV PATH="/opt/conda/envs/bin:$PATH:/opt/conda/condabin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/conda/bin/neo4j/neo4j-community-5.1.0/bin"
+RUN /opt/conda/bin/python3 -m pip install -e .
+
 
 WORKDIR /opt/conda/bin/neo4j/neo4j-community-5.1.0

@@ -31,6 +31,7 @@ dependencies:
   - conda-forge::openjdk # required by neo4j
   - procps-ng # required by nextflow
   - zip
+  - anaconda::make
 
   - pip:
       #- git+https://github.com/socialgene/sgpy.git@c54f7d019324dc9df13cf8e2833caf70f2a315c6

@@ -23,6 +23,7 @@ class HmmInfo:
             for line in h:
                 line_vals = [i.strip() for i in line.split("\t")]
                 if not len(line_vals) == 10:
+                    print(line_vals)
                     raise ValueError(f"Expected 10 columns, not {len(line_vals)}")
                 if not line_vals == self.columns:
                     self.all_hmms_data.add(tuple(line_vals))
@@ -54,4 +55,4 @@ class HmmInfo:
                     handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
                 )
                 for i in (i for i in self.all_hmms_data if i[0] == hmm_database_name):
-                    tsv_writer.writerow(i)
+                    tsv_writer.writerow(i[1:])
