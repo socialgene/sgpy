@@ -49,7 +49,8 @@ class HmmInfo:
         """
 
         for hmm_database_name in {i[0] for i in self.all_hmms_data}:
-            outpath = Path(outdir, hmm_database_name)
+            # "_hmm_source" is to help glob these files within nextflow
+            outpath = Path(outdir, f"{hmm_database_name}_hmm_source")
             with open(outpath, "w") as handle:
                 tsv_writer = csv.writer(
                     handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
