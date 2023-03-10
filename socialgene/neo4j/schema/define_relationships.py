@@ -49,7 +49,7 @@ class Relationships(NR):
         )
 
         self.add_relationship(
-            neo4j_label="BELONGS_TO",
+            neo4j_label="TAXON_PARENT",
             header_filename="taxid_to_taxid.header",
             target_subdirectory="taxdump_process",
             target_extension="taxid_to_taxid",
@@ -89,7 +89,7 @@ class Relationships(NR):
         )
 
         self.add_relationship(
-            neo4j_label="TAXONOMY",
+            neo4j_label="IS_TAXON",
             header_filename="assembly_to_taxid.header",
             target_subdirectory="genomic_info",
             target_extension="assembly_to_taxid",
