@@ -22,22 +22,24 @@ class Hmms(NR):
         for i in HMM_SOURCES:
             self.add_node(
                 neo4j_label=i,
-                header_filename=f"{i}_hmms_out.header",
+                header_filename=f"{i}_hmm_source.header",
                 target_subdirectory="hmm_tsv_parse",
-                target_extension=f"{i}_hmms_out",
+                target_extension=f"{i}_hmm_source",
                 header=[
                     ":IGNORE",
                     "accession",
                     f"id:ID({i})",
                     "description",
                     "category",
+                    "subcategory",
+                    "rel_path",
                 ],
             )
             self.add_relationship(
                 neo4j_label="SOURCE_DB",
-                header_filename=f"{i}_hmms_out_relationships.header",
+                header_filename=f"{i}_hmm_source_relationships.header",
                 target_subdirectory="hmm_tsv_parse",
-                target_extension=f"{i}_hmms_out",
+                target_extension=f"{i}_hmm_source",
                 header=[
                     ":START_ID(hmm)",
                     ":IGNORE",

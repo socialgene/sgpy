@@ -71,9 +71,9 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="hmm",
-            header_filename="sg_hmm_nodes_out.header",
+            header_filename="sg_hmm_nodes.header",
             target_subdirectory="hmm_tsv_parse",
-            target_extension="sg_hmm_nodes_out",
+            target_extension="sg_hmm_nodes",
             header=["id:ID(hmm)", "model_length"],
         )
 

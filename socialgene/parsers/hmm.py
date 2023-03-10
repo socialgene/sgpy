@@ -1,4 +1,5 @@
 # python dependencies
+from collections import OrderedDict
 import csv
 from pathlib import Path
 import os
@@ -92,19 +93,20 @@ class HMMParser(IndividualHmmDbParsers):
     @staticmethod
     def blank_model_dict():
         """Template dictionary to hold the desired info of a single hmm model"""
-        return {
-            "source": None,
-            "source_id": None,
-            "rel_path": None,
-            "name": None,
-            "acc": None,
-            "description": None,
-            "date": None,
-            "sha512t24u": None,
-            "model_length": None,
-            "category": None,
-            "subcategory": None,
-        }
+        return OrderedDict(
+            {
+                "source": None,
+                "rel_path": None,
+                "name": None,
+                "acc": None,
+                "description": None,
+                "date": None,
+                "sha512t24u": None,
+                "model_length": None,
+                "category": None,
+                "subcategory": None,
+            }
+        )
 
     @staticmethod
     def check_if_hmmer3(input_str):
@@ -162,9 +164,7 @@ class HMMParser(IndividualHmmDbParsers):
             :-11
         ]  # [:-11] is to remove '_socialgene' suffix
         self.single_model_dict["source"] = str(self.model_source)
-        self.single_model_dict["source_id"] = "".join(
-            [str(self.model_source), "_", str(self.source_counter)]
-        )
+
         if self.single_model_dict["source"] == "antismash":
             self.parse_antismash()
         if self.single_model_dict["source"] == "prism":

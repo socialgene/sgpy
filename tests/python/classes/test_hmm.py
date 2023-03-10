@@ -21,7 +21,6 @@ def test_hmms_object_structure():
     assert hmms_object.rel_path is None
     assert hmms_object.single_model_dict == {
         "source": None,
-        "source_id": None,
         "rel_path": None,
         "name": None,
         "acc": None,
