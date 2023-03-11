@@ -102,7 +102,3 @@ def test_neo4j_admin_import_dir_creation():
     dirs.sort()
     assert dirs == ["data", "logs", "plugins"]
     assert files == ["import.report"]
-
-
-
-
