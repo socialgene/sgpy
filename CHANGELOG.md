@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.5.0](https://github.com/socialgene/sgpy/compare/v2.4.1...v2.5.0) (2023-03-11)
+
+
+### Features
+
+* add get_mmseqs_cluster_members query ([ff6f340](https://github.com/socialgene/sgpy/commit/ff6f340a4570a7ee710f61aa2781474ea8f5ca3b))
+* init add mmseqs search functions ([16ccdae](https://github.com/socialgene/sgpy/commit/16ccdae334a91c98f2ec32c5d23667d09b16b74f))
+* update query_neo4 ([0a54b86](https://github.com/socialgene/sgpy/commit/0a54b8656eba224ccdeca1136dfd13651c1ec4e6))
+
+
+### Bug Fixes
+
+* call static method without instantiating object ([64d4494](https://github.com/socialgene/sgpy/commit/64d4494af5486bd2f0a87876b1929c55e0ef6b10))
+* fix flow and add doc ([c6064fc](https://github.com/socialgene/sgpy/commit/c6064fc06c5548009ecb565556806e3cef2c98e0))
+* off by one ([daec61e](https://github.com/socialgene/sgpy/commit/daec61eb467c7f39ef4c011d528e033dac715a78))
+
 ## [2.4.1](https://github.com/socialgene/sgpy/compare/v2.4.0...v2.4.1) (2022-12-08)
 
 
