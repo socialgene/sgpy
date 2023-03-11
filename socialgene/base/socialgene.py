@@ -52,17 +52,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     ########################################
     # Filter
     ########################################
-    def filter_domains(self):
-        """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
-        _before_count = sum([len(i.domains) for i in self.proteins.values()])
-        for protein in self.proteins.values():
-            for domain in protein.domains:
-                if not (domain.domain_within_threshold()):
-                    protein.domains.remove(domain)
-        _after_count = sum([len(i.domains) for i in self.proteins.values()])
-        log.info(
-            f"Removed {str(_before_count - _after_count)} domains. Before: {str(_before_count)}; After: {str(_after_count)}"
-        )
 
     def get_protein_domains_from_db(self, protein_id_list):
         # Search neo4j for a protein with the same hash, if it exists,

@@ -411,6 +411,18 @@ class Protein(
             sorted_domain_list = self.sort_domains_by_mean_envelope_position()
             return [i.get_hmm_id() for i in sorted_domain_list]
 
+    def filter_domains(self):
+        """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
+        _before_count = len(self.domains)
+        self.domains = list(self.domains)
+        for domain in self.domains:
+            if not (domain.domain_within_threshold()):
+                self.domains.remove(domain)
+        self.domains = set(self.domains)
+        log.debug(
+            f"Removed {str(_before_count - len(self.domains))} domains from {self.other_id}"
+        )
+
 
 class Feature(Location):
     """Container class for describing a feature on a locus"""
