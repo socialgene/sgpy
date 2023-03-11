@@ -1,7 +1,6 @@
 # python dependencies
 from importlib.metadata import version
 from socialgene.config import env_vars
-from socialgene.utils.logging import log
 
 # external dependencies
 

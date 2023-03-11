@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import tempfile
 from socialgene.hmm.hmminfo import HmmInfo
-from socialgene.utils.logging import log
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -261,7 +260,7 @@ def test_write_hmm_source_nodes():
         contents = list(pz.glob("*"))
         fnames = [i.stem for i in contents]
         fnames.sort()
-        # assert expected_fnames == fnames
+        assert expected_fnames == fnames
         holdit = []
         for fname in fnames:
             with open({i.stem: i for i in contents}[fname], "r") as h:

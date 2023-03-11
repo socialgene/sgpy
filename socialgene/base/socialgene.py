@@ -10,7 +10,7 @@ from functools import partial
 import gzip
 from collections import defaultdict
 from operator import attrgetter
-from typing import Generator, List
+from typing import List
 
 # external dependencies
 from rich.progress import Progress
@@ -582,8 +582,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         Args:
             outdir (str, optional): Defaults to ".".
         """
-        has_taxid = 0
-        has_no_taxid = 0
         for k, v in self.assemblies.items():
             if v.taxid:
                 yield (k, v.taxid)
