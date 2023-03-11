@@ -36,7 +36,6 @@ def read_domtblout_write_tsv(domtblout_file, outpath):
     socialgene_object.parse_domtblout(
         input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
     )
-    # socialgene_object.filter_domains()
     socialgene_object.export_all_domains_as_tsv(outpath)
 
 

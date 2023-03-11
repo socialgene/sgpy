@@ -82,6 +82,8 @@ def guess_filetype(filepath):
         return "genbank"
     if l1.startswith(">"):
         return "fasta"
+    if l1.startswith("##gff-version"):
+        return "gff"
     if (
         l1.replace(" ", "")
         == "#---fullsequence-----------------thisdomain-------------hmmcoordalicoordenvcoord\n"

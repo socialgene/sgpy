@@ -10,6 +10,7 @@ from functools import partial
 import gzip
 from collections import defaultdict
 from operator import attrgetter
+from typing import List
 
 # external dependencies
 from rich.progress import Progress
@@ -35,7 +36,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     """Main class for building, sotring, working with protein and genomic info"""
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
         self.protein_comparison = []
 
@@ -52,17 +52,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     ########################################
     # Filter
     ########################################
-    def filter_domains(self):
-        """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
-        _before_count = sum([len(i.domains) for i in self.proteins.values()])
-        for protein in self.proteins.values():
-            for domain in protein.domains:
-                if not (domain.domain_within_threshold()):
-                    protein.domains.remove(domain)
-        _after_count = sum([len(i.domains) for i in self.proteins.values()])
-        log.info(
-            f"Removed {str(_before_count - _after_count)} domains. Before: {str(_before_count)}; After: {str(_after_count)}"
-        )
 
     def get_protein_domains_from_db(self, protein_id_list):
         # Search neo4j for a protein with the same hash, if it exists,
@@ -103,7 +92,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         annotate_all=False,
         progress=False,
     ):
-
         if protein_hash_ids is None and annotate_all:
             protein_hash_ids = self.get_all_protein_hashes()
         elif isinstance(protein_hash_ids, str):
@@ -276,14 +264,39 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         with open(inpath, "rb") as handle:
             return pickle.load(handle)
 
-    def write_fasta(self, outpath, other_id=False, gz=False):
+    def filter_proteins(self, hash_list: List):
+        """Filter proteins by list of hash ids
+
+        Args:
+            hash_list (List): List fo protein hash identifiers
+
+        Returns:
+            Generator: generator returning tuple of length two -> Generator[(str, 'Protein'])
+        """
+        return ((k, v) for k, v in self.proteins.items() if k in hash_list)
+
+    def write_fasta(
+        self, outpath, hash_list: List = None, other_id: bool = False, gz: bool = False
+    ):
+        """Write proteins to a FASTA file
+
+        Args:
+            outpath (str): path of file that FASTA entries will be appended to
+            hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
+            other_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
+            gz (bool, optional): Write as gzip?. Defaults to False.
+        """
         if gz:
             _open = partial(gzip.open, mode="at")
         else:
             _open = partial(open, mode="a")
         with _open(outpath) as handle:
             counter = 0
-            for k, v in self.proteins.items():
+            if hash_list:
+                temp_iter = self.filter_proteins(hash_list)
+            else:
+                temp_iter = self.proteins.items()
+            for k, v in temp_iter:
                 if v.sequence is not None:
                     counter += 1
                     if other_id:
@@ -304,7 +317,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """
         return f">{self.proteins[hash_id].hash_id}\n{self.proteins[hash_id].sequence}"
 
-    def write_n_fasta(self, outdir, n_splits=1):
+    def write_n_fasta(self, outdir, n_splits=1, mode="a"):
         """Export protein sequences split into n-number of fasta files
 
         Args:
@@ -322,7 +335,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         protein_list = split(list(self.proteins.keys()), n_splits)
         counter = 1
         for protein_group in protein_list:
-            with open(Path(outdir, f"fasta_split_{counter}.faa"), "w") as handle:
+            with open(Path(outdir, f"fasta_split_{counter}.faa"), mode) as handle:
                 for k, v in {
                     key: self.proteins.get(key) for key in protein_group
                 }.items():
@@ -439,156 +452,128 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # because locus id can't be assured to be unique across assemblies
         return hasher.sha512_hash(f"{assembly_id}___{locus_id}")
 
-    def export_locus_to_protein(self, outdir: str = "."):
-        """Locus to protein table for import into Neo4j
+    @staticmethod
+    def tsv_tablenames():
+        return [
+            "protein_info_table",
+            "assembly_to_locus_table",
+            "loci_table",
+            "locus_to_protein_table",
+            "assembly_table",
+            "assembly_to_taxid_table",
+        ]
 
-        Args:
-            outdir (str, optional): Defaults to ".".
-        """
-        outpath = Path(outdir, "locus_to_protein")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            for ak, av in self.assemblies.items():
-                for k, loci in av.loci.items():
-                    temp_list = list(loci.features)
-                    # sort features by id then start to maintain consistent output
-                    temp_list.sort(key=attrgetter("id"))
-                    temp_list.sort(key=attrgetter("start"))
-                    for feature in temp_list:
-                        if feature.feature_is_protein():
-                            # ["locus_id", "hash_id", "start", "end", "strand"]
-                            tsv_writer.writerow(
-                                [
-                                    self._create_internal_locus_id(
-                                        assembly_id=ak, locus_id=k
-                                    ),
-                                    feature.id,
-                                    feature.start,
-                                    feature.end,
-                                    feature.strand,
-                                ]
-                            )
+    def write_table(self, outdir: str, type: str, filename: str = None, mode="a"):
+        if not filename:
+            filename = type
+        if not hasattr(self, type):
+            raise ValueError(f"type must be one of: {self.tsv_tablenames()}")
+        else:
+            outpath = Path(outdir, filename)
+            with open(outpath, mode) as handle:
+                tsv_writer = csv.writer(
+                    handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
+                )
+                for i in getattr(self, type)():
+                    tsv_writer.writerow(i)
 
-    def export_protein_info(self, outdir: str = "."):
+    def locus_to_protein_table(self):
+        for ak, av in self.assemblies.items():
+            for k, loci in av.loci.items():
+                temp_list = list(loci.features)
+                # sort features by id then start to maintain consistent output
+                temp_list.sort(key=attrgetter("id"))
+                temp_list.sort(key=attrgetter("start"))
+                for feature in temp_list:
+                    if feature.feature_is_protein():
+                        yield (
+                            self._create_internal_locus_id(assembly_id=ak, locus_id=k),
+                            feature.id,
+                            feature.start,
+                            feature.end,
+                            feature.strand,
+                        )
+
+    def protein_info_table(self):
         """Protein table for import into Neo4j
 
         Args:
             outdir (str, optional): Defaults to ".".
         """
-        outpath = Path(outdir, "protein_info")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
+        for protein in self.proteins.values():
+            if protein.sequence is None:
+                prot_len = None
+            else:
+                prot_len = len(protein.sequence)
+            yield (
+                protein.hash_id,
+                # TODO: add database "source" of protein?
+                protein.other_id,
+                protein.description,
+                prot_len,  # protein length
             )
-            for protein in self.proteins.values():
-                if protein.sequence is None:
-                    prot_len = None
-                else:
-                    prot_len = len(protein.sequence)
-                tsv_writer.writerow(
-                    [
-                        protein.hash_id,
-                        # TODO: add database "source" of protein?
-                        protein.other_id,
-                        protein.description,
-                        prot_len,  # protein length
-                    ]
-                )
 
-    def export_assembly_to_locus(self, outdir: str = "."):
+    def assembly_to_locus_table(self):
         """Assembly to locus table for import into Neo4j
 
         Args:
             outdir (str, optional): Defaults to ".".
         """
-        outpath = Path(outdir, "assembly_to_locus")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            for ak, av in self.assemblies.items():
-                for k in av.loci.keys():
-                    #  ["assembly", "internal_locus_id"]
-                    tsv_writer.writerow(
-                        [ak, self._create_internal_locus_id(assembly_id=ak, locus_id=k)]
-                    )
+        for ak, av in self.assemblies.items():
+            for k in av.loci.keys():
+                #  ["assembly", "internal_locus_id"]
+                yield (ak, self._create_internal_locus_id(assembly_id=ak, locus_id=k))
 
-    def export_loci(self, outdir: str = "."):
+    def loci_table(self):
         """Loci table for import into Neo4j
 
         Args:
             outdir (str, optional): Defaults to ".".
         """
-        outpath = Path(outdir, "loci")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            for ak, av in self.assemblies.items():
-                for k in av.loci.keys():
-                    internal_id = self._create_internal_locus_id(
-                        assembly_id=ak, locus_id=k
-                    )
-                    temp_v = []
-                    for i in self.assemblies[ak].loci[k].info.values():
-                        if isinstance(i, list):
-                            if len(i) > 1:
-                                temp_v.append(";".join(i))
-                            else:
-                                temp_v.append(i[0])
-                        else:
-                            temp_v.append(i)
-                    out_list = [internal_id] + [k] + temp_v
-                    #  ["internal_locus_id" "locus_id"]
-                    tsv_writer.writerow(out_list)
-
-    def export_assembly(self, outdir: str = "."):
-        """Assembly table for import into Neo4j
-
-        Args:
-            outdir (str, optional): Defaults to ".".
-        """
-        outpath = Path(outdir, "assemblies")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            for k in self.assemblies.keys():
+        for ak, av in self.assemblies.items():
+            for k in av.loci.keys():
+                internal_id = self._create_internal_locus_id(assembly_id=ak, locus_id=k)
                 temp_v = []
-                for i in self.assemblies[k].info.values():
+                for i in self.assemblies[ak].loci[k].info.values():
                     if isinstance(i, list):
+                        # if info is a list, collapse into a single string
                         if len(i) > 1:
                             temp_v.append(";".join(i))
                         else:
                             temp_v.append(i[0])
                     else:
                         temp_v.append(i)
-                tsv_writer.writerow([k] + temp_v)
+                #  ["internal_locus_id" "locus_id"]
+                yield tuple([internal_id] + [k] + temp_v)
 
-    def export_assemby_to_taxid(self, outdir: str = "."):
-        """Assembly to taxid table for import into Neo4j
+    def assembly_table(self):
+        """Assembly table for import into Neo4j
 
         Args:
             outdir (str, optional): Defaults to ".".
         """
-        outpath = Path(outdir, "assembly_to_taxid")
-        with open(outpath, "a") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            has_taxid = 0
-            has_no_taxid = 0
-            for k, v in self.assemblies.items():
-                if v.taxid:
-                    tsv_writer.writerow([k, v.taxid])
-                    has_taxid += 1
+        for k in self.assemblies.keys():
+            temp_v = []
+            for i in self.assemblies[k].info.values():
+                if isinstance(i, list):
+                    if len(i) > 1:
+                        temp_v.append(";".join(i))
+                    else:
+                        temp_v.append(i[0])
                 else:
-                    has_no_taxid += 1
-            log.info(
-                f"{has_taxid} assemblies were connected to their taxon; {has_no_taxid} assemblies were not connected to their taxon; "
-            )
+                    temp_v.append(i)
+                #  ["internal_locus_id" "locus_id"]
+                yield tuple([k] + temp_v)
+
+    def assembly_to_taxid_table(self):
+        """Assembly table for import into Neo4j
+
+        Args:
+            outdir (str, optional): Defaults to ".".
+        """
+        for k, v in self.assemblies.items():
+            if v.taxid:
+                yield (k, v.taxid)
 
     def drop_non_protein_features(self, return_removed=False):
         """Drop features that aren't proteins

@@ -46,14 +46,6 @@ build_docker_image: clean
 build_docker_image2: clean
 	docker build -f Dockerfileantismash --tag antismashsg:latest .
 
-## conda :	Use conda to create the socialgene conda enviornment
-conda:
-	conda env create --file environment.yml
-
-## mamba :	Use mamba to create the socialgene conda enviornment
-mamba:
-	mamba env create --file environment.yml
-
 ## install :	Install the socialgene python package 
 install: 
 	pip3 install -e .

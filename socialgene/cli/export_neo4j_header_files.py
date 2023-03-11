@@ -4,7 +4,7 @@ import argparse
 # external dependencies
 
 # internal dependencies
-from socialgene.neo4j.sg_modules import write_neo4j_headers, parse_hmmlist_input
+from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(
@@ -39,11 +39,10 @@ def main():
     args = parser.parse_args()
     log.info(args.sg_modules)
     log.info(args.hmmlist)
-    parsed_hmmlist = parse_hmmlist_input(args.hmmlist)
-    log.info(parsed_hmmlist)
-    write_neo4j_headers(
-        sg_modules=args.sg_modules, hmmlist=parsed_hmmlist, outdir=args.outdir
-    )
+    sg_mod = SocialgeneModules()
+    sg_mod.add_modules(args.sg_modules)
+    sg_mod.add_hmms(args.hmmlist)
+    sg_mod.write_neo4j_headers(outdir=args.outdir)
 
 
 if __name__ == "__main__":

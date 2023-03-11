@@ -7,12 +7,12 @@ from pathlib import Path
 
 # internal dependencies
 from socialgene.config import env_vars
+from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.utils.run_subprocess import run_subprocess
 from socialgene.utils.logging import log
-from socialgene.neo4j.sg_modules import SocialgeneModules, Neo4jImportData
 
 
-class Neo4jAdminImport:
+class Neo4jAdminImport(SocialgeneModules):
     """Socialgene's Neo4jAdminImport class handles building the Docker/Neo4j admin import command line arguments"""
 
     def __init__(
@@ -22,8 +22,8 @@ class Neo4jAdminImport:
         additional_args: str = "",
         uid: int = None,
         gid: int = None,
-        input_sg_modules: list = None,
-        hmmlist: list = None,
+        module_list: list = None,
+        hmm_list: list = None,
         dbms_connector_http_listen_address: int = 7474,
         dbms_connector_bolt_listen_address: int = 7687,
         neo4j_version=env_vars["NEO4J_VERSION"],
@@ -34,15 +34,16 @@ class Neo4jAdminImport:
 
         Args:
             neo4j_top_dir (str): directory containing the necessary dirs and files for Neo4j admin import
-            sg_modules (list): see additional options in `socialgene.neo4j.sg_modules` (default is ["base", "hmms", "ncbi_taxonomy"])
+            module_list (list): name of grouped nodes/relationships (socialgene/neo4j/schema/define_modules.py)
+            hmm_list (list): list of hmms source databases used (socialgene/neo4j/schema/define_hmmlist.py)
             cpus (int, optional): [description]. Defaults to 1.
             additional_args (str, optional): [description]. Defaults to "".
             uid (int, optional): [description]. Defaults to None.
             gid (int, optional): [description]. Defaults to None.
         """
         super().__init__(*args, **kwargs)
-        self.input_sg_modules = input_sg_modules
-        self.hmmlist = hmmlist
+        self.input_sg_modules = module_list
+        self.input_hmmlist = hmm_list
         self.neo4j_top_dir = neo4j_top_dir
         self.cpus = cpus
         self.additional_args = additional_args
@@ -136,43 +137,37 @@ class Neo4jAdminImport:
         for i in self.node_relationship_argument_list:
             i[2] = i[2].replace("*.", ".*\\.")
 
-    def arg_builder(self, input_sg_modules, hmmlist):
+    def get_nodes_and_relationships(self, module_list, hmm_list):
         """Reduce the expected sg_module list based on the input/selected modules
 
         Args:
-            input_sg_modules (list): sg_modules to build Neo4j admin import arguments for
-            hmmlist (list): if hmms are in input_sg_modules then filter which HMM arguments to create for Neo4j admin import
+            module_list (list): sg_modules to build Neo4j admin import arguments for
+            hmm_list (list): if hmms are in module_list then filter which HMM arguments to create for Neo4j admin import
         """
-        self.node_relationship_argument_list = []
-        sg_mod_object = SocialgeneModules()
-        header_object = Neo4jImportData()
-        # retrieve the nodes and relationships that correspond to the input sg_modules
-        reduced_dict = {
-            "nodes": sg_mod_object.filter_nodes(input_sg_modules),
-            "relationships": sg_mod_object.filter_relationships(input_sg_modules),
-        }
-        for rd_key, rd_value in reduced_dict.items():
-            for sg_mod_key, header_keys in rd_value.items():
-                if sg_mod_key == "hmms":
-                    keylist = [i for i in header_keys if i in hmmlist]
-                    keylist.extend(rd_value["base_hmm"])
-                else:
-                    keylist = header_keys
-                for i in keylist:
-                    dict_elem = getattr(header_object, rd_key)[i]
-                    label = dict_elem["neo4j_label"]
-                    header_filename = dict_elem["header_filename"]
-                    target_subdirectory = dict_elem["target_subdirectory"]
-                    target_extension = dict_elem["target_extension"]
-                    self.node_relationship_argument_list.append(
-                        self._single_arg_string_builder(
-                            label=label,
-                            header_filename=header_filename,
-                            target_subdirectory=target_subdirectory,
-                            target_extension=target_extension,
-                            type=rd_key,
-                        )
-                    )
+        self.add_modules(module_list)
+        self.add_hmms(hmm_list)
+
+    def build_nodes_and_relationships_argument_list(self):
+        for node in self.nodes:
+            self.node_relationship_argument_list.append(
+                self._single_arg_string_builder(
+                    label=node.neo4j_label,
+                    header_filename=node.header_filename,
+                    target_subdirectory=node.target_subdirectory,
+                    target_extension=node.target_extension,
+                    type="nodes",
+                )
+            )
+        for rel in self.relationships:
+            self.node_relationship_argument_list.append(
+                self._single_arg_string_builder(
+                    label=rel.neo4j_label,
+                    header_filename=rel.header_filename,
+                    target_subdirectory=rel.target_subdirectory,
+                    target_extension=rel.target_extension,
+                    type="relationships",
+                )
+            )
 
     def _check_files(self):
         missing_input_headers = []
@@ -241,7 +236,7 @@ class Neo4jAdminImport:
         return pre + list(set(joined_args)) + post
 
     @staticmethod
-    def _run(cmd):
+    def _launch_sub(cmd):
         run_subprocess(
             command_list=" ".join(cmd),
             check=False,
@@ -249,10 +244,18 @@ class Neo4jAdminImport:
             capture_output=True,
         )
 
-    def run_neo4j_admin_import(self, docker=False):
-        """Run the created commands/arguments in a separate process"""
+    def _prerun(self):
         self.create_neo4j_directories(self.neo4j_top_dir)
-        self.arg_builder(self.input_sg_modules, self.hmmlist)
-        self._check_files()
+        self.get_nodes_and_relationships(self.input_sg_modules, self.input_hmmlist)
+        self.build_nodes_and_relationships_argument_list()
         self._escape_arg_glob()
-        self._run(self._neo4j_admin_import_args(docker))
+
+    def run(self, docker=False, dryrun=False):
+        """Run the created commands/arguments in a separate process"""
+        self._prerun()
+        cmd_arg_list = self._neo4j_admin_import_args(docker)
+        if dryrun:
+            return cmd_arg_list
+        else:
+            self._check_files()
+            self._launch_sub(cmd_arg_list)

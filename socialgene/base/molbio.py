@@ -15,6 +15,8 @@ SOURCE_KEYS = [
     "mol_type",
     "altitude",
     "bio_material",
+    "bioproject",
+    "biosample",
     "cell_line",
     "cell_type",
     "chromosome",
@@ -409,6 +411,18 @@ class Protein(
             sorted_domain_list = self.sort_domains_by_mean_envelope_position()
             return [i.get_hmm_id() for i in sorted_domain_list]
 
+    def filter_domains(self):
+        """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
+        _before_count = len(self.domains)
+        self.domains = list(self.domains)
+        for domain in self.domains:
+            if not (domain.domain_within_threshold()):
+                self.domains.remove(domain)
+        self.domains = set(self.domains)
+        log.debug(
+            f"Removed {str(_before_count - len(self.domains))} domains from {self.other_id}"
+        )
+
 
 class Feature(Location):
     """Container class for describing a feature on a locus"""
@@ -516,10 +530,10 @@ class Molbio:
     """Class for inheriting by SocialGene()"""
 
     def __init__(self):
-        pass
+        pass  # TODO: ?
 
-        self.assemblies = {}
-        self.proteins = {}
+        self.assemblies = {}  # TODO: ?
+        self.proteins = {}  # TODO: ?
 
     def get_all_protein_hashes(self):
         """Return a list of all proteins hash_ids

@@ -104,7 +104,14 @@ class Neo4jQuery:
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     @staticmethod
-    def query_neo4j(cypher_name: str =None, cypher: str=None, param: Any=None, rettype="data",*args, **kwargs):
+    def query_neo4j(
+        cypher_name: str = None,
+        cypher: str = None,
+        param: Any = None,
+        rettype="data",
+        *args,
+        **kwargs,
+    ):
         """Run a provided cypher query on {param}
 
         Args:
@@ -120,15 +127,10 @@ class Neo4jQuery:
         resolved_query_dict = import_queries()
         # grab the the neo4j connection
         if cypher_name:
-            query=resolved_query_dict[cypher_name]["query"]
+            query = resolved_query_dict[cypher_name]["query"]
         elif cypher:
-            query=cypher
+            query = cypher
         with GraphDriver() as db:
             # make the query against the db
-            results = db.run(
-                    query, param=param
-                )
+            results = db.run(query, param=param)
             return getattr(results, rettype)(*args, **kwargs)
-        
-       
-       

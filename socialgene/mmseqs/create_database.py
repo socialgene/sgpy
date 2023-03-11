@@ -4,9 +4,7 @@
 import argparse
 import logging
 import os
-import pandas as pd
-import subprocess
-import tempfile
+
 
 # external dependencies
 # mmseqs must be present on PATH
@@ -52,7 +50,6 @@ def create_database(fasta_path, database_path):
 
 
 def main():
-
     args = parser.parse_args()
 
     fasta_path = args.input_fasta_path

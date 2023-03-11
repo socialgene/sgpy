@@ -36,3 +36,78 @@ The code is organized under a number of submodules/directories:
 - scoring: functions for measuring protein similarity
 - taxonomy
 - utils
+
+## Installation with pip
+
+<https://pypi.org/project/socialgene>
+
+```bash
+pip install socialgene
+```
+
+## Create conda environment and install python package inside
+
+```bash
+git clone https://github.com/socialgene/sgpy.git
+cd sgpy
+make create_conda
+```
+
+## Build Python package from source
+
+```bash
+git clone https://github.com/socialgene/sgpy.git
+cd sgpy
+make install_python
+```
+
+## Build local Docker image
+
+```bash
+git clone https://github.com/socialgene/sgpy.git
+cd sgpy
+make build_docker_image
+```
+
+
+## Run pytest tests
+
+```bash
+git clone https://github.com/socialgene/sgpy.git
+cd sgpy
+make create_conda
+make pytest
+```
+
+## Run all tests
+
+```bash
+git clone https://github.com/socialgene/sgpy.git
+cd sgpy
+make create_conda
+make run_ci
+```
+
+## User-facing classes
+
+### `SocialGene()`
+
+This is the main class that most other user-facing classes should/do inherit from
+
+### `FindMyBGC()`
+
+### `SingleProteinSearch()`
+
+#### Common example use cases
+
+Starting with a single input protein and
+
+- [want to compare it against all other proteins in the Neo4j database](jupyter/single_protein_search.ipynb)
+
+Starting with a set of proteins (BGC) and
+
+- [want to compare against all other proteins in the Neo4j database](jupyter/findmybgc.ipynb)
+
+## Other
+
+Most of the the classes that describe the structure of `SocialGene()` (e.g. proteins, domains, loci) live in `socialgene/src/socialgene/classes/molbio.py`

@@ -93,7 +93,7 @@ RETURN assembly, distinct_query_protein, locus_info;
 // Description:
 // Param:
 WITH $param AS input_protein_list
-MATCH (p1:protein)<-[:ENCODES]-(:nucleotide)-[:ASSEMBLES_TO]->(a1:assembly)-[:TAXONOMY]-(t1:taxid)
+MATCH (p1:protein)<-[:ENCODES]-(:nucleotide)-[:ASSEMBLES_TO]->(a1:assembly)-[:IS_TAXON]-(t1:taxid)
 WHERE p1.id IN input_protein_list
 RETURN p1.id AS protein, collect( DISTINCT (a1.id)) AS assemblies, collect( DISTINCT (t1.name)) AS species;
 
@@ -101,7 +101,7 @@ RETURN p1.id AS protein, collect( DISTINCT (a1.id)) AS assemblies, collect( DIST
 // Description:
 // Param:
 WITH $param AS input_list
-MATCH (n:assembly)-[:TAXONOMY]-(:taxid)-[:BELONGS_TO*1..6]->(t1:taxid)
+MATCH (n:assembly)-[:IS_TAXON]-(:taxid)-[:TAXON_PARENT*1..6]->(t1:taxid)
 WHERE n.id IN input_list AND t1.rank = "class"
 RETURN n.id AS assembly_id, t1.name AS class_taxon
 
@@ -109,7 +109,7 @@ RETURN n.id AS assembly_id, t1.name AS class_taxon
 // Description:
 // Param:
 WITH $param AS input_list
-MATCH (n:assembly)-[:TAXONOMY]-(:taxid)-[:BELONGS_TO*1..4]->(t1:taxid)
+MATCH (n:assembly)-[:IS_TAXON]-(:taxid)-[:TAXON_PARENT*1..4]->(t1:taxid)
 WHERE n.id IN input_list AND t1.rank = "genus"
 RETURN n.id AS assembly_id, t1.name AS class_taxon
 
