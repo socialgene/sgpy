@@ -19,7 +19,9 @@ class HmmInfo:
     def read_tsv(self):
         with fh.open_file(self.all_hmms_path) as h:
             for line in h:
-                line_vals = [i.strip() for i in line.split("\t")]
+                line_vals = [
+                    None if v.strip() == '""' else v.strip() for v in line.split("\t")
+                ]
                 if not len(line_vals) == 10:
                     print(line_vals)
                     raise ValueError(f"Expected 10 columns, not {len(line_vals)}")
