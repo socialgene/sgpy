@@ -1,14 +1,12 @@
 # python dependencies
 import csv
 from pathlib import Path
-from socialgene.parsers.hmm import HMMParser
 
 # external dependencies
 
 # internal dependencies
-
-
-# all_hmms_path = "/home/chase/Documents/socialgene_data/examplesssss/socialgene_per_run/hmm_cache/all_hmms.tsv"
+from socialgene.parsers.hmm import HMMParser
+import socialgene.utils.file_handling as fh
 
 
 class HmmInfo:
@@ -19,7 +17,7 @@ class HmmInfo:
         self.all_hmms_data = set()
 
     def read_tsv(self):
-        with open(self.all_hmms_path, "r") as h:
+        with fh.open_file(self.all_hmms_path) as h:
             for line in h:
                 line_vals = [i.strip() for i in line.split("\t")]
                 if not len(line_vals) == 10:
