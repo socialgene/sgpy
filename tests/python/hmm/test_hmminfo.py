@@ -4,10 +4,10 @@ import tempfile
 from socialgene.hmm.hmminfo import HmmInfo
 from socialgene.utils.logging import log
 
-# FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
-# FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
-# FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
-FIXTURE_DIR = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data"
+FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
+FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
+# FIXTURE_DIR = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data"
 hmm_metadata = os.path.join(FIXTURE_DIR, "hmm_metadata.tsv.gz")
 
 
