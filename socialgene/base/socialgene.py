@@ -601,5 +601,3 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 self.assemblies[a_k].loci[l_k].features = kept_features
         if return_removed:
             return report
-        else:
-            del report
