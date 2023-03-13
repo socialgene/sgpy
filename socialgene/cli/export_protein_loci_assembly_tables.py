@@ -2,7 +2,6 @@
 import argparse
 import glob
 from pathlib import Path
-import csv
 
 # external dependencies
 
@@ -44,9 +43,12 @@ parser.add_argument(
 )
 
 
-def fasta_gen(obj):
-    for k, v in obj.proteins.items():
-        yield f">{k}\n{v.sequence}"
+def _writer(socialgene_object, outdir, n_fasta_splits):
+    socialgene_object.write_n_fasta(outdir=outdir, n_splits=n_fasta_splits, mode="a")
+    for i in SocialGene.tsv_tablenames():
+        socialgene_object.write_table(
+            outdir=outdir, type=i, filename=i.removesuffix("_table"), mode="a"
+        )
 
 
 def export_tables(
@@ -58,54 +60,23 @@ def export_tables(
     sequence_files = (Path(i).resolve() for i in sequence_files)
     if not sequence_files:
         raise IOError("No matching file(s)")
-
-    if collect_tables_in_memory:
-        # Avoid overhead of opening file connections per each file
-        # Instead accumulate tables in memory and dump at end
-        # still parse into individual SocialGene() object to avoid overhead of
-        # appending to large lists
-        print("hi1")
-        fasta_accum = []
-        protein_info_table = []
-        assembly_to_locus_table = []
-        loci_table = []
-        assembly_table = []
-        assembly_to_taxid_table = []
-
-        for i in sequence_files:
-            socialgene_object = SocialGene()
-            socialgene_object.parse(Path(i))
-            fasta_accum.append(fasta_gen(socialgene_object))
-            protein_info_table.append(socialgene_object.protein_info_table())
-            assembly_to_locus_table.append(socialgene_object.assembly_to_locus_table())
-            loci_table.append(socialgene_object.loci_table())
-            assembly_table.append(socialgene_object.assembly_table())
-            assembly_to_taxid_table.append(socialgene_object.assembly_to_taxid_table())
-        with open("fasta.faa", "w") as handle:
-            for i in fasta_accum:
-                handle.writelines("{}\n".format(x) for x in i)
-        for i in SocialGene.tsv_tablenames():
-            with open(i.removesuffix("_table"), "w") as handle:
-                for i in locals()[i]:
-                    tsv_writer = csv.writer(
-                        handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-                    )
-                    for ii in i:
-                        tsv_writer.writerow(ii)
-    else:
-        print("hi2")
-        # Export tables after parsing each file
-        for i in sequence_files:
-            print("hi3")
-            socialgene_object = SocialGene()
-            socialgene_object.parse(Path(i))
-            socialgene_object.write_n_fasta(
-                outdir=outdir, n_splits=n_fasta_splits, mode="a"
+    # Avoid overhead of opening file connections per each file
+    socialgene_object = SocialGene()
+    for i in sequence_files:
+        socialgene_object.parse(Path(i))
+        if not collect_tables_in_memory:
+            _writer(
+                socialgene_object=socialgene_object,
+                outdir=outdir,
+                n_fasta_splits=n_fasta_splits,
             )
-            for i in SocialGene.tsv_tablenames():
-                socialgene_object.write_table(
-                    outdir=outdir, type=i, filename=i.removesuffix("_table"), mode="a"
-                )
+            socialgene_object = SocialGene()
+    if collect_tables_in_memory:
+        _writer(
+            socialgene_object=socialgene_object,
+            outdir=outdir,
+            n_fasta_splits=n_fasta_splits,
+        )
 
 
 def main():
