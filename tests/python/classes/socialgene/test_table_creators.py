@@ -3,10 +3,9 @@ from socialgene.base.socialgene import SocialGene
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
-FIXTURE_DIR = os.path.join(FIXTURE_DIR, "BGC0000492.gbk")
-
-FIXTURE_DIR = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data/lagriamide_mibig_bgc0001946.gbk"
+FIXTURE_DIR = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 
 
 def test_protein_info_table_1():
