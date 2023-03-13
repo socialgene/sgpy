@@ -11,7 +11,7 @@ FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
 gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 
 
-def test_export_locus_to_protein():
+def test_export_locus_to_protein_1():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     locus_key = [
@@ -34,3 +34,32 @@ def test_export_locus_to_protein():
     )
     assert len([i.feature_is_protein() for i in temp]) == 22
     assert sum([i.feature_is_protein() for i in temp]) == 22
+
+
+def test_export_locus_to_protein_2():
+    temp = SocialGene()
+    temp.add_assembly("myassembly")
+    temp.assemblies["myassembly"].add_locus(
+        "my_locus",
+    )
+    temp.assemblies["myassembly"].loci["my_locus"].add_feature(
+        id="feature_id1",
+        type="protein",
+        start=1,
+        end=10,
+        strand=1,
+    )
+    temp.assemblies["myassembly"].loci["my_locus"].add_feature(
+        id="feature_id2",
+        type="not_a_prot",
+        start=1,
+        end=10,
+        strand=1,
+    )
+    assert len(temp.assemblies["myassembly"].loci["my_locus"].features) == 2
+    removed = temp.drop_non_protein_features(return_removed=True)
+    assert removed == {"myassembly": {"my_locus": {"retained": 1, "removed": 1}}}
+    z = temp.assemblies["myassembly"].loci["my_locus"].features.pop()
+    assert z.id == "feature_id1"
+    removed = temp.drop_non_protein_features(return_removed=True)
+    assert removed == {"myassembly": {"my_locus": {"retained": 0, "removed": 0}}}
