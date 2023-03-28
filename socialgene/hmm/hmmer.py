@@ -89,8 +89,6 @@ class HMMER:
         command_list = [str(i) for i in command_list]
         run_subprocess(
             command_list=command_list,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
         )
         if not self._check_hmmpress_files_exist():
             raise FileNotFoundError("Didn't find expected files after running hmmpress")

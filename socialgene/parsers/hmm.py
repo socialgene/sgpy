@@ -3,6 +3,7 @@ from collections import OrderedDict
 import csv
 from pathlib import Path
 import os
+import re
 
 # external dependencies
 
@@ -224,6 +225,48 @@ class HMMParser(IndividualHmmDbParsers):
                 ),
             )
 
+    def link_to_latest_pfam(self):
+        """Finds latest pfam models by version number and links old models to the new ones
+        (e.g. prevent PF02826.20 and PF02826.22 from being included twice)
+        """
+        # Match 'PF#####'
+        re_pfam_broad = re.compile("^PF\d{5,5}")
+
+        # Get all pfam accessions
+        pfam_acs1 = {
+            v["acc"]
+            for v in self.model_info_dict.values()
+            if v["acc"] and re_pfam_broad.match(v["acc"])
+        }
+        # Split versions into list of tuples PFXXXXX.XX -> (PFXXXXX, XX)
+        pfam_accs = [(i.split(".")[0], int(i.split(".")[1])) for i in pfam_acs1]
+        # Crete dictionary {PFXXXXX: highest_version}
+        pfam_version_dict = dict()
+        for key, value in pfam_accs:
+            if key in pfam_version_dict:
+                pfam_version_dict[key] = max(value, pfam_version_dict[key])
+            else:
+                pfam_version_dict[key] = value
+
+        # find model hashes for highest pfam version
+        # Loop through HMM models and replace versioned PFAMs' hash with the highest version's hash
+        # add messagethat it's linked to most recent to acc
+        highest_pfam_accs = [f"{k}.{v}" for k, v in pfam_version_dict.items()]
+        highest_pfam_accs_shas = {
+            v["acc"]: v["sha512t24u"]
+            for k, v in self.model_info_dict.items()
+            if v["acc"] in highest_pfam_accs
+        }
+        for k, v in self.model_info_dict.items():
+            if v["acc"] and re_pfam_broad.match(v["acc"]):
+                temp_split = v["acc"].split(".")
+                if int(temp_split[1]) < pfam_version_dict[temp_split[0]]:
+                    pf_id = temp_split[0]
+                    highest_version = pfam_version_dict[pf_id]
+                    v["acc"] = f"was_{v['acc']}_used_{pf_id}.{highest_version}"
+                    v["sha512t24u"] = highest_pfam_accs_shas[
+                        f"{pf_id}.{highest_version}"
+                    ]
     def create_nr_hmm_dict(self):
         self.nr_models = {}
         for source_db in self.hmm_dbs:
