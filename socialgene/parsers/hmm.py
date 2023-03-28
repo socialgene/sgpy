@@ -267,7 +267,9 @@ class HMMParser(IndividualHmmDbParsers):
                     v["sha512t24u"] = highest_pfam_accs_shas[
                         f"{pf_id}.{highest_version}"
                     ]
+
     def create_nr_hmm_dict(self):
+        self.link_to_latest_pfam()
         self.nr_models = {}
         for source_db in self.hmm_dbs:
             for k, v in self.model_info_dict.items():
