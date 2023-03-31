@@ -461,6 +461,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             "locus_to_protein_table",
             "assembly_table",
             "assembly_to_taxid_table",
+            "protein_ids_table"
         ]
 
     def write_table(self, outdir: str, type: str, filename: str = None, mode="a"):
@@ -512,6 +513,19 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 protein.description,
                 prot_len,  # protein length
             )
+
+    def protein_ids_table(self):
+        """Protein id table for import into Neo4j
+
+        Args:
+            outdir (str, optional): Defaults to ".".
+        """
+        for protein in self.proteins.values():
+            if protein.sequence is None:
+                prot_len = None
+            else:
+                prot_len = len(protein.sequence)
+            yield (protein.hash_id,)
 
     def assembly_to_locus_table(self):
         """Assembly to locus table for import into Neo4j
