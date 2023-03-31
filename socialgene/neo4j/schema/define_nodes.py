@@ -52,7 +52,7 @@ class Nodes(NR):
             header_filename="locus.header",
             target_subdirectory="genomic_info",
             target_extension="loci",
-            header=["internal_id:ID(nucleotide)"] + "external_id" + SOURCE_KEYS,
+            header=["internal_id:ID(nucleotide)"] + ["external_id"] + SOURCE_KEYS,
         )
 
         self.add_node(
