@@ -230,7 +230,7 @@ class HMMParser(IndividualHmmDbParsers):
         (e.g. prevent PF02826.20 and PF02826.22 from being included twice)
         """
         # Match 'PF#####'
-        re_pfam_broad = re.compile("^PF\d{5,5}")
+        re_pfam_broad = re.compile("^PF[0-9]{5,5}")
 
         # Get all pfam accessions
         pfam_acs1 = {
