@@ -18,8 +18,11 @@ from socialgene.config import env_vars
 # Read in queries from cypher file, as dictionary
 def import_queries():
     cypher_dictionary = {}
-    with importlib.resources.open_text("socialgene.neo4j", "queries.cypher") as f:
+    with open(
+        importlib.resources.files("socialgene").joinpath("neo4j", "queries.cypher"), "r"
+    ) as f:
         for line in f:
+            pass
             if line.startswith("// Name:"):
                 query_name = line.replace("// Name:", "").strip()
                 cypher_dictionary[query_name] = {
