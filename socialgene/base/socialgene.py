@@ -543,8 +543,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             temp_v.append(i[0])
                     else:
                         temp_v.append(i)
-            #  ["internal_locus_id" "locus_id"]
-            yield tuple([internal_id] + [k] + temp_v)
+                #  ["internal_locus_id" "locus_id"]
+                yield tuple([internal_id] + [k] + temp_v)
 
     def assembly_table(self):
         """Assembly table for import into Neo4j
