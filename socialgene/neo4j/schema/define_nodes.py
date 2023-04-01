@@ -58,7 +58,7 @@ class Nodes(NR):
         self.add_node(
             neo4j_label="protein",
             header_filename="protein_ids.header",
-            target_subdirectory="protein_ids",
+            target_subdirectory="protein_info",
             target_extension="protein_ids",
             header=[
                 "id:ID(protein)",
