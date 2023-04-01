@@ -156,3 +156,17 @@ class Relationships(NR):
             target_extension="assembly_to_mz_file",
             header=[":START_ID(assembly)", ":END_ID(mz_source_file)"],
         )
+
+        self.add_relationship(
+            neo4j_label="PROTEIN_SOURCE",
+            header_filename="protein_to_source.header",
+            target_subdirectory="protein_info",
+            target_extension="protein_info",
+            header=[
+                ":START_ID(protein)",
+                 ":END_ID(protein_access)"
+                ":IGNORE",
+                ":IGNORE",
+                 ],
+        ) 
+        

@@ -57,18 +57,25 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="protein",
+            header_filename="protein_ids.header",
+            target_subdirectory="protein_ids",
+            target_extension="protein_ids",
+            header=[
+                "id:ID(protein)",
+            ],
+        )
+        self.add_node(
+            neo4j_label="protein_access",
             header_filename="protein_info.header",
             target_subdirectory="protein_info",
             target_extension="protein_info",
             header=[
-                "id:ID(protein)",
-                # "source_db",
-                "name",
+                ":IGNORE",
+                "id:ID(protein_access)",
                 "description",
                 "seqlen:int",
             ],
         )
-
         self.add_node(
             neo4j_label="hmm",
             header_filename="sg_hmm_nodes.header",
