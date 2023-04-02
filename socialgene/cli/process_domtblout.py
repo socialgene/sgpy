@@ -28,12 +28,6 @@ parser.add_argument(
 
 
 def read_domtblout_write_tsv(domtblout_file, outpath):
-    if Path(outpath).exists():
-        log.error(f"FileExistsError: {outpath}")
-        raise FileExistsError
-    if not Path(domtblout_file).exists():
-        log.error("FileNotFoundError")
-        raise FileNotFoundError
     socialgene_object = SocialGene()
     _domain_counter = 0
     with open(outpath, "a") as f:
