@@ -25,14 +25,6 @@ parser.add_argument(
     help="Output filepath",
     required=True,
 )
-parser.add_argument(
-    "--sort",
-    metavar="boolean",
-    help="Read all and sort (to make file reproducible for testing)",
-    required=False,
-    default=False,
-    action=argparse.BooleanOptionalAction,
-)
 
 
 def read_domtblout_write_tsv(domtblout_file, outpath, should_sort):
@@ -44,35 +36,17 @@ def read_domtblout_write_tsv(domtblout_file, outpath, should_sort):
         raise FileNotFoundError
     socialgene_object = SocialGene()
     _domain_counter = 0
-    if should_sort:
-        big_list = list()
+    with open(outpath, "a") as f:
+        tsv_writer = csv.writer(f, delimiter="\t")
+        socialgene_object = SocialGene()
         for i in socialgene_object._parse_domtblout(
             input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
         ):
             domain_obj = Domain(**i)
             _temp = [i["protein_id"]]
             _temp.extend(list(domain_obj.get_dict().values()))
-            big_list.add(_temp)
-        big_list.sort()
-        with open(outpath, "a") as f:
-            tsv_writer = csv.writer(f, delimiter="\t")
-            for i in socialgene_object._parse_domtblout(
-                input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
-            ):
-                tsv_writer.writerow(_temp)
-
-    else:
-        with open(outpath, "a") as f:
-            tsv_writer = csv.writer(f, delimiter="\t")
-            socialgene_object = SocialGene()
-            for i in socialgene_object._parse_domtblout(
-                input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
-            ):
-                domain_obj = Domain(**i)
-                _temp = [i["protein_id"]]
-                _temp.extend(list(domain_obj.get_dict().values()))
-                tsv_writer.writerow(_temp)
-                _domain_counter += 1
+            tsv_writer.writerow(_temp)
+            _domain_counter += 1
     log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
 
