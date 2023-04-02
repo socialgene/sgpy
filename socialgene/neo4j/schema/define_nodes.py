@@ -38,7 +38,7 @@ class Nodes(NR):
                 "genome_download_command",
             ],
         )
-        # TODO: SOURCE_KEYS
+
         self.add_node(
             neo4j_label="assembly",
             header_filename="assembly.header",
@@ -46,7 +46,7 @@ class Nodes(NR):
             target_extension="assemblies",
             header=["id:ID(assembly)"] + SOURCE_KEYS,
         )
-        # TODO: SOURCE_KEYS
+
         self.add_node(
             neo4j_label="nucleotide",
             header_filename="locus.header",

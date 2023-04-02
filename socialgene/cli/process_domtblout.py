@@ -1,6 +1,8 @@
 # python dependencies
 import argparse
+import csv
 from pathlib import Path
+from socialgene.base.molbio import Domain
 
 # external dependencies
 
@@ -33,10 +35,19 @@ def read_domtblout_write_tsv(domtblout_file, outpath):
         log.error("FileNotFoundError")
         raise FileNotFoundError
     socialgene_object = SocialGene()
-    socialgene_object.parse_domtblout(
-        input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
-    )
-    socialgene_object.export_all_domains_as_tsv(outpath)
+    _domain_counter = 0
+    with open(outpath, "a") as f:
+        tsv_writer = csv.writer(f, delimiter="\t")
+        socialgene_object = SocialGene()
+        for i in socialgene_object._parse_domtblout(
+            input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
+        ):
+            domain_obj = Domain(**i)
+            _temp = [i["protein_id"]]
+            _temp.extend(list(domain_obj.get_dict().values()))
+            tsv_writer.writerow(_temp)
+            _domain_counter += 1
+    log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
 
 def main():
@@ -48,3 +59,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -23,6 +23,23 @@ class Domtblout:
             FileNotFoundError: _description_
         """
         # For hmmsearch/hmmscan, HMMER switches the query/target for domtblout, so make that variable here
+        for i in self._parse_domtblout(
+            input_path=input_path, hmmsearch_or_hmmscan=hmmsearch_or_hmmscan
+        ):
+            _ = self.add_protein(hash_id=i["protein_id"])
+            self.proteins[i["protein_id"]].add_domain(**i)
+
+    def _parse_domtblout(self, input_path, hmmsearch_or_hmmscan="hmmsearch"):
+        """Parse a HMMER domtblout file
+
+        Args:
+            input_path (str): path to file
+            hmmsearch_or_hmmscan (str): Determines which acc belongs to protein and which belongs to the hmm
+
+        Raises:
+            FileNotFoundError: _description_
+        """
+        # For hmmsearch/hmmscan, HMMER switches the query/target for domtblout, so make that variable here
         if hmmsearch_or_hmmscan == "hmmscan":
             target_name = "hmm_id"
             query_name = "protein_id"
@@ -65,13 +82,7 @@ class Domtblout:
                 if line.startswith("#"):
                     pass
                 else:
-                    temp = dict(zip(all_columns, line.split()))
-                    _ = self.add_protein(hash_id=temp["protein_id"])
-                    self.proteins[temp["protein_id"]].add_domain(**temp)
-
-        # log.info(
-        #     f"Read {str(len(self.proteins))} proteins and {str(sum([len(i.domains) for i in self.proteins.values()]))} domains from {str(input_path)}"
-        # )
+                    yield dict(zip(all_columns, line.split()))
 
 
 class ParsedDomtblout:

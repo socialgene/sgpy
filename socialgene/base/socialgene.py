@@ -461,7 +461,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             "locus_to_protein_table",
             "assembly_table",
             "assembly_to_taxid_table",
-            "protein_ids_table"
+            "protein_ids_table",
         ]
 
     def write_table(self, outdir: str, type: str, filename: str = None, mode="a"):
