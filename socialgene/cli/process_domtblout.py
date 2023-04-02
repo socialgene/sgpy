@@ -25,9 +25,17 @@ parser.add_argument(
     help="Output filepath",
     required=True,
 )
+parser.add_argument(
+    "--sort",
+    metavar="boolean",
+    help="Read all and sort (to make file reproducible for testing)",
+    required=False,
+    default=False,
+    action=argparse.BooleanOptionalAction,
+)
 
 
-def read_domtblout_write_tsv(domtblout_file, outpath):
+def read_domtblout_write_tsv(domtblout_file, outpath, should_sort):
     if Path(outpath).exists():
         log.error(f"FileExistsError: {outpath}")
         raise FileExistsError
@@ -36,17 +44,35 @@ def read_domtblout_write_tsv(domtblout_file, outpath):
         raise FileNotFoundError
     socialgene_object = SocialGene()
     _domain_counter = 0
-    with open(outpath, "a") as f:
-        tsv_writer = csv.writer(f, delimiter="\t")
-        socialgene_object = SocialGene()
+    if should_sort:
+        big_list = list()
         for i in socialgene_object._parse_domtblout(
             input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
         ):
             domain_obj = Domain(**i)
             _temp = [i["protein_id"]]
             _temp.extend(list(domain_obj.get_dict().values()))
-            tsv_writer.writerow(_temp)
-            _domain_counter += 1
+            big_list.add(_temp)
+        big_list.sort()
+        with open(outpath, "a") as f:
+            tsv_writer = csv.writer(f, delimiter="\t")
+            for i in socialgene_object._parse_domtblout(
+                input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
+            ):
+                tsv_writer.writerow(_temp)
+
+    else:
+        with open(outpath, "a") as f:
+            tsv_writer = csv.writer(f, delimiter="\t")
+            socialgene_object = SocialGene()
+            for i in socialgene_object._parse_domtblout(
+                input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
+            ):
+                domain_obj = Domain(**i)
+                _temp = [i["protein_id"]]
+                _temp.extend(list(domain_obj.get_dict().values()))
+                tsv_writer.writerow(_temp)
+                _domain_counter += 1
     log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
 
@@ -54,9 +80,9 @@ def main():
     log.info(f"Socialgene variables: \n{env_vars}")
     # print(Panel(f"Socialgene variables: {env_vars}"))
     args = parser.parse_args()
+    log.info(f"sg_process_domtblout will append data to {args.outpath}")
     read_domtblout_write_tsv(domtblout_file=args.domtblout_file, outpath=args.outpath)
 
 
 if __name__ == "__main__":
     main()
-
