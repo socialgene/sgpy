@@ -13,10 +13,10 @@ class HmmInfo:
     def __init__(self, all_hmms_path):
         self.columns = list(HMMParser.blank_model_dict().keys())
         self.all_hmms_path = all_hmms_path
-        self.track_hmm_ids = dict()
-        self.all_hmms_data = set()
+        self.all_hmms_data = list()
 
     def read_tsv(self):
+        temp_s = set()
         with fh.open_file(self.all_hmms_path) as h:
             for line in h:
                 line_vals = [
@@ -26,7 +26,7 @@ class HmmInfo:
                     print(line_vals)
                     raise ValueError(f"Expected 10 columns, not {len(line_vals)}")
                 if not line_vals == self.columns:
-                    self.all_hmms_data.add(tuple(line_vals))
+                    self.all_hmms_datatemp_s.append(tuple(line_vals))
 
     def write_nr_hmm_nodes(self, outpath="sg_hmm_nodes"):
         """This writes the HMM node file
