@@ -27,7 +27,7 @@ parser.add_argument(
 )
 
 
-def read_domtblout_write_tsv(domtblout_file, outpath, should_sort):
+def read_domtblout_write_tsv(domtblout_file, outpath):
     if Path(outpath).exists():
         log.error(f"FileExistsError: {outpath}")
         raise FileExistsError
