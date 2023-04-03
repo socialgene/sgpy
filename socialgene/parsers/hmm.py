@@ -250,11 +250,11 @@ class HMMParser(IndividualHmmDbParsers):
 
         # find model hashes for highest pfam version
         # Loop through HMM models and replace versioned PFAMs' hash with the highest version's hash
-        # add messagethat it's linked to most recent to acc
+        # add message that it's linked to most recent to acc
         highest_pfam_accs = [f"{k}.{v}" for k, v in pfam_version_dict.items()]
         highest_pfam_accs_shas = {
             v["acc"]: v["sha512t24u"]
-            for k, v in self.model_info_dict.items()
+            for v in self.model_info_dict.values()
             if v["acc"] in highest_pfam_accs
         }
         for k, v in self.model_info_dict.items():
@@ -269,18 +269,23 @@ class HMMParser(IndividualHmmDbParsers):
                     ]
 
     def create_nr_hmm_dict(self):
-        self.link_to_latest_pfam()
         self.nr_models = {}
-        for source_db in self.hmm_dbs:
-            for k, v in self.model_info_dict.items():
-                if self.model_info_dict[k].get("source") == source_db:
-                    self.nr_models[
-                        self.model_info_dict[k].get("sha512t24u")
-                    ] = self.model_text_dict[k]
+        self.link_to_latest_pfam()
+        for k, v in self.model_info_dict.items():
+            if self.model_info_dict[k].get("source") in self.hmm_dbs:
+                if isinstance(
+                    self.model_info_dict[k].get("acc"), str
+                ) and self.model_info_dict[k]["acc"].startswith("was_"):
+                    # Skip if it is an outdated pfam
+                    continue
+            else:
+                self.nr_models[
+                    self.model_info_dict[k].get("sha512t24u")
+                ] = self.model_text_dict[k]
 
     def write_hmms(self, outdir: str = None, n_files: int = 1):
-        """Write a non-redundant HMM file, optionally split into x files"""
-        n_models = len(self.nr_models.values())
+        """Write a non-redundant HMM file, optionally split into n-files"""
+        n_models = len(self.nr_models)
         n_files = int(n_files)
         if n_models <= n_files:
             n_per_iter = n_files
