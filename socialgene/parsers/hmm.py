@@ -165,7 +165,10 @@ class HMMParser(IndividualHmmDbParsers):
             :-11
         ]  # [:-11] is to remove '_socialgene' suffix
         self.single_model_dict["source"] = str(self.model_source)
-
+        # This changes the model name/id in case of duplicate names within a source database
+        self.single_model_dict["source_id"] = "".join(
+            [str(self.model_source), "_", str(self.source_counter)]
+        )
         if self.single_model_dict["source"] == "antismash":
             self.parse_antismash()
         if self.single_model_dict["source"] == "prism":
