@@ -278,10 +278,10 @@ class HMMParser(IndividualHmmDbParsers):
                 ) and self.model_info_dict[k]["acc"].startswith("was_"):
                     # Skip if it is an outdated pfam
                     continue
-            else:
-                self.nr_models[
-                    self.model_info_dict[k].get("sha512t24u")
-                ] = self.model_text_dict[k]
+                else:
+                    self.nr_models[
+                        self.model_info_dict[k].get("sha512t24u")
+                    ] = self.model_text_dict[k]
 
     def write_hmms(self, outdir: str = None, n_files: int = 1):
         """Write a non-redundant HMM file, optionally split into n-files"""
