@@ -105,20 +105,21 @@ class HmmModel:
 class HMM:
     def __init__(self) -> None:
         self.models = []
-        self.dfmlksdl = HmmModel()
+        self.temp_model = HmmModel()
 
-    def read(
-        self, filepath="/home/chase/Downloads/aaaa/16S_rRNA_NpmA-NCBIFAM.HMM_socialgene"
-    ):
-        _temp = self.dfmlksdl.add_attr
+    def read(self, filepath):
+        # _temp is used to switch from attribute addition to HMM model additon by switching the function
+        # to HMM model's functon after seeing "HMM ", to the end of the model
+        # then switch back before the next model starts
+        _temp = HmmModel.add_attr
         with fh.open_file(filepath) as h:
             for line in h:
                 if line.startswith("HMM "):
-                    _temp = self.dfmlksdl.add_model
+                    _temp = HmmModel.add_model
                 if line.startswith("//"):
-                    self.models.append(self.dfmlksdl)
-                    self.dfmlksdl = HmmModel()
-                    _temp = self.dfmlksdl.add_attr
+                    self.models.append(self.temp_model)
+                    self.temp_model = HmmModel()
+                    _temp = HmmModel.add_attr
                 _temp(line)
 
     def write(self, outpath):
