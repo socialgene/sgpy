@@ -108,6 +108,7 @@ class HmmModel:
 
     def add_model_hash(self):
         self._hash = hasher.sha512t24u_hasher("".join(self.MODEL))
+        self._new_hash = self._hash
 
     def find_pfam_accessions(self):
         try:
@@ -318,7 +319,9 @@ class HmmParse:
                 tsv_file, ["hash", "model_length"], delimiter="\t"
             )
             for model in self.models.values():
-                _ = all_hmms_file_writer.writerow({"hash":model._new_hash, "model_length":len(model.MODEL)})
+                _ = all_hmms_file_writer.writerow(
+                    {"hash": model._new_hash, "model_length": len(model.MODEL)}
+                )
 
 
 class HmmModelHandler(HmmParse):
