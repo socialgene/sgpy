@@ -318,7 +318,7 @@ class HmmParse:
             hashgen = list({i._new_hash for i in self.models.values()})
             hashgen.sort()
             for i in hashgen:
-                h.write(hashgen)
+                h.write(i)
                 h.write("\n")
 
 
