@@ -21,7 +21,7 @@ def write_tsv(input_data, filepath, columns=None, mode="w"):
         compression="infer",
         quoting=None,
         quotechar='"',
-        line_terminator=None,
+        lineterminator=None,
         chunksize=None,
         date_format=None,
         doublequote=True,
