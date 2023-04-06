@@ -7,8 +7,7 @@ import argparse
 from rich.progress import Progress, SpinnerColumn
 
 # internal dependencies
-from socialgene.parsers.hmmmodel import HmmModelHandler
-from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
+from socialgene.parsers.hmmmodel import HMM_SOURCES, HmmModelHandler
 
 
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
