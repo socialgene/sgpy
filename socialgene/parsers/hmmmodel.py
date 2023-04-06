@@ -13,7 +13,6 @@ from collections import defaultdict
 # internal dependencies
 import socialgene.hashing.hashing as hasher
 import socialgene.utils.file_handling as fh
-from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
 from socialgene.utils.logging import log
 
 from abc import ABC, abstractmethod
@@ -35,6 +34,18 @@ HMM_SOURCES = [
     "tigrfam",
     "virus_orthologous_groups",
 ]
+
+
+def parse_hmmlist_input(input):
+    # Filter hmm databases based on input list of hmm database names or "all"
+    # accept "all" as a list or string
+    if isinstance(input, str):
+        input = [input]
+    if "all" in input:
+        _hmms = HMM_SOURCES
+    else:
+        _hmms = [i for i in input if i in HMM_SOURCES]
+    return _hmms
 
 
 @dataclass
