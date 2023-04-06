@@ -25,20 +25,9 @@ parser.add_argument(
     nargs="+",
 )
 
-parser.add_argument(
-    "--hmmlist",
-    metavar="comma sep list",
-    help="List of HMM models used",
-    required=True,
-    default="base",
-    nargs="+",
-)
-
-
 def main():
     args = parser.parse_args()
     log.info(args.sg_modules)
-    log.info(args.hmmlist)
     sg_mod = SocialgeneModules()
     sg_mod.add_modules(args.sg_modules)
     sg_mod.write_neo4j_headers(outdir=args.outdir)

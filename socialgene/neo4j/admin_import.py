@@ -243,7 +243,7 @@ class Neo4jAdminImport(SocialgeneModules):
 
     def _prerun(self):
         self.create_neo4j_directories(self.neo4j_top_dir)
-        self.get_nodes_and_relationships(self.input_sg_modules, self.input_hmmlist)
+        self.get_nodes_and_relationships(self.input_sg_modules)
         self.build_nodes_and_relationships_argument_list()
         self._escape_arg_glob()
 

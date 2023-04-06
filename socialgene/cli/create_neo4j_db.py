@@ -6,7 +6,6 @@ import argparse
 # internal dependencies
 from socialgene.neo4j.admin_import import Neo4jAdminImport
 
-from socialgene.parsers.hmmmodel import HMM_SOURCES, parse_hmmlist_input
 
 parser = argparse.ArgumentParser(
     description="Write the header files for neo4j admin import"
