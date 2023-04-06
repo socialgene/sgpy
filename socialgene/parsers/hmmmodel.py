@@ -318,7 +318,7 @@ class HmmParse:
                 tsv_file, ["hash", "model_length"], delimiter="\t"
             )
             for model in self.models.values():
-                _ = all_hmms_file_writer.writerow([model._new_hash, len(model.MODEL)])
+                _ = all_hmms_file_writer.writerow({"hash":model._new_hash, "model_length":len(model.MODEL)})
 
 
 class HmmModelHandler(HmmParse):
