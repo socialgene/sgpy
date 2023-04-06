@@ -142,7 +142,9 @@ class HmmModel:
             if hash_as_acc:
                 self._write_hash_as_acc(h)
             else:
-                self._write_gen_attr_str("NAME", h)
+                self._write_gen_attr_str("ACC", h)
+
+            self._write_gen_attr_str("NAME", h)
 
             self._write_gen_attr_str("ACC", h)
             for i in [
