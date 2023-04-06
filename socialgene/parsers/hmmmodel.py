@@ -314,14 +314,10 @@ class HmmParse:
                 _ = all_hmms_file_writer.writerow(model._tsv_dict())
 
     def write_hmm_node_tsv(self, outdir):
-        with open(os.path.join(outdir, "sg_hmm_nodes"), "w") as tsv_file:
-            all_hmms_file_writer = csv.DictWriter(
-                tsv_file, ["hash", "model_length"], delimiter="\t"
-            )
-            for model in self.models.values():
-                _ = all_hmms_file_writer.writerow(
-                    {"hash": model._new_hash, "model_length": len(model.MODEL)}
-                )
+        with open(os.path.join(outdir, "sg_hmm_nodes"), "w") as h:
+            hashgen = list({i._new_hash for i in self.models.values()})
+            hashgen.sorted()
+            h.writelines(hashgen)
 
 
 class HmmModelHandler(HmmParse):
