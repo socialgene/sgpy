@@ -126,29 +126,25 @@ class HmmModel:
             h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, attr)}")
             h.write("\n")
 
-    def _write_hash_as_acc(self, h):
-        attr = "ACC"
+    def _write_hash_as_name(self, h):
+        attr = "NAME"
         n_spaces_offset = len("STATS") + 1 - len(attr)
         h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, '_new_hash')}")
         h.write("\n")
 
-    def write(self, outpath, mode, hash_as_acc=False):
+    def write(self, outpath, mode, hash_as_name=False):
         with open(outpath, mode=mode) as h:
             # write model headers
             # this is spread across multiple calls because likely to include
             # intermediate if/else statemets later
             h.write(getattr(self, "HMMER3_f"))
             # write hash if...
-            if hash_as_acc:
-                self._write_hash_as_acc(h)
+            if hash_as_name:
+                self._write_hash_as_name(h)
             else:
-                self._write_gen_attr_str("ACC", h)
-
-            self._write_gen_attr_str("NAME", h)
-
-            self._write_gen_attr_str("ACC", h)
+                self._write_gen_attr_str("NAME", h)
             for i in [
-                "DESC",
+                "ACC" "DESC",
                 "LENG",
                 "MAXL",
                 "ALPH",
@@ -309,11 +305,11 @@ class HmmParse:
                     continue
                 _temp(line)
 
-    def write_all(self, outpath, hash_as_acc=False):
+    def write_all(self, outpath, hash_as_name=False):
         # if only self.read(), then this should write exactly the same file back out
         # (input/output files will have the same hash)
         for i in self.models.values():
-            _ = i.write(outpath, mode="a", hash_as_acc=hash_as_acc)
+            _ = i.write(outpath, mode="a", hash_as_name=hash_as_name)
 
     def write_metadata_tsv(self, outdir, header=True):
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
@@ -410,7 +406,7 @@ class HmmModelHandler(HmmParse):
             f"{cull_at_start - len(self.cull_index)} identical HMM models removed from culled list"
         )
 
-    def write_culled(self, outdir, n_files: int = 1, hash_as_acc=False):
+    def write_culled(self, outdir, n_files: int = 1, hash_as_name=False):
         """Write a non-redundant HMM file, optionally split into n-files"""
         n_models = len(self.cull_index)
         n_files = int(n_files)
@@ -433,7 +429,7 @@ class HmmModelHandler(HmmParse):
                 self.models[i].write(
                     os.path.join(outdir, hmm_filename),
                     mode="a",
-                    hash_as_acc=hash_as_acc,
+                    hash_as_name=hash_as_name,
                 )
                 iter_counter += 1
                 written_hmm_counter += 1
