@@ -51,16 +51,16 @@ class Modules:
         self._add_module(
             module_id="tigrfam",
             nodes=[
-                "goterm",
-                "tigrfam_mainrole",
-                "tigrfam_subrole",
-                "tigrfam_role",
+                # "goterm",
+                # "tigrfam_mainrole",
+                # "tigrfam_subrole",
+                # "tigrfam_role",
             ],
             relationships=[
-                "MAINROLE_ANN",
-                "ROLE_ANN",
-                "SUBROLE_ANN",
-                "GO_ANN",
+                # "MAINROLE_ANN",
+                # "ROLE_ANN",
+                # "SUBROLE_ANN",
+                # "GO_ANN",
             ],
         )
         self._add_module(
