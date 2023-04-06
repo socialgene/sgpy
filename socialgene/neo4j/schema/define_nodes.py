@@ -65,13 +65,13 @@ class Nodes(NR):
             ],
         )
         self.add_node(
-            neo4j_label="protein_access",
+            neo4j_label="protein_source",
             header_filename="protein_info.header",
             target_subdirectory="protein_info",
             target_extension="protein_info",
             header=[
                 ":IGNORE",
-                "id:ID(protein_access)",
+                "id:ID(protein_source)",
                 "description",
                 "seqlen:int",
             ],

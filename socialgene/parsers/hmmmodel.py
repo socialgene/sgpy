@@ -126,14 +126,24 @@ class HmmModel:
             h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, attr)}")
             h.write("\n")
 
-    def write(self, outpath, mode):
+    def _write_hash_as_acc(self, h):
+        attr = "ACC"
+        n_spaces_offset = len("STATS") + 1 - len(attr)
+        h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, '_new_hash')}")
+        h.write("\n")
+
+    def write(self, outpath, mode, hash_as_acc=False):
         with open(outpath, mode=mode) as h:
             # write model headers
             # this is spread across multiple calls because likely to include
             # intermediate if/else statemets later
             h.write(getattr(self, "HMMER3_f"))
             # write hash if...
-            self._write_gen_attr_str("NAME", h)
+            if hash_as_acc:
+                self._write_hash_as_acc()
+            else:
+                self._write_gen_attr_str("NAME", h)
+
             self._write_gen_attr_str("ACC", h)
             for i in [
                 "DESC",
@@ -297,11 +307,11 @@ class HmmParse:
                     continue
                 _temp(line)
 
-    def write_all(self, outpath):
+    def write_all(self, outpath, hash_as_acc=False):
         # if only self.read(), then this should write exactly the same file back out
         # (input/output files will have the same hash)
         for i in self.models.values():
-            _ = i.write(outpath, mode="a")
+            _ = i.write(outpath, mode="a", hash_as_acc=hash_as_acc)
 
     def write_metadata_tsv(self, outdir, header=True):
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
@@ -398,7 +408,7 @@ class HmmModelHandler(HmmParse):
             f"{cull_at_start - len(self.cull_index)} identical HMM models removed from culled list"
         )
 
-    def write_culled(self, outdir, n_files: int = 1):
+    def write_culled(self, outdir, n_files: int = 1, hash_as_acc=False):
         """Write a non-redundant HMM file, optionally split into n-files"""
         n_models = len(self.cull_index)
         n_files = int(n_files)
@@ -418,6 +428,10 @@ class HmmModelHandler(HmmParse):
                     hmm_filename = (
                         f"socialgene_nr_hmms_file_{file_counter}_of_{n_files}.hmm"
                     )
-                self.models[i].write(os.path.join(outdir, hmm_filename), mode="a")
+                self.models[i].write(
+                    os.path.join(outdir, hmm_filename),
+                    mode="a",
+                    hash_as_acc=hash_as_acc,
+                )
                 iter_counter += 1
                 written_hmm_counter += 1

@@ -164,7 +164,7 @@ class Relationships(NR):
             target_extension="protein_info",
             header=[
                 ":START_ID(protein)",
-                ":END_ID(protein_access)",
+                ":END_ID(protein_source)",
                 ":IGNORE",
                 ":IGNORE",
             ],
