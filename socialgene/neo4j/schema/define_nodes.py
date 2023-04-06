@@ -165,7 +165,7 @@ class Nodes(NR):
                 "date:String",
                 "hash:String",
                 "hash_used:String",
-                "model_length:String,"
+                "model_length:String"
                 "category:String",
                 "subcategory:String",
             ],
