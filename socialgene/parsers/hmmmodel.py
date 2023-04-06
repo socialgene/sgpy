@@ -67,7 +67,7 @@ class HmmModel:
         self.MODEL.append(line)
 
     def add_model_hash(self):
-        self.hash = hasher.sha512_hash("".join(self.MODEL))
+        self.hash = hasher.sha512t24u_hasher("".join(self.MODEL))
 
     def _write_gen_attr_str(self, attr, h):
         if getattr(self, attr):
@@ -79,8 +79,8 @@ class HmmModel:
         with open(outpath, mode=mode) as h:
             h.write(getattr(self, "HMMER3_f"))
             # write hash if...
-            self._write_gen_attr_str("NAME")
-            self._write_gen_attr_str("ACC")
+            self._write_gen_attr_str("NAME", h)
+            self._write_gen_attr_str("ACC", h)
             for i in [
                 "DESC",
                 "LENG",
@@ -100,7 +100,7 @@ class HmmModel:
                 "TC",
                 "NC",
             ]:
-                self._write_gen_attr_str(i)
+                self._write_gen_attr_str(i, h)
             for i in self.STATS:
                 h.write(f"STATS {i}")
                 h.write("\n")
@@ -110,7 +110,7 @@ class HmmModel:
             h.write("\n")
 
 
-class HMM:
+class HmmParse:
     def __init__(self) -> None:
         self.models = []
         self.temp_model = HmmModel()
@@ -119,15 +119,16 @@ class HMM:
         # _temp is used to switch from attribute addition to HMM model additon by switching the function
         # to HMM model's functon after seeing "HMM ", to the end of the model
         # then switch back before the next model starts
-        _temp = HmmModel.add_attr
+        _temp = self.temp_model.add_attr
         with fh.open_file(filepath) as h:
             for line in h:
                 if line.startswith("HMM "):
-                    _temp = HmmModel.add_model
+                    _temp = self.temp_model.add_model
                 if line.startswith("//"):
+                    self.temp_model.add_model_hash()
                     self.models.append(self.temp_model)
                     self.temp_model = HmmModel()
-                    _temp = HmmModel.add_attr
+                    _temp = self.temp_model.add_attr
                 _temp(line)
 
     def write(self, outpath):
@@ -135,3 +136,12 @@ class HMM:
         # (input/output files will have the same hash)
         for i in self.models:
             i.write(outpath, mode="a")
+
+
+class H(HmmParse):
+    def __init__(self) -> None:
+        super().__init__()
+        self.hashlist = None
+
+    def get_all_model_hashes(self):
+        return [getattr(i, hash) for i in self.models]

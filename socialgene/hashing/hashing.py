@@ -17,7 +17,7 @@ parser.add_argument(
 )
 
 
-def sha512_hash(input):
+def sha512t24u_hasher(input):
     # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7714221/
     # To standardize to caps-only input, use hash_aminos()
     data = bytes(input, "utf8")
@@ -28,4 +28,4 @@ def sha512_hash(input):
 
 def hash_aminos(input):
     # make sure everything is uppercase before hashing
-    return sha512_hash(input.upper())
+    return sha512t24u_hasher(input.upper())

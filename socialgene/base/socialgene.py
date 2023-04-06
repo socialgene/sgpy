@@ -450,7 +450,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     @staticmethod
     def _create_internal_locus_id(assembly_id, locus_id):
         # because locus id can't be assured to be unique across assemblies
-        return hasher.sha512_hash(f"{assembly_id}___{locus_id}")
+        return hasher.sha512t24u_hasher(f"{assembly_id}___{locus_id}")
 
     @staticmethod
     def tsv_tablenames():
