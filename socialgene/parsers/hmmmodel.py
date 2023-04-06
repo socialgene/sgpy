@@ -317,7 +317,9 @@ class HmmParse:
         with open(os.path.join(outdir, "sg_hmm_nodes"), "w") as h:
             hashgen = list({i._new_hash for i in self.models.values()})
             hashgen.sort()
-            h.writelines(hashgen)
+            for i in hashgen:
+                h.write(hashgen)
+                h.write("\n")
 
 
 class HmmModelHandler(HmmParse):
