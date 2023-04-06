@@ -144,7 +144,8 @@ class HmmModel:
             else:
                 self._write_gen_attr_str("NAME", h)
             for i in [
-                "ACC" "DESC",
+                "ACC",
+                "DESC",
                 "LENG",
                 "MAXL",
                 "ALPH",
