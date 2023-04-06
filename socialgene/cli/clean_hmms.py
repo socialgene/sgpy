@@ -7,7 +7,8 @@ import argparse
 from rich.progress import Progress, SpinnerColumn
 
 # internal dependencies
-from socialgene.parsers.hmm import HMMParser
+from socialgene.parsers.hmmmodel import HmmModelHandler
+from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
 
 
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
@@ -32,45 +33,41 @@ parser.add_argument(
 
 
 def run_nf_workflow(input_dir, outdir, n_files):
-    hmms_object = HMMParser()
+    input_glob = "**/*hmm_socialgene.gz"
+    hmms_object = HmmModelHandler()
     # currently expects all HMM databases to be saved in a folder named for
     # the database in which it was downloaded from. To add more, see HMMParser().hmm_dbs
     # Because information about HMM function is sometimes held in directory
     # structure (e.g. antismash)
-    expected_absolute_dirs = {
-        k: os.path.join(input_dir, k) for k in HMMParser().hmm_dbs
-    }
-    # Change strings to Paths
-    expected_absolute_dirs_pathlib = {
-        key: Path(value) for (key, value) in expected_absolute_dirs.items()
-    }
-    # Find the up-converted hmm files
-    temp_paths = {
-        # instead of using the generator from rglob, sort the list of paths it
-        # creates so files will always be read in same order
-        key: sorted(value.rglob("**/*_socialgene*"))
-        for (key, value) in expected_absolute_dirs_pathlib.items()
-    }
+    dirpaths = [
+        os.path.join(input_dir, i) for i in os.listdir(input_dir) if i in HMM_SOURCES
+    ]
+    hmm_paths = []
+    for dirpath in dirpaths:
+        # hmm_paths is a list of dicts: [{filepath:"", base_dir:""}]
+        hmm_paths.extend(
+            [
+                {"filepath": i, "base_dir": dirpath}
+                for i in Path(dirpath).glob(input_glob)
+            ]
+        )
     # read and parse all models
     with Progress(
         SpinnerColumn(spinner_name="runner"),
         *Progress.get_default_columns(),
     ) as progress:
-        task = progress.add_task(
-            "Progress...", total=sum([len(i) for i in temp_paths.values()])
-        )
-        for filename, models in temp_paths.items():
-            for path in models:
-                hmms_object.parse_single_model_file(
-                    input_dir=input_dir, input_path=path, model_source=filename
-                )
-                progress.console.print(f"Parsing {filename}: {path.stem}\r")
-                progress.update(task, advance=1)
+        task = progress.add_task("Progress...", total=len(hmm_paths))
+        for i in hmm_paths:
+            print(i)
+            hmms_object.read(filepath=i.get("filepath"), base_dir=i.get("base_dir"))
+            progress.console.print(f"Parsing {i.get('filepath')}\r")
+            progress.update(task, advance=1)
     # Update info, make non-redundant, and write out
-    hmms_object.change_model_name_to_hash()
-    hmms_object.create_nr_hmm_dict()
-    hmms_object.write_hmms(outdir=outdir, n_files=n_files)
-    hmms_object.write_all_hmm_info(outdir=outdir)
+    hmms_object.hydrate_cull()
+    hmms_object.remove_duplicate_and_old_pfam()
+    hmms_object.remove_duplicate_hash()
+    hmms_object.write_culled(outdir=outdir, n_files=n_files)
+    hmms_object.write_metadata_tsv(outdir=outdir)
 
 
 def main():
