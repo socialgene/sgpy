@@ -22,8 +22,24 @@ from rich import inspect
 re_pfam_broad = re.compile("^PF[0-9]{5,5}")
 
 
+HMM_SOURCES = [
+    "amrfinder",
+    "antismash",
+    "bigslice",
+    "classiphage",
+    "ipresto",
+    "local",
+    "pfam",
+    "prism",
+    "resfams",
+    "tigrfam",
+    "virus_orthologous_groups",
+]
+
+
 @dataclass
 class HmmModel:
+    _n: int = None
     _base_dir: str = None
     _abs_path: str = None
     _rel_path: str = None
@@ -218,6 +234,7 @@ class HmmModel:
 
         return OrderedDict(
             {
+                "id": f"{self._model_source}_{self._n}",
                 "source": self._model_source,
                 "rel_path": self._rel_path,
                 "name": self.NAME,
@@ -257,6 +274,7 @@ class HmmParse:
                     self.temp_model.add_model_hash()
                     self.temp_model.find_pfam_accessions()
                     self.models[self.dict_key_ind] = self.temp_model
+                    self.temp_model._n = self.dict_key_ind
                     self.dict_key_ind += 1
                     self.temp_model = HmmModel()
                     self.temp_model._base_dir = base_dir
@@ -273,14 +291,21 @@ class HmmParse:
         for i in self.models.values():
             _ = i.write(outpath, mode="a")
 
-    def write_metadata_tsv(self, outdir):
-        with open(os.path.join(outdir, "all_hmms.tsv"), "w") as tsv_file:
+    def write_metadata_tsv(self, outdir, header=True):
+        with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
             all_hmms_file_writer = csv.DictWriter(
                 tsv_file, self.temp_model._tsv_dict().keys(), delimiter="\t"
             )
-            all_hmms_file_writer.writeheader()
+            if header:
+                all_hmms_file_writer.writeheader()
             for model in self.models.values():
                 _ = all_hmms_file_writer.writerow(model._tsv_dict())
+
+    def write_hmm_node_tsv(self, outdir):
+        with open(os.path.join(outdir, "sg_hmm_nodes"), "w") as tsv_file:
+            all_hmms_file_writer = csv.DictWriter(tsv_file, delimiter="\t")
+            for model in self.models.values():
+                _ = all_hmms_file_writer.writerow([model._new_hash, len(model.MODEL)])
 
 
 class HmmModelHandler(HmmParse):

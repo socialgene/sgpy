@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description="Merging tsv")
 parser.add_argument(
     "--all_hmms_path",
     metavar="filepath",
-    help="all_hmms.tsv filepath",
+    help=".hmminfo filepath",
     required=True,
 )
 

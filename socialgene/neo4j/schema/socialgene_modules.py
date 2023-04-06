@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import List
 from socialgene.neo4j.schema.define_nodes import Nodes
 from socialgene.neo4j.schema.define_relationships import Relationships
-from socialgene.neo4j.schema.define_hmmlist import Hmms
 from socialgene.neo4j.schema.define_modules import Modules
+from socialgene.parsers.hmmmodel import parse_hmmlist_input
 from socialgene.utils.logging import log
 
 
@@ -15,25 +15,8 @@ class SocialgeneModules(Modules):
         super().__init__()
         self.nodes = set()
         self.relationships = set()
-        self.all_hmms = Hmms()
         self.all_nodes = Nodes()
         self.all_relationships = Relationships()
-
-    def add_hmms(self, hmm_list):
-        """Take a list of the hmm sources and add the corresponding nodes/relationships
-
-        Args:
-            hmm_list (List[str]): list of HMM sources (e.g. ["antismash", "pfam"])
-        """
-        _hmms = self.all_hmms.parse_hmmlist_input(hmm_list)
-        # add nodes and relationships
-        if _hmms:
-            self.add_modules(module_list=["base_hmm"])
-            for node in self.all_hmms.get_nodes(_hmms):
-                self.nodes.add(node)
-            for source in _hmms:
-                for rel in self.all_hmms.get_relationships(source):
-                    self.relationships.add(rel)
 
     def add_modules(self, module_list: List[str]):
         """Take a list of modules and add the corresponding nodes/relationships

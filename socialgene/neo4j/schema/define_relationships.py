@@ -169,3 +169,24 @@ class Relationships(NR):
                 ":IGNORE",
             ],
         )
+        self.add_relationship(
+            neo4j_label="SOURCE_DB",
+            header_filename="hmm_source_relationships.header",
+            target_subdirectory="hmm_info",
+            target_extension=".hmminfo",
+            header=[
+                f":END_ID(hmm_source)",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":START_ID(hmm)",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+            ],
+        )

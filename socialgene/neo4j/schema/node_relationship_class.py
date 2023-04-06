@@ -68,17 +68,6 @@ class NR(ABC):
     def get_relationships(self, input):
         return self._get_by_label(x=self.relationships, y=input)
 
-    # def _get_by_label(self, x, y: List(str)):
-    #     """Filter nodes by neo4j label and return generator
-
-    #     Args:
-    #         neo4j_label_list (List(str)): neo4j_label_list
-
-    #     Yields:
-    #         Generator[Neo4jElement]: Neo4jElement nodes that matched input label
-    #     """
-    #     return (i for i in self.nodes if i.neo4j_label in neo4j_label_list)
-
     def get_relationship_by_neo4j_label(
         self, neo4j_label: str
     ) -> Generator[Neo4jElement]:

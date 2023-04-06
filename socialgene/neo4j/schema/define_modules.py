@@ -40,8 +40,8 @@ class Modules:
         )
         self._add_module(
             module_id="base_hmm",
-            nodes=["hmm"],
-            relationships=["ANNOTATES"],
+            nodes=["hmm", "hmm_source"],
+            relationships=["ANNOTATES", "SOURCE_DB"],
         )
         self._add_module(
             module_id="ncbi_taxonomy",
