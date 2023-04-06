@@ -143,7 +143,7 @@ class Nodes(NR):
             neo4j_label="mz_source_file",
             header_filename="mz_source_file.header",
             target_subdirectory="paired_omics",
-            target_extension="hash.mz_source_file", 
+            target_extension="hash.mz_source_file",
             header=[
                 "id:ID(mz_source_file)",
             ],
@@ -153,8 +153,8 @@ class Nodes(NR):
             neo4j_label="hmm_source",
             header_filename="hmm_source.header",
             target_subdirectory="hmm_info",
-            target_extension=".hmminfo",
-            header= [
+            target_extension="hmminfo",
+            header=[
                 "id:ID(hmm_source)",
                 ":LABEL",
                 "rel_path:String",
@@ -165,12 +165,11 @@ class Nodes(NR):
                 "date:String",
                 "hash:String",
                 "hash_used:String",
-                "model_length:String"
-                "category:String",
+                "model_length:String" "category:String",
                 "subcategory:String",
             ],
         )
-                
+
         self.add_node(
             neo4j_label="hmm",
             header_filename="sg_hmm_nodes.header",
