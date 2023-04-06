@@ -316,7 +316,7 @@ class HmmParse:
     def write_hmm_node_tsv(self, outdir):
         with open(os.path.join(outdir, "sg_hmm_nodes"), "w") as h:
             hashgen = list({i._new_hash for i in self.models.values()})
-            hashgen.sorted()
+            hashgen.sort()
             h.writelines(hashgen)
 
 
