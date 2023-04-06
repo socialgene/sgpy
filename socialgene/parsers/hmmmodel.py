@@ -21,6 +21,7 @@ from rich import inspect
 class HmmModel:
     rel_path: str = None
     model_source: str = None
+    hash: str = None
     HMMER3_f: str = None
     NAME: str = None
     ACC: str = None
@@ -65,12 +66,22 @@ class HmmModel:
     def add_model(self, line):
         self.MODEL.append(line)
 
+    def add_model_hash(self):
+        self.hash = hasher.sha512_hash("".join(self.MODEL))
+
+    def _write_gen_attr_str(self, attr, h):
+        if getattr(self, attr):
+            n_spaces_offset = len("STATS") + 1 - len(attr)
+            h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, attr)}")
+            h.write("\n")
+
     def write(self, outpath, mode):
         with open(outpath, mode=mode) as h:
             h.write(getattr(self, "HMMER3_f"))
+            # write hash if...
+            self._write_gen_attr_str("NAME")
+            self._write_gen_attr_str("ACC")
             for i in [
-                "NAME",
-                "ACC",
                 "DESC",
                 "LENG",
                 "MAXL",
@@ -89,10 +100,7 @@ class HmmModel:
                 "TC",
                 "NC",
             ]:
-                if getattr(self, i):
-                    n_spaces_offset = len("STATS") + 1 - len(i)
-                    h.write(f"{i}{' ' * n_spaces_offset}{getattr(self, i)}")
-                    h.write("\n")
+                self._write_gen_attr_str(i)
             for i in self.STATS:
                 h.write(f"STATS {i}")
                 h.write("\n")
@@ -123,5 +131,7 @@ class HMM:
                 _temp(line)
 
     def write(self, outpath):
+        # if only self.read(), then this should write exactly the same file back out
+        # (input/output files will have the same hash)
         for i in self.models:
             i.write(outpath, mode="a")
