@@ -29,15 +29,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--hmmlist",
-    metavar="comma sep list",
-    help="List of HMM models used",
-    required=True,
-    default="base",
-    nargs="+",
-)
-
-parser.add_argument(
     "--cpus",
     metavar="int",
     help="Number of cpus to give to neo4j admin import",
@@ -102,12 +93,9 @@ def main():
     else:
         gid = args.gid
 
-    parsed_hmmlist = parse_hmmlist_input(args.hmmlist)
-
     nai_obj = Neo4jAdminImport(
         neo4j_top_dir=args.neo4j_top_dir,
         module_list=args.sg_modules,
-        hmm_list=parsed_hmmlist,
         cpus=int(args.cpus),
         additional_args=args.additional_args,
         uid=uid,

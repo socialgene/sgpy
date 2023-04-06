@@ -41,7 +41,6 @@ def main():
     log.info(args.hmmlist)
     sg_mod = SocialgeneModules()
     sg_mod.add_modules(args.sg_modules)
-    sg_mod.add_hmms(args.hmmlist)
     sg_mod.write_neo4j_headers(outdir=args.outdir)
 
 
