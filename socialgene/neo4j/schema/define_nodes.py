@@ -76,13 +76,6 @@ class Nodes(NR):
                 "seqlen:int",
             ],
         )
-        self.add_node(
-            neo4j_label="hmm",
-            header_filename="sg_hmm_nodes.header",
-            target_subdirectory="hmm_tsv_parse",
-            target_extension="sg_hmm_nodes",
-            header=["id:ID(hmm)", "model_length"],
-        )
 
         self.add_node(
             neo4j_label="goterm",
@@ -178,4 +171,10 @@ class Nodes(NR):
             ],
         )
                 
-               
+        self.add_node(
+            neo4j_label="hmm",
+            header_filename="sg_hmm_nodes.header",
+            target_subdirectory="hmm_info",
+            target_extension="sg_hmm_nodes",
+            header=["id:ID(hmm)"],
+        )
