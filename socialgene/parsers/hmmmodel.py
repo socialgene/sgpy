@@ -124,7 +124,9 @@ class HmmModel:
                 h.write("\n")
             # write any unknown headers that were present in the original model description
             if getattr(self, "_unknown"):
-                h.write(getattr(self, "_unknown"))
+                for i in getattr(self, "_unknown"):
+                    h.write(i)
+                    h.write("\n")
             # write model
             for i in self.MODEL:
                 h.write(i)
@@ -154,12 +156,13 @@ class HmmParse:
                     dict_key_ind += 1
                     self.temp_model = HmmModel()
                     _temp = self.temp_model.add_attr
+                    continue
                 _temp(line)
 
-    def write(self, outpath):
+    def write_all(self, outpath):
         # if only self.read(), then this should write exactly the same file back out
         # (input/output files will have the same hash)
-        for i in self.models:
+        for i in self.models.values():
             i.write(outpath, mode="a")
 
 
@@ -211,3 +214,10 @@ class H(HmmParse):
             self._same_hash_removed[hash_id] = {
                 "removed": model_index_list,
             }
+
+    def write_culled(self, outpath):
+        # if only self.read(), then this should write exactly the same file back out
+        # (input/output files will have the same hash)
+        for i in self.cull_index:
+            print(i)
+            self.models[i].write(outpath, mode="a")
