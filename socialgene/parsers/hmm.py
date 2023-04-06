@@ -11,30 +11,20 @@ import re
 import socialgene.hashing.hashing as hasher
 import socialgene.utils.file_handling as fh
 from socialgene.neo4j.schema.define_hmmlist import HMM_SOURCES
+from abc import ABC, abstractmethod
 
-# Add new HMM parsers to IndividualHmmDbParsers
 
+class HMMCategories:
+    """Handles parsing rules specific to certain source databases"""
 
-class IndividualHmmDbParsers:
     def __init__(self):
         self.category = None
         self.subcategory = None
 
-    def parse_parent_folder_is_name(self):
-        """Extract/Define categories based on parent folder"""
-        # init to None for case of no subcategory
-        subcategory = None
-        temp = str(self.rel_path)
-        temp_split = temp.split("/")
-        category = temp_split[1]
-        self.category = category
-        self.subcategory = subcategory
-
-    def parse_prism(self):
-        self.parse_parent_folder_is_name()
-
-    def parse_bigslice(self):
-        self.parse_parent_folder_is_name()
+    def parse(self):
+        """Extract/Define categories based on parent folder. This is the default scenario"""
+        self.category = str(Path(self.rel_path).name)
+        self.subcategory = None
 
     def parse_antismash(self):
         """Extract/Define categories of antismash models (based on antismash directory structure)"""
@@ -73,7 +63,7 @@ class IndividualHmmDbParsers:
 # The reason we can't just parse everything, hash it and relate back to the names is because
 # there is no unifying naming convention/accessions for HMMS across databases. The same "NAME"
 # can be located in multiple directories and across databases.
-class HMMParser(IndividualHmmDbParsers):
+class HMMParser(HMMCategories):
     # the order of hmm_dbs is important because it dictates
     # how the nr model list is created. Later entries override earlier entries
     hmm_dbs = HMM_SOURCES
@@ -157,7 +147,7 @@ class HMMParser(IndividualHmmDbParsers):
         self.model_text_dict[self.total_hmms_counter] = self.temp_list
         # temp_list2 contains only the actual hmm model
         self.check_if_hmmer3(self.model_text_dict[self.total_hmms_counter][0])
-        self.single_model_dict["sha512t24u"] = hasher.sha512_hash(
+        self.single_model_dict["sha512t24u"] = hasher.sha512t24u_hasher(
             "".join(self.temp_list2)
         )
         self.single_model_dict["model_length"] = self.temp_list2[-3].split()[0]
