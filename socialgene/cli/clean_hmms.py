@@ -32,8 +32,8 @@ parser.add_argument(
 
 
 def run_nf_workflow(input_dir, outdir, n_files):
-    # glob determined by https://github.com/socialgene/sgnf/blob/17f9cde454c13a91bac95917237cf35ddcbe52c3/bin/hmmconvert_loop.shL10 
-    input_glob = "**/*_socialgene.hmm.gz"
+    # glob determined by https://github.com/socialgene/sgnf/blob/17f9cde454c13a91bac95917237cf35ddcbe52c3/bin/hmmconvert_loop.shL10
+    input_glob = "**/*.socialgene.hmm.gz"
     hmms_object = HmmModelHandler()
     # currently expects all HMM databases to be saved in a folder named for
     # the database in which it was downloaded from. To add more, see HMMParser().hmm_dbs
