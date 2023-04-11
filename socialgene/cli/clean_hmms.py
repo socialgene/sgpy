@@ -32,7 +32,7 @@ parser.add_argument(
 
 
 def run_nf_workflow(input_dir, outdir, n_files):
-    input_glob = "**/*hmm_socialgene.gz"
+    input_glob = "**/*_socialgenehmm.gz"
     hmms_object = HmmModelHandler()
     # currently expects all HMM databases to be saved in a folder named for
     # the database in which it was downloaded from. To add more, see HMMParser().hmm_dbs
