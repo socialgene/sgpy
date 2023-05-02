@@ -71,7 +71,7 @@ class Neo4jAdminImport(SocialgeneModules):
             IOError: _description_
             IOError: _description_
         """
-        dirs_to_check = ["logs", "plugins"]
+        dirs_to_check = ["data", "logs", "plugins"]
         for single_dir in dirs_to_check:
             dir_to_check = os.path.join(neo4j_top_dir, single_dir)
             if not os.path.exists(dir_to_check):
@@ -79,15 +79,15 @@ class Neo4jAdminImport(SocialgeneModules):
                 os.mkdir(dir_to_check)
                 log.info(f"Created directory for Neo4j admin import: {dir_to_check}")
         # plugins doesn't have to be empty (and is actually filled in the nextflow workflow)
-        dirs_to_check = ["data", "logs"]
-        for single_dir in dirs_to_check:
-            dir_to_check = os.path.join(neo4j_top_dir, single_dir)
-            if len(os.listdir(dir_to_check)) > 0:
-                # make sure the directory is empty
-                log.exception(
-                    f"Directory ({dir_to_check}) must be empty for Neo4j admin import to work"
-                )
-                raise IOError
+        # dirs_to_check = ["data", "logs"]
+        # for single_dir in dirs_to_check:
+        #     dir_to_check = os.path.join(neo4j_top_dir, single_dir)
+        #     if len(os.listdir(dir_to_check)) > 0:
+        #         # make sure the directory is empty
+        #         log.exception(
+        #             f"Directory ({dir_to_check}) must be empty for Neo4j admin import to work"
+        #         )
+        #         raise IOError
         files_to_check = ["import.report"]
         for single_file in files_to_check:
             file_to_check = os.path.join(neo4j_top_dir, single_file)
