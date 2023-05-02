@@ -71,7 +71,7 @@ class Neo4jAdminImport(SocialgeneModules):
             IOError: _description_
             IOError: _description_
         """
-        dirs_to_check = ["data", "logs", "plugins"]
+        dirs_to_check = ["logs", "plugins"]
         for single_dir in dirs_to_check:
             dir_to_check = os.path.join(neo4j_top_dir, single_dir)
             if not os.path.exists(dir_to_check):
