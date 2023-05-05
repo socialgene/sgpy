@@ -168,6 +168,9 @@ class Nodes(NR):
                 "model_length:String",
                 "category:String",
                 "subcategory:String",
+                "ga:String",
+                "tc:String",
+                "nc:String",
             ],
         )
 

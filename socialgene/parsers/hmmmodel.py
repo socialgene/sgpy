@@ -268,6 +268,9 @@ class HmmModel:
                 "model_length": len(self.MODEL),
                 "category": self._category,
                 "subcategory": self._subcategory,
+                "ga": self.GA,
+                "tc": self.TC,
+                "nc": self.NC,
             }
         )
 
