@@ -103,7 +103,7 @@ class ParsedDomtblout:
                     hash_id=line[1],
                     env_from=int(line[2]),
                     env_to=int(line[3]),
-                    seq_pro_score=float(line[4]),  # maybe 7?
+                    seq_pro_score=float(line[4]),  # maybe 7? TODO:
                     evalue=float(line[5]),
                     i_evalue=float(line[6]),
                     domain_bias=float(line[7]),  # or 8

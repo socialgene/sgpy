@@ -188,5 +188,8 @@ class Relationships(NR):
                 ":IGNORE",
                 ":IGNORE",
                 ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
+                ":IGNORE",
             ],
         )
