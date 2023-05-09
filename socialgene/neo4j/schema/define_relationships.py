@@ -121,7 +121,7 @@ class Relationships(NR):
         self.add_relationship(
             neo4j_label="MMSEQS2",
             header_filename="mmseqs2.header",
-            target_subdirectory="mmseqs2_easycluster",
+            target_subdirectory="mmseqs2_cluster",
             target_extension="mmseqs2_results_cluster.tsv",
             header=[":START_ID(protein)", ":END_ID(protein)"],
         )
