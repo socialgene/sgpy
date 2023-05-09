@@ -427,9 +427,11 @@ class Protein(
 class Feature(Location):
     """Container class for describing a feature on a locus"""
 
-    __slots__ = ["id", "type"]
+    __slots__ = ["id", "type", "locus_tag"]
 
-    def __init__(self, id: str = None, type: str = None, **kwargs):
+    def __init__(
+        self, id: str = None, type: str = None, locus_tag: str = None, **kwargs
+    ):
         """Container class for describing a feature on a locus
 
         Args:
@@ -439,6 +441,7 @@ class Feature(Location):
         super().__init__(**kwargs)
         self.id = id
         self.type = type
+        self.locus_tag = locus_tag
 
     def feature_is_protein(self):
         """Check if the feature "is a protein"

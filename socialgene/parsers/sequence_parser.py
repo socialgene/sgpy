@@ -74,16 +74,6 @@ class GenbankParser:
                 count_loci_in_file[seq_feature.type] += 1
             else:
                 count_loci_in_file[seq_feature.type] = 1
-            # Assign a protein id if it exists, a locus tag if it doesn't (e.g. pseudogene)
-            # if neither, make something up
-            if "protein_id" in seq_feature.qualifiers:
-                protein_id = seq_feature.qualifiers["protein_id"]
-            elif "locus_tag" in seq_feature.qualifiers:
-                protein_id = seq_feature.qualifiers["locus_tag"]
-            else:
-                protein_id = uuid4()
-            if isinstance(protein_id, list):
-                protein_id = protein_id[0]
             # Grab the locus/protein description if it exists
             if "product" in seq_feature.qualifiers:
                 product = seq_feature.qualifiers["product"][0]
@@ -108,8 +98,20 @@ class GenbankParser:
                         self.assemblies[assembly_id].loci[locus_id].info[
                             k
                         ] = seq_feature.qualifiers[k]
-            if any([True for i in ["protein", "CDS"] if i == seq_feature.type]):
+            if seq_feature.type in ["protein", "CDS"]:
                 try:
+                    # Assign a protein id if it exists, a locus tag if it doesn't (e.g. pseudogene)
+                    # if neither, make something up
+                    if "protein_id" in seq_feature.qualifiers:
+                        protein_id = seq_feature.qualifiers["protein_id"]
+                    elif "locus_tag" in seq_feature.qualifiers:
+                        protein_id = seq_feature.qualifiers["locus_tag"]
+                    else:
+                        protein_id = uuid4()
+                    if "locus_tag" in seq_feature.qualifiers:
+                        protein_id = seq_feature.qualifiers["locus_tag"]
+                    if isinstance(protein_id, list):
+                        protein_id = protein_id[0]
                     if "translation" in seq_feature.qualifiers:
                         translation = seq_feature.qualifiers["translation"][0]
                     elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
@@ -122,6 +124,12 @@ class GenbankParser:
                         raise ValueError(
                             f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
                         )
+                    if seq_feature.qualifiers["locus_tag"]:
+                        locus_tag = seq_feature.qualifiers["locus_tag"][0]
+                        if isinstance(protein_id, list):
+                            locus_tag = locus_tag[0]
+                    else:
+                        locus_tag = None
                     hash_id = self.add_protein(
                         description=product.strip(),
                         other_id=protein_id.strip(),
@@ -136,9 +144,10 @@ class GenbankParser:
                         start=get_seqio_start(seq_feature),
                         end=get_seqio_end(seq_feature),
                         strand=seq_feature.location.strand,
+                        locus_tag=locus_tag,
                     )
                 except Exception as e:
-                    _ = e
+                    print(e)
                     pass
             else:
                 # use incremented counter to id non-protein loci
