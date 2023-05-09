@@ -9,7 +9,7 @@ def test_read_and_writing_pickled_sgobject():
     _ = sg_obj.add_protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        other_id="other_id",
+        external_protein_id="external_protein_id",
     )
     base_dict = {
         "hmm_id": "hmm_id",
@@ -59,7 +59,8 @@ def test_read_and_writing_pickled_sgobject():
     # Test reading the pickle back in
     new_sg_obj = SocialGene.eat_pickle(temp_path.name)
     assert (
-        new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].other_id == "other_id"
+        new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].external_protein_id
+        == "external_protein_id"
     )
     assert (
         new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].sequence

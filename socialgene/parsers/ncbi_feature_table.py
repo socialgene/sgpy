@@ -63,7 +63,7 @@
 #                 )
 #                 self.add_protein(
 #                     description=temp[13],
-#                     other_id=temp[10],
+#                     external_protein_id=temp[10],
 #                     hash_id=hash_id,
 #                 )
 #         log.info(f"Parsed {len(self.assemblies)} assemblies")

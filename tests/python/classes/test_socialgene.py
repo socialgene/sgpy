@@ -8,7 +8,7 @@ temp = SocialGene()
 temp.add_protein(
     sequence="ARNDCQEGHILKMFPSTWYVXZJU",
     description="description",
-    other_id="other_id",
+    external_protein_id="external_protein_id",
     domains=[],
 )
 
@@ -36,7 +36,10 @@ def test_add_protein():
         temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].hash_id
         == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
     )
-    assert temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].other_id == "other_id"
+    assert (
+        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].external_protein_id
+        == "external_protein_id"
+    )
     assert (
         temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].sequence
         == "ARNDCQEGHILKMFPSTWYVXZJU"

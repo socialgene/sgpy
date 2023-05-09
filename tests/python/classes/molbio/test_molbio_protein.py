@@ -7,12 +7,12 @@ def test_protein():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        other_id="other_id",
+        external_protein_id="external_protein_id",
     )
     assert temp.description == "description"
     assert temp.domains == set()
     assert temp.hash_id == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
-    assert temp.other_id == "other_id"
+    assert temp.external_protein_id == "external_protein_id"
     assert temp.sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
 
@@ -26,7 +26,7 @@ def test_filter_domains():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        other_id="other_id",
+        external_protein_id="external_protein_id",
     )
     base_dict = {
         "hmm_id": "hmm_id",

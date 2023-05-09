@@ -16,7 +16,7 @@ def test_export_all_domains_as_tsv():
     _ = sg_obj.add_protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        other_id="other_id",
+        external_protein_id="external_protein_id",
     )
     base_dict = {
         "hmm_id": "hmm_id",

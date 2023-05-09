@@ -131,9 +131,13 @@ class Clustermap(ClustermapUuids, CompareProtein):
                         _genes.append(
                             {
                                 "uid": self.uuid_dict.get(protein_key),
-                                "label": sg_object.proteins[feature.id].other_id,
+                                "label": sg_object.proteins[
+                                    feature.id
+                                ].external_protein_id,
                                 "names": {
-                                    "name": sg_object.proteins[feature.id].other_id,
+                                    "name": sg_object.proteins[
+                                        feature.id
+                                    ].external_protein_id,
                                     "description": sg_object.proteins[
                                         feature.id
                                     ].description,
@@ -200,12 +204,12 @@ class Clustermap(ClustermapUuids, CompareProtein):
             # genes are match proteins + query protein
             if k in sg_object.proteins:
                 if (
-                    sg_object.proteins[k].other_id is not None
+                    sg_object.proteins[k].external_protein_id is not None
                     and sg_object.proteins[k].description is not None
                 ):
-                    label = f"{sg_object.proteins[k].other_id}__{sg_object.proteins[k].description}"
-                elif sg_object.proteins[k].other_id is not None:
-                    label = sg_object.proteins[k].other_id
+                    label = f"{sg_object.proteins[k].external_protein_id}__{sg_object.proteins[k].description}"
+                elif sg_object.proteins[k].external_protein_id is not None:
+                    label = sg_object.proteins[k].external_protein_id
                 elif sg_object.proteins[k].description is not None:
                     label = sg_object.proteins[k].description
                 else:

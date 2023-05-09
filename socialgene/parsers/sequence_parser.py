@@ -108,8 +108,6 @@ class GenbankParser:
                         protein_id = seq_feature.qualifiers["locus_tag"]
                     else:
                         protein_id = uuid4()
-                    if "locus_tag" in seq_feature.qualifiers:
-                        protein_id = seq_feature.qualifiers["locus_tag"]
                     if isinstance(protein_id, list):
                         protein_id = protein_id[0]
                     if "translation" in seq_feature.qualifiers:
@@ -132,7 +130,7 @@ class GenbankParser:
                         locus_tag = None
                     hash_id = self.add_protein(
                         description=product.strip(),
-                        other_id=protein_id.strip(),
+                        external_protein_id=protein_id.strip(),
                         sequence=translation.strip(),
                     )
                     if not keep_sequence:
@@ -258,7 +256,7 @@ class FastaParser:
                 # probably could use some more defensive programming here
                 hash_id = self.add_protein(
                     description=seq_record.description,
-                    other_id=seq_record.id,
+                    external_protein_id=seq_record.id,
                     sequence=str(seq_record.seq),
                 )
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
@@ -284,7 +282,7 @@ class FastaParser:
             for seq_record in SeqIO.parse(handle, "fasta"):
                 prot_hash = self.add_protein(
                     description=seq_record.description,
-                    other_id=seq_record.id,
+                    external_protein_id=seq_record.id,
                     sequence=str(seq_record.seq),
                 )
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(

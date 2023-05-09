@@ -326,12 +326,12 @@ class Protein(
 ):
     """Container class for describing a single protein"""
 
-    __slots__ = ["description", "other_id", "seqlen", "domains"]
+    __slots__ = ["description", "external_protein_id", "seqlen", "domains"]
 
     def __init__(
         self,
         description: str = None,
-        other_id: str = None,
+        external_protein_id: str = None,
         seqlen: int = None,
         domains: set = None,
         *args,
@@ -341,19 +341,19 @@ class Protein(
 
         Args:
             description (str, optional): Protein description.
-            other_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
+            external_protein_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
             seqlen (int, optional): Amino acid sequence length
             domains (Set, optional): Set of Domain() objects.
         """
         super().__init__(*args, **kwargs)
         self.description = description
-        self.other_id = other_id
+        self.external_protein_id = external_protein_id
         self.seqlen = seqlen
         self.domains = domains if domains is not None else set()
 
     def only_id(self):
         self.description = None
-        self.other_id = None
+        self.external_protein_id = None
         self.domains = set()
 
     def add_domain(
@@ -420,7 +420,7 @@ class Protein(
                 self.domains.remove(domain)
         self.domains = set(self.domains)
         log.debug(
-            f"Removed {str(_before_count - len(self.domains))} domains from {self.other_id}"
+            f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
         )
 
 

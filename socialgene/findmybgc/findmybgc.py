@@ -34,7 +34,7 @@ class SingleProteinSearch(SocialGene):
             max_matches (_type_, optional): Limit return to x-matches. Defaults to None.
         """
 
-        log.info(f"Input {protein_object.other_id}: begin database search")
+        log.info(f"Input {protein_object.external_protein_id}: begin database search")
         self.query_targets[protein_object.hash_id] = set()
         targets = [
             i["target"]
@@ -44,15 +44,15 @@ class SingleProteinSearch(SocialGene):
             )
         ]
         if not targets:
-            log.warning(f"Input {protein_object.other_id}: no matches found")
+            log.warning(f"Input {protein_object.external_protein_id}: no matches found")
             return
         log.info(
-            f"Input {protein_object.other_id}: first pass database search returned {len(targets)} proteins."
+            f"Input {protein_object.external_protein_id}: first pass database search returned {len(targets)} proteins."
         )
         if max_matches and len(targets) > max_matches:
             # TODO: this should be done before this by limiting the neo4j results
             log.warning(
-                f"Input {protein_object.other_id}: Truncating result list to {max_matches} matches"
+                f"Input {protein_object.external_protein_id}: Truncating result list to {max_matches} matches"
             )
             targets = targets[0:max_matches]
         for hash_id in targets:
@@ -71,7 +71,7 @@ class SingleProteinSearch(SocialGene):
             i.only_id()
         self.fill_locus_assembly_from_db()
         log.info(
-            f"Input {protein_object.other_id}: second pass returned {len(self.proteins)} proteins and {len(self.assemblies)} assemblies"
+            f"Input {protein_object.external_protein_id}: second pass returned {len(self.proteins)} proteins and {len(self.assemblies)} assemblies"
         )
 
 

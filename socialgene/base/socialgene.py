@@ -230,7 +230,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             cypher_name="get_protein_info",
             param=list(self.proteins.keys()),
         ):
-            self.proteins[result["protein_id"]].other_id = result["name"]
+            self.proteins[result["protein_id"]].external_protein_id = result["name"]
             self.proteins[result["protein_id"]].description = result["description"]
 
     ########################################
@@ -276,14 +276,18 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         return ((k, v) for k, v in self.proteins.items() if k in hash_list)
 
     def write_fasta(
-        self, outpath, hash_list: List = None, other_id: bool = False, gz: bool = False
+        self,
+        outpath,
+        hash_list: List = None,
+        external_protein_id: bool = False,
+        gz: bool = False,
     ):
         """Write proteins to a FASTA file
 
         Args:
             outpath (str): path of file that FASTA entries will be appended to
             hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
-            other_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
+            external_protein_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
             gz (bool, optional): Write as gzip?. Defaults to False.
         """
         if gz:
@@ -299,8 +303,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for k, v in temp_iter:
                 if v.sequence is not None:
                     counter += 1
-                    if other_id:
-                        out_id = self.proteins[k].other_id
+                    if external_protein_id:
+                        out_id = self.proteins[k].external_protein_id
                     else:
                         out_id = k
                     handle.writelines(f">{out_id}\n{v.sequence}\n")
@@ -510,7 +514,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             yield (
                 protein.hash_id,
                 # TODO: add database "source" of protein?
-                protein.other_id,
+                protein.external_protein_id,
                 protein.description,
                 prot_len,  # protein length
             )

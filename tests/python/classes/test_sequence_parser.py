@@ -48,7 +48,7 @@ def test_genbank_file_parse_result():
         if "bgc0001946" in key.lower()
     ][0]
     protein_parse_results = [
-        {k: [v.description, v.other_id, v.domains]}
+        {k: [v.description, v.external_protein_id, v.domains]}
         for k, v in sg_object.proteins.items()
     ]
     assert protein_parse_results == [
@@ -373,7 +373,7 @@ def test_fasta_file_parse():
         fasta_object.parse(fp.name)
 
     protein_parse_results = {
-        k: [v.description, v.other_id, v.domains]
+        k: [v.description, v.external_protein_id, v.domains]
         for k, v in fasta_object.proteins.items()
     }
     assert protein_parse_results == {
@@ -495,7 +495,7 @@ def test_fasta_string_parse():
     sg_object.parse_fasta_string(">asdads\n dasfa")
     assert list(sg_object.proteins.keys())[0] == "lZA5w9NxutVBhoqjqfsX_GX_dfugQZLQ"
     protein_parse_results = [
-        {k: [v.description, v.other_id, v.domains]}
+        {k: [v.description, v.external_protein_id, v.domains]}
         for k, v in sg_object.proteins.items()
     ]
     assert protein_parse_results == [
