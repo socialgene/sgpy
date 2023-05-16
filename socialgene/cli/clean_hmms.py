@@ -74,7 +74,7 @@ def run_nf_workflow(input_dir, outdir, n_files, splitcutoffs):
     hmms_object.hydrate_cull()
     hmms_object.remove_duplicate_and_old_pfam()
     hmms_object.remove_duplicate_hash()
-    hmms_object.write_culled(
+    hmms_object.write(
         outdir=outdir, n_files=n_files, hash_as_name=True, splitcutoffs=splitcutoffs
     )
     hmms_object.write_metadata_tsv(outdir=outdir, header=False)

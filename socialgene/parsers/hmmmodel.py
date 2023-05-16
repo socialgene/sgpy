@@ -415,7 +415,7 @@ class HmmModelHandler(HmmParse):
             f"{cull_at_start - len(self.cull_index)} identical HMM models removed from culled list"
         )
 
-    def write_culled(
+    def write(
         self,
         outdir: str,
         n_files: int = 1,
@@ -431,37 +431,38 @@ class HmmModelHandler(HmmParse):
             hash_as_name (bool, optional): Replace model NAME field with the hash of model. Defaults to False.
             splitcutoffs (bool, optional): Create two file, one with models that have cutoff values, one with models that don't. Defaults to False.
         """
-        if Path(outdir).glob("socialgene_nr_hmms*").__next__():
+        if any(Path(outdir).glob("socialgene_nr_hmms*")):
             raise FileExistsError(
                 f"Found existing socialgene_nr_hmms* file(s) in {outdir}; cowardly not continuing"
             )
-        n_models = len(self.cull_index)
-        n_files = int(n_files)
-        if n_models <= n_files:
-            n_per_iter = n_files
-        else:
-            n_per_iter = int(n_models / n_files)
+        models_without_ga = [k for k, v in self.models.items() if not v.GA]
+        models_without_ga = list(
+            set(models_without_ga).intersection(set(self.cull_index))
+        )
+        models_with_ga = [k for k, v in self.models.items() if v.GA]
+        models_with_ga = list(set(models_with_ga).intersection(set(self.cull_index)))
+
         written_hmm_counter = 0
         file_counter = 1
         iter_counter = 0
-        hmm_filename_with_cutoffs = (
-            f"socialgene_nr_hmms_file_with_cutoffs_{file_counter}_of_{n_files}.hmm"
-        )
-        hmm_filename_without_cutoffs = (
-            f"socialgene_nr_hmms_file_without_cutoffs_{file_counter}_of_{n_files}.hmm"
-        )
-        while written_hmm_counter < n_models:
-            for i in self.cull_index:
-                if iter_counter >= n_per_iter and file_counter < n_files:
-                    file_counter += 1
-                    iter_counter = 0
-                    hmm_filename = (
-                        f"socialgene_nr_hmms_file_{file_counter}_of_{n_files}.hmm"
-                    )
-                self.models[i].write(
-                    os.path.join(outdir, hmm_filename),
-                    mode="a",
-                    hash_as_name=hash_as_name,
-                )
-                iter_counter += 1
-                written_hmm_counter += 1
+
+        def hmm_filename_with_ga(file_counter, n_files):
+            return (
+                f"socialgene_nr_hmms_file_with_cutoffs_{file_counter}_of_{n_files}.hmm"
+            )
+
+        def hmm_filename_without_ga(file_counter, n_files):
+            return f"socialgene_nr_hmms_file_without_cutoffs_{file_counter}_of_{n_files}.hmm"
+
+        for model_index in models_without_ga:
+            self.models[model_index].write(
+                outpath=Path(outdir, hmm_filename_without_ga(file_counter, n_files)),
+                mode="a",
+                hash_as_name=hash_as_name,
+            )
+        for model_index in models_with_ga:
+            self.models[model_index].write(
+                outpath=Path(outdir, hmm_filename_with_ga(file_counter, n_files)),
+                mode="a",
+                hash_as_name=hash_as_name,
+            )
