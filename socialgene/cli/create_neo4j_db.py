@@ -62,6 +62,7 @@ parser.add_argument(
     help="just write to file instead of running ",
     required=False,
     default=None,
+    action=argparse.BooleanOptionalAction,
 )
 parser.add_argument(
     "--dryrun_filepath",
@@ -76,6 +77,7 @@ parser.add_argument(
     help="Use this flag to to add docker-specific commands",
     required=False,
     default=False,
+    action=argparse.BooleanOptionalAction,
 )
 
 

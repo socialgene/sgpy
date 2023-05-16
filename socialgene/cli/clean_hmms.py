@@ -29,9 +29,17 @@ parser.add_argument(
     help="numoutfiles file",
     required=True,
 )
+parser.add_argument(
+    "--splitcutoffs",
+    metavar="bool",
+    default="false",
+    help="Create two file, one with models that have cutoff values, one with models that don't",
+    required=True,
+    action=argparse.BooleanOptionalAction,
+)
 
 
-def run_nf_workflow(input_dir, outdir, n_files):
+def run_nf_workflow(input_dir, outdir, n_files, splitcutoffs):
     # glob determined by https://github.com/socialgene/sgnf/blob/17f9cde454c13a91bac95917237cf35ddcbe52c3/bin/hmmconvert_loop.shL10
     input_glob = "**/*.socialgene.hmm.gz"
     hmms_object = HmmModelHandler()
@@ -66,7 +74,9 @@ def run_nf_workflow(input_dir, outdir, n_files):
     hmms_object.hydrate_cull()
     hmms_object.remove_duplicate_and_old_pfam()
     hmms_object.remove_duplicate_hash()
-    hmms_object.write_culled(outdir=outdir, n_files=n_files, hash_as_name=True)
+    hmms_object.write_culled(
+        outdir=outdir, n_files=n_files, hash_as_name=True, splitcutoffs=splitcutoffs
+    )
     hmms_object.write_metadata_tsv(outdir=outdir, header=False)
     hmms_object.write_hmm_node_tsv(outdir=outdir)
 
@@ -80,7 +90,12 @@ def main():
     outdir = args.outdir
     numoutfiles = int(args.numoutfiles)
 
-    run_nf_workflow(input_dir=input_dir, outdir=outdir, n_files=numoutfiles)
+    run_nf_workflow(
+        input_dir=input_dir,
+        outdir=outdir,
+        n_files=numoutfiles,
+        splitcutoffs=args.splitcutoffs,
+    )
 
 
 if __name__ == "__main__":
