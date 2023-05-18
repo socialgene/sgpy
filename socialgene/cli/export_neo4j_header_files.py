@@ -25,6 +25,7 @@ parser.add_argument(
     nargs="+",
 )
 
+
 def main():
     args = parser.parse_args()
     log.info(args.sg_modules)

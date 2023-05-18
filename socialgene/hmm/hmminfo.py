@@ -9,6 +9,8 @@ from socialgene.parsers.hmmmodel import HmmModel
 import socialgene.utils.file_handling as fh
 
 HmmModel
+
+
 class HmmInfo:
     def __init__(self, all_hmms_path):
         self.columns = list(HmmModel()._tsv_dict().keys())
