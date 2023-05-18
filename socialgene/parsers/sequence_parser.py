@@ -145,7 +145,6 @@ class GenbankParser:
                         locus_tag=locus_tag,
                     )
                 except Exception as e:
-                    print(e)
                     pass
             else:
                 # use incremented counter to id non-protein loci
