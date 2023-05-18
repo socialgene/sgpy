@@ -28,6 +28,7 @@ parser.add_argument(
     help="Path sqlite file will be written to",
     required=False,
     default=True,
+    action=argparse.BooleanOptionalAction,
 )
 
 

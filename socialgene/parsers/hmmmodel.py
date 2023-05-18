@@ -7,6 +7,7 @@ import re
 from typing import List
 from dataclasses import dataclass, field
 from collections import defaultdict
+from math import ceil
 
 # external dependencies
 
@@ -93,18 +94,20 @@ class HmmModel:
         Args:
             line (str): string of text coming from file parse/read
         """
-        line_val = line.strip().split(maxsplit=1)
-        if line.startswith("HMMER3"):
-            self.HMMER3_f = line
+        stripped_line = line.strip()
+        line_val = stripped_line.split(maxsplit=1)
+        line_val = [i.rstrip() for i in line_val]
+        if stripped_line.startswith("HMMER3"):
+            self.HMMER3_f = stripped_line
         elif line_val[0] == "STATS":
             self.STATS.append(line_val[1])
         elif line_val[0] in self.__dataclass_fields__.keys():
             setattr(self, line_val[0], line_val[1])
         else:
-            self._unknown.append(line)
+            self._unknown.append(stripped_line)
 
     def add_model(self, line):
-        self.MODEL.append(line)
+        self.MODEL.append(line.rstrip())
 
     def add_model_hash(self):
         self._hash = hasher.sha512t24u_hasher("".join(self.MODEL))
@@ -120,62 +123,64 @@ class HmmModel:
             # no error, just don't assign pfam vars
             pass
 
-    def _write_gen_attr_str(self, attr, h):
+    def _get_gen_attr_str(self, attr):
         if getattr(self, attr):
             n_spaces_offset = len("STATS") + 1 - len(attr)
-            h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, attr)}")
-            h.write("\n")
+            return f"{attr}{' ' * n_spaces_offset}{getattr(self, attr)}"
 
-    def _write_hash_as_name(self, h):
+    def _get_name_as_hash(self):
         attr = "NAME"
         n_spaces_offset = len("STATS") + 1 - len(attr)
-        h.write(f"{attr}{' ' * n_spaces_offset}{getattr(self, '_new_hash')}")
-        h.write("\n")
+        return f"{attr}{' ' * n_spaces_offset}{getattr(self, '_new_hash')}"
+
+    def model_string(self, hash_as_name=False):
+        res = []
+        # this is spread across multiple calls because likely to include
+        # intermediate if/else statemets later
+        res.append(getattr(self, "HMMER3_f"))
+        # write hash if...
+        if hash_as_name:
+            res.append(self._get_name_as_hash())
+        else:
+            res.append(self._get_gen_attr_str("NAME"))
+        for i in [
+            "ACC",
+            "DESC",
+            "LENG",
+            "MAXL",
+            "ALPH",
+            "RF",
+            "MM",
+            "CONS",
+            "CS",
+            "MAP",
+            "DATE",
+            "COM",
+            "NSEQ",
+            "EFFN",
+            "CKSUM",
+            "GA",
+            "TC",
+            "NC",
+        ]:
+            # not all attr are required, check if they exist
+            if hasattr(self, i) and getattr(self, i):
+                res.append(self._get_gen_attr_str(i))
+        for i in self.STATS:
+            res.append(f"STATS {i}")
+        # write any unknown headers that were present in the original model description
+        if getattr(self, "_unknown"):
+            for i in getattr(self, "_unknown"):
+                res.append(i)
+        # write model
+        for i in self.MODEL:
+            res.append(i)
+        res.append("//")
+        return "\n".join([i for i in res])
 
     def write(self, outpath, mode, hash_as_name=False):
         with open(outpath, mode=mode) as h:
-            # write model headers
-            # this is spread across multiple calls because likely to include
-            # intermediate if/else statemets later
-            h.write(getattr(self, "HMMER3_f"))
-            # write hash if...
-            if hash_as_name:
-                self._write_hash_as_name(h)
-            else:
-                self._write_gen_attr_str("NAME", h)
-            for i in [
-                "ACC",
-                "DESC",
-                "LENG",
-                "MAXL",
-                "ALPH",
-                "RF",
-                "MM",
-                "CONS",
-                "CS",
-                "MAP",
-                "DATE",
-                "COM",
-                "NSEQ",
-                "EFFN",
-                "CKSUM",
-                "GA",
-                "TC",
-                "NC",
-            ]:
-                self._write_gen_attr_str(i, h)
-            for i in self.STATS:
-                h.write(f"STATS {i}")
-                h.write("\n")
-            # write any unknown headers that were present in the original model description
-            if getattr(self, "_unknown"):
-                for i in getattr(self, "_unknown"):
-                    h.write(i)
-                    h.write("\n")
-            # write model
-            for i in self.MODEL:
-                h.write(i)
-            h.write("//")
+            h.write(self.model_string(hash_as_name=hash_as_name))
             h.write("\n")
 
     def _assign_relative_path(self):
@@ -313,7 +318,7 @@ class HmmParse:
         # if only self.read(), then this should write exactly the same file back out
         # (input/output files will have the same hash)
         for i in self.models.values():
-            _ = i.write(outpath, mode="a", hash_as_name=hash_as_name)
+            _ = i.write(outpath, mode="w", hash_as_name=hash_as_name)
 
     def write_metadata_tsv(self, outdir, header=True):
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
@@ -410,30 +415,54 @@ class HmmModelHandler(HmmParse):
             f"{cull_at_start - len(self.cull_index)} identical HMM models removed from culled list"
         )
 
-    def write_culled(self, outdir, n_files: int = 1, hash_as_name=False):
-        """Write a non-redundant HMM file, optionally split into n-files"""
-        n_models = len(self.cull_index)
-        n_files = int(n_files)
-        if n_models <= n_files:
-            n_per_iter = n_files
-        else:
-            n_per_iter = int(n_models / n_files)
+    def write(
+        self,
+        outdir: str,
+        n_files: int = 1,
+        hash_as_name: bool = False,
+        splitcutoffs: bool = False,
+    ):
+        """Write a non-redundant HMM file, optionally split into n-files, or split based on presence
+        of cutoff values in a model
+
+        Args:
+            outdir (str): where to write the outfile
+            n_files (int, optional): split the files into n-files (if splitcutoffs=true will double this value). Defaults to 1.
+            hash_as_name (bool, optional): Replace model NAME field with the hash of model. Defaults to False.
+            splitcutoffs (bool, optional): Create two file, one with models that have cutoff values, one with models that don't. Defaults to False.
+        """
+        if any(Path(outdir).glob("socialgene_nr_hmms*")):
+            raise FileExistsError(
+                f"Found existing socialgene_nr_hmms* file(s) in {outdir}; cowardly not continuing"
+            )
+        models_without_ga = [k for k, v in self.models.items() if not v.GA]
+        models_without_ga = list(
+            set(models_without_ga).intersection(set(self.cull_index))
+        )
+        models_with_ga = [k for k, v in self.models.items() if v.GA]
+        models_with_ga = list(set(models_with_ga).intersection(set(self.cull_index)))
+
         written_hmm_counter = 0
         file_counter = 1
         iter_counter = 0
-        hmm_filename = f"socialgene_nr_hmms_file_{file_counter}_of_{n_files}.hmm"
-        while written_hmm_counter < n_models:
-            for i in self.cull_index:
-                if iter_counter >= n_per_iter and file_counter < n_files:
-                    file_counter += 1
-                    iter_counter = 0
-                    hmm_filename = (
-                        f"socialgene_nr_hmms_file_{file_counter}_of_{n_files}.hmm"
-                    )
-                self.models[i].write(
-                    os.path.join(outdir, hmm_filename),
-                    mode="a",
-                    hash_as_name=hash_as_name,
-                )
-                iter_counter += 1
-                written_hmm_counter += 1
+
+        def hmm_filename_with_ga(file_counter, n_files):
+            return (
+                f"socialgene_nr_hmms_file_with_cutoffs_{file_counter}_of_{n_files}.hmm"
+            )
+
+        def hmm_filename_without_ga(file_counter, n_files):
+            return f"socialgene_nr_hmms_file_without_cutoffs_{file_counter}_of_{n_files}.hmm"
+
+        for model_index in models_without_ga:
+            self.models[model_index].write(
+                outpath=Path(outdir, hmm_filename_without_ga(file_counter, n_files)),
+                mode="a",
+                hash_as_name=hash_as_name,
+            )
+        for model_index in models_with_ga:
+            self.models[model_index].write(
+                outpath=Path(outdir, hmm_filename_with_ga(file_counter, n_files)),
+                mode="a",
+                hash_as_name=hash_as_name,
+            )
