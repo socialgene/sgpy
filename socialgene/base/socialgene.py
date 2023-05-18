@@ -526,10 +526,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             outdir (str, optional): Defaults to ".".
         """
         for protein in self.proteins.values():
-            if protein.sequence is None:
-                prot_len = None
-            else:
-                prot_len = len(protein.sequence)
             yield (protein.hash_id,)
 
     def assembly_to_locus_table(self):

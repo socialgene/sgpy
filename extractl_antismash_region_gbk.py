@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-import json
+
 import argparse
 from multiprocessing import Pool
 import tarfile
@@ -8,7 +8,6 @@ from pathlib import Path
 import re
 import io
 from Bio import SeqIO
-from io import StringIO
 import gzip
 
 parser = argparse.ArgumentParser(description="Extract from antismash json")
@@ -26,7 +25,7 @@ parser.add_argument(
     required=True,
 )
 
-re_region_gbk = re.compile("region[0-9]+\.gbk")
+re_region_gbk = re.compile("region[0-9]+\\.gbk")
 re_genomic_gbk = re.compile("genomic.gbk")
 
 OUTDIR = "/home/chase/Downloads/tt/aaa"

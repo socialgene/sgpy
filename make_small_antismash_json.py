@@ -50,7 +50,7 @@ def bro(records):
         for i in records[0].get("dbxrefs"):
             if i.startswith("Assembly:"):
                 assembly = i.replace("Assembly:", "")
-    except:
+    except Exception:
         pass
     return {
         "assembly": assembly,

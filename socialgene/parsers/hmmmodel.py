@@ -7,7 +7,7 @@ import re
 from typing import List
 from dataclasses import dataclass, field
 from collections import defaultdict
-from math import ceil
+
 
 # external dependencies
 
@@ -16,8 +16,6 @@ import socialgene.hashing.hashing as hasher
 import socialgene.utils.file_handling as fh
 from socialgene.utils.logging import log
 
-from abc import ABC, abstractmethod
-from rich import inspect
 
 re_pfam_broad = re.compile("^PF[0-9]{5,5}")
 
@@ -119,7 +117,7 @@ class HmmModel:
                 temp = self.ACC.split(".", maxsplit=1)
                 self._pfam_accession = temp[0]
                 self._pfam_version = int(temp[1])
-        except:
+        except Exception:
             # no error, just don't assign pfam vars
             pass
 
@@ -199,7 +197,6 @@ class HmmModel:
         if not self._base_dir:
             return
         input_dir = Path(self._base_dir)
-        input_path = Path(self._abs_path)
         if input_rel_path is not None:
             # used for testing without downloading everything or setting up mock dirs
             # TODO: mock instead
@@ -370,7 +367,7 @@ class HmmModelHandler(HmmParse):
                 # remove from culled list
                 try:
                     self.cull_index.remove(model_index)
-                except:
+                except Exception:
                     pass
                 # if the version is not the same as the highest version
                 # then change metadata for Neo4j
@@ -441,10 +438,7 @@ class HmmModelHandler(HmmParse):
         )
         models_with_ga = [k for k, v in self.models.items() if v.GA]
         models_with_ga = list(set(models_with_ga).intersection(set(self.cull_index)))
-
-        written_hmm_counter = 0
         file_counter = 1
-        iter_counter = 0
 
         def hmm_filename_with_ga(file_counter, n_files):
             return (

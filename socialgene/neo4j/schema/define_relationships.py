@@ -176,7 +176,7 @@ class Relationships(NR):
             target_subdirectory="hmm_info",
             target_extension=".hmminfo",
             header=[
-                f":END_ID(hmm_source)",
+                ":END_ID(hmm_source)",
                 ":IGNORE",
                 ":IGNORE",
                 ":IGNORE",

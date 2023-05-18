@@ -1,7 +1,6 @@
 # python dependencies
 import argparse
 import csv
-from pathlib import Path
 from socialgene.base.molbio import Domain
 
 # external dependencies
