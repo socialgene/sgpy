@@ -89,16 +89,17 @@ class GenbankParser:
             try:
                 # Assign a protein id if it exists, a locus tag if it doesn't (e.g. pseudogene)
                 # if neither, make something up
+                locus_tag = None
                 if "protein_id" in seq_feature.qualifiers:
                     protein_id = seq_feature.qualifiers["protein_id"]
                 elif "locus_tag" in seq_feature.qualifiers:
+                    # use locus tag as protein instead
                     protein_id = seq_feature.qualifiers["locus_tag"]
                     locus_tag = seq_feature.qualifiers["locus_tag"][0]
                     if isinstance(protein_id, list):
                         locus_tag = locus_tag[0]
                 else:
                     protein_id = uuid4()
-                    locus_tag = None
 
                 if isinstance(protein_id, list):
                     protein_id = protein_id[0]
