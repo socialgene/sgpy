@@ -317,7 +317,7 @@ class HmmParse:
         for i in self.models.values():
             _ = i.write(outpath, mode="w", hash_as_name=hash_as_name)
 
-    def write_metadata_tsv(self, outdir, header=True):
+    def write_metadata_tsv(self, outdir, header=False):
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
             all_hmms_file_writer = csv.DictWriter(
                 tsv_file, self.temp_model._tsv_dict().keys(), delimiter="\t"

@@ -477,7 +477,6 @@ class Feature(Location):
 class Locus:
     """Container holding a set() of genomic features"""
 
-    SOURCE_KEYS = SOURCE_KEYS
     __slots__ = ["features", "info"]
 
     def __init__(self):
@@ -495,13 +494,12 @@ class Locus:
         self.features.sort(key=lambda i: int((i.end + i.start) / 2))
 
     def create_source_key_dict(self):
-        return OrderedDict({i: None for i in self.SOURCE_KEYS})
+        return OrderedDict({i: None for i in SOURCE_KEYS})
 
 
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
-    SOURCE_KEYS = SOURCE_KEYS
     __slots__ = ["loci", "taxid", "info"]
 
     def __init__(self):
@@ -526,7 +524,7 @@ class Assembly:
         }
 
     def create_source_key_dict(self):
-        return OrderedDict({i: None for i in self.SOURCE_KEYS})
+        return OrderedDict({i: None for i in SOURCE_KEYS})
 
 
 class Molbio:
