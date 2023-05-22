@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.5.1](https://github.com/socialgene/sgpy/compare/v2.5.0...v2.5.1) (2023-05-22)
+
+
+### Bug Fixes
+
+* api deprecations ([46e2351](https://github.com/socialgene/sgpy/commit/46e2351b95c5bfd3206ad77625b975b42b37f5d8))
+* deprecation for py3.13 ([9045c86](https://github.com/socialgene/sgpy/commit/9045c861225162d300055c9b685149f4fe0520e5))
+* loci header ([d5506cd](https://github.com/socialgene/sgpy/commit/d5506cde00656b424c7cd56c1dae99c63dfbc613))
+* new hmm glob ([0adbde3](https://github.com/socialgene/sgpy/commit/0adbde36bd1c3e120de39e2a5689197fe420e8f5))
+* regression in loci node table generation ([45bf7a1](https://github.com/socialgene/sgpy/commit/45bf7a1648b786fdf6c2ab4bada4ea3bd5d90f30))
+* wrong glob ([480c347](https://github.com/socialgene/sgpy/commit/480c34754830a2b9c9db8eabd357f525895aaa3c))
+
 ## [2.5.0](https://github.com/socialgene/sgpy/compare/v2.4.1...v2.5.0) (2023-03-11)
 
 
