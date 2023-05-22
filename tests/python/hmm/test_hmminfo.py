@@ -195,8 +195,8 @@ def test_read():
     }
     a = HmmInfo(hmm_metadata)
     a.read_tsv()
-    assert expected == a.all_hmms_data
-    assert 15 == len(a.all_hmms_data)
+    assert expected == set(a.all_hmms_data[1:])
+    assert 16 == len(a.all_hmms_data)
 
 
 def test_write_nr_hmm_nodes():

@@ -32,7 +32,7 @@ class GenbankParser:
     def _add_assembly(self, input_path, seq_record):
         if hasattr(seq_record, "dbxrefs"):
             # try to retrieve assembly id from the seqrecord dbxref
-            assembly_id = self.extract_from_dbxrefs(
+            assembly_id = self._extract_from_dbxrefs(
                 input_list=getattr(seq_record, "dbxrefs", None), prefix="Assembly:"
             )
         if not assembly_id:
@@ -54,9 +54,9 @@ class GenbankParser:
             self.assemblies[assembly_id].taxid = self._extract_from_dbxrefs(
                 input_list=seq_feature.qualifiers.get("db_xref"), prefix="taxon:"
             )
-            log.debug(f"Added as taxon: {self.assemblies[assembly_id].taxid}")
+            log.info(f"Added as taxon: {self.assemblies[assembly_id].taxid}")
         except Exception as e:
-            log.debug(e)
+            log.info(e)
 
     def _add_feature(
         self,
@@ -79,12 +79,10 @@ class GenbankParser:
             product = None
         if seq_feature.type == "source":
             # TODO: should this overwrite (current) or compare every iteration per assembly?
-            for k in self.assemblies[assembly_id].info.keys():
-                if k in seq_feature.qualifiers:
-                    self.assemblies[assembly_id].info[k] = seq_feature.qualifiers[k]
-                    self.assemblies[assembly_id].loci[locus_id].info[
-                        k
-                    ] = seq_feature.qualifiers[k]
+            for k, v in seq_feature.qualifiers.items():
+                if k in self.assemblies[assembly_id].info:
+                    self.assemblies[assembly_id].info[k] = v
+                    self.assemblies[assembly_id].loci[locus_id].info[k] = v
         if seq_feature.type in ["protein", "CDS"]:
             try:
                 # Assign a protein id if it exists, a locus tag if it doesn't (e.g. pseudogene)
@@ -218,7 +216,7 @@ class GenbankParser:
         log.info(f"Read {count_loci_in_file} from {input_path}")
 
     @staticmethod
-    def extract_from_dbxrefs(input_list, prefix):
+    def _extract_from_dbxrefs(input_list, prefix):
         """Helper function for genbank parser, extract a prefixed string from list
 
         Args:
@@ -229,11 +227,7 @@ class GenbankParser:
             list: "PRJNA224116"
         """
         temp = [x.removeprefix(prefix) for x in input_list if x.startswith(prefix)]
-        if len(temp) == 0:
-            temp = None
-        else:
-            temp = temp[0]
-        return temp
+        return ";".join(temp)
 
 
 class FastaParser:

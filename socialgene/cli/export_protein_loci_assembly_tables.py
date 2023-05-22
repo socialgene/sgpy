@@ -2,6 +2,7 @@
 import argparse
 import glob
 from pathlib import Path
+from typing import List
 
 # external dependencies
 
@@ -17,8 +18,15 @@ parser.add_argument(
     "--sequence_files_glob",
     metavar="filepath",
     help='A "glob" style input path. See https://docs.python.org/3/library/glob.html for info about globs',
-    required=True,
-    # nargs="+", not used since moved to glob
+    required=False,
+)
+parser.add_argument(
+    "-f",
+    "--sequence_file",
+    help="Filepath, may be repeated to add multiple paths",
+    nargs="+",
+    action="append",
+    required=False,
 )
 parser.add_argument(
     "--outdir",
@@ -52,15 +60,24 @@ def _writer(socialgene_object, outdir, n_fasta_splits):
 
 
 def export_tables(
-    sequence_files_glob, outdir, n_fasta_splits, collect_tables_in_memory
+    outdir: str,
+    n_fasta_splits: int,
+    collect_tables_in_memory: bool,
+    file_list: List = None,
+    sequence_files_glob: str = "",
 ):
     outdir = Path(outdir)
+    sequence_files = list()
     # find files using the input glob
-    sequence_files = glob.glob(sequence_files_glob)
+    if sequence_files_glob:
+        sequence_files.extend(glob.glob(sequence_files_glob))
+    # and/or use input file paths
+    if file_list:
+        sequence_files.extend(file_list)
     sequence_files = (Path(i).resolve() for i in sequence_files)
     if not sequence_files:
         raise IOError("No matching file(s)")
-    # Avoid overhead of opening file connections per each file
+    # Import all files into the same SG object
     socialgene_object = SocialGene()
     for i in sequence_files:
         socialgene_object.parse(Path(i))
