@@ -21,10 +21,10 @@ class HmmInfo:
                 line_vals = [
                     None if v.strip() == '""' else v.strip() for v in line.split("\t")
                 ]
-                if not len(line_vals) == 10:
-                    print(line_vals)
-                    raise ValueError(f"Expected 10 columns, not {len(line_vals)}")
+                if not len(line_vals) == 16:
+                    raise ValueError(f"Expected 16 columns, not {len(line_vals)}")
                 if not line_vals == self.columns:
+                    # Check for header, if exists, skip reading it in
                     self.all_hmms_data.append(tuple(line_vals))
 
     def write_nr_hmm_nodes(self, outpath="sg_hmm_nodes"):
@@ -34,11 +34,9 @@ class HmmInfo:
             single_line_list (list): list representing one row of the HMM metadata file
         """
         with open(outpath, "w") as handle:
-            tsv_writer = csv.writer(
-                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-            )
-            for i in {(i[6], i[7]) for i in self.all_hmms_data}:
-                tsv_writer.writerow(i)
+            for i in list({i[9] for i in self.all_hmms_data}):
+                handle.write(i)
+                handle.write("\n")
 
     def write_hmm_source_nodes(self, outdir="."):
         """Split the HMM metadata into parts based on the database it comes from
