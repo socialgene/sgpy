@@ -73,6 +73,7 @@ SOURCE_KEYS = [
 class ProteinSequence:
     """Class for working with protein sequences"""
 
+    # TODO pull amino_acids out of class
     amino_acids = [
         "A",
         "R",

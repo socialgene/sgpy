@@ -56,8 +56,8 @@ class GraphDriver(object):
                 inst.__driver = GraphDatabase.driver(
                     env_vars["NEO4J_URI"],
                     auth=(
-                        os.getenv("NEO4J_USER", "neo4j"),
-                        os.getenv("NEO4J_PASSWORD", "test"),
+                        env_vars["NEO4J_USER"],
+                        env_vars["NEO4J_PASSWORD"],
                     ),
                 )
                 log.info(f"Connected to Neo4j database at {env_vars['NEO4J_URI']}")

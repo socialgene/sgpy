@@ -11,13 +11,6 @@ from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.base.molbio import Protein
 
 
-def search_domain_list(domain_list: List):
-    return Neo4jQuery.query_neo4j(
-        cypher_name="find_similar_bgc4",
-        param=domain_list,
-    )
-
-
 class SingleProteinSearch(SocialGene):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
