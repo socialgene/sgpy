@@ -428,10 +428,28 @@ class Protein(
 class Feature(Location):
     """Container class for describing a feature on a locus"""
 
-    __slots__ = ["id", "type", "locus_tag"]
+    __slots__ = [
+        "id",
+        "type",
+        "locus_tag",
+        "description",
+        "note",
+        "go_component",
+        "go_process",
+        "go_function",
+    ]
 
     def __init__(
-        self, id: str = None, type: str = None, locus_tag: str = None, **kwargs
+        self,
+        id: str = None,
+        type: str = None,
+        locus_tag: str = None,
+        description=None,
+        note=None,
+        go_component=None,
+        go_process=None,
+        go_function=None,
+        **kwargs,
     ):
         """Container class for describing a feature on a locus
 
@@ -443,6 +461,11 @@ class Feature(Location):
         self.id = id
         self.type = type
         self.locus_tag = locus_tag
+        self.description = description
+        self.note = note
+        self.go_component = go_component
+        self.go_process = go_process
+        self.go_function = go_function
 
     def feature_is_protein(self):
         """Check if the feature "is a protein"

@@ -7,12 +7,14 @@ from uuid import uuid4
 import zlib
 
 # external dependencies
-from Bio import SeqIO
+from Bio import SeqIO, Seq
 from io import StringIO
 
 # internal dependencies
 from socialgene.utils.logging import log
 import socialgene.utils.file_handling as fh
+import re
+from collections import Counter
 
 # see SequenceParser at bottom for main class
 
@@ -27,6 +29,7 @@ def get_seqio_end(seq_feature):
 
 class GenbankParser:
     def __init__(self):
+        self._self._count_loci_in_file
         pass
 
     def _add_assembly(self, input_path, seq_record):
@@ -54,9 +57,33 @@ class GenbankParser:
             self.assemblies[assembly_id].taxid = self._extract_from_dbxrefs(
                 input_list=seq_feature.qualifiers.get("db_xref"), prefix="taxon:"
             )
-            log.info(f"Added as taxon: {self.assemblies[assembly_id].taxid}")
+            log.debug(f"{assembly_id} is taxon: {self.assemblies[assembly_id].taxid}")
         except Exception as e:
             log.info(e)
+
+    def _process_feature_note(self, seq_feature):
+        note = None
+        if "note" in seq_feature.qualifiers:
+            note = seq_feature.qualifiers["note"]
+            if isinstance(note, list):
+                note = note[0]
+            # Remove long note about gene prediction
+            to_replace = "Derived by automated computational analysis using gene prediction method.*"
+            note = re.sub(to_replace, "", note)
+            if note == "":
+                note = None
+        return note
+
+    def _process_go(self, seq_feature):
+        gos = {"GO_component": None, "GO_process": None, "GO_function": None}
+        for k in gos.keys():
+            if k in seq_feature.qualifiers:
+                # e.g. -> seq_feature.qualifiers[k]=['GO:0006260 - DNA replication [Evidence IEA]']
+                if k in seq_feature.qualifiers:
+                    gos[k] = ";".join(
+                        [i.split(" ", 1)[0] for i in seq_feature.qualifiers[k]]
+                    )
+        return {k.lower(): v for k, v in gos.items()}
 
     def _add_feature(
         self,
@@ -65,13 +92,7 @@ class GenbankParser:
         assembly_id,
         locus_id,
         keep_sequence,
-        count_loci_in_file,
     ):
-        # keep track of the number of different features
-        if seq_feature.type in count_loci_in_file:
-            count_loci_in_file[seq_feature.type] += 1
-        else:
-            count_loci_in_file[seq_feature.type] = 1
         # Grab the locus/protein description if it exists
         if "product" in seq_feature.qualifiers:
             product = seq_feature.qualifiers["product"][0]
@@ -104,15 +125,20 @@ class GenbankParser:
                 if "translation" in seq_feature.qualifiers:
                     translation = seq_feature.qualifiers["translation"][0]
                 elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
-                    translation = str(seq_feature.extract(seq_record).seq.translate())
+                    # removes biopython potential deprecation warning to prepend Ns if non-modulo 3 seqs,
+                    # may be brittle if biopython changes
+                    translation = str(
+                        Seq(seq_feature.extract(seq_record).seq).translate()
+                    )
                     product = f"pseudo_{product}"
                     protein_id = seq_feature.qualifiers["locus_tag"][0]
                 else:
                     raise ValueError(
                         f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
                     )
+                description = product.strip()
                 hash_id = self.add_protein(
-                    description=product.strip(),
+                    description=description,
                     external_protein_id=protein_id.strip(),
                     sequence=translation.strip(),
                 )
@@ -125,11 +151,14 @@ class GenbankParser:
                     end=get_seqio_end(seq_feature),
                     strand=seq_feature.location.strand,
                     locus_tag=locus_tag,
+                    description=description,
+                    note=self._process_feature_note(seq_feature),
+                    **self._process_go(seq_feature),
                 )
             except Exception as e:
                 log.debug(e)
 
-    def _parse_record(self, seq_record, assembly_id, count_loci_in_file, keep_sequence):
+    def _parse_record(self, seq_record, assembly_id, keep_sequence):
         locus_id = self._add_locus(seq_record=seq_record, assembly_id=assembly_id)
         for seq_feature in seq_record.features:
             self._add_feature(
@@ -138,14 +167,15 @@ class GenbankParser:
                 assembly_id=assembly_id,
                 locus_id=locus_id,
                 keep_sequence=keep_sequence,
-                count_loci_in_file=count_loci_in_file,
             )
+        self._count_loci_in_file = self._count_loci_in_file + Counter(
+            [i.type for i in seq_record.features]
+        )
 
     def _parse_genbank(
         self,
         handle,
         input_path,
-        count_loci_in_file={},
         assembly_id=None,
         keep_sequence=True,
     ):
@@ -153,7 +183,6 @@ class GenbankParser:
         Args:
             handle (StringIO): genbank file handle
             input_path (str): Path to genbank file (filename used as assembly name, if missing)
-            count_loci_in_file (dict, optional): Defaults to {}.
             assembly_id (str, optional): Assign the assembly id (used for for neo4j)
             keep_sequence (bool, optional): Store the amino acid sequence of proteins?
         """
@@ -169,21 +198,23 @@ class GenbankParser:
                 self._add_taxon(
                     seq_feature=seq_record.features[0], assembly_id=assembly_id
                 )
+                stop_after_one = False
             # Add locus and its features
+            log.debug(f"Processing assembly: {assembly_id}")
             self._parse_record(
                 seq_record=seq_record,
                 assembly_id=assembly_id,
-                count_loci_in_file=count_loci_in_file,
                 keep_sequence=keep_sequence,
             )
+        log.debug(f"Processing seq_record: {seq_record.id}")
 
     def _open_genbank(self, input_path, **kwargs):
         """Parse a genbank file
         Args:
             input_path (str): path to genbank file (should be able to handle .gz and tar archives)
         """
-        # count_loci_in_file is mostly for sending a summary of parsed features to the logger
-        count_loci_in_file = {}
+        # self._count_loci_in_file is mostly for sending a summary of parsed features to the logger
+        self._count_loci_in_file = Counter()
         input_path = Path(input_path)
         if fh.check_if_tar(input_path):
             tar = fh.opener_result(input_path)
@@ -201,7 +232,6 @@ class GenbankParser:
                             self._parse_genbank(
                                 handle=handle,
                                 input_path=input_path,
-                                count_loci_in_file=count_loci_in_file,
                             )
                     except Exception as e:
                         log.debug(e)
@@ -210,10 +240,11 @@ class GenbankParser:
                 self._parse_genbank(
                     handle=handle,
                     input_path=input_path,
-                    count_loci_in_file=count_loci_in_file,
                     **kwargs,
                 )
-        log.info(f"Read {count_loci_in_file} from {input_path}")
+        log.info(
+            f"'{input_path}' features {dict(sorted(dict(self._count_loci_in_file).items(), key=lambda item: item[1], reverse=True))}"
+        )
 
     @staticmethod
     def _extract_from_dbxrefs(input_list, prefix):
@@ -269,7 +300,7 @@ class FastaParser:
                 )
                 record_counter += 1
                 count_proteins_in_file += 1
-        log.info(f"Read {count_proteins_in_file} proteins from {input}")
+        log.info(f"Read {dict(count_proteins_in_file)} proteins from {input}")
 
     def parse_fasta_string(self, input):
         """Parse a protein fasta file from a string
@@ -293,13 +324,10 @@ class FastaParser:
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
                     type="CDS",
                     id=prot_hash,
-                    start=0,
-                    end=0,
-                    strand=0,
                 )
                 record_counter += 1
                 count_proteins_in_file += 1
-        log.info(f"Read {count_proteins_in_file} proteins from input string")
+        log.info(f"Read {dict(count_proteins_in_file)} proteins from input string")
 
 
 class SequenceParser(GenbankParser, FastaParser):

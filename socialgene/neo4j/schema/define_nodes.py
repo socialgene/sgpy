@@ -65,19 +65,6 @@ class Nodes(NR):
             ],
         )
         self.add_node(
-            neo4j_label="protein_source",
-            header_filename="protein_info.header",
-            target_subdirectory="protein_info",
-            target_extension="protein_info",
-            header=[
-                ":IGNORE",
-                "id:ID(protein_source)",
-                "description",
-                "seqlen:int",
-            ],
-        )
-
-        self.add_node(
             neo4j_label="goterm",
             header_filename="goterm.header",
             target_subdirectory="tigrfam_info",
