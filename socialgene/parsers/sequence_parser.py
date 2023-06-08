@@ -127,11 +127,13 @@ class GenbankParser:
                 elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
                     # removes biopython potential deprecation warning to prepend Ns if non-modulo 3 seqs,
                     # may be brittle if biopython changes
+                    print(seq_feature.qualifiers["locus_tag"])
                     translation = str(
-                        Seq(seq_feature.extract(seq_record).seq).translate()
+                        Seq.Seq(seq_feature.extract(seq_record).seq).translate()
                     )
                     product = f"pseudo_{product}"
                     protein_id = seq_feature.qualifiers["locus_tag"][0]
+                    print(translation)
                 else:
                     raise ValueError(
                         f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
@@ -300,7 +302,7 @@ class FastaParser:
                 )
                 record_counter += 1
                 count_proteins_in_file += 1
-        log.info(f"Read {dict(count_proteins_in_file)} proteins from {input}")
+        log.info(f"Read {count_proteins_in_file} proteins from {input}")
 
     def parse_fasta_string(self, input):
         """Parse a protein fasta file from a string
@@ -327,7 +329,7 @@ class FastaParser:
                 )
                 record_counter += 1
                 count_proteins_in_file += 1
-        log.info(f"Read {dict(count_proteins_in_file)} proteins from input string")
+        log.info(f"Read {count_proteins_in_file} proteins from input string")
 
 
 class SequenceParser(GenbankParser, FastaParser):

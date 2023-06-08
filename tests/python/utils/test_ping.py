@@ -3,7 +3,7 @@ import urllib
 import pytest
 
 
-def test_ping():
+def test_ping_ftp_nih():
     assert ping("https://ftp.ncbi.nlm.nih.gov/robots.txt") == 200
 
 

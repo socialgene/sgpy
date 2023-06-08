@@ -15,7 +15,6 @@ def read_in(fpath):
 
 
 expected_headers = {
-    "protein_info": ":IGNORE\tid:ID(protein_source)\tdescription\tseqlen:int\r\n",
     "protein_to_hmm_header": ":END_ID(protein)\t:START_ID(hmm)\tenv_from:int\tenv_to:int\tseq_pro_score:float\tevalue:float\ti_evalue:float\tdomain_bias:float\tdomain_score:float\tseq_pro_bias:float\thmm_from:int\thmm_to:int\tali_from:int\tali_to:int\r\n",
     "mmseqs2": ":START_ID(protein)\t:END_ID(protein)\r\n",
     "blastp": ":START_ID(protein)\t:END_ID(protein)\tpident:float\tlength:int\tmismatch:int\tgapopen:int\tqstart:int\tqend:int\tsstart:int\tsend:int\tevalue:float\tbitscore:float\tqcovhsp:float\r\n",
@@ -27,11 +26,10 @@ expected_headers = {
     "assembly_to_taxid": ":START_ID(assembly)\t:END_ID(taxid)\r\n",
     "assembly_to_mz_file": ":START_ID(assembly)\t:END_ID(mz_source_file)\r\n",
     "assembly_to_locus": ":END_ID(assembly)\t:START_ID(nucleotide)\r\n",
-    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\tlocus_tag\tstart:int\tend:int\tstrand:int\r\n",
+    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\tlocus_tag\tstart:int\tend:int\tstrand:int\tdescription\r\n",
     "assembly": "id:ID(assembly)\tmol_type\taltitude\tbio_material\tbioproject\tbiosample\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tnote\torganelle\tPCR_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsubmitter_seqid\tsub_species\tsub_strain\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
     "protein_ids": "id:ID(protein)\r\n",
     "mz_source_file": "id:ID(mz_source_file)\r\n",
-    "protein_to_source": ":START_ID(protein)\t:END_ID(protein_source)\t:IGNORE\t:IGNORE\r\n",
     "hmm_source_relationships": ":END_ID(hmm_source)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:START_ID(hmm)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\r\n",
     "cluster_to_source_file": ":END_ID(mz_cluster_index)\t:START_ID(mz_source_file)\r\n",
     "hmm_source": "id:ID(hmm_source)\t:LABEL\trel_path:String\tname:String\tacc:String\tnotes:String\tdescription:String\tdate:String\thash:String\thash_used:String\tmodel_length:String\tcategory:String\tsubcategory:String\tga:String\ttc:String\tnc:String\r\n",

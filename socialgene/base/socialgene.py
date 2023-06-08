@@ -341,7 +341,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for protein_group in protein_list:
             with open(Path(outdir, f"fasta_split_{counter}.faa"), mode) as handle:
                 for k, v in {
-                    key: self.proteins.get(key) for key in protein_group
+                    key: self.proteins.get(key) for key in sorted(protein_group)
                 }.items():
                     handle.writelines(f">{k}\n{v.sequence}\n")
             counter += 1
