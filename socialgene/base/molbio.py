@@ -434,9 +434,17 @@ class Feature(Location):
         "locus_tag",
         "description",
         "note",
-        "go_component",
-        "go_process",
-        "go_function",
+        "goterms",
+        "partial_on_complete_genome",
+        "missing_start",
+        "missing_stop",
+        "internal_stop",
+        "partial_in_the_middle_of_a_contig",
+        "missing_N_terminus",
+        "missing_C_terminus",
+        "frameshifted",
+        "too_short_partial_abutting_assembly_gap",
+        "incomplete",
     ]
 
     def __init__(
@@ -446,9 +454,17 @@ class Feature(Location):
         locus_tag: str = None,
         description=None,
         note=None,
-        go_component=None,
-        go_process=None,
-        go_function=None,
+        goterms=None,
+        partial_on_complete_genome=None,
+        missing_start=None,
+        missing_stop=None,
+        internal_stop=None,
+        partial_in_the_middle_of_a_contig=None,
+        missing_N_terminus=None,
+        missing_C_terminus=None,
+        frameshifted=None,
+        too_short_partial_abutting_assembly_gap=None,
+        incomplete=None,
         **kwargs,
     ):
         """Container class for describing a feature on a locus
@@ -463,9 +479,19 @@ class Feature(Location):
         self.locus_tag = locus_tag
         self.description = description
         self.note = note
-        self.go_component = go_component
-        self.go_process = go_process
-        self.go_function = go_function
+        self.goterms = goterms
+        self.partial_on_complete_genome = partial_on_complete_genome
+        self.missing_start = missing_start
+        self.missing_stop = missing_stop
+        self.internal_stop = internal_stop
+        self.partial_in_the_middle_of_a_contig = partial_in_the_middle_of_a_contig
+        self.missing_N_terminus = missing_N_terminus
+        self.missing_C_terminus = missing_C_terminus
+        self.frameshifted = frameshifted
+        self.too_short_partial_abutting_assembly_gap = (
+            too_short_partial_abutting_assembly_gap
+        )
+        self.incomplete = incomplete
 
     def feature_is_protein(self):
         """Check if the feature "is a protein"

@@ -3,8 +3,11 @@ from pathlib import Path
 import gzip
 from mimetypes import guess_type
 from functools import partial
+from typing import Dict, List
 from uuid import uuid4
 import zlib
+import re
+from collections import Counter
 
 # external dependencies
 from Bio import SeqIO, Seq
@@ -13,8 +16,6 @@ from io import StringIO
 # internal dependencies
 from socialgene.utils.logging import log
 import socialgene.utils.file_handling as fh
-import re
-from collections import Counter
 
 # see SequenceParser at bottom for main class
 
@@ -61,29 +62,31 @@ class GenbankParser:
         except Exception as e:
             log.info(e)
 
-    def _process_feature_note(self, seq_feature):
-        note = None
-        if "note" in seq_feature.qualifiers:
-            note = seq_feature.qualifiers["note"]
-            if isinstance(note, list):
-                note = note[0]
-            # Remove long note about gene prediction
-            to_replace = "Derived by automated computational analysis using gene prediction method.*"
-            note = re.sub(to_replace, "", note)
-            if note == "":
-                note = None
-        return note
+    def _process_feature_note_protein_exceptions(self, note: str) -> Dict[str, bool]:
+        bad_proteins = {
+            "partial_on_complete_genome": "partial on complete genome",
+            "missing_start": "missing start",
+            "missing_stop": "missing stop",
+            "internal_stop": "internal stop",
+            "partial_in_the_middle_of_a_contig": "partial in the middle of a contig",
+            "missing_N_terminus": "missing N-terminus",
+            "missing_C_terminus": "missing C-terminus",
+            "frameshifted": "frameshifted",
+            "too_short_partial_abutting_assembly_gap": "too short partial abutting assembly gap",
+            "incomplete": "incomplete",
+        }
+        return {k: bool(re.search(v, note)) for k, v in bad_proteins.items()}
 
-    def _process_go(self, seq_feature):
-        gos = {"GO_component": None, "GO_process": None, "GO_function": None}
-        for k in gos.keys():
-            if k in seq_feature.qualifiers:
-                # e.g. -> seq_feature.qualifiers[k]=['GO:0006260 - DNA replication [Evidence IEA]']
-                if k in seq_feature.qualifiers:
-                    gos[k] = ";".join(
-                        [i.split(" ", 1)[0] for i in seq_feature.qualifiers[k]]
-                    )
-        return {k.lower(): v for k, v in gos.items()}
+    def _process_go(self, note: str) -> Dict[str, List[str]]:
+        return {"goterms": re.findall("GO:[0-9]{7}", note)}
+
+    def _process_feature_note(self, seq_feature) -> Dict:
+        note = {}
+        if "note" in seq_feature.qualifiers:
+            temp_note = ";".join(seq_feature.qualifiers["note"])
+            note = note | self._process_feature_note_protein_exceptions(temp_note)
+            note = note | self._process_go(temp_note)
+        return note
 
     def _add_feature(
         self,
@@ -95,9 +98,9 @@ class GenbankParser:
     ):
         # Grab the locus/protein description if it exists
         if "product" in seq_feature.qualifiers:
-            product = seq_feature.qualifiers["product"][0]
+            description = ";".join(seq_feature.qualifiers["product"]).strip()
         else:
-            product = None
+            description = None
         if seq_feature.type == "source":
             # TODO: should this overwrite (current) or compare every iteration per assembly?
             for k, v in seq_feature.qualifiers.items():
@@ -106,39 +109,32 @@ class GenbankParser:
                     self.assemblies[assembly_id].loci[locus_id].info[k] = v
         if seq_feature.type in ["protein", "CDS"]:
             try:
-                # Assign a protein id if it exists, a locus tag if it doesn't (e.g. pseudogene)
-                # if neither, make something up
                 locus_tag = None
-                if "protein_id" in seq_feature.qualifiers:
-                    protein_id = seq_feature.qualifiers["protein_id"]
-                elif "locus_tag" in seq_feature.qualifiers:
-                    # use locus tag as protein instead
-                    protein_id = seq_feature.qualifiers["locus_tag"]
-                    locus_tag = seq_feature.qualifiers["locus_tag"][0]
-                    if isinstance(protein_id, list):
-                        locus_tag = locus_tag[0]
-                else:
-                    protein_id = uuid4()
+                protein_id = None
+                if "locus_tag" in seq_feature.qualifiers:
+                    locus_tag = ";".join(seq_feature.qualifiers["locus_tag"])
 
-                if isinstance(protein_id, list):
-                    protein_id = protein_id[0]
+                if "protein_id" in seq_feature.qualifiers:
+                    protein_id = ";".join(seq_feature.qualifiers["protein_id"])
+                elif locus_tag:
+                    # use locus tag as protein instead
+                    protein_id = locus_tag
+                else:
+                    # else assign random id
+                    protein_id = str(uuid4())
                 if "translation" in seq_feature.qualifiers:
                     translation = seq_feature.qualifiers["translation"][0]
                 elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
                     # removes biopython potential deprecation warning to prepend Ns if non-modulo 3 seqs,
                     # may be brittle if biopython changes
-                    print(seq_feature.qualifiers["locus_tag"])
                     translation = str(
                         Seq.Seq(seq_feature.extract(seq_record).seq).translate()
                     )
-                    product = f"pseudo_{product}"
-                    protein_id = seq_feature.qualifiers["locus_tag"][0]
-                    print(translation)
+                    description = f"pseudo_{description}"
                 else:
                     raise ValueError(
                         f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
                     )
-                description = product.strip()
                 hash_id = self.add_protein(
                     description=description,
                     external_protein_id=protein_id.strip(),
@@ -154,11 +150,11 @@ class GenbankParser:
                     strand=seq_feature.location.strand,
                     locus_tag=locus_tag,
                     description=description,
-                    note=self._process_feature_note(seq_feature),
-                    **self._process_go(seq_feature),
+                    **self._process_feature_note(seq_feature),
                 )
+
             except Exception as e:
-                log.debug(e)
+                raise e
 
     def _parse_record(self, seq_record, assembly_id, keep_sequence):
         locus_id = self._add_locus(seq_record=seq_record, assembly_id=assembly_id)
