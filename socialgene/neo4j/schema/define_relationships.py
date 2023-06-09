@@ -47,6 +47,16 @@ class Relationships(NR):
                 "end:int",
                 "strand:int",
                 "description",
+                "partial_on_complete_genome:boolean",
+                "missing_start:boolean",
+                "missing_stop:boolean",
+                "internal_stop:boolean",
+                "partial_in_the_middle_of_a_contig:boolean",
+                "missing_N_terminus:boolean",
+                "missing_C_terminus:boolean",
+                "frameshifted:boolean",
+                "too_short_partial_abutting_assembly_gap:boolean",
+                "incomplete:boolean",
             ],
         )
 

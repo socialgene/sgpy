@@ -498,6 +498,17 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             feature.start,
                             feature.end,
                             feature.strand,
+                            feature.description,
+                            feature.partial_on_complete_genome,
+                            feature.missing_start,
+                            feature.missing_stop,
+                            feature.internal_stop,
+                            feature.partial_in_the_middle_of_a_contig,
+                            feature.missing_N_terminus,
+                            feature.missing_C_terminus,
+                            feature.frameshifted,
+                            feature.too_short_partial_abutting_assembly_gap,
+                            feature.incomplete,
                         )
 
     def protein_info_table(self):

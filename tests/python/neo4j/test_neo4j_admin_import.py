@@ -26,7 +26,7 @@ expected_headers = {
     "assembly_to_taxid": ":START_ID(assembly)\t:END_ID(taxid)\r\n",
     "assembly_to_mz_file": ":START_ID(assembly)\t:END_ID(mz_source_file)\r\n",
     "assembly_to_locus": ":END_ID(assembly)\t:START_ID(nucleotide)\r\n",
-    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\tlocus_tag\tstart:int\tend:int\tstrand:int\tdescription\r\n",
+    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\tlocus_tag\tstart:int\tend:int\tstrand:int\tdescription\tpartial_on_complete_genome:boolean\tmissing_start:boolean\tmissing_stop:boolean\tinternal_stop:boolean\tpartial_in_the_middle_of_a_contig:boolean\tmissing_N_terminus:boolean\tmissing_C_terminus:boolean\tframeshifted:boolean\ttoo_short_partial_abutting_assembly_gap:boolean\tincomplete:boolean\r\n",
     "assembly": "id:ID(assembly)\tmol_type\taltitude\tbio_material\tbioproject\tbiosample\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tnote\torganelle\tPCR_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsubmitter_seqid\tsub_species\tsub_strain\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
     "protein_ids": "id:ID(protein)\r\n",
     "mz_source_file": "id:ID(mz_source_file)\r\n",
