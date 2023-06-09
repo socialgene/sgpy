@@ -27,7 +27,7 @@ from socialgene.base.compare_protein import CompareProtein
 from socialgene.neo4j.neo4j import Neo4jQuery
 
 from socialgene.scoring.scoring import mod_score
-import socialgene.hashing.hashing as hasher
+from socialgene.hashing import hasher
 from socialgene.utils.chunker import chunk_a_list_with_numpy
 from socialgene.neo4j.search.basic import search_protein_hash
 
@@ -454,7 +454,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     @staticmethod
     def _create_internal_locus_id(assembly_id, locus_id):
         # because locus id can't be assured to be unique across assemblies
-        return hasher.sha512t24u(f"{assembly_id}___{locus_id}")
+        return hasher(f"{assembly_id}___{locus_id}")
 
     @staticmethod
     def tsv_tablenames():
