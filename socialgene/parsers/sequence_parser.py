@@ -75,7 +75,7 @@ class GenbankParser:
             "too_short_partial_abutting_assembly_gap": "too short partial abutting assembly gap",
             "incomplete": "incomplete",
         }
-        return {k: bool(re.search(v, note)) for k, v in bad_proteins.items()}
+        return {k: True for k, v in bad_proteins.items() if re.search(v, note)}
 
     def _process_go(self, note: str) -> Dict[str, List[str]]:
         return {"goterms": re.findall("GO:[0-9]{7}", note)}
