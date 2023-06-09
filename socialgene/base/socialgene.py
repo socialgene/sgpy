@@ -27,7 +27,7 @@ from socialgene.base.compare_protein import CompareProtein
 from socialgene.neo4j.neo4j import Neo4jQuery
 
 from socialgene.scoring.scoring import mod_score
-from socialgene.hashing import hasher
+from socialgene.hashing.hashing import hasher
 from socialgene.utils.chunker import chunk_a_list_with_numpy
 from socialgene.neo4j.search.basic import search_protein_hash
 
