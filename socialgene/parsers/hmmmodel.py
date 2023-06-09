@@ -108,7 +108,7 @@ class HmmModel:
         self.MODEL.append(line.rstrip())
 
     def add_model_hash(self):
-        self._hash = hasher.sha512t24u_hasher("".join(self.MODEL))
+        self._hash = hasher.sha512t24u("".join(self.MODEL))
         self._new_hash = self._hash
 
     def find_pfam_accessions(self):

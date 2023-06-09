@@ -78,7 +78,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for domain in protein["domains"]:
                     new_dict = temp | domain["domain_properties"]
                     new_dict["hmm_id"] = domain["hmm_id"]
-                    self.proteins[protein["p1.id"]].add_domain(
+                    self.proteins[protein["p1.protein_hash"]].add_domain(
                         exponentialized=False,
                         **new_dict,
                     )
@@ -217,7 +217,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         .loci[locus["locus"]]
                         .add_feature(
                             type="protein",
-                            id=feature["protein_id"],
+                            protein_hash=feature["protein_id"],
                             start=feature["locus_start"],
                             end=feature["locus_end"],
                             strand=feature["strand"],
@@ -363,7 +363,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         ):
                             self.assemblies[assembly_k].loci[locus_k].add_feature(
                                 type="protein",
-                                id=feature.id,
+                                protein_hash=feature.protein_hash,
                                 start=feature.start,
                                 end=feature.end,
                                 strand=feature.strand,
@@ -454,7 +454,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     @staticmethod
     def _create_internal_locus_id(assembly_id, locus_id):
         # because locus id can't be assured to be unique across assemblies
-        return hasher.sha512t24u_hasher(f"{assembly_id}___{locus_id}")
+        return hasher.sha512t24u(f"{assembly_id}___{locus_id}")
 
     @staticmethod
     def tsv_tablenames():
@@ -487,13 +487,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for k, loci in av.loci.items():
                 temp_list = list(loci.features)
                 # sort features by id then start to maintain consistent output
-                temp_list.sort(key=attrgetter("id"))
+                temp_list.sort(key=attrgetter("protein_hash"))
                 temp_list.sort(key=attrgetter("start"))
                 for feature in temp_list:
                     if feature.feature_is_protein():
                         yield (
                             self._create_internal_locus_id(assembly_id=ak, locus_id=k),
-                            feature.id,
+                            feature.protein_hash,
                             feature.locus_tag,
                             feature.start,
                             feature.end,

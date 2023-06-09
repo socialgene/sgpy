@@ -144,7 +144,7 @@ class GenbankParser:
                     self.proteins[hash_id].sequence = None
                 self.assemblies[assembly_id].loci[locus_id].add_feature(
                     type=seq_feature.type,
-                    id=hash_id,
+                    protein_hash=hash_id,
                     start=get_seqio_start(seq_feature),
                     end=get_seqio_end(seq_feature),
                     strand=seq_feature.location.strand,
@@ -294,7 +294,7 @@ class FastaParser:
                     sequence=str(seq_record.seq),
                 )
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
-                    type="protein", id=hash_id, start=0, end=0, strand=0
+                    type="protein", protein_hash=hash_id, start=0, end=0, strand=0
                 )
                 record_counter += 1
                 count_proteins_in_file += 1
@@ -321,7 +321,7 @@ class FastaParser:
                 )
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
                     type="CDS",
-                    id=prot_hash,
+                    protein_hash=prot_hash,
                 )
                 record_counter += 1
                 count_proteins_in_file += 1

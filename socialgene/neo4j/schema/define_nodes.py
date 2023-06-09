@@ -10,7 +10,7 @@ class Nodes(NR):
             target_subdirectory="parameters",
             target_extension="socialgene_parameters",
             header=[
-                "id:ID(when)",
+                "uid:ID(when)",
                 "SG_LOC_NEO4J",
                 "SG_LOC_HMMS",
                 "NEO4J_dbms_memory_pagecache_size",
@@ -44,7 +44,7 @@ class Nodes(NR):
             header_filename="assembly.header",
             target_subdirectory="genomic_info",
             target_extension="assemblies",
-            header=["id:ID(assembly)"] + SOURCE_KEYS,
+            header=["uid:ID(assembly)"] + SOURCE_KEYS,
         )
 
         self.add_node(
@@ -61,7 +61,7 @@ class Nodes(NR):
             target_subdirectory="protein_info",
             target_extension="protein_ids",
             header=[
-                "id:ID(protein)",
+                "uid:ID(protein)",
             ],
         )
         self.add_node(
@@ -70,7 +70,7 @@ class Nodes(NR):
             target_subdirectory="tigrfam_info",
             target_extension="goterm",
             header=[
-                "id:ID(goterm)",
+                "uid:ID(goterm)",
             ],
         )
 
@@ -79,14 +79,14 @@ class Nodes(NR):
             header_filename="tigrfam_role.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_role",
-            header=["id:ID(tigrfam_role)"],
+            header=["uid:ID(tigrfam_role)"],
         )
         self.add_node(
             neo4j_label="tigrfam_mainrole",
             header_filename="tigrfam_mainrole.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_mainrole",
-            header=["id:ID(tigrfam_mainrole)"],
+            header=["uid:ID(tigrfam_mainrole)"],
         )
 
         self.add_node(
@@ -94,7 +94,7 @@ class Nodes(NR):
             header_filename="tigrfam_subrole.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_subrole",
-            header=["id:ID(tigrfam_subrole)"],
+            header=["uid:ID(tigrfam_subrole)"],
         )
 
         self.add_node(
@@ -102,7 +102,7 @@ class Nodes(NR):
             header_filename="taxid.header",
             target_subdirectory="taxdump_process",
             target_extension="nodes_taxid",
-            header=["id:ID(taxid)", "name", "rank"],
+            header=["uid:ID(taxid)", "name", "rank"],
         )
 
         self.add_node(
@@ -111,7 +111,7 @@ class Nodes(NR):
             target_subdirectory="paired_omics",
             target_extension="mz_cluster_index_nodes",
             header=[
-                "id:ID(mz_cluster_index)",
+                "uid:ID(mz_cluster_index)",
                 "component_index:int",
                 "parent_mass:double",
                 "precursor_mass:double",
@@ -132,7 +132,7 @@ class Nodes(NR):
             target_subdirectory="paired_omics",
             target_extension="hash.mz_source_file",
             header=[
-                "id:ID(mz_source_file)",
+                "uid:ID(mz_source_file)",
             ],
         )
 
@@ -142,7 +142,7 @@ class Nodes(NR):
             target_subdirectory="hmm_info",
             target_extension="hmminfo",
             header=[
-                "id:ID(hmm_source)",
+                "uid:ID(hmm_source)",
                 ":LABEL",
                 "rel_path:String",
                 "name:String",
@@ -166,5 +166,5 @@ class Nodes(NR):
             header_filename="sg_hmm_nodes.header",
             target_subdirectory="hmm_info",
             target_extension="sg_hmm_nodes",
-            header=["id:ID(hmm)"],
+            header=["uid:ID(hmm)"],
         )

@@ -7,7 +7,7 @@
 # with GraphDriver() as db:
 #     results = db.run(
 #         """
-# MATCH (p1:protein) RETURN p1.id
+# MATCH (p1:protein) RETURN p1.protein_hash
 # """
 #     )
 #     for i in results:
@@ -53,7 +53,7 @@
 # with GraphDriver() as db:
 #     results = db.run(
 #         """
-# MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1:nucleotide)-[e1:ENCODES]->(p1:protein) RETURN {a:a1.id, n:n1.internal_id, p:p1.id, start:e1.start, end:e1.end, strand:e1.strand}
+# MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1:nucleotide)-[e1:ENCODES]->(p1:protein) RETURN {a:a1.id, n:n1.internal_id, p:p1.protein_hash, start:e1.start, end:e1.end, strand:e1.strand}
 # """
 #     )
 #     for i in results:
@@ -70,7 +70,7 @@
 # with GraphDriver() as db:
 #     results = db.run(
 #         """
-# MATCH (p1:protein)<-[a1:ANNOTATES]-(h1:hmm) RETURN {p:p1.id, a:a1, h:h1.id}
+# MATCH (p1:protein)<-[a1:ANNOTATES]-(h1:hmm) RETURN {p:p1.protein_hash, a:a1, h:h1.id}
 # """
 #     )
 #     for i in results:
@@ -83,7 +83,7 @@
 #         """
 # MATCH (p1)-[b:BLASTP]->(p2:protein)
 # RETURN
-#     p1.id as query,
+#     p1.protein_hash as query,
 #     p2.id as subject,
 #     b.bitscore as bitscore,
 #     b.evalue as evalue,
@@ -106,7 +106,7 @@
 #         """
 # MATCH (p1)-[b:MMSEQS2]->(p2:protein)
 # RETURN
-#     p1.id as cluster_representative,
+#     p1.protein_hash as cluster_representative,
 #     p2.id as protein_id
 # """
 #     )
@@ -118,7 +118,7 @@
 #         """
 # MATCH (p1)-[b:SIMILAR]-(p2:protein)
 # RETURN DISTINCT
-#     p1.id as p1,
+#     p1.protein_hash as p1,
 #     p2.id as p2,
 #     b.score as score
 # """

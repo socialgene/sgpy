@@ -69,7 +69,7 @@ def test_sg():
     sg_object.assemblies["assembly_1"].loci["assembly_1_locus_1"]
     sg_object.assemblies["assembly_1"].loci["assembly_1_locus_1"].add_feature(
         type="protein",
-        id="assembly_1_locus_1_protein_1",
+        protein_hash="assembly_1_locus_1_protein_1",
         start=1,
         end=10,
         strand=1,

@@ -79,7 +79,7 @@ class ClustermapUuids(UuidCount):
                     protein_key = self.build_protein_key(
                         assembly_key=assembly_key,
                         locus_key=loci_key,
-                        locus_value=feature.id,
+                        locus_value=feature.protein_hash,
                     )
                     if protein_key not in self.uuid_dict:
                         self.uuid_dict[protein_key] = f"uuid_{str(self.uuid_counter)}"
@@ -122,24 +122,24 @@ class Clustermap(ClustermapUuids, CompareProtein):
                         protein_key = self.build_protein_key(
                             assembly_key=assembly_k,
                             locus_key=locus_k,
-                            locus_value=feature.id,
+                            locus_value=feature.protein_hash,
                         )
                         # Keep track of {protein: protein_key}
-                        if feature.id not in self.prot_loc:
-                            self.prot_loc[feature.id] = []
-                        self.prot_loc[feature.id].append(protein_key)
+                        if feature.protein_hash not in self.prot_loc:
+                            self.prot_loc[feature.protein_hash] = []
+                        self.prot_loc[feature.protein_hash].append(protein_key)
                         _genes.append(
                             {
                                 "uid": self.uuid_dict.get(protein_key),
                                 "label": sg_object.proteins[
-                                    feature.id
+                                    feature.protein_hash
                                 ].external_protein_id,
                                 "names": {
                                     "name": sg_object.proteins[
-                                        feature.id
+                                        feature.protein_hash
                                     ].external_protein_id,
                                     "description": sg_object.proteins[
-                                        feature.id
+                                        feature.protein_hash
                                     ].description,
                                 },
                                 "start": feature.start,

@@ -429,7 +429,7 @@ class Feature(Location):
     """Container class for describing a feature on a locus"""
 
     __slots__ = [
-        "id",
+        "protein_hash",
         "type",
         "locus_tag",
         "description",
@@ -449,7 +449,7 @@ class Feature(Location):
 
     def __init__(
         self,
-        id: str = None,
+        protein_hash: str = None,
         type: str = None,
         locus_tag: str = None,
         description=None,
@@ -470,11 +470,11 @@ class Feature(Location):
         """Container class for describing a feature on a locus
 
         Args:
-            id (str, optional): id for the locus
+            protein_hash (str, optional): protein_hash
             type (str, optional): type of feature e.g. "protein"
         """
         super().__init__(**kwargs)
-        self.id = id
+        self.protein_hash = protein_hash
         self.type = type
         self.locus_tag = locus_tag
         self.description = description
@@ -509,7 +509,7 @@ class Feature(Location):
         Returns:
             hash: hash for set()
         """
-        return hash((self.end, self.start, self.id, self.strand, self.type))
+        return hash((self.end, self.start, self.protein_hash, self.strand, self.type))
 
     def __eq__(self, other):
         """Used for set() in Assembly.add_locus()"""
@@ -518,7 +518,7 @@ class Feature(Location):
         return (
             self.end == other.end
             and self.start == other.start
-            and self.id == other.id
+            and self.protein_hash == other.protein_hash
             and self.strand == other.strand
             and self.type == other.type
         )

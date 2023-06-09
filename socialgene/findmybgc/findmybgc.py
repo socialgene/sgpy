@@ -108,7 +108,7 @@ class NewFindMyBGC:
         for k1, v1 in self.query_targets.items():
             for k2, v2 in self.input_sg_object.assemblies.items():
                 for k3, v3 in v2.loci.items():
-                    if [i.id for i in v3.features if i.id in v1]:
+                    if [i.protein_hash for i in v3.features if i.protein_hash in v1]:
                         a[k1].add(k2)
         for k, v in a.items():
             for i in v:
