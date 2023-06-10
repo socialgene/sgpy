@@ -31,6 +31,17 @@ from socialgene.utils.logging import log
 class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser):
     """Main class for building, sotring, working with protein and genomic info"""
 
+    _genomic_info_export_tablenames = [
+        "protein_to_go_table",
+        "protein_info_table",
+        "assembly_to_locus_table",
+        "loci_table",
+        "locus_to_protein_table",
+        "assembly_table",
+        "assembly_to_taxid_table",
+        "protein_ids_table",
+    ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.protein_comparison = []
@@ -452,24 +463,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # because locus id can't be assured to be unique across assemblies
         return hasher(f"{assembly_id}___{locus_id}")
 
-    @staticmethod
-    def tsv_tablenames():
-        return [
-            "protein_to_go_table",
-            "protein_info_table",
-            "assembly_to_locus_table",
-            "loci_table",
-            "locus_to_protein_table",
-            "assembly_table",
-            "assembly_to_taxid_table",
-            "protein_ids_table",
-        ]
-
     def write_table(self, outdir: str, tablename: str, filename: str = None, mode="a"):
         if not filename:
             filename = tablename
         if not hasattr(self, tablename):
-            raise ValueError(f"tablename must be one of: {self.tsv_tablenames()}")
+            raise ValueError(
+                f"tablename must be one of: {self._genomic_info_export_tablenames}"
+            )
         else:
             outpath = Path(outdir, filename)
             with open(outpath, mode) as handle:
@@ -483,10 +483,12 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for av in self.assemblies.values():
             for k, v in av.loci.items():
                 for feature in v.features:
-                    for goterm in feature.goterms:
-                        yield (
-                            f"{feature.protein_hash}\t{goterm.removeprefix('GO:').strip()}\n"
-                        )
+                    # not all features will have goterms so check here
+                    if feature.goterms:
+                        for goterm in feature.goterms:
+                            yield (
+                                f"{feature.protein_hash}\t{goterm.removeprefix('GO:').strip()}\n"
+                            )
 
     def locus_to_protein_table(self):
         for ak, av in self.assemblies.items():

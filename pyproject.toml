@@ -1,21 +1,17 @@
-# Poetry pyproject.toml: https://python-poetry.org/docs/pyproject/
 [build-system]
-requires = ["poetry_core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
-name = "python-project"
-version = "0.1.0"
-description = "socialgene"
+
+[project]
+name = "socialgene"
+version = "2.6.2"
+description = "Creating and interacting with graph databases of protein domains and their genome coordinates"
 readme = "README.md"
-authors = ["python-project <hello@python-project.com>"]
-license = "MIT"
-repository = "https://github.com/sgpy/python-project"
-homepage = "https://github.com/sgpy/python-project"
-
-# Keywords description https://python-poetry.org/docs/pyproject/#keywords
-keywords = []  #! Update me
-
+authors =  [
+    {name = "Chase M. Clark", email = "chasingmicrobes@gmail.com"},
+]
+keywords = []  #! TODO
 # Pypi classifiers: https://pypi.org/classifiers/
 classifiers = [  #! Update me
   "Development Status :: 3 - Alpha",
@@ -27,121 +23,43 @@ classifiers = [  #! Update me
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+        "pandas>=1.3",
+        "numpy>=1.21",
+        "neo4j>=4.3",
+        "biopython>=1.7",
+        "textdistance>=4.2.1"
 ]
 
-[tool.poetry.scripts]
+[project.license]
+text = "MIT"
+
+[project.urls]
+repository = "https://github.com/socialgene/sgpy"
+homepage = "https://socialgene.github.io"
+
+[project.optional-dependencies]
+full = ["rich>=10.12.0", "networkx", "obonet"]
+ci = ["pytest-cov"]
+cd = ["twine"]
+
+
+[project.scripts]
 # Entry points for the package https://python-poetry.org/docs/pyproject/#scripts
-"python-project" = "python_project.__main__:app"
+"socialgene"="socialgene.cli.__main__:main"
+"sg_process_domtblout"="socialgene.cli.process_domtblout:main"
+"sg_clean_hmm"="socialgene.cli.clean_hmms:main"
+"sg_process_genbank"="socialgene.cli.export_protein_loci_assembly_tables:main"
+"sg_ncbi_taxonomy"="socialgene.cli.parse_ncbi_taxonomy:main"
+"sg_export_parameters"="socialgene.cli.parameter_export:main"
+"sg_export_neo4j_headers"="socialgene.cli.export_neo4j_header_files:main"
+"sg_create_neo4j_db"="socialgene.cli.create_neo4j_db:main"
+"sg_version"="socialgene.utils.version:main"
+"sg_neo4j_version"="socialgene.utils.version:neo4j"
+"sg_hmm_tsv_parser"="socialgene.cli.socialgene_hmm_tsv_parser:main"
+"sg_prothash_sqlite"="socialgene.cli.protein_sqlite:main"
+"sgbro"="socialgene.utils.goterms:main"
 
-[tool.poetry.dependencies]
-python = "^3.7"
-importlib_metadata = {version = "^4.5.0", python = "<3.8"}
-typer = {extras = ["all"], version = "^0.4.0"}
-rich = "^10.14.0"
-
-[tool.poetry.dev-dependencies]
-bandit = "^1.7.1"
-black = {version = "^21.10b0", allow-prereleases = true}
-darglint = "^1.8.1"
-isort = {extras = ["colors"], version = "^5.10.1"}
-mypy = "^0.910"
-mypy-extensions = "^0.4.3"
-pre-commit = "^2.15.0"
-pydocstyle = "^6.1.1"
-pylint = "^2.11.1"
-pytest = "^6.2.5"
-pyupgrade = "^2.29.1"
-safety = "^1.10.3"
-coverage = "^6.1.2"
-coverage-badge = "^1.1.0"
-pytest-html = "^3.1.1"
-pytest-cov = "^3.0.0"
-
-[tool.black]
-# https://github.com/psf/black
-target-version = ["py37"]
-line-length = 88
-color = true
-
-exclude = '''
-/(
-    \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | env
-    | venv
-)/
-'''
-
-[tool.isort]
-# https://github.com/timothycrosley/isort/
-py_version = 37
-line_length = 88
-
-known_typing = ["typing", "types", "typing_extensions", "mypy", "mypy_extensions"]
-sections = ["FUTURE", "TYPING", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-include_trailing_comma = true
-profile = "black"
-multi_line_output = 3
-indent = 4
-color_output = true
-
-[tool.mypy]
-# https://mypy.readthedocs.io/en/latest/config_file.html#using-a-pyproject-toml-file
-python_version = 3.7
-pretty = true
-show_traceback = true
-color_output = true
-
-allow_redefinition = false
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_incomplete_defs = true
-ignore_missing_imports = true
-implicit_reexport = false
-no_implicit_optional = true
-show_column_numbers = true
-show_error_codes = true
-show_error_context = true
-strict_equality = true
-strict_optional = true
-warn_no_return = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = true
-
-
-[tool.pytest.ini_options]
-# https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
-# Directories that are not visited by pytest collector:
-norecursedirs =["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
-doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
-
-# Extra options:
-addopts = [
-  "--strict-markers",
-  "--tb=short",
-  "--doctest-modules",
-  "--doctest-continue-on-failure",
-]
-
-[tool.coverage.run]
-source = ["tests"]
-
-[coverage.paths]
-source = "python-project"
-
-[coverage.run]
-branch = true
-
-[coverage.report]
-fail_under = 50
-show_missing = true

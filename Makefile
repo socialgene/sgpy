@@ -46,22 +46,18 @@ build_docker_image: clean
 build_docker_image2: clean
 	docker build -f Dockerfileantismash --tag antismashsg:latest .
 
-## install :	Install the socialgene python package 
-install: 
-	pip3 install -e .
-
-pipinstall_test_extras:
-	python3 -m pip install --upgrade pip setuptools wheel numpy pytest-cov
+## install :	Install the socialgene python package
+install:
+	pip install -e .[full,ci]
 
 ## pytest	:	Run Python pacakge unit tests
-pytest: clean install pipinstall_test_extras 
+pytest: clean install
 	pytest tests -v --ignore=socialgene/entrypoints/export_protein_loci_assembly_tables.py 	 --cov=./socialgene --cov-report=xml:./coverage.xml --cov-report html
 	xdg-open htmlcov/index.html
-	
+
 ## pytestnf :	Run Nextflow pytest tests (first runs clean, install python and  nextflow test run)
-pytestnf: clean install pipinstall_test_extras testnf
-	python3 -m pip install --upgrade pip setuptools wheel numpy pytest-cov
-	coverage run --source=./socialgene --module pytest ./socialgene/tests/nextflow --neo4j_outdir $(neo4j_outdir) 
+pytestnf: clean install testnf
+	coverage run --source=./socialgene --module pytest ./socialgene/tests/nextflow --neo4j_outdir $(neo4j_outdir)
 
 run_ci: clean install pytest
 	@echo "TESTING WITH FLAKE8"
@@ -71,7 +67,7 @@ run_ci: clean install pytest
 
 ## run_ci :	Uploda to PyPi
 run_cd: run_ci clean
-	python3 -m pip install --user --upgrade setuptools wheel twine
+	python3 -m pip install .[full,cd]
 	python3 -m build ./socialgene
 	python3 -m twine upload --repository testpypi ./socialgene/dist/*
 

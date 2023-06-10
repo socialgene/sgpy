@@ -15,15 +15,6 @@ long_description = Path(this_directory / "README.md").read_text()
 ############
 
 setup(
-    name="socialgene",
-    version="2.5.1",
-    license="MIT",
-    description="Creating and interacting with graph databases of protein domains and their genome coordinates",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Chase M. Clark",
-    author_email="chasingmicrobes@gmail.com",
-    url="https://github.com/socialgene/sgpy",
     packages=find_packages(),
     package_data={
         "": [
@@ -69,21 +60,4 @@ setup(
         "textdistance>=4.2.1",
     ],
     extras_require={"full": ["rich>=10.12.0", "networkx", "obonet"]},
-    entry_points={
-        "console_scripts": [
-            "socialgene = socialgene.cli.__main__:main",
-            "sg_process_domtblout = socialgene.cli.process_domtblout:main",
-            "sg_clean_hmm = socialgene.cli.clean_hmms:main",
-            "sg_process_genbank= socialgene.cli.export_protein_loci_assembly_tables:main",
-            "sg_ncbi_taxonomy= socialgene.cli.parse_ncbi_taxonomy:main",
-            "sg_export_parameters = socialgene.cli.parameter_export:main",
-            "sg_export_neo4j_headers = socialgene.cli.export_neo4j_header_files:main",
-            "sg_create_neo4j_db = socialgene.cli.create_neo4j_db:main",
-            "sg_version = socialgene.utils.version:main",
-            "sg_neo4j_version = socialgene.utils.version:neo4j",
-            "sg_hmm_tsv_parser= socialgene.cli.socialgene_hmm_tsv_parser:main",
-            "sg_prothash_sqlite= socialgene.cli.protein_sqlite:main",
-            "sgbro= socialgene.utils.goterms:main",
-        ]
-    },
 )
