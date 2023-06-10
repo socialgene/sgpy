@@ -21,7 +21,6 @@ pyreverse -o png -p sgpy socialgene
 
 
 
-
 ## Design
 
 The code is organized under a number of submodules/directories:
