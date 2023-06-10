@@ -51,13 +51,5 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    python_requires=">=3.9",
-    install_requires=[
-        "pandas>=1.3",
-        "numpy>=1.21",
-        "neo4j>=4.3",
-        "biopython>=1.7",
-        "textdistance>=4.2.1",
-    ],
-    extras_require={"full": ["rich>=10.12.0", "networkx", "obonet"]},
+    python_requires=">=3.11",
 )
