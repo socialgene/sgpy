@@ -26,8 +26,14 @@ class Modules:
         self.modules = {}
         self._add_module(
             module_id="base",
-            nodes=["assembly", "nucleotide", "protein", "protein_source"],
-            relationships=["CONTAINS", "ASSEMBLES_TO", "ENCODES", "PROTEIN_SOURCE"],
+            nodes=["assembly", "nucleotide", "protein", "protein_source", "goterm"],
+            relationships=[
+                "CONTAINS",
+                "ASSEMBLES_TO",
+                "ENCODES",
+                "PROTEIN_SOURCE",
+                "GOTERM_PARENT",
+            ],
         )
         self._add_module(
             module_id="protein",

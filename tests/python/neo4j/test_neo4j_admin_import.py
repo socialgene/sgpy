@@ -32,6 +32,8 @@ expected_headers = {
     "mz_source_file": "uid:ID(mz_source_file)\r\n",
     "hmm_source_relationships": ":END_ID(hmm_source)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:START_ID(hmm)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\r\n",
     "cluster_to_source_file": ":END_ID(mz_cluster_index)\t:START_ID(mz_source_file)\r\n",
+    "go_to_go": ":START_ID(goterm)\t:END_ID(goterm)\r\n",
+    "goterms": "uid:ID(goterm)\r\n",
     "hmm_source": "uid:ID(hmm_source)\t:LABEL\trel_path:String\tname:String\tacc:String\tnotes:String\tdescription:String\tdate:String\thash:String\thash_used:String\tmodel_length:String\tcategory:String\tsubcategory:String\tga:String\ttc:String\tnc:String\r\n",
     "molecular_network": ":START_ID(mz_cluster_index)\t:END_ID(mz_cluster_index)\tdelta_mz:double\tmeh:float\tcosine:float\tother_score:float\r\n",
     "taxid_to_taxid": ":START_ID(taxid)\t:END_ID(taxid)\r\n",

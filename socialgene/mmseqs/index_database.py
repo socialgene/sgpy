@@ -11,7 +11,6 @@ from socialgene.utils.run_subprocess import run_subprocess
 # mmseqs must be present on PATH
 
 
-
 parser = argparse.ArgumentParser(
     description="Run MMseqs2 createindex on an MMseqs2 database"
 )

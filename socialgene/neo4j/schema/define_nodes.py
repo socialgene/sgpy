@@ -66,9 +66,9 @@ class Nodes(NR):
         )
         self.add_node(
             neo4j_label="goterm",
-            header_filename="goterm.header",
+            header_filename="goterms.header",
             target_subdirectory="tigrfam_info",
-            target_extension="goterm",
+            target_extension="goterms",
             header=[
                 "uid:ID(goterm)",
             ],

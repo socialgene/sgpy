@@ -10,7 +10,6 @@ from socialgene.utils.run_subprocess import run_subprocess
 # mmseqs must be present on PATH
 
 
-
 parser = argparse.ArgumentParser(
     description="Run MMseqs2 createdb on an input fasta file"
 )

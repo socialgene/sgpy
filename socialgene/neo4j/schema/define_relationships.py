@@ -85,6 +85,14 @@ class Relationships(NR):
         )
 
         self.add_relationship(
+            neo4j_label="GOTERM_PARENT",
+            header_filename="go_to_go.header",
+            target_subdirectory="goterms",
+            target_extension="goterm_edgelist",
+            header=[":START_ID(goterm)", ":END_ID(goterm)"],
+        )
+
+        self.add_relationship(
             neo4j_label="ROLE_ANN",
             header_filename="tigrfam_to_role.header",
             target_subdirectory="tigrfam_info",

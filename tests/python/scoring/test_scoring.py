@@ -8,8 +8,6 @@ from socialgene.scoring.scoring import mod_score
 # TODO: parameterize to cover more
 
 
-
-
 a = list(
     itertools.chain(
         *list([itertools.combinations(range(0, 5), i) for i in range(0, 6)])
