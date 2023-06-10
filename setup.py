@@ -63,13 +63,15 @@ setup(
     ],
     python_requires=">=3.9",
     install_requires=[
-        "rich>=10.12.0",
         "pandas>=1.3",
         "numpy>=1.21",
         "neo4j>=4.3",
         "biopython>=1.7",
         "textdistance>=4.2.1",
     ],
+    extras_require = {
+        'full':  ["rich>=10.12.0","networkx", "obonet"]
+    }
     entry_points={
         "console_scripts": [
             "socialgene = socialgene.cli.__main__:main",
@@ -84,6 +86,7 @@ setup(
             "sg_neo4j_version = socialgene.utils.version:neo4j",
             "sg_hmm_tsv_parser= socialgene.cli.socialgene_hmm_tsv_parser:main",
             "sg_prothash_sqlite= socialgene.cli.protein_sqlite:main",
+            "sgbro= socialgene.utils.goterms:main",
         ]
     },
 )
