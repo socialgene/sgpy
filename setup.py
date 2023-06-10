@@ -69,9 +69,7 @@ setup(
         "biopython>=1.7",
         "textdistance>=4.2.1",
     ],
-    extras_require = {
-        'full':  ["rich>=10.12.0","networkx", "obonet"]
-    }
+    extras_require={"full": ["rich>=10.12.0", "networkx", "obonet"]},
     entry_points={
         "console_scripts": [
             "socialgene = socialgene.cli.__main__:main",
