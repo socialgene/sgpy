@@ -1,4 +1,3 @@
-import gzip
 import os
 import tempfile
 from pathlib import Path
@@ -6,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from socialgene.cli.export_protein_loci_assembly_tables import export_tables
-from socialgene.utils import logging
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)

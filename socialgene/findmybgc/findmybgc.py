@@ -1,5 +1,3 @@
-from typing import List
-
 from collections import defaultdict
 
 from socialgene.base.molbio import Protein

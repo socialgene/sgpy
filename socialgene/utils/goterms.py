@@ -1,7 +1,4 @@
-from typing import List
-
 import argparse
-import glob
 from pathlib import Path
 
 import networkx as nx
@@ -32,11 +29,11 @@ def main():
     log.info(f"Downloading and parsing {OBO_URL}")
     graph = download(url=OBO_URL)
     graph = nx.relabel_nodes(graph, lambda x: x.removeprefix("GO:"))
-    log.info(f"Writing the nodes")
+    log.info("Writing the nodes")
     with open(Path(args.outdir, "goterms"), "w") as h:
         for i in sorted(set(graph.nodes.keys())):
             h.write(f"{i}\n")
-    log.info(f"Writing the edgelist")
+    log.info("Writing the edgelist")
     # data=False makes write_edgelist only return node pairs
     nx.write_edgelist(graph, Path(args.outdir, "goterm_edgelist"), data=False)
     log.info(f"Finshed reading/writing {OBO_URL}")
