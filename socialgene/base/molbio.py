@@ -1,15 +1,10 @@
-# python dependencies
-from uuid import uuid4
 from collections import OrderedDict
+from uuid import uuid4
 
-# external dependencies
-
-# internal dependencies
-from socialgene.config import env_vars
 import socialgene.hashing.hashing as hasher
+from socialgene.config import env_vars
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
-
 
 SOURCE_KEYS = [
     "mol_type",

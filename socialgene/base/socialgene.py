@@ -1,35 +1,31 @@
-# python dependencies
-import pickle
-from pathlib import Path
-import csv
-from copy import deepcopy
-import tempfile
-from multiprocessing import cpu_count
-import itertools
-from functools import partial
-import gzip
-from collections import defaultdict
-from operator import attrgetter
 from typing import List
 
-# external dependencies
-from rich.progress import Progress
+import csv
+import gzip
+import itertools
+import pickle
+import tempfile
+from collections import defaultdict
+from copy import deepcopy
+from functools import partial
+from multiprocessing import cpu_count
+from operator import attrgetter
+from pathlib import Path
+
 import pandas as pd
-from socialgene.hmm.hmmer import HMMER
+from rich.progress import Progress
 
-# internal dependencies
-from socialgene.parsers.sequence_parser import SequenceParser
-from socialgene.parsers.hmmer_parser import HmmerParser
-from socialgene.base.molbio import Molbio
-from socialgene.utils.logging import log
 from socialgene.base.compare_protein import CompareProtein
-
-from socialgene.neo4j.neo4j import Neo4jQuery
-
-from socialgene.scoring.scoring import mod_score
+from socialgene.base.molbio import Molbio
 from socialgene.hashing.hashing import hasher
-from socialgene.utils.chunker import chunk_a_list_with_numpy
+from socialgene.hmm.hmmer import HMMER
+from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
+from socialgene.parsers.hmmer_parser import HmmerParser
+from socialgene.parsers.sequence_parser import SequenceParser
+from socialgene.scoring.scoring import mod_score
+from socialgene.utils.chunker import chunk_a_list_with_numpy
+from socialgene.utils.logging import log
 
 
 class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser):

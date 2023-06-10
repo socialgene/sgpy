@@ -1,9 +1,4 @@
-# python dependencies
 import tarfile
-
-# external dependencies
-
-# internal dependencies
 
 
 def untargz(input_path, file_name=False, file_name_ends_with=False):

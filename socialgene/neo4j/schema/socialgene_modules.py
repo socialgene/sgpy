@@ -1,9 +1,11 @@
+from typing import List
+
 import csv
 from pathlib import Path
-from typing import List
+
+from socialgene.neo4j.schema.define_modules import Modules
 from socialgene.neo4j.schema.define_nodes import Nodes
 from socialgene.neo4j.schema.define_relationships import Relationships
-from socialgene.neo4j.schema.define_modules import Modules
 from socialgene.utils.logging import log
 
 

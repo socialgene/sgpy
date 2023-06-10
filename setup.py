@@ -2,14 +2,13 @@
 # -*- encoding: utf-8 -*-
 
 from glob import glob
-from os.path import basename
-from os.path import splitext
-from setuptools import find_packages
-from setuptools import setup
+from os.path import basename, splitext
 
 ############
 #  https://packaging.python.org/en/latest/guides/making-a-pypi-friendly-readme/
 from pathlib import Path
+
+from setuptools import find_packages, setup
 
 this_directory = Path(__file__).parent
 long_description = Path(this_directory / "README.md").read_text()

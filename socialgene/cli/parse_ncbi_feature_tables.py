@@ -1,9 +1,9 @@
-# # python dependencies
+#
 # import argparse
 
-# # external dependencies
+#
 
-# # internal dependencies
+#
 # from socialgene.utils.logging import log
 # from socialgene.parsers.ncbi_feature_table import NCBIFeatureTable
 # from socialgene.config import env_vars

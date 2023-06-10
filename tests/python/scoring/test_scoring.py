@@ -1,11 +1,13 @@
-from socialgene.scoring.scoring import mod_score
+import itertools
 from collections import OrderedDict
+
 import pytest
+
+from socialgene.scoring.scoring import mod_score
 
 # TODO: parameterize to cover more
 
 
-import itertools
 
 
 a = list(

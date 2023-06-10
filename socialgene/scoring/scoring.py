@@ -1,10 +1,6 @@
-# python dependencies
 from collections import OrderedDict
 
-# external dependencies
-from textdistance import levenshtein, jaccard
-
-# internal dependencies
+from textdistance import jaccard, levenshtein
 
 
 def mod_score(input_list_1, input_list_2):

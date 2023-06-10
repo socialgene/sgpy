@@ -1,14 +1,15 @@
-import json
-from pathlib import Path
-from rich import inspect
-from rdkit import Chem
-from rdkit import DataStructs
-from socialgene.neo4j.neo4j import GraphDriver  # grab the the neo4j connection
-import logging
-from rdkit.Chem import AllChem
-from rich.progress import Progress
-import pandas as pd
 import itertools
+import json
+import logging
+from pathlib import Path
+
+import pandas as pd
+from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem
+from rich import inspect
+from rich.progress import Progress
+
+from socialgene.neo4j.neo4j import GraphDriver  # grab the the neo4j connection
 
 json_dir = "/home/chase/Documents/data/mibig/3_1/mibig_json_3.1"
 

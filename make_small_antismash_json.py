@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-import json
 import argparse
-from multiprocessing import Pool
+import json
 import tarfile
+from multiprocessing import Pool
 from pathlib import Path
 
 #  find $myf -name '*.tgz' -exec tar  --to-stdout --wildcards "*_genomic.json" -xf {} \; | jq --compact-output '[.records[].dbxrefs][0] as $db | [{(.records[].id): .records[].areas}] as $loci | {dbxrefs: $db, records: $loci}' > all_antismash.json

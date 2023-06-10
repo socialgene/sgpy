@@ -1,10 +1,7 @@
-# python dependencies
 import subprocess
 
-# external dependencies
 from rich.console import Console
 
-# internal dependencies
 from socialgene.utils.logging import log
 
 console = Console()

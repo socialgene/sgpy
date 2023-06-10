@@ -1,14 +1,9 @@
-# python dependencies
-import uuid
-import json
 import itertools
+import json
+import uuid
 
-# external dependencies
-
-# internal dependencies
-from socialgene.utils.np_json_converter import np_json_converter
 from socialgene.base.compare_protein import CompareProtein
-
+from socialgene.utils.np_json_converter import np_json_converter
 
 # This code is meant to be used to turn a SocialGene object into json
 # that can be read by https://github.com/gamcil/clustermap.js

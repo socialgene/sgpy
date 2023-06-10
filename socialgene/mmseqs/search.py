@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
-# python dependencies
+
 import argparse
 import logging
 import os
-import pandas as pd
 import tempfile
 
-# external dependencies
+import pandas as pd
+
+from socialgene.utils.run_subprocess import run_subprocess
+
 # mmseqs must be present on PATH
 
-# internal dependencies
-from socialgene.utils.run_subprocess import run_subprocess
+
 
 parser = argparse.ArgumentParser(
     description="Run MMseqs2 search on an input amino acid sequence"

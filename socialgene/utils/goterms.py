@@ -1,14 +1,12 @@
-# python dependencies
+from typing import List
+
 import argparse
 import glob
 from pathlib import Path
-from typing import List
 
-# external dependencies
 import networkx as nx
 import obonet
 
-# internal dependencies
 from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(

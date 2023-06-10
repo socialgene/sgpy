@@ -1,9 +1,4 @@
-# python dependencies
-
-# external dependencies
 import pandas as pd
-
-# internal dependencies
 
 
 def write_tsv(input_data, filepath, columns=None, mode="w"):

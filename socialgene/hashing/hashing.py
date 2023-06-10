@@ -1,14 +1,11 @@
-# python dependencies
+
+import argparse
 import base64
 import hashlib
-import argparse
+
 from Bio.SeqUtils import CheckSum
 
-# external dependencies
-
-# internal dependencies
 from socialgene.config import env_vars
-
 
 parser = argparse.ArgumentParser(description="Hash a string/amino acids")
 parser.add_argument(

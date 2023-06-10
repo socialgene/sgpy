@@ -1,4 +1,5 @@
 import pytest
+
 from socialgene.utils.simple_math import find_exp
 
 

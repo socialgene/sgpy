@@ -1,7 +1,8 @@
 import sqlite3
-from rich.progress import Progress
 from pathlib import Path
+
 import pandas as pd
+from rich.progress import Progress
 
 # this assumes that the protein IDs are all unique
 # because this is only used for refseq/genbank data that should be true

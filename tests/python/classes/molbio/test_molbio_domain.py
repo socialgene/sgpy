@@ -1,8 +1,9 @@
 from collections import OrderedDict
+
 import pytest
+
 from socialgene.base.molbio import Domain
 from socialgene.config import env_vars
-
 
 base_dict = {
     "hmm_id": "hmm_id",

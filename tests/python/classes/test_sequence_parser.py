@@ -1,7 +1,8 @@
 import os
-from socialgene.base.socialgene import SocialGene
-import socialgene.base.molbio as molbio
 import tempfile
+
+import socialgene.base.molbio as molbio
+from socialgene.base.socialgene import SocialGene
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)

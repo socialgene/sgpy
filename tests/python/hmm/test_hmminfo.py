@@ -1,5 +1,6 @@
 import os
 import tempfile
+
 from socialgene.hmm.hmminfo import HmmInfo
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))

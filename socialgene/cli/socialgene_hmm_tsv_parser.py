@@ -1,12 +1,7 @@
-# python dependencies
 import argparse
 from pathlib import Path
 
-# external dependencies
-
-# internal dependencies
 from socialgene.hmm.hmminfo import HmmInfo
-
 
 parser = argparse.ArgumentParser(description="Merging tsv")
 parser.add_argument(

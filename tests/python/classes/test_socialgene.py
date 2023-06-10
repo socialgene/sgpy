@@ -1,6 +1,6 @@
-from socialgene.base.socialgene import SocialGene
-from socialgene.base.molbio import Assembly
 import socialgene
+from socialgene.base.molbio import Assembly
+from socialgene.base.socialgene import SocialGene
 
 temp = SocialGene()
 

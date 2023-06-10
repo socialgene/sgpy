@@ -1,12 +1,12 @@
-# # python dependencies
+#
 # from collections import OrderedDict
 # from pathlib import Path
 # import json
 # import csv
 
-# # external dependencies
+#
 
-# # internal dependencies
+#
 # from socialgene.utils.logging import log
 
 

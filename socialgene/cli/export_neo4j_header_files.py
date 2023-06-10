@@ -1,9 +1,5 @@
-# python dependencies
 import argparse
 
-# external dependencies
-
-# internal dependencies
 from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.utils.logging import log
 

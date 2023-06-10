@@ -1,11 +1,11 @@
-# # python dependencies
+#
 # from urllib.request import urlopen
 # from pathlib import Path
 
-# # external dependencies
+#
 # import xml.etree.ElementTree as ET
 
-# # internal dependencies
+#
 
 
 # def read_biosample_attributes_xml():

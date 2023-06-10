@@ -1,4 +1,4 @@
-from math import log10, floor
+from math import floor, log10
 
 
 def find_exp(number) -> int:

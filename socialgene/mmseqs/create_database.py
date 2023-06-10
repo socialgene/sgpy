@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
-# python dependencies
+
 import argparse
 import logging
 import os
 
+from socialgene.utils.run_subprocess import run_subprocess
 
-# external dependencies
 # mmseqs must be present on PATH
 
-# internal dependencies
-from socialgene.utils.run_subprocess import run_subprocess
+
 
 parser = argparse.ArgumentParser(
     description="Run MMseqs2 createdb on an input fasta file"

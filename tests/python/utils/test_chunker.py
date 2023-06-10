@@ -1,6 +1,8 @@
-from collections.abc import Generator
-import pytest
 import string
+from collections.abc import Generator
+
+import pytest
+
 from socialgene.utils.chunker import chunk_a_list_with_numpy
 
 one_to_ten = list(range(1, 10, 1))

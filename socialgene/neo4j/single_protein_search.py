@@ -1,11 +1,7 @@
-# python dependencies
 from typing import Dict, List
 
-# external dependencies
-
-# internal dependencies
-from socialgene.utils.logging import log
 from socialgene.neo4j.neo4j import Neo4jQuery
+from socialgene.utils.logging import log
 
 
 def find_similar_proteins(sg_prot: List) -> Dict:

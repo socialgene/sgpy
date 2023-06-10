@@ -1,21 +1,19 @@
-# python dependencies
-from pathlib import Path
-import gzip
-from mimetypes import guess_type
-from functools import partial
 from typing import Dict, List
-from uuid import uuid4
-import zlib
+
+import gzip
 import re
+import zlib
 from collections import Counter
-
-# external dependencies
-from Bio import SeqIO, Seq
+from functools import partial
 from io import StringIO
+from mimetypes import guess_type
+from pathlib import Path
+from uuid import uuid4
 
-# internal dependencies
-from socialgene.utils.logging import log
+from Bio import Seq, SeqIO
+
 import socialgene.utils.file_handling as fh
+from socialgene.utils.logging import log
 
 # see SequenceParser at bottom for main class
 

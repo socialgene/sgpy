@@ -1,11 +1,7 @@
-# python dependencies
 from pathlib import Path
 
-# external dependencies
-
-# internal dependencies
-from socialgene.utils.logging import log
 import socialgene.utils.file_handling as fh
+from socialgene.utils.logging import log
 
 
 class Domtblout:

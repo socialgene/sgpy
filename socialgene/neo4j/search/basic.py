@@ -1,11 +1,6 @@
-# python dependencies
 from typing import List
 
-# external dependencies
-
-# internal dependencies
 from socialgene.neo4j.neo4j import Neo4jQuery
-
 
 neo4j_object = Neo4jQuery()
 

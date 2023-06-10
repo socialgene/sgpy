@@ -1,15 +1,13 @@
-# python dependencies
-import os
-import importlib.resources
-import atexit
 from typing import Any
 
-# external dependencies
+import atexit
+import importlib.resources
+import os
+
 from neo4j import GraphDatabase
 
-# internal dependencies
-from socialgene.utils.logging import log
 from socialgene.config import env_vars
+from socialgene.utils.logging import log
 
 # TODO: Not sure whether the driver should be persistent (with active check)
 # or a new connection each time

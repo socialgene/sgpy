@@ -1,15 +1,13 @@
-# python dependencies
+
+from typing import List
+
 import argparse
 import glob
 from pathlib import Path
-from typing import List
 
-# external dependencies
-
-# internal dependencies
 from socialgene.base.socialgene import SocialGene
-from socialgene.utils.logging import log
 from socialgene.config import env_vars
+from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(
     description="Export Socialagene object into TSV files for Nextflow/Neo4j"

@@ -1,14 +1,10 @@
-# python dependencies
-from pathlib import Path
-import os
 import argparse
+import os
+from pathlib import Path
 
-# external dependencies
 from rich.progress import Progress, SpinnerColumn
 
-# internal dependencies
 from socialgene.parsers.hmmmodel import HMM_SOURCES, HmmModelHandler
-
 
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
 parser.add_argument(

@@ -1,10 +1,10 @@
 import os
-from pathlib import Path
-import tempfile
 import pathlib
+import tempfile
+from pathlib import Path
 
-from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.neo4j.admin_import import Neo4jAdminImport
+from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 
 
 def read_in(fpath):

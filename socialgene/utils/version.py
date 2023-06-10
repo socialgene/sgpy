@@ -1,10 +1,6 @@
-# python dependencies
 from importlib.metadata import version
+
 from socialgene.config import env_vars
-
-# external dependencies
-
-# internal dependencies
 
 
 def main():

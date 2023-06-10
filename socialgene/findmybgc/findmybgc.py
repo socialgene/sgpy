@@ -1,14 +1,11 @@
-# python dependencies
 from typing import List
+
 from collections import defaultdict
 
-# external dependencies
-
-# internal dependencies
-from socialgene.base.socialgene import SocialGene
-from socialgene.utils.logging import log
-from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.base.molbio import Protein
+from socialgene.base.socialgene import SocialGene
+from socialgene.neo4j.neo4j import Neo4jQuery
+from socialgene.utils.logging import log
 
 
 class SingleProteinSearch(SocialGene):
