@@ -77,6 +77,14 @@ class Relationships(NR):
         )
 
         self.add_relationship(
+            neo4j_label="PROTEIN_TO_GO",
+            header_filename="protein_to_go.header",
+            target_subdirectory="protein_info",
+            target_extension="protein_to_go",
+            header=[":START_ID(protein)", ":END_ID(goterm)"],
+        )
+
+        self.add_relationship(
             neo4j_label="ROLE_ANN",
             header_filename="tigrfam_to_role.header",
             target_subdirectory="tigrfam_info",

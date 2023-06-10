@@ -459,6 +459,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     @staticmethod
     def tsv_tablenames():
         return [
+            "protein_to_go_table",
             "protein_info_table",
             "assembly_to_locus_table",
             "loci_table",
@@ -468,19 +469,28 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             "protein_ids_table",
         ]
 
-    def write_table(self, outdir: str, type: str, filename: str = None, mode="a"):
+    def write_table(self, outdir: str, tablename: str, filename: str = None, mode="a"):
         if not filename:
-            filename = type
-        if not hasattr(self, type):
-            raise ValueError(f"type must be one of: {self.tsv_tablenames()}")
+            filename = tablename
+        if not hasattr(self, tablename):
+            raise ValueError(f"tablename must be one of: {self.tsv_tablenames()}")
         else:
             outpath = Path(outdir, filename)
             with open(outpath, mode) as handle:
                 tsv_writer = csv.writer(
                     handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
                 )
-                for i in getattr(self, type)():
+                for i in getattr(self, tablename)():
                     tsv_writer.writerow(i)
+
+    def protein_to_go_table(self):
+        for av in self.assemblies.values():
+            for k, v in av.loci.items():
+                for feature in v.features:
+                    for goterm in feature.goterms:
+                        yield (
+                            f"{feature.protein_hash}\t{goterm.removeprefix('GO:').strip()}\n"
+                        )
 
     def locus_to_protein_table(self):
         for ak, av in self.assemblies.items():
