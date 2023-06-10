@@ -1,39 +1,46 @@
-# python dependencies
-import pickle
-from pathlib import Path
-import csv
-from copy import deepcopy
-import tempfile
-from multiprocessing import cpu_count
-import itertools
-from functools import partial
-import gzip
-from collections import defaultdict
-from operator import attrgetter
 from typing import List
 
-# external dependencies
-from rich.progress import Progress
+import csv
+import gzip
+import itertools
+import pickle
+import tempfile
+from collections import defaultdict
+from copy import deepcopy
+from functools import partial
+from multiprocessing import cpu_count
+from operator import attrgetter
+from pathlib import Path
+
 import pandas as pd
-from socialgene.hmm.hmmer import HMMER
+from rich.progress import Progress
 
-# internal dependencies
-from socialgene.parsers.sequence_parser import SequenceParser
-from socialgene.parsers.hmmer_parser import HmmerParser
-from socialgene.base.molbio import Molbio
-from socialgene.utils.logging import log
 from socialgene.base.compare_protein import CompareProtein
-
+from socialgene.base.molbio import Molbio
+from socialgene.hashing.hashing import hasher
+from socialgene.hmm.hmmer import HMMER
 from socialgene.neo4j.neo4j import Neo4jQuery
-
-from socialgene.scoring.scoring import mod_score
-import socialgene.hashing.hashing as hasher
-from socialgene.utils.chunker import chunk_a_list_with_numpy
 from socialgene.neo4j.search.basic import search_protein_hash
+from socialgene.parsers.hmmer_parser import HmmerParser
+from socialgene.parsers.sequence_parser import SequenceParser
+from socialgene.scoring.scoring import mod_score
+from socialgene.utils.chunker import chunk_a_list_with_numpy
+from socialgene.utils.logging import log
 
 
 class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser):
     """Main class for building, sotring, working with protein and genomic info"""
+
+    _genomic_info_export_tablenames = [
+        "protein_to_go_table",
+        "protein_info_table",
+        "assembly_to_locus_table",
+        "loci_table",
+        "locus_to_protein_table",
+        "assembly_table",
+        "assembly_to_taxid_table",
+        "protein_ids_table",
+    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,7 +85,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for domain in protein["domains"]:
                     new_dict = temp | domain["domain_properties"]
                     new_dict["hmm_id"] = domain["hmm_id"]
-                    self.proteins[protein["p1.id"]].add_domain(
+                    self.proteins[protein["p1.protein_hash"]].add_domain(
                         exponentialized=False,
                         **new_dict,
                     )
@@ -217,7 +224,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         .loci[locus["locus"]]
                         .add_feature(
                             type="protein",
-                            id=feature["protein_id"],
+                            protein_hash=feature["protein_id"],
                             start=feature["locus_start"],
                             end=feature["locus_end"],
                             strand=feature["strand"],
@@ -341,7 +348,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for protein_group in protein_list:
             with open(Path(outdir, f"fasta_split_{counter}.faa"), mode) as handle:
                 for k, v in {
-                    key: self.proteins.get(key) for key in protein_group
+                    key: self.proteins.get(key) for key in sorted(protein_group)
                 }.items():
                     handle.writelines(f">{k}\n{v.sequence}\n")
             counter += 1
@@ -363,7 +370,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         ):
                             self.assemblies[assembly_k].loci[locus_k].add_feature(
                                 type="protein",
-                                id=feature.id,
+                                protein_hash=feature.protein_hash,
                                 start=feature.start,
                                 end=feature.end,
                                 strand=feature.strand,
@@ -454,50 +461,62 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     @staticmethod
     def _create_internal_locus_id(assembly_id, locus_id):
         # because locus id can't be assured to be unique across assemblies
-        return hasher.sha512t24u_hasher(f"{assembly_id}___{locus_id}")
+        return hasher(f"{assembly_id}___{locus_id}")
 
-    @staticmethod
-    def tsv_tablenames():
-        return [
-            "protein_info_table",
-            "assembly_to_locus_table",
-            "loci_table",
-            "locus_to_protein_table",
-            "assembly_table",
-            "assembly_to_taxid_table",
-            "protein_ids_table",
-        ]
-
-    def write_table(self, outdir: str, type: str, filename: str = None, mode="a"):
+    def write_table(self, outdir: str, tablename: str, filename: str = None, mode="a"):
         if not filename:
-            filename = type
-        if not hasattr(self, type):
-            raise ValueError(f"type must be one of: {self.tsv_tablenames()}")
+            filename = tablename
+        if not hasattr(self, tablename):
+            raise ValueError(
+                f"tablename must be one of: {self._genomic_info_export_tablenames}"
+            )
         else:
             outpath = Path(outdir, filename)
             with open(outpath, mode) as handle:
                 tsv_writer = csv.writer(
                     handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
                 )
-                for i in getattr(self, type)():
+                for i in getattr(self, tablename)():
                     tsv_writer.writerow(i)
+
+    def protein_to_go_table(self):
+        for av in self.assemblies.values():
+            for k, v in av.loci.items():
+                for feature in v.features:
+                    # not all features will have goterms so check here
+                    if feature.goterms:
+                        for goterm in feature.goterms:
+                            yield (
+                                f"{feature.protein_hash}\t{goterm.removeprefix('GO:').strip()}\n"
+                            )
 
     def locus_to_protein_table(self):
         for ak, av in self.assemblies.items():
             for k, loci in av.loci.items():
                 temp_list = list(loci.features)
                 # sort features by id then start to maintain consistent output
-                temp_list.sort(key=attrgetter("id"))
+                temp_list.sort(key=attrgetter("protein_hash"))
                 temp_list.sort(key=attrgetter("start"))
                 for feature in temp_list:
                     if feature.feature_is_protein():
                         yield (
                             self._create_internal_locus_id(assembly_id=ak, locus_id=k),
-                            feature.id,
+                            feature.protein_hash,
                             feature.locus_tag,
                             feature.start,
                             feature.end,
                             feature.strand,
+                            feature.description,
+                            feature.partial_on_complete_genome,
+                            feature.missing_start,
+                            feature.missing_stop,
+                            feature.internal_stop,
+                            feature.partial_in_the_middle_of_a_contig,
+                            feature.missing_N_terminus,
+                            feature.missing_C_terminus,
+                            feature.frameshifted,
+                            feature.too_short_partial_abutting_assembly_gap,
+                            feature.incomplete,
                         )
 
     def protein_info_table(self):

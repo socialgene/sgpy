@@ -1,6 +1,6 @@
-from socialgene.base.socialgene import SocialGene
-from socialgene.base.molbio import Assembly
 import socialgene
+from socialgene.base.molbio import Assembly
+from socialgene.base.socialgene import SocialGene
 
 temp = SocialGene()
 
@@ -19,7 +19,7 @@ temp.assemblies["myassembly"].add_locus(
 )
 
 temp.assemblies["myassembly"].loci["my_locus"].add_feature(
-    id="feature_id",
+    protein_hash="feature_id",
     type="prot",
     start=1,
     end=10,
@@ -69,5 +69,5 @@ def test_add_feature():
     assert a.start == 1
     assert a.end == 10
     assert a.strand == 1
-    assert a.id == "feature_id"
+    assert a.protein_hash == "feature_id"
     assert a.type == "prot"

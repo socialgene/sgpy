@@ -1,17 +1,14 @@
-# python dependencies
+from typing import TextIO
+
 import bz2
 import gzip
 import lzma
+import shutil
+import tarfile
 from contextlib import contextmanager
 from enum import Enum, auto
 from pathlib import Path
-from typing import TextIO
-import tarfile
-import shutil
 
-# external dependencies
-
-# internal dependencies
 from socialgene.utils.logging import log
 
 

@@ -1,6 +1,9 @@
-from collections.abc import Generator
 from typing import List
+
+from collections.abc import Generator
+
 import numpy as np
+
 from socialgene.utils.logging import log
 
 

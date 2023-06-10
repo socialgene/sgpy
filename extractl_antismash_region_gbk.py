@@ -2,13 +2,14 @@
 # -*- encoding: utf-8 -*-
 
 import argparse
-from multiprocessing import Pool
-import tarfile
-from pathlib import Path
-import re
-import io
-from Bio import SeqIO
 import gzip
+import io
+import re
+import tarfile
+from multiprocessing import Pool
+from pathlib import Path
+
+from Bio import SeqIO
 
 parser = argparse.ArgumentParser(description="Extract from antismash json")
 parser.add_argument(

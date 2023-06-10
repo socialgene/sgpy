@@ -1,4 +1,5 @@
 import tempfile
+
 from socialgene.base.socialgene import SocialGene
 from socialgene.config import env_vars
 
@@ -40,14 +41,14 @@ def test_read_and_writing_pickled_sgobject():
         "my_locus",
     )
     sg_obj.assemblies["myassembly"].loci["my_locus"].add_feature(
-        id="feature_id1",
+        protein_hash="feature_id1",
         type="protein",
         start=1,
         end=10,
         strand=1,
     )
     sg_obj.assemblies["myassembly"].loci["my_locus"].add_feature(
-        id="feature_id2",
+        protein_hash="feature_id2",
         type="not_a_prot",
         start=1,
         end=10,
@@ -75,5 +76,8 @@ def test_read_and_writing_pickled_sgobject():
         == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
     )
     assert sorted(
-        [i.id for i in new_sg_obj.assemblies["myassembly"].loci["my_locus"].features]
+        [
+            i.protein_hash
+            for i in new_sg_obj.assemblies["myassembly"].loci["my_locus"].features
+        ]
     ) == ["feature_id1", "feature_id2"]

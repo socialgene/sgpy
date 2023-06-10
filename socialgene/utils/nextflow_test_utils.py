@@ -1,9 +1,9 @@
-# # python dependencies
+#
 # from pathlib import Path
 
-# # external dependencies
+#
 
-# # internal dependencies
+#
 # from socialgene.utils.printing import (
 #     print_test_name,
 #     print_message,

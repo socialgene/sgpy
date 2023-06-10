@@ -1,11 +1,11 @@
-# # python dependencies
+#
 # from urllib.request import urlopen
 # from pathlib import Path
 
-# # external dependencies
+#
 # import xml.etree.ElementTree as ET
 
-# # internal dependencies
+#
 
 
 # # these are run manually to write lines in a file that are the attributes present

@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-# python dependencies
-import pkg_resources
+
 import os
 
-# external dependencies
-
-# internal dependencies
+import pkg_resources
 
 os_vars = dict(os.environ)
 env_vars = {}

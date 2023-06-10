@@ -1,6 +1,6 @@
 import os
-from socialgene.base.socialgene import SocialGene
 
+from socialgene.base.socialgene import SocialGene
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -43,14 +43,14 @@ def test_export_locus_to_protein_2():
         "my_locus",
     )
     temp.assemblies["myassembly"].loci["my_locus"].add_feature(
-        id="feature_id1",
+        protein_hash="feature_id1",
         type="protein",
         start=1,
         end=10,
         strand=1,
     )
     temp.assemblies["myassembly"].loci["my_locus"].add_feature(
-        id="feature_id2",
+        protein_hash="feature_id2",
         type="not_a_prot",
         start=1,
         end=10,
@@ -60,6 +60,6 @@ def test_export_locus_to_protein_2():
     removed = temp.drop_non_protein_features(return_removed=True)
     assert removed == {"myassembly": {"my_locus": {"retained": 1, "removed": 1}}}
     z = temp.assemblies["myassembly"].loci["my_locus"].features.pop()
-    assert z.id == "feature_id1"
+    assert z.protein_hash == "feature_id1"
     removed = temp.drop_non_protein_features(return_removed=True)
     assert removed == {"myassembly": {"my_locus": {"retained": 0, "removed": 0}}}

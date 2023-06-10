@@ -1,15 +1,12 @@
-# python dependencies
+from typing import List
+
 import argparse
 import glob
 from pathlib import Path
-from typing import List
 
-# external dependencies
-
-# internal dependencies
 from socialgene.base.socialgene import SocialGene
-from socialgene.utils.logging import log
 from socialgene.config import env_vars
+from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(
     description="Export Socialagene object into TSV files for Nextflow/Neo4j"
@@ -53,9 +50,9 @@ parser.add_argument(
 
 def _writer(socialgene_object, outdir, n_fasta_splits):
     socialgene_object.write_n_fasta(outdir=outdir, n_splits=n_fasta_splits, mode="a")
-    for i in SocialGene.tsv_tablenames():
+    for i in SocialGene._genomic_info_export_tablenames:
         socialgene_object.write_table(
-            outdir=outdir, type=i, filename=i.removesuffix("_table"), mode="a"
+            outdir=outdir, tablename=i, filename=i.removesuffix("_table"), mode="a"
         )
 
 

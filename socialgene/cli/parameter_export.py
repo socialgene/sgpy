@@ -1,14 +1,9 @@
-# python dependencies
-import platform
 import argparse
 import csv
+import platform
 
-# external dependencies
-
-# internal dependencies
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
-
 
 parser = argparse.ArgumentParser(
     description="Export common parameters, especially for nextflow/neo4j"

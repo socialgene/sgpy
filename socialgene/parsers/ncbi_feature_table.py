@@ -1,12 +1,12 @@
-# # python dependencies
+#
 # import gzip
 # from mimetypes import guess_type
 # from functools import partial
 # import sqlite3
 
-# # external dependencies
+#
 
-# # internal dependencies
+#
 # from socialgene.utils.logging import log
 # from socialgene.base.socialgene import SocialGene
 # from sqlite3 import Error

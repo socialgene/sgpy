@@ -1,14 +1,11 @@
-# python dependencies
 from typing import List
+
 from collections import defaultdict
 
-# external dependencies
-
-# internal dependencies
-from socialgene.base.socialgene import SocialGene
-from socialgene.utils.logging import log
-from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.base.molbio import Protein
+from socialgene.base.socialgene import SocialGene
+from socialgene.neo4j.neo4j import Neo4jQuery
+from socialgene.utils.logging import log
 
 
 class SingleProteinSearch(SocialGene):
@@ -108,7 +105,7 @@ class NewFindMyBGC:
         for k1, v1 in self.query_targets.items():
             for k2, v2 in self.input_sg_object.assemblies.items():
                 for k3, v3 in v2.loci.items():
-                    if [i.id for i in v3.features if i.id in v1]:
+                    if [i.protein_hash for i in v3.features if i.protein_hash in v1]:
                         a[k1].add(k2)
         for k, v in a.items():
             for i in v:

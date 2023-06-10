@@ -1,14 +1,11 @@
-# python dependencies
 from itertools import combinations
 from multiprocessing import Pool, cpu_count
 
-# external dependencies
 import pandas as pd
 
-# internal dependencies
+from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.scoring.scoring import mod_score
 from socialgene.utils.logging import log
-from socialgene.neo4j.neo4j import Neo4jQuery
 
 
 def _mod_return(i1, i2):

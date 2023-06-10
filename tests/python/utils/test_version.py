@@ -1,5 +1,6 @@
-from socialgene.utils.version import main
 from importlib.metadata import version
+
+from socialgene.utils.version import main
 
 
 def test_version_print(capsys):

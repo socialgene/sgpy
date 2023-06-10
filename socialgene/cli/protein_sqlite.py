@@ -1,9 +1,7 @@
-# python dependencies
 import argparse
-from pathlib import Path
 import glob
+from pathlib import Path
 
-# internal dependencies
 import socialgene.utils.protein_sqlite as ps
 from socialgene.utils.logging import log
 

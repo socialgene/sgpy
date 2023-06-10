@@ -1,8 +1,7 @@
 import os
+
 from socialgene.base.socialgene import SocialGene
-
 from socialgene.hmm.hmmer import HMMER
-
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)

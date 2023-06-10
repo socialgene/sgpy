@@ -1,18 +1,13 @@
-# python dependencies
-from pathlib import Path
 import argparse
+from pathlib import Path
 
-# external dependencies
-
-# internal dependencies
-from socialgene.utils.pandas_utils import write_tsv
-from socialgene.utils.untargz import untargz
 from socialgene.parsers.ncbi_taxonomy import (
     merge_taxonomy,
     process_names_dmp,
     process_nodes_dmp,
 )
-
+from socialgene.utils.pandas_utils import write_tsv
+from socialgene.utils.untargz import untargz
 
 # tax_url = "ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz"
 # tax_dump_hash_url = "ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz.md5"

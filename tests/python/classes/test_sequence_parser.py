@@ -1,7 +1,8 @@
 import os
-from socialgene.base.socialgene import SocialGene
-import socialgene.base.molbio as molbio
 import tempfile
+
+import socialgene.base.molbio as molbio
+from socialgene.base.socialgene import SocialGene
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -221,7 +222,12 @@ def test_genbank_file_parse_result():
     # This (especially {"start":i.start, "end": i.end, "strand":i.strand, "type": i.type}) is verbose
     # so it's hopefully easier to pinpoint any arising errors
     feature_check = {
-        i.id: {"start": i.start, "end": i.end, "strand": i.strand, "type": i.type}
+        i.protein_hash: {
+            "start": i.start,
+            "end": i.end,
+            "strand": i.strand,
+            "type": i.type,
+        }
         for i in sg_object.assemblies["lagriamide_mibig_bgc0001946"]
         .loci[locus_key]
         .features

@@ -1,10 +1,6 @@
-# python dependencies
 import datetime
 
-# external dependencies
 import numpy as np
-
-# internal dependencies
 
 
 def np_json_converter(obj):

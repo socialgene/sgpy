@@ -1,15 +1,10 @@
-# python dependencies
-from uuid import uuid4
 from collections import OrderedDict
+from uuid import uuid4
 
-# external dependencies
-
-# internal dependencies
-from socialgene.config import env_vars
 import socialgene.hashing.hashing as hasher
+from socialgene.config import env_vars
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
-
 
 SOURCE_KEYS = [
     "mol_type",
@@ -428,21 +423,70 @@ class Protein(
 class Feature(Location):
     """Container class for describing a feature on a locus"""
 
-    __slots__ = ["id", "type", "locus_tag"]
+    __slots__ = [
+        "protein_hash",
+        "type",
+        "locus_tag",
+        "description",
+        "note",
+        "goterms",
+        "partial_on_complete_genome",
+        "missing_start",
+        "missing_stop",
+        "internal_stop",
+        "partial_in_the_middle_of_a_contig",
+        "missing_N_terminus",
+        "missing_C_terminus",
+        "frameshifted",
+        "too_short_partial_abutting_assembly_gap",
+        "incomplete",
+    ]
 
     def __init__(
-        self, id: str = None, type: str = None, locus_tag: str = None, **kwargs
+        self,
+        protein_hash: str = None,
+        type: str = None,
+        locus_tag: str = None,
+        description=None,
+        note=None,
+        goterms=None,
+        partial_on_complete_genome=None,
+        missing_start=None,
+        missing_stop=None,
+        internal_stop=None,
+        partial_in_the_middle_of_a_contig=None,
+        missing_N_terminus=None,
+        missing_C_terminus=None,
+        frameshifted=None,
+        too_short_partial_abutting_assembly_gap=None,
+        incomplete=None,
+        **kwargs,
     ):
         """Container class for describing a feature on a locus
 
         Args:
-            id (str, optional): id for the locus
+            protein_hash (str, optional): protein_hash
             type (str, optional): type of feature e.g. "protein"
         """
         super().__init__(**kwargs)
-        self.id = id
+        self.protein_hash = protein_hash
         self.type = type
         self.locus_tag = locus_tag
+        self.description = description
+        self.note = note
+        self.goterms = goterms
+        self.partial_on_complete_genome = partial_on_complete_genome
+        self.missing_start = missing_start
+        self.missing_stop = missing_stop
+        self.internal_stop = internal_stop
+        self.partial_in_the_middle_of_a_contig = partial_in_the_middle_of_a_contig
+        self.missing_N_terminus = missing_N_terminus
+        self.missing_C_terminus = missing_C_terminus
+        self.frameshifted = frameshifted
+        self.too_short_partial_abutting_assembly_gap = (
+            too_short_partial_abutting_assembly_gap
+        )
+        self.incomplete = incomplete
 
     def feature_is_protein(self):
         """Check if the feature "is a protein"
@@ -460,7 +504,7 @@ class Feature(Location):
         Returns:
             hash: hash for set()
         """
-        return hash((self.end, self.start, self.id, self.strand, self.type))
+        return hash((self.end, self.start, self.protein_hash, self.strand, self.type))
 
     def __eq__(self, other):
         """Used for set() in Assembly.add_locus()"""
@@ -469,7 +513,7 @@ class Feature(Location):
         return (
             self.end == other.end
             and self.start == other.start
-            and self.id == other.id
+            and self.protein_hash == other.protein_hash
             and self.strand == other.strand
             and self.type == other.type
         )

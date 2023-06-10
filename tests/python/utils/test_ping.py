@@ -1,9 +1,11 @@
-from socialgene.utils.ping import ping, get_size
 import urllib
+
 import pytest
 
+from socialgene.utils.ping import get_size, ping
 
-def test_ping():
+
+def test_ping_ftp_nih():
     assert ping("https://ftp.ncbi.nlm.nih.gov/robots.txt") == 200
 
 

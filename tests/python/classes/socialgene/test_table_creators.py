@@ -1,4 +1,5 @@
 import os
+
 from socialgene.base.socialgene import SocialGene
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))

@@ -1,15 +1,10 @@
-# python dependencies
 import argparse
 import csv
+
 from socialgene.base.molbio import Domain
-
-# external dependencies
-
-# internal dependencies
 from socialgene.base.socialgene import SocialGene
-from socialgene.utils.logging import log
 from socialgene.config import env_vars
-
+from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(description="Create *.locus_to_protein a genbank file")
 parser.add_argument(

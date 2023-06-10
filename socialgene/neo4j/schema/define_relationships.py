@@ -46,6 +46,17 @@ class Relationships(NR):
                 "start:int",
                 "end:int",
                 "strand:int",
+                "description",
+                "partial_on_complete_genome:boolean",
+                "missing_start:boolean",
+                "missing_stop:boolean",
+                "internal_stop:boolean",
+                "partial_in_the_middle_of_a_contig:boolean",
+                "missing_N_terminus:boolean",
+                "missing_C_terminus:boolean",
+                "frameshifted:boolean",
+                "too_short_partial_abutting_assembly_gap:boolean",
+                "incomplete:boolean",
             ],
         )
 
@@ -63,6 +74,22 @@ class Relationships(NR):
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_to_go",
             header=[":START_ID(tigrfam)", ":END_ID(goterm)"],
+        )
+
+        self.add_relationship(
+            neo4j_label="PROTEIN_TO_GO",
+            header_filename="protein_to_go.header",
+            target_subdirectory="protein_info",
+            target_extension="protein_to_go",
+            header=[":START_ID(protein)", ":END_ID(goterm)"],
+        )
+
+        self.add_relationship(
+            neo4j_label="GOTERM_PARENT",
+            header_filename="go_to_go.header",
+            target_subdirectory="goterms",
+            target_extension="goterm_edgelist",
+            header=[":START_ID(goterm)", ":END_ID(goterm)"],
         )
 
         self.add_relationship(
@@ -158,18 +185,6 @@ class Relationships(NR):
             header=[":START_ID(assembly)", ":END_ID(mz_source_file)"],
         )
 
-        self.add_relationship(
-            neo4j_label="PROTEIN_SOURCE",
-            header_filename="protein_to_source.header",
-            target_subdirectory="protein_info",
-            target_extension="protein_info",
-            header=[
-                ":START_ID(protein)",
-                ":END_ID(protein_source)",
-                ":IGNORE",
-                ":IGNORE",
-            ],
-        )
         self.add_relationship(
             neo4j_label="SOURCE_DB",
             header_filename="hmm_source_relationships.header",

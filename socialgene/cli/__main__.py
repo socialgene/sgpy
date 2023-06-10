@@ -1,5 +1,7 @@
-import pkg_resources
 import sys
+
+import pkg_resources
+
 from socialgene.utils.logging import log
 
 

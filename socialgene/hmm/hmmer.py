@@ -1,17 +1,13 @@
-# python dependencies
-
-from pathlib import Path
-import subprocess
 from typing import Generator
+
+import subprocess
+from pathlib import Path
 from shutil import which
 
-# external dependencies
-
-# internal dependencies
+import socialgene.utils.file_handling as fh
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
 from socialgene.utils.run_subprocess import run_subprocess
-import socialgene.utils.file_handling as fh
 
 
 class HMMER:

@@ -1,5 +1,6 @@
-from socialgene.neo4j.neo4j import import_queries
 import hashlib
+
+from socialgene.neo4j.neo4j import import_queries
 
 
 def hasher(x):

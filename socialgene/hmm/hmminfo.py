@@ -1,12 +1,8 @@
-# python dependencies
 import csv
 from pathlib import Path
 
-# external dependencies
-
-# internal dependencies
-from socialgene.parsers.hmmmodel import HmmModel
 import socialgene.utils.file_handling as fh
+from socialgene.parsers.hmmmodel import HmmModel
 
 
 class HmmInfo:

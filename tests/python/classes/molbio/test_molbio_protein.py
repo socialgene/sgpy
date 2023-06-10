@@ -1,4 +1,5 @@
 import pytest
+
 from socialgene.base.molbio import Protein
 from socialgene.config import env_vars
 

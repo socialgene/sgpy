@@ -2,29 +2,19 @@
 # -*- encoding: utf-8 -*-
 
 from glob import glob
-from os.path import basename
-from os.path import splitext
-from setuptools import find_packages
-from setuptools import setup
+from os.path import basename, splitext
 
 ############
 #  https://packaging.python.org/en/latest/guides/making-a-pypi-friendly-readme/
 from pathlib import Path
+
+from setuptools import find_packages, setup
 
 this_directory = Path(__file__).parent
 long_description = Path(this_directory / "README.md").read_text()
 ############
 
 setup(
-    name="socialgene",
-    version="2.5.1",
-    license="MIT",
-    description="Creating and interacting with graph databases of protein domains and their genome coordinates",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    author="Chase M. Clark",
-    author_email="chasingmicrobes@gmail.com",
-    url="https://github.com/socialgene/sgpy",
     packages=find_packages(),
     package_data={
         "": [
@@ -63,27 +53,11 @@ setup(
     ],
     python_requires=">=3.9",
     install_requires=[
-        "rich>=10.12.0",
         "pandas>=1.3",
         "numpy>=1.21",
         "neo4j>=4.3",
         "biopython>=1.7",
         "textdistance>=4.2.1",
     ],
-    entry_points={
-        "console_scripts": [
-            "socialgene = socialgene.cli.__main__:main",
-            "sg_process_domtblout = socialgene.cli.process_domtblout:main",
-            "sg_clean_hmm = socialgene.cli.clean_hmms:main",
-            "sg_process_genbank= socialgene.cli.export_protein_loci_assembly_tables:main",
-            "sg_ncbi_taxonomy= socialgene.cli.parse_ncbi_taxonomy:main",
-            "sg_export_parameters = socialgene.cli.parameter_export:main",
-            "sg_export_neo4j_headers = socialgene.cli.export_neo4j_header_files:main",
-            "sg_create_neo4j_db = socialgene.cli.create_neo4j_db:main",
-            "sg_version = socialgene.utils.version:main",
-            "sg_neo4j_version = socialgene.utils.version:neo4j",
-            "sg_hmm_tsv_parser= socialgene.cli.socialgene_hmm_tsv_parser:main",
-            "sg_prothash_sqlite= socialgene.cli.protein_sqlite:main",
-        ]
-    },
+    extras_require={"full": ["rich>=10.12.0", "networkx", "obonet"]},
 )

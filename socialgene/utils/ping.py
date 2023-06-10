@@ -1,6 +1,6 @@
-from urllib.request import urlopen
-from contextlib import closing
 import urllib.request
+from contextlib import closing
+from urllib.request import urlopen
 
 
 def ping(url):

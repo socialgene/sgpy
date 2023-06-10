@@ -1,16 +1,17 @@
-# python dependencies
 import logging
 import sys
 
+from socialgene.config import env_vars
+
 # If {rich} is installed use it, otherwise.... don't
 try:
-    from rich.logging import RichHandler
     from rich.console import Console
+    from rich.logging import RichHandler
 
     c = Console(width=150)
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
-        level="INFO",
+        level=env_vars["SOCIALGENE_LOGLEVEL"],
         #  format="%(filename)s/%(module)s/%(funcName)s\::: %(message)s",
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",

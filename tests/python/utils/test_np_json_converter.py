@@ -1,5 +1,7 @@
-import numpy as np
 import datetime
+
+import numpy as np
+
 from socialgene.utils.np_json_converter import np_json_converter
 
 test_data = np.array([0], dtype=int)
