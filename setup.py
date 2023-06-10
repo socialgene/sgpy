@@ -51,5 +51,5 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    python_requires=">=3.11",
+    python_requires=">=3.10",
 )

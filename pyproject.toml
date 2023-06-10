@@ -59,3 +59,6 @@ cd = ["twine"]
 "sg_prothash_sqlite"="socialgene.cli.protein_sqlite:main"
 "sgbro"="socialgene.utils.goterms:main"
 
+
+[tool.pytest.ini_options]
+env = "D:HASHING_ALGORITHM=sha512t24u"

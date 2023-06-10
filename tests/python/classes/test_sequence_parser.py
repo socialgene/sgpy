@@ -15,7 +15,6 @@ def test_genbank_file_correct_parse_structure():
     gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
     sg_object.parse(gbk_path)
     assert isinstance(sg_object, SocialGene)
-    assert isinstance(sg_object, SocialGene)
     assert isinstance(sg_object.assemblies, dict)
     assert isinstance(sg_object.assemblies["lagriamide_mibig_bgc0001946"].loci, dict)
     # locus contains a uuid so...
