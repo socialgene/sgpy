@@ -142,10 +142,7 @@ class Neo4jAdminImport(SocialgeneModules):
     def build_nodes_and_relationships_argument_list(self):
         for node in self.nodes:
             self.node_relationship_argument_list.append(
-                self._single_arg_string_builder(
-                    input=node
-                    type="nodes",
-                )
+                self._single_arg_string_builder(input=node)
             )
         for rel in self.relationships:
             self.node_relationship_argument_list.append(
