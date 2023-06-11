@@ -33,6 +33,7 @@ class Modules:
                 "ENCODES",
                 "PROTEIN_SOURCE",
                 "GOTERM_RELS",
+                "PROTEIN_TO_GO",
             ],
         )
         self._add_module(
