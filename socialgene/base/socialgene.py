@@ -487,7 +487,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     if feature.goterms:
                         for goterm in feature.goterms:
                             yield (
-                                f"{feature.protein_hash}\t{goterm.removeprefix('GO:').strip()}\n"
+                                feature.protein_hash,
+                                goterm.removeprefix("GO:").strip(),
                             )
 
     def locus_to_protein_table(self):
