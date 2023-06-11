@@ -100,20 +100,20 @@ class Neo4jAdminImport(SocialgeneModules):
 
     # while building arguments, make a list of data filepaths to check for
     @staticmethod
-    def _single_arg_string_builder(input):
+    def _single_arg_string_builder(input, type):
         """Builds the command line arguments to import data into a new Neo4j database
 
         Args:
             input: node/rel class
+            type(str): nodes/relationships
 
         Returns:
             list: [first_part_of_arg_string, header_path_string, data_glob_string] want mutable because will check in later step for gz and append if needed
         """
-        # str(input.__class__.__name__).lower() == "relationships" or "nodes"
         if input.multilabel:
             # labels are set in-file
             return [
-                f"--{str(input.__class__.__name__).lower()}=",
+                f"--{type}=",
                 f"import/neo4j_headers/{input.header_filename}",
                 f"import/{input.target_subdirectory}/*.{input.target_extension}.*",
             ]
@@ -121,7 +121,7 @@ class Neo4jAdminImport(SocialgeneModules):
             # chr(92) is a workaround to insert '\\'
             # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}.*"
             return [
-                f"--{str(input.__class__.__name__).lower()}={input.neo4j_label}=",
+                f"--{type}={input.neo4j_label}=",
                 f"import/neo4j_headers/{input.header_filename}",
                 f"import/{input.target_subdirectory}/*.{input.target_extension}.*",
             ]
@@ -142,11 +142,11 @@ class Neo4jAdminImport(SocialgeneModules):
     def build_nodes_and_relationships_argument_list(self):
         for node in self.nodes:
             self.node_relationship_argument_list.append(
-                self._single_arg_string_builder(input=node)
+                self._single_arg_string_builder(input=node, type="nodes")
             )
         for rel in self.relationships:
             self.node_relationship_argument_list.append(
-                self._single_arg_string_builder(input=rel)
+                self._single_arg_string_builder(input=rel, type="relationships")
             )
 
     def _check_files(self):
