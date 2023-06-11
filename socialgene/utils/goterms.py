@@ -34,10 +34,12 @@ def write_nodes(G, outpath):
         )
         for node in G.nodes:
             writer.writerows(
-                node,
-                G.nodes[node].get("namespace", None),
-                G.nodes[node].get("name", None),
-                G.nodes[node].get("def", None),
+                (
+                    node,
+                    G.nodes[node].get("namespace", None),
+                    G.nodes[node].get("name", None),
+                    G.nodes[node].get("def", None),
+                )
             )
 
 
