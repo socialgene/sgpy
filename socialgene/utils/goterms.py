@@ -33,7 +33,7 @@ def write_nodes(G, outpath):
             delimiter="\t",
         )
         for node in G.nodes:
-            writer.writerows(
+            writer.writerow(
                 (
                     node,
                     G.nodes[node].get("namespace", None),
