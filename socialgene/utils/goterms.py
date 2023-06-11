@@ -35,7 +35,9 @@ def main():
             h.write(f"{i}\n")
     log.info("Writing the edgelist")
     # data=False makes write_edgelist only return node pairs
-    nx.write_edgelist(graph, Path(args.outdir, "goterm_edgelist"), data=False)
+    nx.write_edgelist(
+        graph, Path(args.outdir, "goterm_edgelist"), data=False, delimiter="\t"
+    )
     log.info(f"Finshed reading/writing {OBO_URL}")
 
 
