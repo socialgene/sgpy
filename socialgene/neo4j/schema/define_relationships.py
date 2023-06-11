@@ -85,7 +85,8 @@ class Relationships(NR):
         )
 
         self.add_relationship(
-            neo4j_label=None,
+            neo4j_label="GOTERM_RELS",
+            multilabel=True,
             header_filename="go_to_go.header",
             target_subdirectory="goterms",
             target_extension="goterm_edgelist",

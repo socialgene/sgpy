@@ -12,6 +12,7 @@ class Neo4jElement:
         target_subdirectory: str,
         target_extension: str,
         header: List[str],
+        multilabel: bool = False,
     ):
         """This defines nodes and relationships that will be imported  into Neo4j  with the Neo4j Admin Import tool
         For more information, especially about what makes up the headers, see: https://neo4j.com/docs/operations-manual/current/tutorial/neo4j-admin-import/
@@ -22,12 +23,14 @@ class Neo4jElement:
             target_subdirectory (str): subdirectory the import data can be found in  (e.g. for non-redundant protein nodes it would be 'protein_info' because data is within: `$outdir/socialgene_neo4j/import/protein_info`)
             target_extension (str): extension that is unique to the wanted data files (scoped within target_subdirectory)
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
+            multilabel(bool): are LABELS specified within the tsv?
         """
         self.neo4j_label = neo4j_label
         self.header_filename = header_filename
         self.target_subdirectory = target_subdirectory
         self.target_extension = target_extension
         self.header = header
+        self.multilabel = multilabel
 
     def __hash__(self):
         """Node or relationship data is defined as the unique combination of:

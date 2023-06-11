@@ -100,39 +100,30 @@ class Neo4jAdminImport(SocialgeneModules):
 
     # while building arguments, make a list of data filepaths to check for
     @staticmethod
-    def _single_arg_string_builder(
-        label,
-        header_filename,
-        target_subdirectory,
-        target_extension,
-        type,
-    ):
+    def _single_arg_string_builder(input):
         """Builds the command line arguments to import data into a new Neo4j database
 
         Args:
-            label (str): neo4j admin import "label"
-            header_filename (str): neo4j admin import header filename
-            target_subdirectory ([type]): subdirectory containing file to import
-            extension (str): extension of the data fle for neo4j admin import
-            type (str): "relationships" or "nodes"
+            input: node/rel class
 
         Returns:
             list: [first_part_of_arg_string, header_path_string, data_glob_string] want mutable because will check in later step for gz and append if needed
         """
-        if not label:
-            # labels can be set in-file
+        # str(input.__class__.__name__).lower() == "relationships" or "nodes"
+        if input.multilabel:
+            # labels are set in-file
             return [
-                f"--{type}=",
-                f"import/neo4j_headers/{header_filename}",
-                f"import/{target_subdirectory}/*.{target_extension}.*",
+                f"--{str(input.__class__.__name__).lower()}=",
+                f"import/neo4j_headers/{input.header_filename}",
+                f"import/{input.target_subdirectory}/*.{input.target_extension}.*",
             ]
         else:
             # chr(92) is a workaround to insert '\\'
             # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}.*"
             return [
-                f"--{type}={label}=",
-                f"import/neo4j_headers/{header_filename}",
-                f"import/{target_subdirectory}/*.{target_extension}.*",
+                f"--{str(input.__class__.__name__).lower()}={input.label}=",
+                f"import/neo4j_headers/{input.header_filename}",
+                f"import/{input.target_subdirectory}/*.{input.target_extension}.*",
             ]
 
     def _escape_arg_glob(self):
@@ -152,10 +143,7 @@ class Neo4jAdminImport(SocialgeneModules):
         for node in self.nodes:
             self.node_relationship_argument_list.append(
                 self._single_arg_string_builder(
-                    label=node.neo4j_label,
-                    header_filename=node.header_filename,
-                    target_subdirectory=node.target_subdirectory,
-                    target_extension=node.target_extension,
+                    input=node
                     type="nodes",
                 )
             )

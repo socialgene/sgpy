@@ -32,7 +32,7 @@ class Modules:
                 "ASSEMBLES_TO",
                 "ENCODES",
                 "PROTEIN_SOURCE",
-                "GOTERM_PARENT",
+                "GOTERM_RELS",
             ],
         )
         self._add_module(
