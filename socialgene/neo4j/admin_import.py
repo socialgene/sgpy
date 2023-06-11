@@ -119,13 +119,21 @@ class Neo4jAdminImport(SocialgeneModules):
         Returns:
             list: [first_part_of_arg_string, header_path_string, data_glob_string] want mutable because will check in later step for gz and append if needed
         """
-        # chr(92) is a workaround to insert '\\'
-        # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}.*"
-        return [
-            f"--{type}={label}=",
-            f"import/neo4j_headers/{header_filename}",
-            f"import/{target_subdirectory}/*.{target_extension}.*",
-        ]
+        if not label:
+            # labels can be set in-file
+            return [
+                f"--{type}=",
+                f"import/neo4j_headers/{header_filename}",
+                f"import/{target_subdirectory}/*.{target_extension}.*",
+            ]
+        else:
+            # chr(92) is a workaround to insert '\\'
+            # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}.*"
+            return [
+                f"--{type}={label}=",
+                f"import/neo4j_headers/{header_filename}",
+                f"import/{target_subdirectory}/*.{target_extension}.*",
+            ]
 
     def _escape_arg_glob(self):
         for i in self.node_relationship_argument_list:

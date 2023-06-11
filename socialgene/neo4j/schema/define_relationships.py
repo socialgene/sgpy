@@ -85,11 +85,11 @@ class Relationships(NR):
         )
 
         self.add_relationship(
-            neo4j_label="GOTERM_PARENT",
+            neo4j_label=None,
             header_filename="go_to_go.header",
             target_subdirectory="goterms",
             target_extension="goterm_edgelist",
-            header=[":START_ID(goterm)", ":END_ID(goterm)"],
+            header=[":START_ID(goterm)", ":END_ID(goterm)", ":LABEL"],
         )
 
         self.add_relationship(

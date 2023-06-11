@@ -1,4 +1,5 @@
 import argparse
+import csv
 from pathlib import Path
 
 import networkx as nx
@@ -24,20 +25,38 @@ def download(url):
     return obonet.read_obo(url)
 
 
+def write_nodes(G, outpath):
+    with open(outpath, "w") as h:
+        writer = csv.writer(
+            h,
+            quoting=csv.QUOTE_MINIMAL,
+            delimiter="\t",
+        )
+        for node in G.nodes:
+            writer.writerows(
+                node,
+                G.nodes[node].get("namespace", None),
+                G.nodes[node].get("name", None),
+                G.nodes[node].get("def", None),
+            )
+
+
+def write_edges(G, outpath):
+    with open(outpath, "w") as h:
+        for edge in G.edges:
+            h.write(f"{edge[0]}\t{edge[1]}\tGO_{edge[2].upper()}\n")
+
+
 def main():
     args = parser.parse_args()
     log.info(f"Downloading and parsing {OBO_URL}")
     graph = download(url=OBO_URL)
     graph = nx.relabel_nodes(graph, lambda x: x.removeprefix("GO:"))
     log.info("Writing the nodes")
-    with open(Path(args.outdir, "goterms"), "w") as h:
-        for i in sorted(set(graph.nodes.keys())):
-            h.write(f"{i}\n")
+    write_nodes(graph, Path(args.outdir, "goterms"))
     log.info("Writing the edgelist")
     # data=False makes write_edgelist only return node pairs
-    nx.write_edgelist(
-        graph, Path(args.outdir, "goterm_edgelist"), data=False, delimiter="\t"
-    )
+    write_edges(graph, Path(args.outdir, "goterm_edgelist"))
     log.info(f"Finshed reading/writing {OBO_URL}")
 
 

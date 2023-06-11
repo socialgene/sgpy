@@ -17,7 +17,7 @@ class Neo4jElement:
         For more information, especially about what makes up the headers, see: https://neo4j.com/docs/operations-manual/current/tutorial/neo4j-admin-import/
 
         Args:
-            neo4j_label (str): this will become the Neo4j node or relationshipLABEL
+            neo4j_label (str): this will become the Neo4j node or relationship LABEL
             header_filename (str): the name of the header file used for Neo4j admin import (basically column names, but not quite)
             target_subdirectory (str): subdirectory the import data can be found in  (e.g. for non-redundant protein nodes it would be 'protein_info' because data is within: `$outdir/socialgene_neo4j/import/protein_info`)
             target_extension (str): extension that is unique to the wanted data files (scoped within target_subdirectory)

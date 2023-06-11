@@ -69,9 +69,7 @@ class Nodes(NR):
             header_filename="goterms.header",
             target_subdirectory="goterms",
             target_extension="goterms",
-            header=[
-                "uid:ID(goterm)",
-            ],
+            header=["uid:ID(goterm)", "namespace", "name", "def"],
         )
 
         self.add_node(
