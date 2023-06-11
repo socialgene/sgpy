@@ -121,7 +121,7 @@ class Neo4jAdminImport(SocialgeneModules):
             # chr(92) is a workaround to insert '\\'
             # return f"--{type}={label}=import/neo4j_headers/{header_filename},import/{target_subdirectory}/^.*{chr(92)}.{target_extension}.*"
             return [
-                f"--{str(input.__class__.__name__).lower()}={input.label}=",
+                f"--{str(input.__class__.__name__).lower()}={input.neo4j_label}=",
                 f"import/neo4j_headers/{input.header_filename}",
                 f"import/{input.target_subdirectory}/*.{input.target_extension}.*",
             ]
