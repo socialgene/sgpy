@@ -68,8 +68,7 @@ SOURCE_KEYS = [
 class ProteinSequence:
     """Class for working with protein sequences"""
 
-    # TODO pull amino_acids out of class
-    amino_acids = [
+    _amino_acids = [
         "A",
         "R",
         "N",
@@ -126,7 +125,7 @@ class ProteinSequence:
         Returns:
             dict: amino acid count
         """
-        return OrderedDict({i: 0 for i in self.amino_acids})
+        return OrderedDict({i: 0 for i in self._amino_acids})
 
     def count_amino_acids(self):
         """Create a '-' separated string of an amino acid count
@@ -153,7 +152,7 @@ class ProteinSequence:
             ValueError: "Unknown character/letter in protein sequence
         """
         self.sequence = self.sequence.upper()
-        if not all([i in self.amino_acids for i in set(self.sequence)]):
+        if not all([i in self._amino_acids for i in set(self.sequence)]):
             log.error(self.sequence)
             raise ValueError("Unknown character/letter in protein sequence")
 

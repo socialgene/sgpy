@@ -57,7 +57,7 @@ cd = ["twine"]
 "sg_neo4j_version"="socialgene.utils.version:neo4j"
 "sg_hmm_tsv_parser"="socialgene.cli.socialgene_hmm_tsv_parser:main"
 "sg_prothash_sqlite"="socialgene.cli.protein_sqlite:main"
-"sgbro"="socialgene.utils.goterms:main"
+"sg_get_goterms"="socialgene.utils.goterms:main"
 
 
 [tool.pytest.ini_options]
