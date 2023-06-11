@@ -146,13 +146,7 @@ class Neo4jAdminImport(SocialgeneModules):
             )
         for rel in self.relationships:
             self.node_relationship_argument_list.append(
-                self._single_arg_string_builder(
-                    label=rel.neo4j_label,
-                    header_filename=rel.header_filename,
-                    target_subdirectory=rel.target_subdirectory,
-                    target_extension=rel.target_extension,
-                    type="relationships",
-                )
+                self._single_arg_string_builder(input=rel)
             )
 
     def _check_files(self):
