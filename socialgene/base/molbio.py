@@ -424,6 +424,7 @@ class Feature(Location):
 
     __slots__ = [
         "protein_hash",
+        "protein_id",
         "type",
         "locus_tag",
         "description",
@@ -444,6 +445,7 @@ class Feature(Location):
     def __init__(
         self,
         protein_hash: str = None,
+        protein_id: str = None,
         type: str = None,
         locus_tag: str = None,
         description=None,
@@ -469,6 +471,7 @@ class Feature(Location):
         """
         super().__init__(**kwargs)
         self.protein_hash = protein_hash
+        self.protein_id = protein_id
         self.type = type
         self.locus_tag = locus_tag
         self.description = description

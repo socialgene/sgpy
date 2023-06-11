@@ -143,6 +143,7 @@ class GenbankParser:
                 self.assemblies[assembly_id].loci[locus_id].add_feature(
                     type=seq_feature.type,
                     protein_hash=hash_id,
+                    protein_id=protein_id.strip(),
                     start=get_seqio_start(seq_feature),
                     end=get_seqio_end(seq_feature),
                     strand=seq_feature.location.strand,

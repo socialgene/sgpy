@@ -42,6 +42,7 @@ class Relationships(NR):
             header=[
                 ":START_ID(nucleotide)",
                 ":END_ID(protein)",
+                "protein_id",
                 "locus_tag",
                 "start:int",
                 "end:int",

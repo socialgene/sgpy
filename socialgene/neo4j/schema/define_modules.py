@@ -26,15 +26,19 @@ class Modules:
         self.modules = {}
         self._add_module(
             module_id="base",
-            nodes=["assembly", "nucleotide", "protein", "protein_source", "goterm"],
+            nodes=["assembly", "nucleotide", "protein", "protein_source"],
             relationships=[
                 "CONTAINS",
                 "ASSEMBLES_TO",
                 "ENCODES",
                 "PROTEIN_SOURCE",
                 "GOTERM_RELS",
-                "PROTEIN_TO_GO",
             ],
+        )
+        self._add_module(
+            module_id="go",
+            nodes=["goterm"],
+            relationships=["PROTEIN_TO_GO"],
         )
         self._add_module(
             module_id="protein",
@@ -59,16 +63,16 @@ class Modules:
         self._add_module(
             module_id="tigrfam",
             nodes=[
-                # "goterm",
-                # "tigrfam_mainrole",
-                # "tigrfam_subrole",
-                # "tigrfam_role",
+                "goterm",
+                "tigrfam_mainrole",
+                "tigrfam_subrole",
+                "tigrfam_role",
             ],
             relationships=[
-                # "MAINROLE_ANN",
-                # "ROLE_ANN",
-                # "SUBROLE_ANN",
-                # "GO_ANN",
+                "MAINROLE_ANN",
+                "ROLE_ANN",
+                "SUBROLE_ANN",
+                "GO_ANN",
             ],
         )
         self._add_module(
