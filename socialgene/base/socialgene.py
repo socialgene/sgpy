@@ -481,7 +481,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def protein_to_go_table(self):
         for av in self.assemblies.values():
-            for k, v in av.loci.items():
+            for v in av.loci.values():
                 for feature in v.features:
                     # not all features will have goterms so check here
                     if feature.goterms:

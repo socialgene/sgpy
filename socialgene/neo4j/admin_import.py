@@ -21,7 +21,7 @@ class Neo4jAdminImport(SocialgeneModules):
         module_list: list = None,
         dbms_connector_http_listen_address: int = 7474,
         dbms_connector_bolt_listen_address: int = 7687,
-        neo4j_version=env_vars["NEO4J_VERSION"],
+        docker_version="latest",
         *args,
         **kwargs,
     ):
@@ -44,7 +44,7 @@ class Neo4jAdminImport(SocialgeneModules):
         self.node_relationship_argument_list = []
         self.dbms_connector_http_listen_address = dbms_connector_http_listen_address
         self.dbms_connector_bolt_listen_address = dbms_connector_bolt_listen_address
-        self.neo4j_version = neo4j_version
+        self.docker_version = docker_version
         self.filepaths_to_check = []
         # UID/GID for docker call
         if uid is None:
@@ -189,7 +189,7 @@ class Neo4jAdminImport(SocialgeneModules):
             f"--volume={self.neo4j_top_dir}/plugins:/opt/conda/bin/neo4j/plugins",
             f"--volume={self.neo4j_top_dir}/import.report:/opt/conda/bin/neo4j/import.report",
             f"--user={self.uid}:{self.gid}",
-            f"neo4j:{self.neo4j_version}",
+            f"chasemc2/sgnf-sgpy:{self.docker_version}",
         ]
 
         neo4j_admin_command = ["neo4j-admin", "database", "import", "full"]

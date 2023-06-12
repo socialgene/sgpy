@@ -31,6 +31,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--docker_version",
+    metavar="str",
+    help="Sets 'chasemc2/sgnf-sgpy:{docker_version}'",
+    required=True,
+    default="latest",
+)
+
+parser.add_argument(
     "--additional_args",
     metavar="str",
     help="Additional arguments to pass to the neo4j admin import docker command, given as single string",

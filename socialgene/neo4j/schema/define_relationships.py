@@ -74,7 +74,7 @@ class Relationships(NR):
             header_filename="tigrfam_to_go.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_to_go",
-            header=[":START_ID(tigrfam)", ":END_ID(goterm)"],
+            header=[":START_ID(hmm_source)", ":END_ID(goterm)"],
         )
 
         self.add_relationship(
@@ -99,7 +99,7 @@ class Relationships(NR):
             header_filename="tigrfam_to_role.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_to_role",
-            header=[":START_ID(tigrfam)", ":END_ID(tigrfam_role)"],
+            header=[":START_ID(hmm_source)", ":END_ID(tigrfam_role)"],
         )
 
         self.add_relationship(
