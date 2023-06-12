@@ -503,6 +503,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         yield (
                             self._create_internal_locus_id(assembly_id=ak, locus_id=k),
                             feature.protein_hash,
+                            feature.protein_id,
                             feature.locus_tag,
                             feature.start,
                             feature.end,
