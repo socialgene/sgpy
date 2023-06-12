@@ -32,13 +32,15 @@ class Modules:
                 "ASSEMBLES_TO",
                 "ENCODES",
                 "PROTEIN_SOURCE",
-                "GOTERM_RELS",
             ],
         )
         self._add_module(
             module_id="go",
             nodes=["goterm"],
-            relationships=["PROTEIN_TO_GO"],
+            relationships=[
+                "PROTEIN_TO_GO",
+                "GOTERM_RELS",
+            ],
         )
         self._add_module(
             module_id="protein",
