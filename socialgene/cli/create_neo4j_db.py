@@ -34,7 +34,7 @@ parser.add_argument(
     "--docker_version",
     metavar="str",
     help="Sets 'chasemc2/sgnf-sgpy:{docker_version}'",
-    required=True,
+    required=False,
     default="latest",
 )
 
