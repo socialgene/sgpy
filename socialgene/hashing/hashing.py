@@ -31,12 +31,14 @@ def hash_aminos(input, **kwargs):
 def use_hashlib(input, algo):
     allow_algos = ("sha512", "sha256", "sha384", "md5", "sha224")
     if algo not in allow_algos:
+        # TODO: this should also output the sha512t24u ans crc algos
         raise ValueError(f"algo must be one of: {allow_algos}")
     hasher = getattr(hashlib, algo)
     return hasher(bytes(input, "utf8"))
 
 
-def hasher(input, algo=env_vars["HASHING_ALGORITHM"]):
+def hasher(input):
+    algo = env_vars["HASHING_ALGORITHM"]
     match algo:
         case "sha512t24u":
             return sha512t24u(input)
