@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from socialgene.config import env_vars
-import os
 
 from socialgene.cli.export_protein_loci_assembly_tables import export_tables
 
