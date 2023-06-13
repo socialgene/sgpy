@@ -1,3 +1,12 @@
 {
-   "signedContributors": []
+  "signedContributors": [
+    {
+      "name": "chasemc",
+      "id": 18691127,
+      "comment_id": 1590080082,
+      "created_at": "2023-06-13T22:00:39Z",
+      "repoId": 531946272,
+      "pullRequestNo": 37
+    }
+  ]
 }
