@@ -62,4 +62,4 @@ cd = ["twine"]
 "sg_get_goterms"="socialgene.utils.goterms:main"
 
 [tool.pytest.ini_options]
-env = "D:HASHING_ALGORITHM=sha512t24u"
+env = "D:HASHING_ALGORITHM=crc64"
