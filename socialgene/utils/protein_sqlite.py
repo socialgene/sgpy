@@ -22,7 +22,7 @@ def create_db(tsv_list, outpath, inmem=True):
     conn.execute(
         """
         CREATE TABLE protmap (
-            sha512t24u CHAR(32) NOT NULL,
+            hash CHAR(32) NOT NULL,
             accession VARCHAR(32) NOT NULL,
             UNIQUE(accession)
         );
