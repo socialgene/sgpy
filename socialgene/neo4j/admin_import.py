@@ -2,7 +2,6 @@ import os
 import pwd
 from pathlib import Path
 
-from socialgene.config import env_vars
 from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.utils.logging import log
 from socialgene.utils.run_subprocess import run_subprocess
