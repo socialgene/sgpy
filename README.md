@@ -1,4 +1,4 @@
-Note: This is all pre-alpha stuff (i.e. being worked on extensively, there will be breaking changes, the repo may be burnt down and rebuilt at any time). Extensive documentation will be made available at a later date when this is ready for general use.
+Note: All releases may intorduce breaking changes until the release of v1.0.0
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/socialgene/sgpy)
 [![codecov](https://codecov.io/gh/socialgene/sgpy/branch/main/graph/badge.svg?token=8f8GCc4J3G)](https://codecov.io/gh/socialgene/sgpy)
@@ -6,7 +6,10 @@ Note: This is all pre-alpha stuff (i.e. being worked on extensively, there will 
 [![Continuous Integration](https://github.com/socialgene/sgpy/actions/workflows/pr_ci.yml/badge.svg)](https://github.com/socialgene/sgpy/actions/workflows/pr_ci.yml)
 [![Continuous Deployment](https://github.com/socialgene/sgpy/actions/workflows/pypi_autodeploy_python.yml/badge.svg)](https://github.com/socialgene/sgpy/actions/workflows/pypi_autodeploy_python.yml)
 
-Documentation can be found here: <https://socialgene.github.io>
+Both user and developer documentation can be found at: <https://socialgene.github.io>
+
+![classes](classes_sgpy.png)
+![packages](packages_sgpy.png)
 
 <!---
 To create the UML diagram of the library:
@@ -15,31 +18,8 @@ pyreverse -o png -p sgpy socialgene
 ```
 --->
 
-![classes](classes_sgpy.png)
-![packages](packages_sgpy.png)
-
-
-
-
-## Design
-
-The code is organized under a number of submodules/directories:
-
-- base: core functions of the library
-- cli: all command line interface code
-- clustermap: used to convert a socialgene object to clustermap json
-- findmybgc
-- hashing
-- hmm: code for working with HMMER
-- neo4j: code for working with SocialGene Neo4j databases
-- parsers: external file parsers (e.g. genbank, fasta, HMMER results, etc)
-- scoring: functions for measuring protein similarity
-- taxonomy
-- utils
-
 ## Installation with pip
-
-<https://pypi.org/project/socialgene>
+![https://pypi.org/project/socialgene](https://img.shields.io/pypi/dm/socialgene)
 
 ```bash
 pip install socialgene
@@ -61,30 +41,11 @@ cd sgpy
 make install_python
 ```
 
-## Build local Docker image
+# Run all tests
 
 ```bash
 git clone https://github.com/socialgene/sgpy.git
 cd sgpy
-make build_docker_image
-```
-
-
-## Run pytest tests
-
-```bash
-git clone https://github.com/socialgene/sgpy.git
-cd sgpy
-make create_conda
-make pytest
-```
-
-## Run all tests
-
-```bash
-git clone https://github.com/socialgene/sgpy.git
-cd sgpy
-make create_conda
 make run_ci
 ```
 
