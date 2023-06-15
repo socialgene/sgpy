@@ -66,9 +66,9 @@ def test_filter_domains():
     env_vars["HMMSEARCH_IEVALUE"] = 2
     temp.filter_domains()
     assert len(temp.domains) == 4
-    env_vars["HMMSEARCH_IEVALUE"] = 0.1
+    env_vars["HMMSEARCH_IEVALUE"] = 0.12
     temp.filter_domains()
-    assert len(temp.domains) == 3
+    assert len(temp.domains) == 2
     env_vars["HMMSEARCH_IEVALUE"] = 0
     temp.filter_domains()
     assert len(temp.domains) == 1

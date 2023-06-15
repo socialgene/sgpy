@@ -291,9 +291,9 @@ class Domain:
             bool: is less than or equal to the set ievalue cutoff?
         """
         if self.exponentialized:
-            return self.i_evalue <= find_exp(float(env_vars["HMMSEARCH_IEVALUE"]))
+            return self.i_evalue <= find_exp(env_vars["HMMSEARCH_IEVALUE"])
         else:
-            return self.i_evalue <= float(env_vars["HMMSEARCH_IEVALUE"])
+            return self.i_evalue <= env_vars["HMMSEARCH_IEVALUE"]
 
     def get_dict(self):
         ord_dict = OrderedDict()
@@ -422,11 +422,12 @@ class Protein(
     def filter_domains(self):
         """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
         _before_count = len(self.domains)
-        self.domains = list(self.domains)
+        temp = []
         for domain in self.domains:
-            if not domain.domain_within_threshold():
-                self.domains.remove(domain)
-        self.domains = set(self.domains)
+            if domain.domain_within_threshold():
+                temp.append(domain)
+        self.domains = set(temp)
+        del temp
         log.debug(
             f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
         )
