@@ -1,4 +1,5 @@
 import pytest
+
 from socialgene.base.molbio import ProteinSequence
 
 

@@ -7,8 +7,8 @@ from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from socialgene.hashing.hashing import hasher
 import socialgene.utils.file_handling as fh
+from socialgene.hashing.hashing import hasher
 from socialgene.utils.logging import log
 
 re_pfam_broad = re.compile("^PF[0-9]{5,5}")
