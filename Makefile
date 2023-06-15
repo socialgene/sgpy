@@ -64,6 +64,8 @@ run_ci: clean install pytest
 	flake8 . --ignore E203,E501,W503 --count --show-source
 	@echo "TESTING WITH BLACK"
 	black --check . --extend-exclude temp_scripts
+	@echo "Checking package imports with isort"
+	isort . --settings-path pyproject.toml --check-only
 
 ## run_ci :	Uploda to PyPi
 run_cd: run_ci clean
