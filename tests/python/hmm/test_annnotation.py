@@ -45,6 +45,8 @@ def test_hmmscan():
     # have to set env here because other tests change it
     from socialgene.config import env_vars
 
+    env_vars["HASHING_ALGORITHM"] = "crc64"
+
     env_vars["HMMSEARCH_IEVALUE"] = 0.1
     env_vars["HMMSEARCH_Z"] = 4
     sg_object = SocialGene()

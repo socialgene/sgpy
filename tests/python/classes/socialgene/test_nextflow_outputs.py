@@ -17,11 +17,8 @@
 
 # sg_object = SocialGene()
 # sg_object.parse(gbk_path)
-# locus_key = [
-#     key
-#     for key, value in sg_object.assemblies["lagriamide_mibig_bgc0001946"].loci.items()
-#     if "bgc0001946" in key.lower()
-# ][0]
+# locus_key = "BGC0001946.1"
+
 
 # def md6(fname):
 #     hash_md5 = hashlib.md5()
@@ -30,13 +27,19 @@
 #             hash_md5.update(chunk)
 #     return hash_md5.hexdigest()
 
+
 # def check_locus_to_protein(tmpdirname):
-#     #print(pd.read_csv(Path(tmpdirname, "protein_info"), delimiter="\t", header=None))
-#     assert md6(Path(tmpdirname, "locus_to_protein")) == "ae3b20b4f9f1c39657982242ee649438"
+#     # print(pd.read_csv(Path(tmpdirname, "protein_info"), delimiter="\t", header=None))
+#     assert (
+#         md6(Path(tmpdirname, "locus_to_protein")) == "ae3b20b4f9f1c39657982242ee649438"
+#     )
 
 
 # def check_protein_info(tmpdirname):
-#     assert hashlib.md5(open(Path(tmpdirname, "protein_info"),'rb').read()).hexdigest() == "a"
+#     assert (
+#         hashlib.md5(open(Path(tmpdirname, "protein_info"), "rb").read()).hexdigest()
+#         == "a"
+#     )
 
 
 # def check_assembly_to_locus(tmpdirname):
@@ -56,42 +59,36 @@
 
 
 # def test_export_locus_to_protein():
-
 #     with tempfile.TemporaryDirectory() as tmpdirname:
 #         sg_object.export_locus_to_protein(outdir=tmpdirname)
 #         check_locus_to_protein(tmpdirname=tmpdirname)
 
 
 # def test_export_protein_info():
-
 #     with tempfile.TemporaryDirectory() as tmpdirname:
 #         sg_object.export_protein_info(outdir=tmpdirname)
 #         check_protein_info(tmpdirname=tmpdirname)
 
 
 # def test_export_assembly_to_locus():
-
 #     with tempfile.TemporaryDirectory() as tmpdirname:
 #         sg_object.export_assembly_to_locus(outdir=tmpdirname)
 #         check_assembly_to_locus(tmpdirname=tmpdirname)
 
 
 # def test_export_loci():
-
 #     with tempfile.TemporaryDirectory() as tmpdirname:
 #         sg_object.export_loci(outdir=tmpdirname)
 #         check_loci(tmpdirname=tmpdirname)
 
 
 # def test_export_assembly():
-
 #     with tempfile.TemporaryDirectory() as tmpdirname:
 #         sg_object.export_assembly(outdir=tmpdirname)
 #         check_assemblies(tmpdirname=tmpdirname)
 
 
 # def test_export_tables():
-
 #     glob_path = os.path.join(FIXTURE_DIR, "*mide_mibig_bgc0001946.gbk")
 
 #     with tempfile.TemporaryDirectory() as tmpdirname:
