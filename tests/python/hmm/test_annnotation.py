@@ -7,32 +7,37 @@ FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "test_genomes")
 gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
+
+
+FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
+FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
 hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
 
 
 expected_proteins = [
-    "-l7xLyFZbiZENPLq_GML8JyTRF1Srawr",
-    "4_8182J88axMDpFJBZI6kLNJAu8Ittm3",
-    "5IYMhENey2WCMrKPUz3AqBIZuFSv6DPP",
-    "9stFB1fGjCdZVZWHLVI3OD4A_DV3WcV6",
-    "AStsOnOU5ZWxURs9PrTiWjddkuQXfanl",
-    "DTee9G4M8sEfnM4HaPfI37rT74pq7M_G",
-    "IRqRpDzrGB9UhHJD6AzDq_6Xupj00Nte",
-    "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-    "IsCrCflKZgA6ghoHxXclbsOix0bbDkwZ",
-    "MSHRSCZfdBJP8vdJdaXfeZrThH_4EUMm",
-    "Qi23auOUTcBzWTmDHuGinrzIuqH7-zVn",
-    "RyDIaUZc_b21_kQalx7J3yNO4l5f-439",
-    "T_DzOorDp3ROhRRBtuXP3xyAPorpTVD0",
-    "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl",
-    "WbViYzQw8y-XfCQMgQXkedGduNMJPa14",
-    "du1Ncfm5UYiFYgDWD8KW1AQJNHlAcVXL",
-    "ewjVum5PbpEJA4rl-BfnCAypKl5HXb7x",
-    "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
-    "iiWqYfcbDGjauCrUsdiI1pAlG5Syx_-L",
-    "mB22-i4RqtslyO7_HappM4rJ4Z2Qbkfn",
-    "nk3UJUyLaWr8LochtohJ9L6eugdChZL9",
-    "ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn",
+    "00CD39A87B4E5579",
+    "0FB2B60341C61380",
+    "1CF65176FCF98848",
+    "24885C21E4F10395",
+    "2CC09AA68B15064E",
+    "37C2BC6B34544B2E",
+    "380F00AA06102D54",
+    "3BFF8AA6C1E11053",
+    "53C03058C526F0D2",
+    "5A6503F0ADBBF5DD",
+    "5CD80CF74497D50C",
+    "5DB7DF559DF798B9",
+    "631C4C8531E0AE0F",
+    "64F56D5193D6A584",
+    "93E706B4F7EB53AF",
+    "A4115D03F2A9920B",
+    "B5363BCBA49EA647",
+    "C16214B7E088BFA5",
+    "D9B06B39B6ED339A",
+    "E3DBD3CB4B0B011F",
+    "F0D86567887A4777",
+    "FF58B5837B0F03BE",
 ]
 
 
@@ -54,13 +59,11 @@ def test_hmmscan():
     prots = list(sg_object.proteins.keys())
     prots.sort()
     assert prots == expected_proteins
+    # note HMM model file was created using sha512t24u which is why hashes are that
     assert sorted(
-        [
-            i.hmm_id
-            for i in sg_object.proteins["Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl"].domains
-        ]
+        [i.hmm_id for i in sg_object.proteins["37C2BC6B34544B2E"].domains]
     ) == ["DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5", "xJwofaGb0EIZrSxSeZL5xS6thEM7ck7U"]
-    for i in sg_object.proteins["Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl"].domains:
+    for i in sg_object.proteins["37C2BC6B34544B2E"].domains:
         if i.hmm_id == "DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5":
             # '{s: getattr(i, s, None) for s in i.__slots__}' turns the Domain object into a dict
             assert {s: getattr(i, s, None) for s in i.__slots__} == {
@@ -77,6 +80,7 @@ def test_hmmscan():
                 "hmm_to": 69,
                 "ali_from": 16,
                 "ali_to": 65,
+                "exponentialized": True,
             }
         if i.hmm_id == "xJwofaGb0EIZrSxSeZL5xS6thEM7ck7U":
             assert {s: getattr(i, s, None) for s in i.__slots__} == {
@@ -93,4 +97,5 @@ def test_hmmscan():
                 "hmm_to": 54,
                 "ali_from": 96,
                 "ali_to": 147,
+                "exponentialized": True,
             }

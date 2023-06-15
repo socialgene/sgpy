@@ -47,26 +47,31 @@ def test_filter_domains():
         {"exponentialized": False, "i_evalue": 3},
         {"exponentialized": False, "i_evalue": 2},
         {"exponentialized": False, "i_evalue": 1},
-        {"exponentialized": False, "i_evalue": 0},
         {"exponentialized": False, "i_evalue": 0.1},
+        {"exponentialized": False, "i_evalue": 0},
     )
     for i in [base_dict | i for i in tempd]:
         temp.add_domain(**i)
     # unfiltered
-    print(temp.domains)
-    assert len(temp.domains) == 4
+    assert len(temp.domains) == 5
     # filtered
     temp.filter_domains()
+    assert len(temp.domains) == 5
+    env_vars["HMMSEARCH_IEVALUE"] = 3.00001
+    temp.filter_domains()
+    assert len(temp.domains) == 5
+    env_vars["HMMSEARCH_IEVALUE"] = int(3)
+    temp.filter_domains()
+    assert len(temp.domains) == 5
+    env_vars["HMMSEARCH_IEVALUE"] = 2
+    temp.filter_domains()
     assert len(temp.domains) == 4
-    env_vars["HMMSEARCH_IEVALUE"] = 100
+    env_vars["HMMSEARCH_IEVALUE"] = 0.1
     temp.filter_domains()
     assert len(temp.domains) == 3
-    env_vars["HMMSEARCH_IEVALUE"] = 10
-    temp.filter_domains()
-    assert len(temp.domains) == 2
-    env_vars["HMMSEARCH_IEVALUE"] = 1
+    env_vars["HMMSEARCH_IEVALUE"] = 0
     temp.filter_domains()
     assert len(temp.domains) == 1
-    env_vars["HMMSEARCH_IEVALUE"] = 0.1
+    env_vars["HMMSEARCH_IEVALUE"] = -1
     temp.filter_domains()
     assert len(temp.domains) == 0

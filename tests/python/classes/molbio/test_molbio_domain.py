@@ -22,20 +22,27 @@ BASE_DICT = {
 
 
 temp = (
+    [{"exponentialized": True, "i_evalue": 1000}, False],
+    [{"exponentialized": True, "i_evalue": 10}, True],
+    [{"exponentialized": True, "i_evalue": 1.1}, True],
+    [{"exponentialized": True, "i_evalue": 1}, True],
+    [{"exponentialized": True, "i_evalue": 0.1}, True],
+    [{"exponentialized": True, "i_evalue": 0}, True],
     [{"exponentialized": False, "i_evalue": 1000}, False],
-    [{"exponentialized": False, "i_evalue": 10}, False],
-    [{"exponentialized": False, "i_evalue": 1.1}, False],
-    [{"exponentialized": False, "i_evalue": 1}, False],
-    [{"exponentialized": False, "i_evalue": 0.1}, False],
-    [{"exponentialized": False, "i_evalue": 0}, False],
+    [{"exponentialized": False, "i_evalue": 10}, True],
+    [{"exponentialized": False, "i_evalue": 1.1}, True],
+    [{"exponentialized": False, "i_evalue": 1}, True],
+    [{"exponentialized": False, "i_evalue": 0.1}, True],
+    [{"exponentialized": False, "i_evalue": 0}, True],
 )
+
 
 combos = [(BASE_DICT | i[0], i[1]) for i in temp]
 
 
 @pytest.mark.parametrize("a,expected", combos)
 def test_domain_1(a, expected):
-    env_vars["HMMSEARCH_IEVALUE"] = 0.2
+    env_vars["HMMSEARCH_IEVALUE"] = 100
     temp = Domain(**a)
     assert temp.domain_within_threshold() == expected
 
@@ -47,8 +54,8 @@ def test_domain_dict():
             ("env_from", 1),
             ("env_to", 100),
             ("seq_pro_score", 1.1),
-            ("evalue", 1),
-            ("i_evalue", 1),
+            ("evalue", 1.1),
+            ("i_evalue", 1.1),
             ("domain_bias", 1.1),
             ("domain_score", 1.1),
             ("seq_pro_bias", 1.1),
@@ -56,9 +63,10 @@ def test_domain_dict():
             ("hmm_to", 100),
             ("ali_from", 1),
             ("ali_to", 100),
+            ("exponentialized", False),
         ]
     )
-    env_vars["HMMSEARCH_IEVALUE"] = 0.2
+    env_vars["HMMSEARCH_IEVALUE"] = 1.5
     temp = BASE_DICT | {"exponentialized": False, "i_evalue": 1.1}
     temp = Domain(**temp)
     assert temp.get_dict() == expected
@@ -85,10 +93,36 @@ def test_fail_add_domain_with_negative():
         "ali_from": 1,
         "ali_to": 100,
     }
-    tempd = ({"exponentialized": False, "i_evalue": -1},)
+    tempd = ({"exponentialized": True, "i_evalue": -1},)
     for i in [BASE_DICT | i for i in tempd]:
         with pytest.raises(ValueError):
             temp.add_domain(**i)
+
+
+def test_dont_fail_add_domain_with_negative():
+    env_vars["HMMSEARCH_IEVALUE"] = 1000
+    temp = Protein(
+        sequence="ARNDCQEGHILKMFPSTWYVXZJU",
+        description="description",
+        external_protein_id="external_protein_id",
+    )
+    BASE_DICT = {
+        "hmm_id": "hmm_id",
+        "env_from": 1,
+        "env_to": 100,
+        "seq_pro_score": 1.1,
+        "evalue": 1.1,
+        "domain_bias": 1.1,
+        "domain_score": 1.1,
+        "seq_pro_bias": 1.1,
+        "hmm_from": 1,
+        "hmm_to": 100,
+        "ali_from": 1,
+        "ali_to": 100,
+    }
+    tempd = ({"exponentialized": False, "i_evalue": -1},)
+    for i in [BASE_DICT | i for i in tempd]:
+        temp.add_domain(**i)
 
 
 def test_dont_add_redundant_domain():
@@ -119,4 +153,5 @@ def test_dont_add_redundant_domain():
         "i_evalue": -1.0,
         "seq_pro_bias": 1.1,
         "seq_pro_score": 1.1,
+        "exponentialized": False,
     }

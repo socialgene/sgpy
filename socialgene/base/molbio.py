@@ -214,11 +214,11 @@ class Domain:
         "hmm_to",
         "ali_from",
         "ali_to",
+        "exponentialized",
     ]
 
     def __init__(
         self,
-        exponentialized: bool = True,
         hmm_id: str = None,
         env_from: int = None,
         env_to: int = None,
@@ -232,6 +232,7 @@ class Domain:
         hmm_to: int = None,
         ali_from: int = None,
         ali_to: int = None,
+        exponentialized: bool = True,
         **kwargs,  # this kwarg isn't accessed but is here so that calling Domain with dict unpacking with extra args doesn't fail
     ):
         """Class for holding information about a domain/motif annotation
@@ -242,7 +243,7 @@ class Domain:
             env_to (int, optional): see hmmer documentation for description
             seq_pro_score (float, optional): see hmmer documentation for description
             e_value (float, optional): see hmmer documentation for description
-            evalue (float, optional): see hmmer documentation for description
+            i_evalue (float, optional): see hmmer documentation for description
             domain_bias (float, optional): see hmmer documentation for description
             domain_score (float, optional): see hmmer documentation for description
             seq_pro_bias (float, optional): see hmmer documentation for description
@@ -250,19 +251,25 @@ class Domain:
             hmm_to (int, optional): see hmmer documentation for description
             ali_from (int, optional): see hmmer documentation for description
             ali_to (int, optional): see hmmer documentation for description
+            exponentialized (bool, optional): "exponentialized" retains info on whether evalues were modified
         """
         super(Domain, self).__init__()
-        # some of these are rounded because of differences between pyhmmer and hmmer results
-        self.hmm_id = str(hmm_id)
-        self.env_from = int(env_from)
-        self.env_to = int(env_to)
-        self.seq_pro_score = round(float(seq_pro_score), 1)
+        if not isinstance(exponentialized, bool):
+            raise ValueError(
+                f"exponentialized mus be bool, was {type(exponentialized)}"
+            )
+        self.exponentialized = exponentialized
         if exponentialized:
             self.evalue = find_exp(evalue)
             self.i_evalue = find_exp(i_evalue)
         else:
             self.evalue = round(float(evalue), 1)
             self.i_evalue = round(float(i_evalue), 1)
+        # some of are rounded because of differences between pyhmmer and hmmer results
+        self.hmm_id = str(hmm_id)
+        self.env_from = int(env_from)
+        self.env_to = int(env_to)
+        self.seq_pro_score = round(float(seq_pro_score), 1)
         self.domain_bias = round(float(domain_bias), 1)
         self.domain_score = round(float(domain_score), 1)
         self.seq_pro_bias = round(float(seq_pro_bias), 1)
@@ -283,7 +290,10 @@ class Domain:
         Returns:
             bool: is less than or equal to the set ievalue cutoff?
         """
-        return self.i_evalue <= find_exp(float(env_vars["HMMSEARCH_IEVALUE"]))
+        if self.exponentialized:
+            return self.i_evalue <= find_exp(float(env_vars["HMMSEARCH_IEVALUE"]))
+        else:
+            return self.i_evalue <= float(env_vars["HMMSEARCH_IEVALUE"])
 
     def get_dict(self):
         ord_dict = OrderedDict()
@@ -300,6 +310,8 @@ class Domain:
         ord_dict["hmm_to"] = int(self.hmm_to)
         ord_dict["ali_from"] = int(self.ali_from)
         ord_dict["ali_to"] = int(self.ali_to)
+        ord_dict["exponentialized"] = bool(self.exponentialized)
+
         return ord_dict
 
     def __hash__(self):
@@ -412,7 +424,7 @@ class Protein(
         _before_count = len(self.domains)
         self.domains = list(self.domains)
         for domain in self.domains:
-            if not (domain.domain_within_threshold()):
+            if not domain.domain_within_threshold():
                 self.domains.remove(domain)
         self.domains = set(self.domains)
         log.debug(
