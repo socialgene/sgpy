@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.3](https://github.com/socialgene/sgpy/compare/v2.5.2...v2.5.3) (2023-06-15)
+
+
+### Bug Fixes
+
+* goterm edge delim ([949279d](https://github.com/socialgene/sgpy/commit/949279d1c4a5485e3daf013619a7553d7cd03427))
+* tests ([4a5553d](https://github.com/socialgene/sgpy/commit/4a5553d0f3264284839ce17053c47e3e9d323f5d))
+
 ## [2.5.2](https://github.com/socialgene/sgpy/compare/v2.5.1...v2.5.2) (2023-06-10)
 
 
