@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.4](https://github.com/socialgene/sgpy/compare/v2.5.3...v2.5.4) (2023-06-15)
+
+
+### Bug Fixes
+
+* 1 ([dce672c](https://github.com/socialgene/sgpy/commit/dce672c107c05e31b18e02c73ce9fd8bb60c3868))
+
 ## [2.5.3](https://github.com/socialgene/sgpy/compare/v2.5.2...v2.5.3) (2023-06-15)
 
 
