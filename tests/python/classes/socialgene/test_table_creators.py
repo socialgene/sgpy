@@ -5,7 +5,7 @@ from socialgene.base.socialgene import SocialGene
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
-FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
+FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "test_genomes")
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 
 

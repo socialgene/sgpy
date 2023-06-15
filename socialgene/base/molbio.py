@@ -117,9 +117,13 @@ class ProteinSequence:
             else:
                 self.hash_id = hash_id
         else:
-            self.hash()
+            self._assign_hash()
 
-    def one_letter_amino_acids(self):
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+
+    def _one_letter_amino_acids(self):
         """Create an ordered dictionary of amino acids. Used to count AAs in a protein sequence.
 
         Returns:
@@ -127,7 +131,7 @@ class ProteinSequence:
         """
         return OrderedDict({i: 0 for i in self._amino_acids})
 
-    def count_amino_acids(self):
+    def _amino_acid_count(self):
         """Create a '-' separated string of an amino acid count
 
         Returns:
@@ -137,10 +141,10 @@ class ProteinSequence:
             return "NA"
         else:
             return "-".join(
-                [str(self.sequence.count(i)) for i in self.one_letter_amino_acids()]
+                [str(self.sequence.count(i)) for i in self._one_letter_amino_acids()]
             )
 
-    def hash(self):
+    def _assign_hash(self):
         """Hash the amino acid sequence"""
         self._standardize_sequence()
         self.hash_id = hasher.hash_aminos(self.sequence)
@@ -187,6 +191,10 @@ class Location:
         self.start = start
         self.end = end
         self.strand = strand
+
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
 
 class Domain:
@@ -253,8 +261,8 @@ class Domain:
             self.evalue = find_exp(evalue)
             self.i_evalue = find_exp(i_evalue)
         else:
-            self.evalue = int(evalue)
-            self.i_evalue = int(i_evalue)
+            self.evalue = round(float(evalue), 1)
+            self.i_evalue = round(float(i_evalue), 1)
         self.domain_bias = round(float(domain_bias), 1)
         self.domain_score = round(float(domain_score), 1)
         self.seq_pro_bias = round(float(seq_pro_bias), 1)
@@ -263,22 +271,18 @@ class Domain:
         self.ali_from = int(ali_from)
         self.ali_to = int(ali_to)
 
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+
     def get_hmm_id(self):
         return self.hmm_id
 
     def domain_within_threshold(self):
         """Check if a protein's domain annotation is within the threshold for inclusion (currently i_evalue based)
-
-        Raises:
-            TypeError: Incorrect type for i_evalue
-
         Returns:
-            int: exponent of the i_evalue
+            bool: is less than or equal to the set ievalue cutoff?
         """
-        if not isinstance(self.i_evalue, int):
-            raise TypeError(
-                f"Domain i_evalue must be an integer representing the exponent, not {self.i_evalue}"
-            )
         return self.i_evalue <= find_exp(float(env_vars["HMMSEARCH_IEVALUE"]))
 
     def get_dict(self):
@@ -321,6 +325,7 @@ class Protein(
 ):
     """Container class for describing a single protein"""
 
+    # seqlen is included as a variable so it can be provided (e.g. a sequence isn't provided and proteins are created manually)
     __slots__ = ["description", "external_protein_id", "seqlen", "domains"]
 
     def __init__(
@@ -346,6 +351,10 @@ class Protein(
         self.seqlen = seqlen
         self.domains = domains if domains is not None else set()
 
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+
     def only_id(self):
         self.description = None
         self.external_protein_id = None
@@ -364,14 +373,6 @@ class Protein(
         temp = Domain(*args, **kwargs)
         if temp.domain_within_threshold():
             self.domains.add(temp)
-        # if temp.i_evalue is None:
-        #     self.domains.append(deepcopy(temp))
-        #     return True
-        # if temp.domain_within_threshold():
-        #     self.domains.append(deepcopy(temp))
-        #     return True
-        # else:
-        #     return False
 
     def sort_domains_by_mean_envelope_position(self):
         # (ie can't sort a set())
@@ -490,6 +491,10 @@ class Feature(Location):
         )
         self.incomplete = incomplete
 
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+
     def feature_is_protein(self):
         """Check if the feature "is a protein"
 
@@ -531,6 +536,10 @@ class Locus:
         self.features = set()
         self.info = self.create_source_key_dict()
 
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
         self.features.add(Feature(**kwargs))
@@ -554,6 +563,10 @@ class Assembly:
         self.loci = {}
         self.taxid = None
         self.info = self.create_source_key_dict()
+
+    @property
+    def __dict__(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
     def add_locus(self, id: str = None):
         """Add a locus to an assembly object"""

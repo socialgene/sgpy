@@ -28,22 +28,13 @@ temp.assemblies["myassembly"].loci["my_locus"].add_feature(
 
 
 def test_add_protein():
+    assert temp.proteins["20F58F6F237F111D"].description == "description"
+    assert temp.proteins["20F58F6F237F111D"].domains == []
+    assert temp.proteins["20F58F6F237F111D"].hash_id == "20F58F6F237F111D"
     assert (
-        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].description == "description"
+        temp.proteins["20F58F6F237F111D"].external_protein_id == "external_protein_id"
     )
-    assert temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].domains == []
-    assert (
-        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].hash_id
-        == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
-    )
-    assert (
-        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].external_protein_id
-        == "external_protein_id"
-    )
-    assert (
-        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].sequence
-        == "ARNDCQEGHILKMFPSTWYVXZJU"
-    )
+    assert temp.proteins["20F58F6F237F111D"].sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
 
 def test_add_assembly():

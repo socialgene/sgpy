@@ -12,7 +12,7 @@ def test_protein():
     )
     assert temp.description == "description"
     assert temp.domains == set()
-    assert temp.hash_id == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
+    assert temp.hash_id == "20F58F6F237F111D"
     assert temp.external_protein_id == "external_protein_id"
     assert temp.sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
