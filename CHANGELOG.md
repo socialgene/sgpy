@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/socialgene/sgpy/compare/v0.1.1...v0.1.2) (2023-06-16)
+
+
+### Bug Fixes
+
+* pypi ([107260b](https://github.com/socialgene/sgpy/commit/107260b0e710b893f95aba55b06f03237f8b500c))
+
 ## [0.1.1](https://github.com/socialgene/sgpy/compare/v0.1.0...v0.1.1) (2023-06-16)
 
 
