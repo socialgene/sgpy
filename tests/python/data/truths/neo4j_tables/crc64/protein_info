@@ -1,0 +1,138 @@
+56D62BD3D3A60AA4	BAL14584.1	leucocyclicin Q	63
+08CC2AE82994674A	BAH29711.1	lactocyclicin Q	63
+37C2BC6B34544B2E	AXA20086.1	sigma-70 RpoE	174
+24885C21E4F10395	AXA20087.1	competence protein ComEC	64
+5DB7DF559DF798B9	AXA20088.1	transposase	36
+380F00AA06102D54	AXA20089.1	hypothetical protein	96
+1CF65176FCF98848	AXA20090.1	hybrid trans-AT PKS/NRPS LgaA	3553
+3BFF8AA6C1E11053	AXA20091.1	hybrid trans-AT PKS/NRPS LgaB	6405
+5A6503F0ADBBF5DD	AXA20092.1	trans-AT PKS LgaC	6799
+B5363BCBA49EA647	AXA20093.1	trans-AT PKS LgaD	1279
+93E706B4F7EB53AF	AXA20094.1	acyltransferase LgaE	370
+0FB2B60341C61380	AXA20095.1	enoylreductase LgaF	461
+53C03058C526F0D2	AXA20096.1	trans-AT PKS LgaG	8904
+64F56D5193D6A584	AXA20097.1	nuclear transport factor 2 (NTF2)-like protein LgaL	131
+A4115D03F2A9920B	AXA20098.1	MATE family efflux transporter LgaH	457
+631C4C8531E0AE0F	AXA20099.1	acylhydrolase LgaI	337
+00CD39A87B4E5579	AXA20100.1	transposase	128
+D9B06B39B6ED339A	AXA20101.1	cytochrome P450 LgaJ	394
+FF58B5837B0F03BE	AXA20102.1	LgaM	244
+C16214B7E088BFA5	AXA20103.1	ketoreductase LgaK	273
+2CC09AA68B15064E	AXA20104.1	phosphoenolpyruvate-protein phosphotransferase	587
+F0D86567887A4777	AXA20105.1	squalene--hopene cyclase	679
+5CD80CF74497D50C	AXA20106.1	all-trans-phytoene synthase	281
+E3DBD3CB4B0B011F	AXA20107.1	hypothetical protein	155
+9B2BD0446B5C887C	MDA9044155.1	GMC oxidoreductase	361
+FB2C7959E990F3BE	MDA9044156.1	alpha-ketoglutarate-dependent dioxygenase AlkB	203
+91D6651A957F102C	MDA9044157.1	sel1 repeat family protein	245
+68B9F0EB006F5BE3	MDA9044158.1	DUF2452 domain-containing protein	128
+F2822B0165D3C835	MDA9044159.1	DUF3299 domain-containing protein	189
+87590ED88D7DA74B	MDA9044160.1	ABC transporter permease	416
+A31CAC313A81069D	MDA9044161.1	ABC transporter ATP-binding protein	241
+FD38494A6B8F97C9	MDA9044162.1	DUF2796 domain-containing protein	207
+3D4FA03A5EB7F0A5	MDA9044163.1	aminotransferase class III-fold pyridoxal phosphate-dependent enzyme	422
+F118B8E9E9789792	MDA9044216.1	class II glutamine amidotransferase	231
+AFC02DD69D20FC3F	MDA9044217.1	AMP-binding protein	540
+43955B10157EAA83	MDA9044218.1	PQQ-dependent sugar dehydrogenase	376
+0C160BB6F98FB7FD	MDA9044219.1	hypothetical protein	81
+58F885435F1AD4DB	MDA9044220.1	exodeoxyribonuclease VII small subunit	58
+24448B58A54A10DA	MDA9044221.1	YggT family protein	193
+7DF2ADCD595E663C	MDA9044222.1	DUF4426 domain-containing protein	147
+E49F5E00A8991EA8	MDA9044223.1	radical SAM family heme chaperone HemW	398
+4B15BD3D88CFAC2E	MDA9044224.1	RdgB/HAM1 family non-canonical purine NTP pyrophosphatase	201
+A15A0C3396E2B746	MDA9044225.1	XRE family transcriptional regulator	204
+E8872043D48A5648	MDA9044226.1	L-serine ammonia-lyase, iron-sulfur-dependent, subunit alpha	132
+1B41BC2B6222C110	MDA9044227.1	DNA-protecting protein DprA	191
+5D80EAC79B87A6EE	MDA9044228.1	peptide deformylase	185
+C9078885C05A562E	MDA9044229.1	methionyl-tRNA formyltransferase	321
+F3897BC3BF84C5E5	MDA9044230.1	16S rRNA (cytosine(967)-C(5))-methyltransferase RsmB	431
+EA9701BAB23650CC	MDA9044231.1	Trk system potassium transporter TrkA	230
+DD38BEB1792B2E90	MDA9044232.1	betaine/proline/choline family ABC transporter ATP-binding protein	362
+1453607CB71BB37E	MDA9044233.1	ABC transporter permease subunit	681
+2E7FC1301E506464	MDA9044234.1	hypothetical protein	132
+C879D95B7345AB30	MDA9044235.1	hypothetical protein	102
+7C203831CA7AFF30	MDA9044239.1	transcription-repair coupling factor	1009
+92797A8F4424BBC1	MDA9044240.1	peptidoglycan binding protein CsiV	264
+8B4A62879108A598	MDA9044236.1	NAD-glutamate dehydrogenase	689
+DF1721ED7294B11A	MDA9044237.1	GlxA family transcriptional regulator	331
+90F515A452B025A8	MDA9044238.1	NAAT family transporter	196
+D3ABC3F326912A79	MDA9044241.1	monomeric sarcosine oxidase	199
+252C38741F4EEEC8	MDA9044242.1	EamA family transporter	300
+92CD322756ADF423	MDA9044243.1	methylated-DNA--[protein]-cysteine S-methyltransferase	159
+D61FA6C10320C46E	MDA9044244.1	GntR family transcriptional regulator	140
+4F3B2CD388AF7FDD	MDA9044245.1	purine permease	115
+0DBE4C8B679C1594	MDA9044246.1	GTP cyclohydrolase II	196
+7BD6E6CA2C4733CA	MDA9044247.1	1-deoxy-D-xylulose-5-phosphate synthase	594
+D118C46667DFB8A8	MDA9044248.1	polyprenyl synthetase family protein	256
+D70E5E714C43A81F	MDA9044249.1	molybdopterin-dependent oxidoreductase	177
+AC0935A279EE0BF2	MDA9044250.1	xanthine dehydrogenase accessory protein XdhC	278
+844F850F538E097D	MDA9044251.1	guanine deaminase	429
+4BC36053B2DAC821	MDA9044252.1	aldo/keto reductase	154
+B439620E418F99FB	MDA9044253.1	aminotransferase class I/II-fold pyridoxal phosphate-dependent enzyme	241
+79922769FEC74E26	MDA9044254.1	amidophosphoribosyltransferase	506
+D12F1E0FBB706551	MDA9044255.1	CvpA family protein	169
+95F2DF325E39BBD2	MDA9044256.1	SPOR domain-containing protein	88
+8E6BEA27B4AC55FD	MDA9044164.1	dephospho-CoA kinase	141
+14D607E77D719EFD	MDA9044165.1	DNA gyrase inhibitor YacG	65
+647127BA4020D77C	MDA9044166.1	prepilin-type N-terminal cleavage/methylation domain-containing protein	148
+E69975AF5C36081A	MDA9044167.1	ABC-F family ATPase	532
+A50DF34A330BC7BE	MDA9044168.1	HD domain-containing protein	193
+3BDEC93B839E5341	MDA9044169.1	enoyl-CoA hydratase	258
+E00490C94A104C1C	MDA9044170.1	DUF5062 family protein	80
+FBB2C8A4B28918A8	MDA9044171.1	thioredoxin TrxC	146
+A5218420E4FFF2B0	MDA9044172.1	pyrimidine/purine nucleoside phosphorylase	93
+89AEE45AD2557362	MDA9044173.1	histone deacetylase family protein	223
+0EA074ACA4327B68	MDA9044257.1	penicillin-binding transpeptidase domain-containing protein	214
+228DC0642F03F877	MDA9044258.1	flavin reductase family protein	200
+8E2C0D24E8B77582	MDA9044259.1	beta-lactamase family protein	389
+F7307F58BCBAF6A8	MDA9044260.1	substrate-binding domain-containing protein	123
+3AC1EF6AADED4367	MDA9044261.1	ester cyclase	322
+5263FB5BBE577C06	N9H26_00540	pseudo_cupin	34
+C0D646D7BD0C5F77	MDA9044262.1	cupin domain-containing protein	269
+D97DD7B7FFD1B858	MDA9044263.1	trypsin-like peptidase domain-containing protein	215
+BEDD3F8A8FE3CF18	MDA9044264.1	carboxy-S-adenosyl-L-methionine synthase CmoA	247
+239F356BF8811733	MDA9044265.1	tRNA 5-methoxyuridine(34)/uridine 5-oxyacetic acid(34) synthase CmoB	244
+D40DBDBEDFF4953B	MDA9044266.1	glutamate--cysteine ligase	520
+F8E305651D91E543	MDA9044267.1	DMT family transporter	140
+AA06B718B1D96502	MDA9044174.1	DNA-protecting protein DprA	115
+28556A7F58C90682	MDA9044175.1	Sua5/YciO/YrdC/YwlC family protein	172
+02B0E06D27063B26	MDA9044176.1	oxygen-dependent coproporphyrinogen oxidase	303
+32A0C39753267DDF	MDA9044177.1	shikimate dehydrogenase	279
+AEA3D318034704A6	MDA9044178.1	aspartate/glutamate racemase family protein	232
+0F483E0C39C9752C	MDA9044179.1	YebC/PmpR family DNA-binding transcriptional regulator	243
+D3321ECEADA74595	MDA9044180.1	GNAT family N-acetyltransferase	163
+2437C96D6396E16A	MDA9044181.1	peroxiredoxin	184
+93DA49A3214CDDFF	MDA9044182.1	DMT family transporter	159
+34F954D5A154EFE6	MDA9044183.1	LpxL/LpxP family Kdo(2)-lipid IV(A) lauroyl/palmitoleoyl acyltransferase	305
+84EE4A1E07C67B07	MDA9044184.1	bifunctional [glutamate--ammonia ligase]-adenylyl-L-tyrosine phosphorylase/[glutamate--ammonia-ligase] adenylyltransferase	974
+543DF8324FCA1F20	MDA9044185.1	HAMP domain-containing histidine kinase	416
+5D7D6F3ECF03C6DE	MDA9044186.1	amino-acid N-acetyltransferase	75
+49D8C11B7E88836B	MDA9044187.1	sigma D regulator	104
+878FFFF890F2EA5F	MDA9044188.1	NAD(+) kinase	301
+0941EB024BB9AC06	MDA9044189.1	rhomboid family intramembrane serine protease	304
+A0563DDDEA8EEA13	MDA9044190.1	YeaC family protein	84
+EDF5428DA122C2D7	MDA9044191.1	DUF2797 domain-containing protein	278
+AC733806CA5BE642	MDA9044192.1	aminopeptidase N	687
+69F6786E5B681F6E	MDA9044193.1	3-hydroxyacyl-CoA dehydrogenase family protein	238
+B7630EA8F2699F55	MDA9044194.1	acetyl-CoA C-acyltransferase	394
+F7966FBF0F0E4BBE	MDA9044195.1	NAD-dependent epimerase/dehydratase family protein	340
+BD008AB6F3868DBF	MDA9044196.1	polysaccharide lyase	435
+542D18DE65264751	MDA9044197.1	polysaccharide lyase	104
+94A882BF0173593B	MDA9044198.1	DUF808 domain-containing protein	239
+9D677A0FCCA1F92A	MDA9044199.1	alpha/beta hydrolase	282
+D401CD870202F5F2	MDA9044200.1	aspartate/tyrosine/aromatic aminotransferase	397
+72AA75874579CC6B	MDA9044201.1	GlxA family transcriptional regulator	315
+A8B56E346CA3CD42	MDA9044202.1	FAD-binding oxidoreductase	180
+70F409DE5D34EF16	MDA9044203.1	hypothetical protein	100
+D0F6659B79648CC1	MDA9044204.1	YhcB family protein	166
+43BB201F411F2C80	MDA9044205.1	cell division protein ZapE	384
+A70B1CD7A818CF29	MDA9044206.1	50S ribosomal protein L13	142
+605AEB5CB3EA517F	MDA9044207.1	30S ribosomal protein S9	130
+FC6B20E6BB899261	MDA9044208.1	ubiquinol-cytochrome c reductase iron-sulfur subunit	197
+760A160D8E778864	MDA9044209.1	cytochrome bc complex cytochrome b subunit	168
+D6DD964F2D2ABA14	MDA9044210.1	protein-glutamate O-methyltransferase CheR	256
+9B21BFD6CE4D36F0	MDA9044211.1	chemotaxis protein CheW	176
+072E4DBB9268F3D2	MDA9044212.1	chemotaxis protein CheA	749
+D250B572DBC78ECB	MDA9044213.1	response regulator	120
+A939A090EDE841BA	MDA9044214.1	STAS domain-containing protein	90
+3E6CD9AC7C7BDB80	MDA9044215.1	hypothetical protein	44

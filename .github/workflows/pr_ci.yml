@@ -1,0 +1,34 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.x"]
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install sg
+        run: python3 -m pip install -e .[full,ci]
+      - name: Install hmmer
+        run: sudo apt-get install hmmer
+      - name: Run tests
+        run: pytest tests -v --cov=./socialgene --cov-report=xml:./coverage.xml --cov-report term-missing
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v2

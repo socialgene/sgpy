@@ -1,0 +1,24 @@
+{
+  "bootstrap-sha": "8055a9cbe677d07d70b04d07bd86f5d850adafe2",
+  "last-release-sha": "6fe4c1b955ef53076f1619b3c799dbf9bd58dd69",
+  "plugins": [],
+  "release-type": "python",
+  "release-as": "0.0.1",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "changelog-sections": [],
+  "draft": true,
+  "prerelease": true,
+  "skip-github-release": false,
+  "always-link-local": false,
+  "separate-pull-requests": false,
+  "group-pull-request-title-pattern": "chore: release ${branch}",
+  "release-search-depth": 400,
+  "commit-search-depth": 500,
+  "sequential-calls": false,
+  "packages": {
+    ".": {
+      "release-type": "python"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+LOCUS       BGC0000493               300 bp    DNA     linear   BCT 10-NOV-2011
+DEFINITION  Leuconostoc mesenteroides lcyQ gene for leucocyclicin Q, complete
+            cds.
+ACCESSION   BGC0000493
+VERSION     BGC0000493
+KEYWORDS    .
+SOURCE      Leuconostoc mesenteroides
+  ORGANISM  Leuconostoc mesenteroides
+            Bacteria; Firmicutes; Bacilli; Lactobacillales; Lactobacillaceae;
+            Leuconostoc.
+COMMENT     ##antiSMASH-Data-START##
+            Version      :: False
+            Run date     :: 2022-10-08 10:44:03
+            NOTE: This is a single region extracted from a larger record!
+            Orig. start  :: 0
+            Orig. end    :: 300
+            ##antiSMASH-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..300
+                     /db_xref="taxon:1245"
+                     /mol_type="genomic DNA"
+                     /organism="Leuconostoc mesenteroides"
+     subregion       1..300
+                     /aStool="mibig"
+                     /contig_edge="True"
+                     /label="RiPP"
+                     /subregion_number="1"
+                     /tool="antismash"
+     region          1..300
+                     /contig_edge="True"
+                     /product="unknown"
+                     /region_number="1"
+                     /subregion_numbers="1"
+                     /tool="antismash"
+     gene            46..237
+                     /gene="lcyQ"
+     CDS             46..237
+                     /codon_start=1
+                     /gene="lcyQ"
+                     /gene_functions="biosynthetic (rule-based-clusters)
+                     RiPP-like: TIGR03651"
+                     /gene_kind="biosynthetic"
+                     /product="leucocyclicin Q"
+                     /protein_id="BAL14584.1"
+                     /sec_met_domain="TIGR03651 (E-value: 2.7e-08, bitscore:
+                     20.3, seeds: 9, tool: rule-based-clusters)"
+                     /transl_table=11
+                     /translation="MFLVNQLGISKSLANTILGAIAVGNLASWLLALVPGPGWATKAAL
+                     ATAETIVKHEGKAAAIAW"
+ORIGIN
+        1 atatccattt tttaatcttt agaaaaattt tttggaggat ttaatatgtt cttggtaaat
+       61 cagttaggga tttcaaaatc gttagctaat actattcttg gtgcaattgc tgttggtaat
+      121 ttggccagtt ggttattagc tttggttcct ggtccgggtt gggcaacaaa agcagcactt
+      181 gcgacagctg aaacaattgt gaagcatgaa ggaaaagcag ctgctattgc gtggtaaaaa
+      241 gatttgaaca taaatctttt ttgaactgaa aaacttctga taactgttga tgatattcac
+//

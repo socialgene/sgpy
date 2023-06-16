@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "socialgene"
+version = "0.0.1"
+description = "Creating and interacting with graph databases of protein domains and their genome coordinates"
+readme = "README.md"
+authors =  [
+    {name = "Chase M. Clark", email = "chasingmicrobes@gmail.com"},
+]
+keywords = []  #! TODO
+# Pypi classifiers: https://pypi.org/classifiers/
+classifiers = [  #! Update me
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Unix",
+  "Operating System :: POSIX",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+        "pandas>=1.3",
+        "numpy>=1.21",
+        "neo4j>=4.3",
+        "biopython>=1.7",
+        "textdistance>=4.2.1"
+]
+
+[project.license]
+text = "MIT"
+
+[project.urls]
+repository = "https://github.com/socialgene/sgpy"
+homepage = "https://socialgene.github.io"
+
+[project.optional-dependencies]
+full = ["rich>=10.12.0", "networkx", "obonet"]
+ci = ["pytest-cov"]
+cd = ["twine"]
+
+[project.scripts]
+# Entry points for the package https://python-poetry.org/docs/pyproject/#scripts
+"socialgene"="socialgene.cli.__main__:main"
+"sg_process_domtblout"="socialgene.cli.process_domtblout:main"
+"sg_clean_hmm"="socialgene.cli.clean_hmms:main"
+"sg_process_genbank"="socialgene.cli.export_protein_loci_assembly_tables:main"
+"sg_ncbi_taxonomy"="socialgene.cli.parse_ncbi_taxonomy:main"
+"sg_export_parameters"="socialgene.cli.parameter_export:main"
+"sg_export_neo4j_headers"="socialgene.cli.export_neo4j_header_files:main"
+"sg_create_neo4j_db"="socialgene.cli.create_neo4j_db:main"
+"sg_version"="socialgene.utils.version:main"
+"sg_neo4j_version"="socialgene.utils.version:neo4j"
+"sg_hmm_tsv_parser"="socialgene.cli.socialgene_hmm_tsv_parser:main"
+"sg_prothash_sqlite"="socialgene.cli.protein_sqlite:main"
+"sg_get_goterms"="socialgene.utils.goterms:main"

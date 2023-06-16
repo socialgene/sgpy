@@ -1,0 +1,33 @@
+name: socialgene_nf
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - conda-forge::python==3.10
+  - conda-forge::pip==23.1.2
+  - conda-forge::biopython==1.79
+  - conda-forge::numpy
+  - bioconda::seqkit==2.3.0
+  - hcc::aspera-cli==3.9.6 # bin/download_ncbi_taxon.sh
+  - bioconda::entrez-direct==16.2 # bin/download_ncbi_taxon.sh
+  - bioconda::hmmer==3.3.2
+  - bioconda::mmseqs2==13.45111
+  - bioconda::diamond==2.0.15
+  - conda-forge::ncbi-datasets-cli==14.13.2
+  - bioconda::ncbi-genome-download==0.3.1
+  - bioconda::tabix==1.11
+  - bioconda::samtools==1.16.1
+  - conda-forge::coreutils==9.3
+  - conda-forge::sed==4.8
+  - conda-forge::rsync==3.2.7
+  - conda-forge::wget==1.20.3
+  - bioconda::grep==3.4
+  - conda-forge::git==2.41.0
+  - conda-forge::pigz==2.6
+  - conda-forge::gzip==1.12
+  - conda-forge::openjdk==17 # required by neo4j
+  - conda-forge::procps-ng==4.0.3 # required by nextflow
+  - conda-forge::zip==3.0

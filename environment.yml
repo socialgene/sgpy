@@ -1,0 +1,16 @@
+name: sgpy-dev
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - conda-forge::python==3.10
+  - conda-forge::pip>=23.1.2
+  - conda-forge::biopython>=1.79
+  - conda-forge::numpy
+  - bioconda::hmmer>=3.3.2
+  - bioconda::mmseqs2>=13.45111
+  - bioconda::diamond>=2.0.15
+  - conda-forge::openjdk>=17 # required by neo4j
