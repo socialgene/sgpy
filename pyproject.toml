@@ -41,7 +41,7 @@ repository = "https://github.com/socialgene/sgpy"
 homepage = "https://socialgene.github.io"
 
 [project.optional-dependencies]
-full = ["rich>=10.12.0", "networkx", "obonet"]
+full = ["rich>=10.12.0"]
 ci = ["pytest-cov"]
 cd = ["twine"]
 
