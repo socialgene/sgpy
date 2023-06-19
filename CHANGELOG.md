@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/socialgene/sgpy/compare/v0.1.5...v0.1.6) (2023-06-19)
+
+
+### Bug Fixes
+
+* reverse goterm alt_id direction ([3f5dca1](https://github.com/socialgene/sgpy/commit/3f5dca1957c6edff7e044f3a8426ac1cff21d4c6))
+
 ## [0.1.5](https://github.com/socialgene/sgpy/compare/v0.1.4...v0.1.5) (2023-06-19)
 
 
