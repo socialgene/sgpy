@@ -113,8 +113,8 @@ class AltRel(GoRelationship):
 
     def assign(self, main_id, line):
         if line.startswith("alt_id"):
-            self.start = extract_goterm_int_as_str(line)
-            self.end = main_id
+            self.start = main_id
+            self.end = extract_goterm_int_as_str(line)
             self.type = "GO_ALTERNATE"
 
 
