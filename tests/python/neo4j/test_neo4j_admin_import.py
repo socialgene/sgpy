@@ -44,7 +44,7 @@ expected_headers = {
     "molecular_network": ":START_ID(mz_cluster_index)\t:END_ID(mz_cluster_index)\tdelta_mz:double\tmeh:Double\tcosine:Double\tother_score:Double\r\n",
     "tigrfamrole_to_subrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_subrole)\r\n",
     "taxid_to_taxid": ":START_ID(taxid)\t:END_ID(taxid)\r\n",
-    "goterms": "uid:ID(goterm)\tnamespace\tname\tdef\r\n",
+    "goterms": "uid:ID(goterm)\tname\tnamespace\tdef\r\n",
 }
 
 
