@@ -3,7 +3,7 @@ import csv
 from pathlib import Path
 import requests
 import re
-
+from copy import deepcopy
 from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(
@@ -101,7 +101,21 @@ class GoRelationship:
             self.add_type(line)
 
     def output(self):
-        return (self.start, self.end, self.type)
+        if all((self.start, self.end, self.type)):
+            return (self.start, self.end, self.type)
+
+
+class AltRel(GoRelationship):
+    def __init__(
+        self,
+    ):
+        super().__init__()
+
+    def assign(self, main_id, line):
+        if line.startswith("alt_id"):
+            self.start = extract_goterm_int_as_str(line)
+            self.end = main_id
+            self.type = "GO_ALTERNATE"
 
 
 def write(
@@ -132,11 +146,24 @@ def main():
                 # skip lines before first term
                 continue
             nodeobj.assign(line=line)
+            # some goterms have "alt_ids" these are sometimes referenced from other sources but only exist
+            # in the obo file as alt ids (no primary entry)
+            if line.startswith("alt_id"):
+                # deepcopy so name and namespace will carry if present
+                alt_node = deepcopy(nodeobj)
+                alt_node.add_id(line)
+                alt_rel = AltRel()
+                alt_rel.assign(main_id=nodeobj.id, line=line)
+                nodes.append(alt_node.output())
+                relationships.append(alt_rel.output())
+                del alt_node, alt_rel
             relobj.assign(start=nodeobj.id, line=line)
             if line == "":
                 term_open = False
                 nodes.append(nodeobj.output())
-                relationships.append(relobj.output())
+                # only output full relationhip tuples
+                if out := relobj.output():
+                    relationships.append(out)
 
     log.info("Writing goterms nodes")
     write(nodes, Path(args.outdir, "goterms"))
