@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/socialgene/sgpy/compare/v0.1.3...v0.1.4) (2023-06-19)
+
+
+### Bug Fixes
+
+* goterm alt_ids ([394e62c](https://github.com/socialgene/sgpy/commit/394e62c582dcca41584ee65d00132fbda1ddc0b3))
+
 ## [0.1.3](https://github.com/socialgene/sgpy/compare/v0.1.2...v0.1.3) (2023-06-19)
 
 
