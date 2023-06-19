@@ -248,10 +248,17 @@ class HmmModel:
             hash_to_use = self._new_hash
         else:
             hash_to_use = self._hash
-
+        # need tigrfam ids to actually be the tigrfam ids (not f"{self._model_source}_{self._n}"),
+        # so that tigrfam_to_go, etc will associate
+        # need some others to be f"{self._model_source}_{self._n}" because can't assume they will be
+        # unique within a source db (ie same model in different antismash categories)
+        if self._model_source == "tigrfam":
+            mod_id = self.NAME
+        else:
+            mod_id = f"{self._model_source}_{self._n}"
         return OrderedDict(
             {
-                "id": f"{self._model_source}_{self._n}",
+                "id": mod_id,
                 "source": self._model_source,
                 "rel_path": self._rel_path,
                 "name": self.NAME,
