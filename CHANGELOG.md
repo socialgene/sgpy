@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/socialgene/sgpy/compare/v0.1.4...v0.1.5) (2023-06-19)
+
+
+### Bug Fixes
+
+* tigrfam ids ([73897a0](https://github.com/socialgene/sgpy/commit/73897a08ce6dde13cda02b7996c0a46fd1645b17))
+
 ## [0.1.4](https://github.com/socialgene/sgpy/compare/v0.1.3...v0.1.4) (2023-06-19)
 
 
