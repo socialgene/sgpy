@@ -142,7 +142,7 @@ def main():
     write(nodes, Path(args.outdir, "goterms"))
     log.info("Writing goterms relationships")
     write(relationships, Path(args.outdir, "goterm_edgelist"))
-    log.info(f"Finished reading/writing goterms")
+    log.info("Finished reading/writing goterms")
 
 
 if __name__ == "__main__":
