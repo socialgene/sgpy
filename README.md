@@ -7,6 +7,8 @@ Note: All releases may intorduce breaking changes until the release of v1.0.0
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/socialgene/sgpy) [![codecov](https://codecov.io/gh/socialgene/sgpy/branch/main/graph/badge.svg?token=8f8GCc4J3G)](https://codecov.io/gh/socialgene/sgpy) [![Linting](https://github.com/socialgene/sgpy/actions/workflows/linters.yml/badge.svg)](https://github.com/socialgene/sgpy/actions/workflows/linters.yml) [![Continuous Integration](https://github.com/socialgene/sgpy/actions/workflows/pr_ci.yml/badge.svg)](https://github.com/socialgene/sgpy/actions/workflows/pr_ci.yml) [![Continuous Deployment](https://github.com/socialgene/sgpy/actions/workflows/pypi_autodeploy_python.yml/badge.svg)](https://github.com/socialgene/sgpy/actions/workflows/pypi_autodeploy_python.yml)
 ## PyPI
 
+https://pypi.org/project/socialgene/
+
 ![PyPI](https://img.shields.io/pypi/v/socialgene) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/socialgene) ![PyPI - Status](https://img.shields.io/pypi/status/socialgene) ![https://pypi.org/project/socialgene](https://img.shields.io/pypi/dm/socialgene)
 
 # Contributing
