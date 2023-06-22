@@ -87,7 +87,7 @@ meANb28pQzMTZjMAIbpyzt5-k5VTF6WU	CQnke8UcAFAy0rB1BsZQ_n1g8pjspi3u	MDA9044258.1	N
 meANb28pQzMTZjMAIbpyzt5-k5VTF6WU	tmJSA1Lls-mvbYJUnb1DJmOGZUGhjM41	MDA9044259.1	N9H26_00525	1851	3020	-1	beta-lactamase family protein										
 xOrOuKM1TYQIOaK9T-CIggKTWOP34QMv	VGnIChore_II_hMgH-E-s2KrPWBcCz3J	MDA9044260.1	N9H26_00530	1	373	1	substrate-binding domain-containing protein										
 xOrOuKM1TYQIOaK9T-CIggKTWOP34QMv	7s8wcVGI_HemTK03-CHBBTn9IOFrA-fe	MDA9044261.1	N9H26_00535	370	1338	1	ester cyclase										
-xOrOuKM1TYQIOaK9T-CIggKTWOP34QMv	kLEqFwVBll7Pebjko8VhaHOd8Ow64P3h	N9H26_00540	N9H26_00540	1370	1471	1	pseudo_cupin					True		True			True
+xOrOuKM1TYQIOaK9T-CIggKTWOP34QMv	kLEqFwVBll7Pebjko8VhaHOd8Ow64P3h	N9H26_00540	N9H26_00540	1370	1471	1	pseudo_cupin					true		true			true
 xOrOuKM1TYQIOaK9T-CIggKTWOP34QMv	3DIkGqBfEET5QPEVy9iHIwSP-tE3ujqd	MDA9044262.1	N9H26_00545	2021	2830	-1	cupin domain-containing protein										
 4Md1LdjsXYXl744uWpNxIWP-71Y8ojm7	d6uICZrx45oGrf9cMVZqNPLHI0gaXTMc	MDA9044263.1	N9H26_00550	1	649	1	trypsin-like peptidase domain-containing protein										
 4Md1LdjsXYXl744uWpNxIWP-71Y8ojm7	lFxritpA03I_0Lp48iZpEVqyl3TW11yR	MDA9044264.1	N9H26_00555	660	1403	1	carboxy-S-adenosyl-L-methionine synthase CmoA										
