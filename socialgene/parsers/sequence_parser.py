@@ -73,7 +73,9 @@ class GenbankParser:
             "too_short_partial_abutting_assembly_gap": "too short partial abutting assembly gap",
             "incomplete": "incomplete",
         }
-        return {k: True for k, v in bad_proteins.items() if re.search(v, note)}
+        # The exact string "true" is looked for by neo4j admin import, not True
+        # https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format-properties
+        return {k: "true" for k, v in bad_proteins.items() if re.search(v, note)}
 
     def _process_go(self, note: str) -> Dict[str, List[str]]:
         return {"goterms": re.findall("GO:[0-9]{7}", note)}
