@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/socialgene/sgpy/compare/v0.1.7...v0.1.8) (2023-06-22)
+
+
+### Bug Fixes
+
+* rich as non-optional ([77b0c3b](https://github.com/socialgene/sgpy/commit/77b0c3b86b09f1d669a55657636a024b5d2e9df4))
+
 ## [0.1.7](https://github.com/socialgene/sgpy/compare/v0.1.6...v0.1.7) (2023-06-22)
 
 
