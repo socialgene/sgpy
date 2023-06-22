@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.7](https://github.com/socialgene/sgpy/compare/v0.1.6...v0.1.7) (2023-06-22)
+
+
+### Bug Fixes
+
+* locus_to_protein boolean properties ([#50](https://github.com/socialgene/sgpy/issues/50)) ([8678e1c](https://github.com/socialgene/sgpy/commit/8678e1c219140576301891f37bf99ed926fd9f91))
+* numeric types for admin-import ([#52](https://github.com/socialgene/sgpy/issues/52)) ([bdc71c6](https://github.com/socialgene/sgpy/commit/bdc71c69e82002b33f1be95e3c1fbedeed458b9b))
+
 ## [0.1.6](https://github.com/socialgene/sgpy/compare/v0.1.5...v0.1.6) (2023-06-19)
 
 
