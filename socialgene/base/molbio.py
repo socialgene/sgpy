@@ -412,9 +412,7 @@ class Protein(
         Returns:
             bool: used for counting # of domains added to protein
         """
-        temp = Domain(*args, **kwargs)
-        if temp.domain_within_threshold():
-            self.domains.add(temp)
+        self.domains.add(Domain(*args, **kwargs))
 
     def sort_domains_by_mean_envelope_position(self):
         # (ie can't sort a set())
@@ -425,10 +423,10 @@ class Protein(
             list(self.domains),
             key=lambda tx: ((tx.env_from + tx.env_to) / 2, tx.hmm_id),
         )
-
-    def get_domain_vector(
+    @property
+    def domain_vector(
         self,
-        only_unique=False,
+        only_unique=True,
     ):
         """Get the domain hash_ids for a protein as an ordered list
 

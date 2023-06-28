@@ -24,13 +24,10 @@ class SingleProteinSearch(SocialGene):
 
         log.info(f"Input {protein_object.external_protein_id}: begin database search")
         self.query_targets[protein_object.hash_id] = set()
-        targets = [
-            i["target"]
-            for i in Neo4jQuery.query_neo4j(
+        targets =  Neo4jQuery.query_neo4j(
                 cypher_name="search_a_single_protein",
-                param=protein_object.get_domain_vector(only_unique=True),
-            )
-        ]
+                param=protein_object.domain_vector, rettype="values"
+            )[0][0]
         if not targets:
             log.warning(f"Input {protein_object.external_protein_id}: no matches found")
             return

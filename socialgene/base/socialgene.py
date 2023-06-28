@@ -82,8 +82,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for domain in protein["domains"]:
                     new_dict = temp | domain["domain_properties"]
                     new_dict["hmm_id"] = domain["hmm_id"]
-                    self.proteins[protein["p1.protein_hash"]].add_domain(
-                        exponentialized=False,
+                    self.proteins[protein["p1.uid"]].add_domain(
                         **new_dict,
                     )
         else:
@@ -226,22 +225,24 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # parse the resulting domtblout files, saving results to the class proteins/domains
         for i, ii in zip(filenames, files):
             self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
+            import shutil
+            shutil.copyfile(i, Path("/home/chase/Downloads/temp/bro" ))
             ii.close()
 
     @staticmethod
     def compare_two_proteins(protein_1, protein_2):
         """
-        The function `compare_two_proteins` compares the domain vectors of two proteins using the
-        `mod_score` function.
-
-        Args:
-          protein_1: An instance of a protein object representing the first protein.
-          protein_2: An instance of a protein object representing the second protein.
-
-        Returns:
-          dict: {l1, l2, levenshtein, jaccard, mod_score}; mod_score -> 2 = Perfectly similar; otherwise (1/Levenshtein + Jaccard)
         """
-        return mod_score(protein_1.get_domain_vector(), protein_2.get_domain_vector())
+          dict: {l1, l2, levenshtein, jaccard, mod_score}; mod_score -> 2 = Perfectly similar; otherwise (1/Levenshtein + Jaccard)
+        Returns:
+
+          protein_2: An instance of a protein object representing the second protein.
+          protein_1: An instance of a protein object representing the first protein.
+        Args:
+
+        `mod_score` function.
+        The function `compare_two_proteins` compares the domain vectors of two proteins using the
+        return mod_score(protein_1.domain_vector, protein_2.domain_vector)
 
     def fill_locus_assembly_from_db(self):
         """Retrieve all locus and assembly info for self.proteins, from a running Neo4j database"""

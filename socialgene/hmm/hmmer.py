@@ -116,6 +116,7 @@ class HMMER:
         input: str,
         hmm_filepath: str,
         domtblout_path: str,
+        cut_ga: bool= False,
         f1: float = env_vars["HMMSEARCH_F1"],
         f2: float = env_vars["HMMSEARCH_F2"],
         f3: float = env_vars["HMMSEARCH_F3"],
@@ -179,22 +180,16 @@ class HMMER:
         domtblout_path = Path(domtblout_path)
         if domtblout_path.exists() and not overwrite:
             raise FileExistsError(f"File already exists at {domtblout_path}")
-        command_list = [
+        c1 = [
             "hmmscan",
             "--seed",
             int(seed),
             "--cpu",
             int(cpus),
             "-Z",
-            z,
-            "-E",
-            e,
-            "--incE",
-            inc_e,
-            "--incdomE",
-            incdom_e,
-            "--domE",
-            dom_e,
+            z,]
+
+        c3=[
             "--F1",
             f1,
             "--F2",
@@ -206,6 +201,18 @@ class HMMER:
             hmm_filepath,
             fasta_path,
         ]
+        if cut_ga:
+             c2= ["--cut_ga"]
+        else:
+            c2=[ "-E",
+            e,
+            "--incE",
+            inc_e,
+            "--incdomE",
+            incdom_e,
+            "--domE",
+            dom_e,]
+        command_list= c1+c2+c3
         command_list = [str(i) for i in command_list]
         run_subprocess(
             command_list=command_list,

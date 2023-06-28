@@ -15,8 +15,8 @@ def _mod_return(i1, i2):
         i2[0],  # hash of protein 2
         *(
             mod_score(
-                i1[1].get_domain_vector(),
-                i2[1].get_domain_vector(),
+                i1[1].domain_vector,
+                i2[1].domain_vector,
             ).values()
         ),
     ]
@@ -54,8 +54,8 @@ class CompareProtein(Neo4jQuery):
         return self._calculate_mod_score_from_domain_lists(
             protein_id_1=protein_1.hash_id,
             protein_id_2=protein_2.hash_id,
-            input_list_1=protein_1.get_domain_vector(),
-            input_list_2=protein_2.get_domain_vector(),
+            input_list_1=protein_1.domain_vector,
+            input_list_2=protein_2.domain_vector,
             **kwargs,
         )
 
@@ -97,8 +97,8 @@ class CompareProtein(Neo4jQuery):
                 _temp = self._calculate_mod_score_from_domain_lists(
                     protein_id_1=id_pair[0],
                     protein_id_2=id_pair[1],
-                    input_list_1=self.proteins[id_pair[0]].get_domain_vector(),
-                    input_list_2=self.proteins[id_pair[1]].get_domain_vector(),
+                    input_list_1=self.proteins[id_pair[0]].domain_vector,
+                    input_list_2=self.proteins[id_pair[1]].domain_vector,
                 )
                 if append:
                     self.protein_comparison.append(_temp)

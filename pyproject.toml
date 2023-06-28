@@ -61,5 +61,8 @@ cd = ["twine"]
 "sg_hmm_tsv_parser"="socialgene.cli.nextflow.socialgene_hmm_tsv_parser:main"
 "sg_prothash_sqlite"="socialgene.cli.nextflow.protein_sqlite:main"
 "sg_get_goterms"="socialgene.utils.goterms:main"
+# search
+"sg_mm_create"="socialgene.mmseqs.create_database:main"
+"sg_mm_search"="socialgene.mmseqs.search:main"
 # Modify database
 "sgdb_import_classyfire"="socialgene.dbmodifiers.classyfire.import:main"

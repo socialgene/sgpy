@@ -55,12 +55,12 @@ def gunzip(filepath: Path) -> None:
     if is_compressed(filepath).name == "gzip":
         # remove ".gz" for the new filepath
         new_hmm_path = Path(filepath.parents[0], filepath.stem)
-        log.info(f"Start decompressing: {str(Path(filepath).stem)}")
+        log.info(f"Started decompressing: {str(Path(filepath).stem)}")
         # open gz, decompress, write back out to new file
         with gzip.open(filepath, "rb") as f_in:
             with open(new_hmm_path, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
-        log.info(f"Finish decompressing: {str(Path(filepath).stem)}")
+        log.info(f"Finished decompressing: {str(Path(filepath).stem)}")
 
 
 @contextmanager
