@@ -61,7 +61,7 @@ class Nodes(NR):
             target_subdirectory="protein_info",
             target_extension="protein_ids",
             header=[
-                "uid:ID(protein)",
+                "uid:ID(protein), md5",
             ],
         )
         self.add_node(

@@ -534,10 +534,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 prot_len = len(protein.sequence)
             yield (
                 protein.hash_id,
-                # TODO: add database "source" of protein?
+                protein.md5,
                 protein.external_protein_id,
                 protein.description,
-                prot_len,  # protein length
+                prot_len,
             )
 
     def protein_ids_table(self):

@@ -37,8 +37,7 @@ def use_hashlib(input, algo):
     return hasher(bytes(input, "utf8")).hexdigest()
 
 
-def hasher(input):
-    algo = env_vars["HASHING_ALGORITHM"]
+def hasher(input, algo=env_vars["HASHING_ALGORITHM"]):
     match algo:
         case "sha512t24u":
             return sha512t24u(input)
