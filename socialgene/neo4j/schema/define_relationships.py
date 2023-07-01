@@ -154,7 +154,7 @@ class Relationships(NR):
             header_filename="mmseqs2.header",
             target_subdirectory="mmseqs2_cluster",
             target_extension="mmseqs2_results_cluster.tsv",
-            header=[":START_ID(protein)", ":END_ID(protein)", ":LABEL"],
+            header=[":START_ID(protein)", ":END_ID(protein)", ":TYPE"],
         )
 
         self.add_relationship(
