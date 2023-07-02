@@ -73,7 +73,7 @@ class Domtblout:
         input_path = Path(input_path)
         if not input_path.exists():
             raise FileNotFoundError(input_path)
-        with fh.open_file(input_path) as f:
+        with fh.open_read(input_path) as f:
             for line in f:
                 if line.startswith("#"):
                     pass
@@ -89,7 +89,7 @@ class ParsedDomtblout:
 
     def parse_parseddomtblout(self, input_path):
         input_path = Path(input_path)
-        with fh.open_file(input_path) as f:
+        with fh.open_read(input_path) as f:
             for line in f:
                 line = line.strip().split("\t")
                 self.add_protein(
@@ -146,7 +146,7 @@ def check_if_parseddomtblout(filepath):
         bool: true/false
     """
     log.info(filepath)
-    with fh.open_file(filepath) as f:
+    with fh.open_read(filepath) as f:
         l1 = f.readline()
         l2 = f.readline()
         a = l1.count("\t")
@@ -161,7 +161,7 @@ def check_if_domtblout(filepath):
     Returns:
         bool: true/false
     """
-    with fh.open_file(filepath) as f:
+    with fh.open_read(filepath) as f:
         l1 = f.readline()
         l2 = f.readline()
     expected_header = "#---fullsequence-----------------thisdomain-------------hmmcoordalicoordenvcoord\n"
