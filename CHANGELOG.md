@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/socialgene/sgpy/compare/v0.1.9...v0.1.10) (2023-07-02)
+
+
+### Bug Fixes
+
+* bump version ([f90b044](https://github.com/socialgene/sgpy/commit/f90b04442b2c024e71177130934ab5e3dfd3c0c8))
+
 ## [0.1.9](https://github.com/socialgene/sgpy/compare/v0.1.8...v0.1.9) (2023-07-02)
 
 
