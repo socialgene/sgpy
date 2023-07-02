@@ -49,7 +49,9 @@ parser.add_argument(
 
 
 def _writer(socialgene_object, outdir, n_fasta_splits):
-    socialgene_object.write_n_fasta(outdir=outdir, n_splits=n_fasta_splits, mode="a")
+    socialgene_object.write_n_fasta(
+        outdir=outdir, n_splits=n_fasta_splits, mode="a", gz=True
+    )
     for i in SocialGene._genomic_info_export_tablenames:
         socialgene_object.write_table(
             outdir=outdir, tablename=i, filename=i.removesuffix("_table"), mode="a"
