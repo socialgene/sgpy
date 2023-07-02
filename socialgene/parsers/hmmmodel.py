@@ -289,7 +289,7 @@ class HmmParse:
         # to HMM model's functon after seeing "HMM ", to the end of the model
         # then switch back before the next model starts
         _temp = self.temp_model.add_attr
-        with fh.open_file(filepath) as h:
+        with fh.open_read(filepath) as h:
             self.temp_model._base_dir = base_dir
             self.temp_model._abs_path = filepath
             self.temp_model._assign_relative_path()

@@ -1,13 +1,12 @@
 from typing import List
 
 import csv
-import gzip
+
 import itertools
 import pickle
 import tempfile
 from collections import defaultdict
 from copy import deepcopy
-from functools import partial
 from multiprocessing import cpu_count
 from operator import attrgetter
 from pathlib import Path
@@ -25,6 +24,7 @@ from socialgene.parsers.hmmer_parser import HmmerParser
 from socialgene.parsers.sequence_parser import SequenceParser
 from socialgene.scoring.scoring import mod_score
 from socialgene.utils.chunker import chunk_a_list_with_numpy
+from socialgene.utils.file_handling import open_write
 from socialgene.utils.logging import log
 
 
@@ -244,9 +244,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     # File Outputs
     ########################################
 
-    def export_all_domains_as_tsv(self, outpath):
+    def export_all_domains_as_tsv(self, outpath, **kwargs):
         _domain_counter = 0
-        with open(outpath, "a") as f:
+        with open_write(outpath, **kwargs) as f:
             tsv_writer = csv.writer(f, delimiter="\t")
             # sort to standardize the write order
             ordered_prot_ids = list(self.proteins.keys())
@@ -287,7 +287,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         outpath,
         hash_list: List = None,
         external_protein_id: bool = False,
-        gz: bool = False,
+        **kwargs,
     ):
         """Write proteins to a FASTA file
 
@@ -295,13 +295,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             outpath (str): path of file that FASTA entries will be appended to
             hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
             external_protein_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
-            gz (bool, optional): Write as gzip?. Defaults to False.
+            **kwargs: see print(open_write.__doc__)
         """
-        if gz:
-            _open = partial(gzip.open, mode="at")
-        else:
-            _open = partial(open, mode="a")
-        with _open(outpath) as handle:
+
+        with open_write(filepath=outpath, **kwargs) as handle:
             counter = 0
             if hash_list:
                 temp_iter = self.filter_proteins(hash_list)
@@ -328,12 +325,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """
         return f">{self.proteins[hash_id].hash_id}\n{self.proteins[hash_id].sequence}"
 
-    def write_n_fasta(self, outdir, n_splits=1, mode="a"):
+    def write_n_fasta(self, outdir, n_splits=1, **kwargs):
         """Export protein sequences split into n-number of fasta files
 
         Args:
             outdir (str): Directory to save fasta files into
             n_splits (int, optional): Defaults to 1.
+            **kwargs: see print(open_write.__doc__)
         """
 
         def split(a, n):
@@ -346,7 +344,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         protein_list = split(list(self.proteins.keys()), n_splits)
         counter = 1
         for protein_group in protein_list:
-            with open(Path(outdir, f"fasta_split_{counter}.faa"), mode) as handle:
+            with open_write(
+                Path(outdir, f"fasta_split_{counter}.faa"), **kwargs
+            ) as handle:
                 for k, v in {
                     key: self.proteins.get(key) for key in sorted(protein_group)
                 }.items():
@@ -463,7 +463,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # because locus id can't be assured to be unique across assemblies
         return hasher(f"{assembly_id}___{locus_id}")
 
-    def write_table(self, outdir: str, tablename: str, filename: str = None, mode="a"):
+    def write_table(self, outdir: str, tablename: str, filename: str = None, **kwargs):
         if not filename:
             filename = tablename
         if not hasattr(self, tablename):
@@ -472,7 +472,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             )
         else:
             outpath = Path(outdir, filename)
-            with open(outpath, mode) as handle:
+            with open_write(outpath, **kwargs) as handle:
                 tsv_writer = csv.writer(
                     handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
                 )
@@ -534,10 +534,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 prot_len = len(protein.sequence)
             yield (
                 protein.hash_id,
-                # TODO: add database "source" of protein?
+                protein.md5,
                 protein.external_protein_id,
                 protein.description,
-                prot_len,  # protein length
+                prot_len,
             )
 
     def protein_ids_table(self):

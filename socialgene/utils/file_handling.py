@@ -1,4 +1,4 @@
-from typing import TextIO
+from typing import IO
 
 import bz2
 import gzip
@@ -45,7 +45,7 @@ def gunzip(filepath: Path) -> None:
 
 
 @contextmanager
-def open_file(filepath: Path) -> TextIO:
+def open_read(filepath: Path) -> IO:
     filepath_compression = is_compressed(filepath)
     if filepath_compression == Compression.gzip:
         f = gzip.open(filepath, "rt")
@@ -54,11 +54,44 @@ def open_file(filepath: Path) -> TextIO:
     elif filepath_compression == Compression.xz:
         f = lzma.open(filepath, "rt")
     else:
-        f = open(filepath, "r")
+        f = open(filepath, "rt")
     try:
         yield f
     finally:
         f.close()
+
+
+@contextmanager
+def open_write(filepath: str, mode="w", compression: str = None) -> IO:
+    """Open a file for writing
+
+    Args:
+        filepath (str): input filepath
+        mode (str, optional): modes to open file for writing (only use "a", "w", or "r"- "b" will auto-applied). Defaults to "w".
+        compression (str, optional): which compression method to use ("gzip", "bzip", "xz", or None). Defaults to None.
+    Yields:
+        Iterator[IO]: context manager
+    """
+    filepath = Path(filepath)
+    if mode not in ["w", "a", "r"]:
+        raise ValueError
+    match compression:
+        case "gzip":
+            _open = gzip.open(filepath.with_suffix(".gz"), f"{mode}")
+        case "bzip":
+            _open = bz2.open(filepath.with_suffix(".bz2"), f"{mode}")
+        case "xz":
+            _open = lzma.open(filepath.with_suffix(".xz"), f"{mode}")
+        case None:
+            _open = open(filepath, mode)
+        case _:
+            raise ValueError(
+                f'compression variable must be "gzip", "bzip", "xz", or None; was {compression}'
+            )
+    try:
+        yield _open
+    finally:
+        _open.close()
 
 
 def check_if_tar(filepath):
@@ -72,7 +105,7 @@ def guess_filetype(filepath):
     Returns:
         bool: true/false
     """
-    with open_file(filepath) as f:
+    with open_read(filepath) as f:
         l1 = f.readline()
 
     if l1.startswith("LOCUS "):

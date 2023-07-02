@@ -46,13 +46,27 @@ parser.add_argument(
     default=False,
     action=argparse.BooleanOptionalAction,
 )
+parser.add_argument(
+    "--compression",
+    metavar="bool",
+    help="Gzip compress output?",
+    required=False,
+    default=False,
+    action=argparse.BooleanOptionalAction,
+)
 
 
-def _writer(socialgene_object, outdir, n_fasta_splits):
-    socialgene_object.write_n_fasta(outdir=outdir, n_splits=n_fasta_splits, mode="a")
+def _writer(socialgene_object, outdir, n_fasta_splits, compression):
+    socialgene_object.write_n_fasta(
+        outdir=outdir, n_splits=n_fasta_splits, mode="a", compression=compression
+    )
     for i in SocialGene._genomic_info_export_tablenames:
         socialgene_object.write_table(
-            outdir=outdir, tablename=i, filename=i.removesuffix("_table"), mode="a"
+            outdir=outdir,
+            tablename=i,
+            filename=i.removesuffix("_table"),
+            mode="a",
+            compression=compression,
         )
 
 
@@ -60,6 +74,7 @@ def export_tables(
     outdir: str,
     n_fasta_splits: int,
     collect_tables_in_memory: bool,
+    compression: str,
     file_list: List = None,
     sequence_files_glob: str = "",
 ):
@@ -83,6 +98,7 @@ def export_tables(
                 socialgene_object=socialgene_object,
                 outdir=outdir,
                 n_fasta_splits=n_fasta_splits,
+                compression=compression,
             )
             socialgene_object = SocialGene()
     if collect_tables_in_memory:
@@ -90,17 +106,23 @@ def export_tables(
             socialgene_object=socialgene_object,
             outdir=outdir,
             n_fasta_splits=n_fasta_splits,
+            compression=compression,
         )
 
 
 def main():
     args = parser.parse_args()
     log.info(f"Socialgene variables: \n{env_vars}")
+    if args.compression:
+        compression = "gzip"
+    else:
+        compression = None
     export_tables(
         sequence_files_glob=args.sequence_files_glob,
         outdir=args.outdir,
         n_fasta_splits=int(args.n_fasta_splits),
         collect_tables_in_memory=args.collect_tables_in_memory,
+        compression=compression,
     )
 
 

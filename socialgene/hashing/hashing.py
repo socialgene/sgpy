@@ -18,7 +18,7 @@ parser.add_argument(
 def sha512t24u(input):
     # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7714221/
     # To standardize to caps-only input, use hash_aminos()
-    sha512_digest = use_hashlib(input=input, algo="sha512").digest()[:24]
+    sha512_digest = hashlib.sha512(bytes(input, "utf8")).digest()[:24]
     sha512t24u = base64.urlsafe_b64encode(sha512_digest).decode("ascii")
     return sha512t24u
 
@@ -34,11 +34,12 @@ def use_hashlib(input, algo):
         # TODO: this should also output the sha512t24u ans crc algos
         raise ValueError(f"algo must be one of: {allow_algos}")
     hasher = getattr(hashlib, algo)
-    return hasher(bytes(input, "utf8"))
+    return hasher(bytes(input, "utf8")).hexdigest()
 
 
-def hasher(input):
-    algo = env_vars["HASHING_ALGORITHM"]
+def hasher(input, algo=None):
+    if not algo:
+        algo = env_vars["HASHING_ALGORITHM"]
     match algo:
         case "sha512t24u":
             return sha512t24u(input)
