@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/socialgene/sgpy/compare/v0.1.8...v0.1.9) (2023-07-02)
+
+
+### Bug Fixes
+
+* Revert default hash from CRC64 to sha512t24u ([#56](https://github.com/socialgene/sgpy/issues/56)) ([e9abd6c](https://github.com/socialgene/sgpy/commit/e9abd6cae7777ef4d8f5e2181bc1e5ac292df22d))
+
 ## [0.1.8](https://github.com/socialgene/sgpy/compare/v0.1.7...v0.1.8) (2023-06-22)
 
 
