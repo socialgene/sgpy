@@ -34,7 +34,7 @@ def test_read_and_writing_pickled_sgobject():
         {"exponentialized": False, "i_evalue": 0.1},
     )
     for i in [base_dict | i for i in tempd]:
-        sg_obj.proteins["20F58F6F237F111D"].add_domain(**i)
+        sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].add_domain(**i)
 
     sg_obj.add_assembly("myassembly")
     sg_obj.assemblies["myassembly"].add_locus(
@@ -60,14 +60,21 @@ def test_read_and_writing_pickled_sgobject():
     # Test reading the pickle back in
     new_sg_obj = SocialGene.eat_pickle(temp_path.name)
     assert (
-        new_sg_obj.proteins["20F58F6F237F111D"].external_protein_id
+        new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].external_protein_id
         == "external_protein_id"
     )
     assert (
-        new_sg_obj.proteins["20F58F6F237F111D"].sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
+        new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].sequence
+        == "ARNDCQEGHILKMFPSTWYVXZJU"
     )
-    assert new_sg_obj.proteins["20F58F6F237F111D"].description == "description"
-    assert new_sg_obj.proteins["20F58F6F237F111D"].hash_id == "20F58F6F237F111D"
+    assert (
+        new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].description
+        == "description"
+    )
+    assert (
+        new_sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].hash_id
+        == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
+    )
     assert sorted(
         [
             i.protein_hash

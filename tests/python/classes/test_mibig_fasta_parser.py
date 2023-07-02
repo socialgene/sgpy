@@ -26,28 +26,116 @@ def test_fasta_file_parse():
         for k, v in fasta_object.proteins.items()
     }
     assert protein_parse_results == {
-        "37C2BC6B34544B2E": ["37C2BC6B34544B2E", "37C2BC6B34544B2E", set()],
-        "24885C21E4F10395": ["24885C21E4F10395", "24885C21E4F10395", set()],
-        "5DB7DF559DF798B9": ["5DB7DF559DF798B9", "5DB7DF559DF798B9", set()],
-        "380F00AA06102D54": ["380F00AA06102D54", "380F00AA06102D54", set()],
-        "1CF65176FCF98848": ["1CF65176FCF98848", "1CF65176FCF98848", set()],
-        "3BFF8AA6C1E11053": ["3BFF8AA6C1E11053", "3BFF8AA6C1E11053", set()],
-        "5A6503F0ADBBF5DD": ["5A6503F0ADBBF5DD", "5A6503F0ADBBF5DD", set()],
-        "B5363BCBA49EA647": ["B5363BCBA49EA647", "B5363BCBA49EA647", set()],
-        "93E706B4F7EB53AF": ["93E706B4F7EB53AF", "93E706B4F7EB53AF", set()],
-        "0FB2B60341C61380": ["0FB2B60341C61380", "0FB2B60341C61380", set()],
-        "53C03058C526F0D2": ["53C03058C526F0D2", "53C03058C526F0D2", set()],
-        "64F56D5193D6A584": ["64F56D5193D6A584", "64F56D5193D6A584", set()],
-        "A4115D03F2A9920B": ["A4115D03F2A9920B", "A4115D03F2A9920B", set()],
-        "631C4C8531E0AE0F": ["631C4C8531E0AE0F", "631C4C8531E0AE0F", set()],
-        "00CD39A87B4E5579": ["00CD39A87B4E5579", "00CD39A87B4E5579", set()],
-        "D9B06B39B6ED339A": ["D9B06B39B6ED339A", "D9B06B39B6ED339A", set()],
-        "FF58B5837B0F03BE": ["FF58B5837B0F03BE", "FF58B5837B0F03BE", set()],
-        "C16214B7E088BFA5": ["C16214B7E088BFA5", "C16214B7E088BFA5", set()],
-        "2CC09AA68B15064E": ["2CC09AA68B15064E", "2CC09AA68B15064E", set()],
-        "F0D86567887A4777": ["F0D86567887A4777", "F0D86567887A4777", set()],
-        "5CD80CF74497D50C": ["5CD80CF74497D50C", "5CD80CF74497D50C", set()],
-        "E3DBD3CB4B0B011F": ["E3DBD3CB4B0B011F", "E3DBD3CB4B0B011F", set()],
+        "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl": [
+            "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl",
+            "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl",
+            set(),
+        ],
+        "ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn": [
+            "ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn",
+            "ptq1NGhBcUp3TIEqvAUxnnp4LOKwINvn",
+            set(),
+        ],
+        "-l7xLyFZbiZENPLq_GML8JyTRF1Srawr": [
+            "-l7xLyFZbiZENPLq_GML8JyTRF1Srawr",
+            "-l7xLyFZbiZENPLq_GML8JyTRF1Srawr",
+            set(),
+        ],
+        "T_DzOorDp3ROhRRBtuXP3xyAPorpTVD0": [
+            "T_DzOorDp3ROhRRBtuXP3xyAPorpTVD0",
+            "T_DzOorDp3ROhRRBtuXP3xyAPorpTVD0",
+            set(),
+        ],
+        "AStsOnOU5ZWxURs9PrTiWjddkuQXfanl": [
+            "AStsOnOU5ZWxURs9PrTiWjddkuQXfanl",
+            "AStsOnOU5ZWxURs9PrTiWjddkuQXfanl",
+            set(),
+        ],
+        "IsCrCflKZgA6ghoHxXclbsOix0bbDkwZ": [
+            "IsCrCflKZgA6ghoHxXclbsOix0bbDkwZ",
+            "IsCrCflKZgA6ghoHxXclbsOix0bbDkwZ",
+            set(),
+        ],
+        "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5": [
+            "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
+            "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
+            set(),
+        ],
+        "RyDIaUZc_b21_kQalx7J3yNO4l5f-439": [
+            "RyDIaUZc_b21_kQalx7J3yNO4l5f-439",
+            "RyDIaUZc_b21_kQalx7J3yNO4l5f-439",
+            set(),
+        ],
+        "DTee9G4M8sEfnM4HaPfI37rT74pq7M_G": [
+            "DTee9G4M8sEfnM4HaPfI37rT74pq7M_G",
+            "DTee9G4M8sEfnM4HaPfI37rT74pq7M_G",
+            set(),
+        ],
+        "mB22-i4RqtslyO7_HappM4rJ4Z2Qbkfn": [
+            "mB22-i4RqtslyO7_HappM4rJ4Z2Qbkfn",
+            "mB22-i4RqtslyO7_HappM4rJ4Z2Qbkfn",
+            set(),
+        ],
+        "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh": [
+            "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
+            "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
+            set(),
+        ],
+        "9stFB1fGjCdZVZWHLVI3OD4A_DV3WcV6": [
+            "9stFB1fGjCdZVZWHLVI3OD4A_DV3WcV6",
+            "9stFB1fGjCdZVZWHLVI3OD4A_DV3WcV6",
+            set(),
+        ],
+        "MSHRSCZfdBJP8vdJdaXfeZrThH_4EUMm": [
+            "MSHRSCZfdBJP8vdJdaXfeZrThH_4EUMm",
+            "MSHRSCZfdBJP8vdJdaXfeZrThH_4EUMm",
+            set(),
+        ],
+        "Qi23auOUTcBzWTmDHuGinrzIuqH7-zVn": [
+            "Qi23auOUTcBzWTmDHuGinrzIuqH7-zVn",
+            "Qi23auOUTcBzWTmDHuGinrzIuqH7-zVn",
+            set(),
+        ],
+        "nk3UJUyLaWr8LochtohJ9L6eugdChZL9": [
+            "nk3UJUyLaWr8LochtohJ9L6eugdChZL9",
+            "nk3UJUyLaWr8LochtohJ9L6eugdChZL9",
+            set(),
+        ],
+        "du1Ncfm5UYiFYgDWD8KW1AQJNHlAcVXL": [
+            "du1Ncfm5UYiFYgDWD8KW1AQJNHlAcVXL",
+            "du1Ncfm5UYiFYgDWD8KW1AQJNHlAcVXL",
+            set(),
+        ],
+        "5IYMhENey2WCMrKPUz3AqBIZuFSv6DPP": [
+            "5IYMhENey2WCMrKPUz3AqBIZuFSv6DPP",
+            "5IYMhENey2WCMrKPUz3AqBIZuFSv6DPP",
+            set(),
+        ],
+        "iiWqYfcbDGjauCrUsdiI1pAlG5Syx_-L": [
+            "iiWqYfcbDGjauCrUsdiI1pAlG5Syx_-L",
+            "iiWqYfcbDGjauCrUsdiI1pAlG5Syx_-L",
+            set(),
+        ],
+        "WbViYzQw8y-XfCQMgQXkedGduNMJPa14": [
+            "WbViYzQw8y-XfCQMgQXkedGduNMJPa14",
+            "WbViYzQw8y-XfCQMgQXkedGduNMJPa14",
+            set(),
+        ],
+        "4_8182J88axMDpFJBZI6kLNJAu8Ittm3": [
+            "4_8182J88axMDpFJBZI6kLNJAu8Ittm3",
+            "4_8182J88axMDpFJBZI6kLNJAu8Ittm3",
+            set(),
+        ],
+        "IRqRpDzrGB9UhHJD6AzDq_6Xupj00Nte": [
+            "IRqRpDzrGB9UhHJD6AzDq_6Xupj00Nte",
+            "IRqRpDzrGB9UhHJD6AzDq_6Xupj00Nte",
+            set(),
+        ],
+        "ewjVum5PbpEJA4rl-BfnCAypKl5HXb7x": [
+            "ewjVum5PbpEJA4rl-BfnCAypKl5HXb7x",
+            "ewjVum5PbpEJA4rl-BfnCAypKl5HXb7x",
+            set(),
+        ],
     }
     assert {k: v.sequence for k, v in sg_object.proteins.items()} == PROTEIN_DICT
 
@@ -55,9 +143,11 @@ def test_fasta_file_parse():
 def test_fasta_string_parse():
     sg_object = SocialGene()
     sg_object.parse_fasta_string(">asdads\n dasfa")
-    assert list(sg_object.proteins.keys())[0] == "6DD9D5BDDAC00000"
+    assert list(sg_object.proteins.keys())[0] == "lZA5w9NxutVBhoqjqfsX_GX_dfugQZLQ"
     protein_parse_results = [
         {k: [v.description, v.external_protein_id, v.domains]}
         for k, v in sg_object.proteins.items()
     ]
-    assert protein_parse_results == [{"6DD9D5BDDAC00000": ["asdads", "asdads", set()]}]
+    assert protein_parse_results == [
+        {"lZA5w9NxutVBhoqjqfsX_GX_dfugQZLQ": ["asdads", "asdads", set()]}
+    ]

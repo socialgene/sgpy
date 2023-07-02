@@ -6,15 +6,15 @@ from socialgene.config import env_vars
 
 def test_export_all_domains_as_tsv():
     expected = [
-        "20F58F6F237F111D\t1\t1\t100\t1.1\t0\t2\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "20F58F6F237F111D\t1\t1\t100\t1.1\t0\t-1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "20F58F6F237F111D\t1\t1\t100\t1.1\t1.1\t100.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
-        "20F58F6F237F111D\t2\t1\t100\t1.1\t1.1\t2.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
-        "20F58F6F237F111D\t2\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "20F58F6F237F111D\t3\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "20F58F6F237F111D\t3\t1\t100\t1.1\t1.1\t1.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
-        "20F58F6F237F111D\t4\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "20F58F6F237F111D\t5\t1\t100\t1.1\t1.1\t0.1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t1\t1\t100\t1.1\t0\t2\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t1\t1\t100\t1.1\t0\t-1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t1\t1\t100\t1.1\t1.1\t100.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t2\t1\t100\t1.1\t1.1\t2.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t2\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t3\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t3\t1\t100\t1.1\t1.1\t1.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t4\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t5\t1\t100\t1.1\t1.1\t0.1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
     ]
     sg_obj = SocialGene()
     env_vars["HMMSEARCH_IEVALUE"] = 500
@@ -59,7 +59,7 @@ def test_export_all_domains_as_tsv():
         {"hmm_id": "4", "exponentialized": False, "i_evalue": 0},
     )
     for i in [base_dict | i for i in tempd]:
-        sg_obj.proteins["20F58F6F237F111D"].add_domain(**i)
+        sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].add_domain(**i)
 
     with tempfile.NamedTemporaryFile() as temp_path:
         sg_obj.export_all_domains_as_tsv(temp_path.name)
