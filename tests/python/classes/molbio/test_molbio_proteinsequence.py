@@ -5,7 +5,7 @@ from socialgene.base.molbio import ProteinSequence
 
 def test_ProteinSequence_1():
     temp = ProteinSequence(sequence="ARNDCQEGHILKMFPSTWYVXZJU")
-    assert temp.hash_id == "20F58F6F237F111D"
+    assert temp.hash_id == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
     assert temp.sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
 

@@ -48,11 +48,11 @@ def gunzip(filepath: Path) -> None:
 def open_read(filepath: Path) -> IO:
     filepath_compression = is_compressed(filepath)
     if filepath_compression == Compression.gzip:
-        f = gzip.open(filepath, "rb")
+        f = gzip.open(filepath, "rt")
     elif filepath_compression == Compression.bzip2:
-        f = bz2.open(filepath, "rb")
+        f = bz2.open(filepath, "rt")
     elif filepath_compression == Compression.xz:
-        f = lzma.open(filepath, "rb")
+        f = lzma.open(filepath, "rt")
     else:
         f = open(filepath, "rt")
     try:
@@ -77,16 +77,16 @@ def open_write(filepath: str, mode="w", compression: str = None) -> IO:
         raise ValueError
     match compression:
         case "gzip":
-            _open = gzip.open(filepath.with_suffix(".gz"), f"{mode}b")
+            _open = gzip.open(filepath.with_suffix(".gz"), f"{mode}")
         case "bzip":
-            _open = bz2.open(filepath.with_suffix(".bz2"), f"{mode}b")
+            _open = bz2.open(filepath.with_suffix(".bz2"), f"{mode}")
         case "xz":
-            _open = lzma.open(filepath.with_suffix(".xz"), f"{mode}b")
+            _open = lzma.open(filepath.with_suffix(".xz"), f"{mode}")
         case None:
             _open = open(filepath, mode)
         case _:
             raise ValueError(
-                'compression variable must be "gzip", "bzip", "xz", or None'
+                f'compression variable must be "gzip", "bzip", "xz", or None; was {compression}'
             )
     try:
         yield _open
@@ -105,7 +105,7 @@ def guess_filetype(filepath):
     Returns:
         bool: true/false
     """
-    with open_file(filepath) as f:
+    with open_read(filepath) as f:
         l1 = f.readline()
 
     if l1.startswith("LOCUS "):

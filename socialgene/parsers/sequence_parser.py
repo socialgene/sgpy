@@ -235,7 +235,7 @@ class GenbankParser:
                     except Exception as e:
                         log.debug(e)
         else:
-            with fh.open_file(input_path) as handle:
+            with fh.open_read(input_path) as handle:
                 self._parse_genbank(
                     handle=handle,
                     input_path=input_path,

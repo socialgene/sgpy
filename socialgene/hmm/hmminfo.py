@@ -12,7 +12,7 @@ class HmmInfo:
         self.all_hmms_data = list()
 
     def read_tsv(self):
-        with fh.open_file(self.all_hmms_path) as h:
+        with fh.open_read(self.all_hmms_path) as h:
             for line in h:
                 line_vals = [
                     None if v.strip() == '""' else v.strip() for v in line.split("\t")

@@ -1,13 +1,12 @@
 from typing import List
 
 import csv
-import gzip
+
 import itertools
 import pickle
 import tempfile
 from collections import defaultdict
 from copy import deepcopy
-from functools import partial
 from multiprocessing import cpu_count
 from operator import attrgetter
 from pathlib import Path
@@ -296,8 +295,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             outpath (str): path of file that FASTA entries will be appended to
             hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
             external_protein_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
-            gz (bool, optional): Write as gzip?. Defaults to False.
-            mode (str, options): Write "w" or Append "a"
             **kwargs: see print(open_write.__doc__)
         """
 
