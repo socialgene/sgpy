@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/socialgene/sgpy/compare/v0.1.9...v0.1.10) (2023-07-03)
+
+
+### Bug Fixes
+
+* switch additional hash from md5 to cr64 ([097e56b](https://github.com/socialgene/sgpy/commit/097e56bb8ee90e2f204a83b7bf52e03b7883136a))
+
 ## [0.1.9](https://github.com/socialgene/sgpy/compare/v0.1.8...v0.1.9) (2023-07-02)
 
 
