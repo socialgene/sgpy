@@ -35,7 +35,7 @@ files = [
     "loci",
     "locus_to_protein",
     "protein_ids",
-    "protein_info",
+    # "protein_info",
 ]
 hash_algo = ["crc64", "sha512t24u"]  # , "sha256"]
 

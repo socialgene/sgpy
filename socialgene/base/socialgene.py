@@ -33,7 +33,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     _genomic_info_export_tablenames = [
         "protein_to_go_table",
-        "protein_info_table",
+        # "protein_info_table",
         "assembly_to_locus_table",
         "loci_table",
         "locus_to_protein_table",
@@ -547,7 +547,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             outdir (str, optional): Defaults to ".".
         """
         for protein in self.proteins.values():
-            yield (protein.hash_id,)
+            yield (
+                protein.hash_id,
+                protein.crc64,
+            )
 
     def assembly_to_locus_table(self):
         """Assembly to locus table for import into Neo4j
