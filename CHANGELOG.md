@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.11](https://github.com/socialgene/sgpy/compare/v0.1.10...v0.1.11) (2023-07-03)
+
+
+### Bug Fixes
+
+* move crc64 into second col of protein_ids ([393319c](https://github.com/socialgene/sgpy/commit/393319c10a82de842b62572de0318bb748c6ca15))
+
 ## [0.1.10](https://github.com/socialgene/sgpy/compare/v0.1.9...v0.1.10) (2023-07-03)
 
 
