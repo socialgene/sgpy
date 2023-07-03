@@ -62,7 +62,7 @@ class Nodes(NR):
             target_extension="protein_ids",
             header=[
                 "uid:ID(protein)",
-                "md5",
+                "crc64",
             ],
         )
         self.add_node(

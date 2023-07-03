@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install sg
-        run: python3 -m pip install -e .[full,ci]
+        run: python3 -m pip install -e .[ci]
       - name: Install hmmer
         run: sudo apt-get install hmmer
       - name: Run tests

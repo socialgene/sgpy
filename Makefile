@@ -53,7 +53,7 @@ build_docker_image2: clean
 
 ## install :	Install the socialgene python package
 install:
-	pip install -e .[full,ci]
+	pip install -e .[ci]
 
 ## pytest	:	Run Python pacakge unit tests
 pytest: clean install
@@ -74,7 +74,7 @@ run_ci: clean install pytest
 
 ## run_ci :	Uploda to PyPi
 run_cd: run_ci clean
-	python3 -m pip install .[full,cd]
+	python3 -m pip install .[cd]
 	python3 -m build ./socialgene
 	python3 -m twine upload --repository testpypi ./socialgene/dist/*
 

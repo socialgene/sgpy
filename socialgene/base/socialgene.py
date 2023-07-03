@@ -534,7 +534,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 prot_len = len(protein.sequence)
             yield (
                 protein.hash_id,
-                protein.md5,
+                protein.crc64,
                 protein.external_protein_id,
                 protein.description,
                 prot_len,
