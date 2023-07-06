@@ -92,7 +92,7 @@ class GoRelationship:
             self.type = line.split(":", 1)[1].strip().split(" ", 1)[0]
         elif key == "is_a":
             self.type = key
-        self.type = f"GO_{self.type.upper()}"
+        self.type = self.type.upper()
         self.end = extract_goterm_int_as_str(line)
 
     def assign(self, start, line):
@@ -115,7 +115,7 @@ class AltRel(GoRelationship):
         if line.startswith("alt_id"):
             self.start = main_id
             self.end = extract_goterm_int_as_str(line)
-            self.type = "GO_ALTERNATE"
+            self.type = "ALTERNATE"
 
 
 def write(
@@ -143,7 +143,6 @@ def main():
                 nodeobj = GoNode()
                 relobj = GoRelationship()
             if not term_open:
-                # skip lines before first term
                 continue
             nodeobj.assign(line=line)
             # some goterms have "alt_ids" these are sometimes referenced from other sources but only exist
