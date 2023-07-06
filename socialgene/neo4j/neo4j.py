@@ -42,15 +42,17 @@ def import_queries():
     return cypher_dictionary
 
 
+# "Create the driver once at application start and then make it available to the application."
+#  https://community.neo4j.com/t/neo4j-python-driver-service-unavailable/4111/9
 class GraphDriver(object):
-    __instance = None
-    __driver = None
+    instance = None
+    driver = None
 
     def __new__(cls):
-        if cls.__instance is None:
-            inst = cls.__instance = object.__new__(cls)
+        if cls.instance is None:
+            inst = cls.instance = object.__new__(cls)
             try:
-                inst.__driver = GraphDatabase.driver(
+                inst.driver = GraphDatabase.driver(
                     env_vars["NEO4J_URI"],
                     auth=(
                         env_vars["NEO4J_USER"],
@@ -62,16 +64,16 @@ class GraphDriver(object):
                 log.exception("Error connecting to Neo4j database")
                 log.exception(e)
         atexit.register(cls.shutdown)
-        return cls.__instance
+        return cls.instance
 
     def __init__(self) -> None:
         self.session = None
 
     def check_connection(self):
-        self.__driver.verify_connectivity()
+        self.driver.verify_connectivity()
 
     def __enter__(self):
-        self.session = self.__driver.session()
+        self.session = self.driver.session()
         return self.session
 
     def __exit__(self, *args, **kwargs):
@@ -79,9 +81,9 @@ class GraphDriver(object):
 
     @classmethod
     def shutdown(cls):
-        if cls.__instance:
-            cls.__instance.__driver.close()
-            cls.__instance = None
+        if cls.instance:
+            cls.instance.driver.close()
+            cls.instance = None
 
 
 class Neo4jQuery:
