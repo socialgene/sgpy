@@ -11,7 +11,7 @@ try:
     c = Console(width=150)
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
-        level=env_vars["SOCIALGENE_LOGLEVEL"],
+        level="NOTSET",
         #  format="%(filename)s/%(module)s/%(funcName)s\::: %(message)s",
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -21,6 +21,7 @@ try:
     )
 
     log = logging.getLogger("rich")
+    log.setLevel(env_vars["SOCIALGENE_LOGLEVEL"])
 
 except ImportError:
     log = logging.getLogger()

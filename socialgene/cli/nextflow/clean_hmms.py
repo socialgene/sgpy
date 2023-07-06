@@ -64,7 +64,6 @@ def run_nf_workflow(input_dir, outdir, n_files, splitcutoffs):
     ) as progress:
         task = progress.add_task("Progress...", total=len(hmm_paths))
         for i in hmm_paths:
-            print(i)
             hmms_object.read(filepath=i.get("filepath"), base_dir=i.get("base_dir"))
             progress.console.print(f"Parsing {i.get('filepath')}\r")
             progress.update(task, advance=1)
