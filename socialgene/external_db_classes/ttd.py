@@ -1,6 +1,8 @@
 from socialgene.base.socialgene import SocialGene
 
 
+import re
+
 sg_obj = SocialGene()
 fapath = "/home/chase/Downloads/ttd_database/P2-06-TTD_sequence_all.txt"
 
@@ -13,10 +15,9 @@ with open(fapath, "rt") as h:
             if sequence:
                 sg_obj.add_protein(
                     sequence=sequence,
-                    description="description",
                     external_protein_id=protein_id,
                 )
-            protein_id = line.split(" ", 1)[0].removeprefix(">")
+            protein_id = re.search("T[0-9]{5}", line).group()
             sequence = ""
         elif after_header:
-            sequence += line
+            sequence += line.strip()
