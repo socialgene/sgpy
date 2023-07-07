@@ -1,5 +1,14 @@
 import re
 from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.utils.logging import log
+from zipfile import ZipFile
+import requests
+from io import BytesIO
+
+
+OBO_URL = (
+    "http://classyfire.wishartlab.com/system/downloads/1_0/chemont/ChemOnt_2_1.obo.zip"
+)
 
 
 class ClassyFire:
@@ -9,6 +18,26 @@ class ClassyFire:
         self.definition = None
         self.chebi = set()
         self.is_a = None
+
+    @staticmethod
+    def download(url=OBO_URL):
+        response = requests.get(url, stream=True)
+        obs = []
+        log.info(f"Downloading and parsing data from:\n\t{OBO_URL}")
+        with ZipFile(BytesIO(response.content)).open("ChemOnt_2_1.obo") as h:
+            term_open = False
+            for line in h:
+                line = line.decode("utf-8")
+                if line.startswith("[Term]"):
+                    term_open = True
+                    obj = ClassyFire()
+                if not term_open:
+                    continue
+                obj.assign(line)
+                if line == "\n":
+                    term_open = False
+                    obs.append(obj)
+        return obs
 
     def assign(self, line):
         if line.startswith("id:"):
@@ -44,8 +73,8 @@ class ClassyFire:
     def _create_chemont_nodes(self):
         _ = GraphDriver().driver.execute_query(
             """
-                MERGE (:chemont { uid: $uid, name: $name, definition: $definition } )
-                """,
+            MERGE (:chemont { uid: $uid, name: $name, definition: $definition } )
+            """,
             uid=self.uid,
             name=self.name,
             definition=self.definition,

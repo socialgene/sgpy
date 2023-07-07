@@ -1,13 +1,17 @@
 import json
 from pathlib import Path
 import re
+from rich.progress import Progress
 from typing import List
+import requests
 from socialgene.external_db_classes.base_class import ExternalBaseClass
 from socialgene.external_db_classes.gnps import GnpsLibrarySpectrum
 from socialgene.external_db_classes.mibig import Mibig
 from socialgene.external_db_classes.npmrd import Npmrd
 from socialgene.external_db_classes.publication import Publication
 from socialgene.utils.logging import log
+
+NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
 
 
 class NPPub(Publication):
@@ -61,6 +65,20 @@ class Npatlas(ExternalBaseClass):
         self.entry = entry
         self._parse_single_entry()
 
+    @staticmethod
+    def download(url=NPATALAS_URL):
+        res = ""
+        with requests.get(url, stream=True) as response:
+            with Progress(transient=True) as pg:
+                task = pg.add_task(
+                    "Downloading npatlas...",
+                    total=int(response.headers["Content-Length"]),
+                )
+                for chunk in response.iter_content(1048576):
+                    res += chunk.decode(response.encoding)
+                    pg.update(task, advance=1048576)
+        return json.loads(res)
+
     def _parse_single_entry(self):
         self.ncbi_taxid = None
         self.genus = None
@@ -98,13 +116,13 @@ class Npatlas(ExternalBaseClass):
                 "chemont_id"
             ].removeprefix("CHEMONTID:")
         except Exception as e:
-            log.warning(e)
+            log.debug(e)
         try:
             self.classyfire_subclass = self.entry["classyfire"]["subclass"][
                 "chemont_id"
             ].removeprefix("CHEMONTID:")
         except Exception as e:
-            log.warning(e)
+            log.debug(e)
 
     def _assign_to_taxon(self):
         try:
@@ -137,7 +155,7 @@ class Npatlas(ExternalBaseClass):
                     case _:
                         pass
         except Exception as e:
-            log.warning(e)
+            log.debug(e)
 
     def _node_prop_dict(self):
         return {
@@ -171,7 +189,7 @@ class Npatlas(ExternalBaseClass):
         self._add_to_neo4j(
             """
             MERGE (np:npatlas {uid: $uid})
-            SET np+= {
+            ON CREATE SET np+= {
                 original_name: $original_name,
                 mol_formula: $mol_formula,
                 mol_weight: $mol_weight,
@@ -200,24 +218,24 @@ class Npatlas(ExternalBaseClass):
             **self._node_prop_dict(),
         )
 
-    def merge_mibig(self):
+    def merge_with_mibig(self):
         for mibig_obj in self.mibig:
             self._add_to_neo4j(
                 """
-                MATCH (np:npatlas {uid: $uid})
-                MATCH (bgc:assembly {uid: $mibig})
+                MERGE (np:npatlas {uid: $uid})
+                MERGE (bgc:assembly {uid: $mibig})
                 MERGE (bgc)-[:PRODUCES]->(np)
                 """,
                 uid=self.uid,
                 mibig=mibig_obj.uid,
             )
 
-    def merge_classy(self):
+    def merge_with_classyfire(self):
         if self.classyfire_class:
             self._add_to_neo4j(
                 """
-                MATCH (np:npatlas {uid: $uid})
-                MATCH (bgc:chemont {uid: $chemont})
+                MERGE (np:npatlas {uid: $uid})
+                MERGE (bgc:chemont {uid: $chemont})
                 MERGE (bgc)<-[:IS_CLASS]->(np)
                 """,
                 uid=self.uid,
@@ -226,8 +244,8 @@ class Npatlas(ExternalBaseClass):
         if self.classyfire_subclass:
             self._add_to_neo4j(
                 """
-                MATCH (np:npatlas {uid: $uid})
-                MATCH (bgc:chemont {uid: $chemont})
+                MERGE (np:npatlas {uid: $uid})
+                MERGE (bgc:chemont {uid: $chemont})
                 MERGE (bgc)<-[:IS_SUBCLASS]-(np)
                 """,
                 uid=self.uid,
