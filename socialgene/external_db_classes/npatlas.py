@@ -236,7 +236,7 @@ class Npatlas(ExternalBaseClass):
                 """
                 MERGE (np:npatlas {uid: $uid})
                 MERGE (bgc:chemont {uid: $chemont})
-                MERGE (bgc)<-[:IS_CLASS]->(np)
+                MERGE (bgc)<-[:IS_CLASS]-(np)
                 """,
                 uid=self.uid,
                 chemont=self.classyfire_class,
