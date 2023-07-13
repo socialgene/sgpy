@@ -228,6 +228,7 @@ class GenbankParser:
                     description=description,
                     external_protein_id=protein_id.strip(),
                     sequence=translation.strip(),
+                    return_uid=True,
                 )
                 if not keep_sequence:
                     self.proteins[hash_id].sequence = None
@@ -402,6 +403,7 @@ class FastaParser:
                     description=seq_record.description,
                     external_protein_id=seq_record.id,
                     sequence=str(seq_record.seq),
+                    return_uid=True,
                 )
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
                     type="protein", protein_hash=hash_id, start=0, end=0, strand=0
@@ -428,6 +430,7 @@ class FastaParser:
                     description=seq_record.description,
                     external_protein_id=seq_record.id,
                     sequence=str(seq_record.seq),
+                    return_uid=True,
                 )
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
                     type="CDS",

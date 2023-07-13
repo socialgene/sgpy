@@ -423,6 +423,7 @@ class Protein(
             list(self.domains),
             key=lambda tx: ((tx.env_from + tx.env_to) / 2, tx.hmm_id),
         )
+
     @property
     def domain_vector(
         self,
@@ -680,7 +681,7 @@ class Molbio:
 
     def add_protein(
         self,
-        no_return=False,
+        return_uid=True,
         **kwargs,
     ):
         """Add a protein to the protein dictionary
@@ -696,7 +697,7 @@ class Molbio:
         if temp_protein.hash_id not in self.proteins:
             # deepcopy teo ensure instances aren't shared
             self.proteins[temp_protein.hash_id] = temp_protein
-        if not no_return:
+        if return_uid:
             return temp_protein.hash_id
 
     def add_assembly(self, id: str = None):

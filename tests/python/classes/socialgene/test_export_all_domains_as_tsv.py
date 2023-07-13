@@ -18,7 +18,7 @@ def test_export_all_domains_as_tsv():
     ]
     sg_obj = SocialGene()
     env_vars["HMMSEARCH_IEVALUE"] = 500
-    _ = sg_obj.add_protein(
+    sg_obj.add_protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
         external_protein_id="external_protein_id",

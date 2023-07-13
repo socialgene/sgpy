@@ -62,7 +62,7 @@ def test_empty_sg():
 def test_sg():
     cm_object = Clustermap()
     sg_object = SocialGene()
-    _ = sg_object.add_protein(hash_id="assembly_1_locus_1_protein_1")
+    sg_object.add_protein(hash_id="assembly_1_locus_1_protein_1")
     sg_object.add_assembly("assembly_1")
     sg_object.assemblies["assembly_1"].add_locus("assembly_1_locus_1")
     sg_object.assemblies["assembly_1"].loci["assembly_1_locus_1"]

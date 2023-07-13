@@ -22,7 +22,7 @@ class Domtblout:
         for i in self._parse_domtblout(
             input_path=input_path, hmmsearch_or_hmmscan=hmmsearch_or_hmmscan
         ):
-            _ = self.add_protein(hash_id=i["protein_id"])
+            self.add_protein(hash_id=i["protein_id"])
             self.proteins[i["protein_id"]].add_domain(**i)
 
     def _parse_domtblout(self, input_path, hmmsearch_or_hmmscan="hmmsearch"):

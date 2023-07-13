@@ -225,8 +225,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         # parse the resulting domtblout files, saving results to the class proteins/domains
         for i, ii in zip(filenames, files):
             self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
-            import shutil
-            shutil.copyfile(i, Path("/home/chase/Downloads/temp/bro" ))
             ii.close()
 
     @staticmethod

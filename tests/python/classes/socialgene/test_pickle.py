@@ -7,7 +7,7 @@ from socialgene.config import env_vars
 def test_read_and_writing_pickled_sgobject():
     sg_obj = SocialGene()
     env_vars["HMMSEARCH_IEVALUE"] = 1000
-    _ = sg_obj.add_protein(
+    sg_obj.add_protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
         external_protein_id="external_protein_id",
