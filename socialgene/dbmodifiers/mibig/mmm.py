@@ -12,6 +12,7 @@ from rich import inspect
 from neo4j import GraphDatabase
 from socialgene.config import env_vars
 import logging
+from rich.progress import Progress, SpinnerColumn
 
 # logging.getLogger("neo4j").setLevel(logging.WARNING)
 # logging.getLogger().setLevel(logging.INFO)
@@ -34,25 +35,32 @@ def add_mibig_info_to_neo4j():
         tarfile_object = tarfile.open(tar_path)
         bgc_files = tarfile_object.getnames()
         bgc_files = [i for i in bgc_files if i.endswith(".json")]
-
-        for file in bgc_files:
-            input_json = json.load(tarfile_object.extractfile(file))
-            for cmpd in input_json["cluster"]["compounds"]:
-                bro = Mibig_Compound(cmpd)
-                bro.assign()
-                bro.write_all()
-                (
-                    GraphDriver().driver.execute_query(
-                        """
-                        MATCH (a1:assembly {uid: $bgc_id})
-                        MATCH (chem:chemical {uid: $chem_uid})
-                        MERGE (a1)-[:PRODUCES]->(chem)
-                        """,
-                        chem_uid=bro.uid,
-                        bgc_id=input_json["cluster"]["mibig_accession"],
-                        database_="neo4j",
+        with Progress(
+            SpinnerColumn(spinner_name="runner"),
+            *Progress.get_default_columns(),
+        ) as progress:
+            task = progress.add_task(
+                "Updating MIBiG nodes and relationships...", total=len(bgc_files)
+            )
+            for file in bgc_files:
+                input_json = json.load(tarfile_object.extractfile(file))
+                for cmpd in input_json["cluster"]["compounds"]:
+                    bro = Mibig_Compound(cmpd)
+                    bro.assign()
+                    bro.write_all()
+                    (
+                        GraphDriver().driver.execute_query(
+                            """
+                            MATCH (a1:assembly {uid: $bgc_id})
+                            MATCH (chem:chemical {uid: $chem_uid})
+                            MERGE (a1)-[:PRODUCES]->(chem)
+                            """,
+                            chem_uid=bro.uid,
+                            bgc_id=input_json["cluster"]["mibig_accession"],
+                            database_="neo4j",
+                        )
                     )
-                )
+                progress.update(task, advance=1)
 
 
 if __name__ == "__main__":
