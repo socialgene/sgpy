@@ -47,11 +47,13 @@ class Neo4jAdminImport(SocialgeneModules):
         self.filepaths_to_check = []
         # UID/GID for docker call
         if uid is None:
-            self.uid = pwd.getpwuid(os.getuid()).pw_uid
+            #self.uid = pwd.getpwuid(os.getuid()).pw_uid
+            self.uid='$(id -u)'
         else:
             self.uid = uid
         if gid is None:
-            self.gid = pwd.getpwuid(os.getuid()).pw_gid
+            #self.gid = pwd.getpwuid(os.getuid()).pw_gid
+            self.gid='$(id -g)'
         else:
             self.gid = gid
 
