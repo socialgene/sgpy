@@ -26,14 +26,15 @@ class Domtblout:
             self.proteins[i["protein_id"]].add_domain(**i)
 
     def _parse_domtblout(self, input_path, hmmsearch_or_hmmscan="hmmsearch"):
-        """Parse a HMMER domtblout file
+        """
+        The function `_parse_domtblout` is used to parse a HMMER domtblout file, extracting relevant
+        information and returning it as a dictionary.
 
         Args:
-            input_path (str): path to file
-            hmmsearch_or_hmmscan (str): Determines which acc belongs to protein and which belongs to the hmm
-
-        Raises:
-            FileNotFoundError: _description_
+          input_path: The `input_path` parameter is a string that represents the path to the HMMER
+        domtblout file that needs to be parsed.
+          hmmsearch_or_hmmscan: The parameter `hmmsearch_or_hmmscan` is a string that determines whether
+        the input file is from `hmmsearch` or `hmmscan`. Defaults to hmmsearch
         """
         # For hmmsearch/hmmscan, HMMER switches the query/target for domtblout, so make that variable here
         if hmmsearch_or_hmmscan == "hmmscan":
@@ -88,6 +89,14 @@ class ParsedDomtblout:
         pass
 
     def parse_parseddomtblout(self, input_path):
+        """
+        The function `parse_parseddomtblout` reads data from a parsed domtblout TSV and adds protein and domain
+        information to a data structure.
+
+        Args:
+          input_path: The `input_path` parameter is the path to the input file that contains the data to
+        be parsed. It should be a string representing the file path.
+        """
         input_path = Path(input_path)
         with fh.open_read(input_path) as f:
             for line in f:
@@ -137,13 +146,15 @@ class HmmerParser(Domtblout, ParsedDomtblout):
 
 
 def check_if_parseddomtblout(filepath):
-    """Check if headers are maybe from a parsed domtblout file
+    """
+    The function `check_if_parseddomtblout` checks if the headers in a file are possibly from a parsed
+    domtblout file.
 
     Args:
-        filepath (str): path to sequence file
+      filepath: The `filepath` parameter is a string that represents the path to a SocialGene parsed domtblout file.
 
     Returns:
-        bool: true/false
+      a boolean value, either True or False.
     """
     log.info(filepath)
     with fh.open_read(filepath) as f:
@@ -155,11 +166,17 @@ def check_if_parseddomtblout(filepath):
 
 
 def check_if_domtblout(filepath):
-    """Check if headers are from a HMMER domtblout file
+    """
+    The function `check_if_domtblout` checks if the headers of a file match the expected headers of a
+    HMMER domtblout file.
+
     Args:
-        filepath: file path of file to guess
+      filepath: The `filepath` parameter is a string that represents the file path of the file that
+    needs to be checked.
+
     Returns:
-        bool: true/false
+      a boolean value (True or False) indicating whether the headers in the file at the given filepath
+    match the expected headers for a HMMER domtblout file.
     """
     with fh.open_read(filepath) as f:
         l1 = f.readline()

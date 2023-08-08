@@ -66,7 +66,7 @@ SOURCE_KEYS = [
 
 
 class ProteinSequence:
-    """Class for working with protein sequences"""
+    """Class used for working with protein sequences and can be initialized with either a sequence or a hash_id."""
 
     _amino_acids = [
         "A",
@@ -121,6 +121,15 @@ class ProteinSequence:
 
     @property
     def __dict__(self):
+        """
+        The function returns a dictionary containing the attributes of an object.
+
+        Returns:
+          The `__dict__` method is returning a dictionary that contains the names and values of all the
+        attributes of the object. The attributes are obtained using the `getattr` function and are filtered
+        to only include attributes that are defined in the `__slots__` list and that exist in the object.
+        The dictionary is sorted based on the names of the attributes.
+        """
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
     def _one_letter_amino_acids(self):
@@ -145,16 +154,17 @@ class ProteinSequence:
             )
 
     def _assign_hash(self):
-        """Hash the amino acid sequence"""
+        """
+        The function assigns a hash value to a sequence of amino acids.
+        """
         self._standardize_sequence()
         self.hash_id = hasher.hash_aminos(self.sequence)
         self.crc64 = hasher.hash_aminos(self.sequence, algo="crc64")
 
     def _standardize_sequence(self):
-        """Check an input AA sequence for expected characters
-
-        Raises:
-            ValueError: "Unknown character/letter in protein sequence
+        """
+        The function converts the protein sequence to uppercase and checks if all characters are valid
+        amino acids, raising an error if an unknown character is found.
         """
         self.sequence = self.sequence.upper()
         if not all([i in self._amino_acids for i in set(self.sequence)]):
@@ -171,8 +181,6 @@ class ProteinSequence:
 
 
 class Location:
-    """Class describing genomic coordinates"""
-
     __slots__ = ["start", "end", "strand"]
     # TODO: handle zero indexing
 
@@ -182,7 +190,7 @@ class Location:
         end: int = None,
         strand: int = None,
     ):
-        """Class describing genomic coordinates
+        """Class describing genomic coordinates and strand direction.
 
         Args:
             start (int, optional): start coordinate
@@ -236,23 +244,44 @@ class Domain:
         exponentialized: bool = True,
         **kwargs,  # this kwarg isn't accessed but is here so that calling Domain with dict unpacking with extra args doesn't fail
     ):
-        """Class for holding information about a domain/motif annotation
+        """
+        Class for holding information about a domain/motif annotation
 
         Args:
-            hmm_id (str, optional): hmm model hash id
-            env_from (int, optional): see hmmer documentation for description
-            env_to (int, optional): see hmmer documentation for description
-            seq_pro_score (float, optional): see hmmer documentation for description
-            e_value (float, optional): see hmmer documentation for description
-            i_evalue (float, optional): see hmmer documentation for description
-            domain_bias (float, optional): see hmmer documentation for description
-            domain_score (float, optional): see hmmer documentation for description
-            seq_pro_bias (float, optional): see hmmer documentation for description
-            hmm_from (int, optional): see hmmer documentation for description
-            hmm_to (int, optional): see hmmer documentation for description
-            ali_from (int, optional): see hmmer documentation for description
-            ali_to (int, optional): see hmmer documentation for description
-            exponentialized (bool, optional): "exponentialized" retains info on whether evalues were modified
+          hmm_id (str): The `hmm_id` parameter is a string that represents the identifier of the hidden
+        Markov model (HMM) associated with the domain.
+          env_from (int): The `env_from` parameter represents the starting position of the domain in the
+        target sequence.
+          env_to (int): The `env_to` parameter represents the end position of the environment (sequence)
+        in the domain. It is an integer value.
+          seq_pro_score (float): The `seq_pro_score` parameter is a floating-point number that
+        represents the sequence profile score of the domain.
+          evalue (float): The `evalue` parameter is a floating-point number that represents the E-value
+        of the domain. The E-value is a statistical measure that indicates the expected number of
+        domains with a similar score or better that would occur by chance in a database of the same
+        size.
+          i_evalue (float): The `i_evalue` parameter is a floating-point number that represents the
+        independent E-value of a domain. It is used to assess the statistical significance of the match
+        between the domain and the sequence.
+          domain_bias (float): The `domain_bias` parameter is a float that represents the bias score of
+        a domain. It is used to measure the likelihood that a domain is present in a sequence due to
+        chance rather than functional significance.
+          domain_score (float): The `domain_score` parameter is a float that represents the score of the
+        domain.
+          seq_pro_bias (float): The `seq_pro_bias` parameter is a float value that represents the
+        sequence profile bias of a domain. It is used to measure the bias in the sequence profile
+        alignment.
+          hmm_from (int): The `hmm_from` parameter represents the starting position of the domain in the
+        HMM (Hidden Markov Model) profile. It is an integer value.
+          hmm_to (int): The `hmm_to` parameter is an integer that represents the ending position of the
+        hidden Markov model (HMM) alignment in the domain.
+          ali_from (int): The `ali_from` parameter represents the starting position of the alignment in
+        the sequence alignment. It is an integer value.
+          ali_to (int): The `ali_to` parameter represents the ending position of the alignment in the
+        sequence.
+          exponentialized (bool): A boolean flag indicating whether the evalue and i_evalue should be
+        exponentialized or not. If set to True, the evalue and i_evalue will be converted to exponential
+        form. Defaults to True
         """
         super(Domain, self).__init__()
         if not isinstance(exponentialized, bool):
@@ -478,11 +507,44 @@ class Feature(Location):
         incomplete=None,
         **kwargs,
     ):
-        """Container class for describing a feature on a locus
+        """
+        The above function is a constructor for a class that represents a feature on a locus, with
+        various attributes and optional arguments.
 
         Args:
-            protein_hash (str, optional): protein_hash
-            type (str, optional): type of feature e.g. "protein"
+          protein_hash (str): A string representing the hash value of the protein.
+          protein_id (str): The unique identifier for the protein associated with the feature.
+          type (str): The "type" parameter is used to specify the type of feature. In this case, it is
+        used to specify the type of the feature on a locus, such as "protein".
+          locus_tag (str): The locus_tag parameter is a string that represents the unique identifier for
+        a feature on a locus. It is typically used in genomics to identify a specific gene or protein
+        within a genome.
+          description: A description of the feature on a locus.
+          note: The `note` parameter is used to provide additional information or comments about the
+        feature. It is an optional parameter and can be any string value.
+          goterms: The `goterms` parameter is used to store the Gene Ontology terms associated with the
+        feature. Gene Ontology (GO) terms are standardized terms used to describe the function,
+        location, and involvement of genes and gene products in biological processes.
+          partial_on_complete_genome: A boolean flag indicating whether the feature is partial on a
+        complete genome.
+          missing_start: A boolean indicating whether the start of the feature is missing.
+          missing_stop: A boolean flag indicating whether the stop codon of the feature is missing.
+          internal_stop: A boolean flag indicating whether the feature has an internal stop codon.
+          partial_in_the_middle_of_a_contig: This parameter is used to indicate whether the feature is
+        partial and located in the middle of a contig.
+          missing_N_terminus: This parameter is used to indicate whether the N-terminus (the starting
+        end) of the feature is missing. It is a boolean value, where True indicates that the N-terminus
+        is missing and False indicates that it is not missing.
+          missing_C_terminus: The parameter "missing_C_terminus" is used to indicate whether the feature
+        is missing the C-terminus (the end) of the protein sequence. It is a boolean value that can be
+        set to True or False.
+          frameshifted: The "frameshifted" parameter is a boolean flag that indicates whether the
+        feature has a frameshift mutation. A frameshift mutation occurs when the reading frame of a gene
+        is disrupted by the insertion or deletion of nucleotides, causing a shift in the codon reading
+        frame and potentially altering the amino
+          too_short_partial_abutting_assembly_gap: This parameter is used to indicate whether the
+        feature is too short and abuts an assembly gap.
+          incomplete: A boolean flag indicating whether the feature is incomplete.
         """
         super().__init__(**kwargs)
         self.protein_hash = protein_hash

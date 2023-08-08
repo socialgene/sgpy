@@ -7,11 +7,21 @@ from socialgene.parsers.hmmmodel import HmmModel
 
 class HmmInfo:
     def __init__(self, all_hmms_path):
+        """
+        The function initializes an object with a list of columns and a path to a file.
+
+        Args:
+          all_hmms_path: The `all_hmms_path` parameter is a string that represents the path to a file
+        containing data for all HMMs.
+        """
         self.columns = list(HmmModel()._tsv_dict().keys())
         self.all_hmms_path = all_hmms_path
         self.all_hmms_data = list()
 
     def read_tsv(self):
+        """
+        The function reads a TSV file, validates the number of columns, and appends the data to a list.
+        """
         with fh.open_read(self.all_hmms_path) as h:
             for line in h:
                 line_vals = [

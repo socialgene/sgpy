@@ -43,6 +43,12 @@ def parse_hmmlist_input(input):
 
 @dataclass
 class HmmModel:
+    """
+    The above code defines a data class called `HmmModel` in Python. This class represents a model for a
+    Hidden Markov Model (HMM). It has various attributes that store information about the model, such as
+    its name, description, length, maximum length, alphabet, and other properties.
+    """
+
     _n: int = None
     _base_dir: str = None
     _abs_path: str = None
@@ -82,9 +88,13 @@ class HmmModel:
     MODEL: List[str] = field(default_factory=lambda: [])
 
     def add_attr(self, line):
-        """This checks if a line is an HMM attribute (lines above model) and adds them if they are
+        """
+        The function `add_attr` checks if a line is an HMM attribute and adds it to the appropriate
+        attribute in the class.
+
         Args:
-            line (str): string of text coming from file parse/read
+          line: The `line` parameter is a string of text coming from a file parse/read. It represents a
+        single line of text that is being processed by the `add_attr` method.
         """
         stripped_line = line.strip()
         line_val = stripped_line.split(maxsplit=1)
@@ -106,6 +116,10 @@ class HmmModel:
         self._new_hash = self._hash
 
     def find_pfam_accessions(self):
+        """
+        Attempts to extract Pfam accessions and versions from a given ACC string and assigns them to instance variables `_pfam_accession` and `_pfam_version`
+        respectively.
+        """
         try:
             if re_pfam_broad.match(self.ACC):
                 temp = self.ACC.split(".", maxsplit=1)
@@ -116,16 +130,46 @@ class HmmModel:
             pass
 
     def _get_gen_attr_str(self, attr):
+        """
+        The function returns a formatted string representation of a given attribute if it is not empty.
+
+        Args:
+          attr: The `attr` parameter is a string representing the name of an attribute.
+
+        Returns:
+          a formatted string that includes the attribute name and its corresponding value. The attribute
+        name is aligned with the string "STATS" by adding spaces before the attribute name.
+        """
         if getattr(self, attr):
             n_spaces_offset = len("STATS") + 1 - len(attr)
             return f"{attr}{' ' * n_spaces_offset}{getattr(self, attr)}"
 
     def _get_name_as_hash(self):
+        """
+        The function returns the name attribute of an object along with its corresponding hash value, space aligned.
+
+        Returns:
+          a string that combines the value of the attribute "NAME" with the value of the "_new_hash"
+        attribute, separated by a number of spaces.
+        """
         attr = "NAME"
         n_spaces_offset = len("STATS") + 1 - len(attr)
         return f"{attr}{' ' * n_spaces_offset}{getattr(self, '_new_hash')}"
 
     def model_string(self, hash_as_name=False):
+        """
+        The `model_string` function generates a string representation of a model, including various
+        attributes and headers.
+
+        Args:
+          hash_as_name: The `hash_as_name` parameter is a boolean flag that determines whether the
+        model's name should be represented as a hash value or as a regular string. If `hash_as_name` is
+        set to `True`, the model's name will be converted to a hash value. Defaults to
+        False
+
+        Returns:
+          a string that represents the model.
+        """
         res = []
         # this is spread across multiple calls because likely to include
         # intermediate if/else statemets later
@@ -181,12 +225,15 @@ class HmmModel:
         self._rel_path = input_path.relative_to(input_dir)
 
     def assign_category(self, input_rel_path=None):
-        """Parse antismash categories using antismash directory structure
+        """
+        The function `assign_category` is used to parse categories using the input models' directory structure.
 
         Args:
-            input_dir (Path): Path to top of hmm directory, used to help categorize hmm models
-            input_path (Path): Path to a single file of hmm model(s)
-            input_rel_path (str): ignore, for testing
+          input_rel_path: The `input_rel_path` parameter is a string that represents the relative path
+        to a single file of hmm model(s). It is used to help categorize the hmm models.
+
+        Returns:
+          The function does not explicitly return anything.
         """
         if not self._base_dir:
             return
@@ -206,7 +253,14 @@ class HmmModel:
             self._subcategory
 
     def _antismash_categories(self, rel_path):
-        """Extract/Define categories of antismash models (based on antismash directory structure)"""
+        """
+        The function extracts and defines categories of antismash models based on the antismash
+        directory structure.
+
+        Args:
+          rel_path: The `rel_path` parameter is a string that represents the relative path of a file or
+        directory within the antismash directory structure.
+        """
         category = None
         subcategory = None
         temp = str(rel_path)
@@ -318,7 +372,16 @@ class HmmParse:
         for i in self.models.values():
             _ = i.write(outpath, mode="w", hash_as_name=hash_as_name)
 
-    def write_metadata_tsv(self, outdir, header=False):
+    def write_metadata_tsv(self, outdir: str, header: bool = False):
+        """
+        The function writes metadata for a collection of models to a TSV file
+
+        Args:
+          outdir (str): The `outdir` parameter is a string that specifies the directory where the output
+        "all.hmminfo" TSV file will be written to.
+          header (bool): The `header` parameter is a boolean flag that determines whether or not to
+        write the header row in the TSV file. Defaults to False
+        """
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
             all_hmms_file_writer = csv.DictWriter(
                 tsv_file, self.temp_model._tsv_dict().keys(), delimiter="\t"
@@ -329,6 +392,12 @@ class HmmParse:
                 _ = all_hmms_file_writer.writerow(model._tsv_dict())
 
     def write_hmm_node_tsv(self, outdir):
+        """
+        The function writes a list of HMM model hash values to a single-column TSV file.
+
+        Args:
+          outdir: The `outdir` parameter is the directory where the output "sg_hmm_nodes" file will be written.
+        """
         with open(os.path.join(outdir, "sg_hmm_nodes"), "w") as h:
             hashgen = list({i._new_hash for i in self.models.values()})
             hashgen.sort()
@@ -338,6 +407,12 @@ class HmmParse:
 
 
 class HmmModelHandler(HmmParse):
+    """
+    The `HmmModelHandler` class is responsible for handling and manipulating Hidden Markov Model (HMM)
+    models, including removing duplicate and outdated models, writing non-redundant HMM files, and
+    managing metadata related to the models.
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.cull_index = []
@@ -345,12 +420,24 @@ class HmmModelHandler(HmmParse):
         self._same_hash_removed = {}
 
     def get_all_model_hashes(self):
+        """
+        The function `get_all_model_hashes` returns a list of the `_hash` attribute values for all the
+        models in the `self.models` dictionary.
+
+        Returns:
+          List of all the values of the "_hash" attribute for each item in the
+        "models" dictionary.
+        """
         return [getattr(i, "_hash") for i in self.models.values()]
 
     def hydrate_cull(self):
         self.cull_index = set(self.models.keys())
 
     def remove_duplicate_and_old_pfam(self):
+        """
+        The function removes duplicate and outdated Pfam models, updating metadata in Neo4j if
+        necessary.
+        """
         cull_at_start = len(self.cull_index)
         # create a dict with
         redundant_pfam = defaultdict(list)
@@ -390,6 +477,10 @@ class HmmModelHandler(HmmParse):
         )
 
     def remove_duplicate_hash(self):
+        """
+        The function removes duplicate hash values from a dictionary and updates the cull index and
+        model notes accordingly.
+        """
         cull_at_start = len(self.cull_index)
         redundant_hash = defaultdict(list)
         for k, v in self.models.items():

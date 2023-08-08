@@ -33,7 +33,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     _genomic_info_export_tablenames = [
         "protein_to_go_table",
-        # "protein_info_table",
         "assembly_to_locus_table",
         "loci_table",
         "locus_to_protein_table",
@@ -94,11 +93,32 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def annotate_proteins_with_neo4j(
         self,
-        protein_hash_ids=None,
-        chunk_size=1000,
-        annotate_all=False,
-        progress=False,
+        protein_hash_ids: List[str] = None,
+        chunk_size: int = 1000,
+        annotate_all: bool = False,
+        progress: bool = False,
     ):
+        """
+        The function `annotate_proteins_with_neo4j` takes a list of protein hash IDs, queries a database
+        for matching proteins, and retrieves their HMM annotations.
+
+        Args:
+          protein_hash_ids (List[str]): A list of protein hash IDs. These are unique identifiers for
+        proteins in the database that you want to annotate.
+          chunk_size (int): The `chunk_size` parameter determines the number of proteins to query at a
+        time. Proteins are divided into chunks to improve efficiency when querying the database.  Defaults to 1000
+          annotate_all (bool): The `annotate_all` parameter is a boolean flag that determines whether to
+        annotate all proteins in the database or not. If set to `True`, all proteins in the database
+        will be annotated. If set to `False`, you need to provide a list of protein hash IDs in the
+        `protein_hash_ids. Defaults to False
+          progress (bool): The `progress` parameter is a boolean flag that determines whether or not to
+        display a progress bar during the execution of the function. If `progress` is set to `True`, a
+        progress bar will be displayed to track the progress of the function. If `progress` is set to
+        `False`. Defaults to False
+
+        Returns:
+          the variable `search_result`.
+        """
         if protein_hash_ids is None and annotate_all:
             protein_hash_ids = self.get_all_protein_hashes()
         elif isinstance(protein_hash_ids, str):
@@ -138,11 +158,17 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     def annotate(
         self, use_neo4j_precalc: bool = False, neo4j_chunk_size: int = 1000, **kwargs
     ):
-        """Convenience function to get HMMER annotation for all proteins in a Socialgene() object
+        """
+        The `annotate` function is a convenience function that retrieves HMMER annotation for all
+        proteins in a Socialgene object, either from a Neo4j database or by using HMMER directly.
 
         Args:
-            use_neo4j_precalc (bool, optional): If True, domains info will be retrieved from Neo4j, proteins not in Neo4j will be analyzed with HMMER. Defaults to False.
-            neo4j_chunk_size (int, optional): Send x-proteins at a time to Neo4j for annotation
+          use_neo4j_precalc (bool): A boolean flag indicating whether to use precalculated domain
+        information from Neo4j for annotation. If set to True, the domains info will be retrieved from
+        Neo4j, and proteins not found in Neo4j will be analyzed with HMMER. If set to False, all
+        proteins will be analyzed with HMMER. Defaults to False
+          neo4j_chunk_size (int): The `neo4j_chunk_size` parameter determines the number of proteins
+        that will be sent to Neo4j at a time for annotation. Defaults to 1000
         """
         if use_neo4j_precalc:
             db_res = self.annotate_proteins_with_neo4j(
@@ -201,16 +227,26 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             )
         # parse the resulting domtblout files, saving results to the class proteins/domains
         for i, ii in zip(filenames, files):
-            print(i)
             self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
             ii.close()
 
     @staticmethod
     def compare_two_proteins(protein_1, protein_2):
+        """
+        The function `compare_two_proteins` compares the domain vectors of two proteins using the
+        `mod_score` function.
+
+        Args:
+          protein_1: An instance of a protein object representing the first protein.
+          protein_2: An instance of a protein object representing the second protein.
+
+        Returns:
+          dict: {l1, l2, levenshtein, jaccard, mod_score}; mod_score -> 2 = Perfectly similar; otherwise (1/Levenshtein + Jaccard)
+        """
         return mod_score(protein_1.get_domain_vector(), protein_2.get_domain_vector())
 
     def fill_locus_assembly_from_db(self):
-        """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
+        """Retrieve all locus and assembly info for self.proteins, from a running Neo4j database"""
         for result in Neo4jQuery.query_neo4j(
             cypher_name="retrieve_protein_locations",
             param=list(self.proteins.keys()),
@@ -245,6 +281,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     ########################################
 
     def export_all_domains_as_tsv(self, outpath, **kwargs):
+        """
+        The function exports all domains as a TSV file, sorted by protein ID and mean envelope position.
+
+        Args:
+          outpath: The `outpath` parameter is the path to the output file where the TSV (Tab-Separated
+        Values) data will be written. It specifies the location and name of the file.
+        """
         _domain_counter = 0
         with open_write(outpath, **kwargs) as f:
             tsv_writer = csv.writer(f, delimiter="\t")
@@ -263,11 +306,29 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
     def ferment_pickle(self, outpath):
+        """
+        The function `ferment_pickle` saves a SocialGene object to a file using the pickle module in Python.
+
+        Args:
+          outpath: The `outpath` parameter is a string that represents the path where the pickled object
+        will be saved. It should include the file name and extension. For example,
+        "path/to/save/object.pickle".
+        """
         with open(outpath, "wb") as handle:
             pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def eat_pickle(inpath):
+        """
+        The `eat_pickle` function reads a pickle file from the given path and returns the loaded SocialGene object.
+
+        Args:
+          inpath: The `inpath` parameter is a string that represents the path to the file from which we
+        want to load the pickled object.
+
+        Returns:
+          the object that was loaded from the pickle file.
+        """
         with open(inpath, "rb") as handle:
             return pickle.load(handle)
 
@@ -326,12 +387,16 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         return f">{self.proteins[hash_id].hash_id}\n{self.proteins[hash_id].sequence}"
 
     def write_n_fasta(self, outdir, n_splits=1, **kwargs):
-        """Export protein sequences split into n-number of fasta files
+        """
+        The function `write_n_fasta` exports protein sequences split into multiple fasta files.
 
         Args:
-            outdir (str): Directory to save fasta files into
-            n_splits (int, optional): Defaults to 1.
-            **kwargs: see print(open_write.__doc__)
+          outdir: The `outdir` parameter is a string that specifies the directory where the fasta files
+        will be saved.
+          n_splits: The `n_splits` parameter in the `write_n_fasta` function determines the number of
+        fasta files the protein sequences will be split into. By default, it is set to 1, meaning all
+        the protein sequences will be written into a single fasta file. If you specify a value greater
+        than. Defaults to 1
         """
 
         def split(a, n):
@@ -354,9 +419,23 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             counter += 1
 
     def _merge_proteins(self, sg_object):
+        """
+        The function merges the proteins from another SOcialGene object into the current object.
+
+        Args:
+          sg_object: The `sg_object` parameter is an object of the same class as the current object. It
+        represents another object that contains a collection of proteins.
+        """
         self.proteins.update(sg_object.proteins)
 
     def _merge_assemblies(self, sg_object):
+        """
+        The function `_merge_assemblies` merges assemblies and loci from `sg_object` into `self` if they
+        do not already exist, and adds protein features to loci if they already exist.
+
+        Args:
+          sg_object: The `sg_object` parameter is an object of the same class as the current object.
+        """
         for assembly_k, assembly_v in sg_object.assemblies.items():
             if assembly_k not in self.assemblies:
                 self.assemblies[assembly_k] = assembly_v
@@ -378,6 +457,14 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     # def deep_merge_with_sg1(sg_object_1, sg_object_2):
     def __add__(self, sg_object):
+        """
+        The function merges proteins and assemblies from two objects and appends protein comparison data
+        to a list or dataframe.
+
+        Args:
+          sg_object: The `sg_object` parameter is an object of the same class as the current object. It
+        represents another instance of the class that you want to add to the current instance.
+        """
         self._merge_proteins(sg_object)
         self._merge_assemblies(sg_object)
         # check if self.protein_comparison is pandas or a list and append accordingly
@@ -390,9 +477,15 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             raise TypeError()
 
     def break_loci(self, gap_tolerance: int = 10000):
-        """Break a locus (nucleotide sequence/contig/scaffold) into pieces based on gap tolerance betwen proteins (measured in nucleotides not amino acids)
+        """
+        The `break_loci` function breaks a locus (nucleotide sequence/contig/scaffold) into pieces based
+        on a specified gap tolerance between proteins.
+
         Args:
-            gap_tolerance (int, optional): Allowed nucleotide gap between proteins, any greater and the locus/contig/scaffold will be split. Defaults to 10000.
+          gap_tolerance (int): The `gap_tolerance` parameter is an optional integer that specifies the
+        maximum allowed gap between proteins in nucleotides. If the gap between two proteins is greater
+        than this value, the locus/contig/scaffold will be split into multiple parts. The default value
+        for `gap_tolerance` is 100. Defaults to 10000
         """
         for assembly_key, assembly_value in self.assemblies.items():
             for loci_id in [i for i in assembly_value.loci.keys()]:
@@ -429,6 +522,15 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         del temp_locus
 
     def prune_loci(self, min_genes=1):
+        """
+        The function `prune_loci` removes loci from an assembly if they have fewer features than the
+        specified minimum number of genes.
+
+        Args:
+          min_genes: The `min_genes` parameter is an optional parameter that specifies the minimum
+        number of genes a locus must have in order to be kept. If a locus has fewer genes than the
+        specified minimum, it will be removed from the `self.assemblies` dictionary. Defaults to 1
+        """
         # remove loci if they don't have any features
         assembly_keys = list(self.assemblies.keys())
         for assembly_key in assembly_keys:
@@ -441,6 +543,14 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     del self.assemblies[assembly_key].loci[loci_key]
 
     def top_k_loci(self, topk=2):
+        """
+        The function `top_k_loci` removes loci from assemblies that are not in the top k based on the
+        number of features they have.
+
+        Args:
+          topk: The parameter "topk" is an integer that specifies the number of top loci to keep in each
+        assembly. Defaults to 2
+        """
         assembly_keys = list(self.assemblies.keys())
         for assembly_key in assembly_keys:
             loci_dict = {
@@ -460,10 +570,36 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     ########################################
     @staticmethod
     def _create_internal_locus_id(assembly_id, locus_id):
+        """
+        The function `_create_internal_locus_id` generates a unique identifier for a locus within a
+        specific assembly.
+
+        Args:
+          assembly_id: The assembly_id parameter is a unique identifier for an assembly. It is used to
+        distinguish different assemblies from each other.
+          locus_id: The `locus_id` parameter is an identifier for a specific locus. It is used to
+        uniquely identify a specific location or region within a genome or DNA sequence.
+
+        Returns:
+          The method `_create_internal_locus_id` returns the result of hashing the concatenation of
+        `assembly_id` and `locus_id`.
+        """
         # because locus id can't be assured to be unique across assemblies
         return hasher(f"{assembly_id}___{locus_id}")
 
     def write_table(self, outdir: str, tablename: str, filename: str = None, **kwargs):
+        """
+        The function writes a table to a specified output directory in TSV format, for import into Neo4j.
+
+        Args:
+          outdir (str): The `outdir` parameter is a string that specifies the directory where the output
+        file will be saved.
+          tablename (str): The `tablename` parameter is a string that specifies the name of the table to
+        be written.
+          filename (str): The `filename` parameter is an optional argument that specifies the name of
+        the file to be written. If no `filename` is provided, the `tablename` will be used as the
+        filename.
+        """
         if not filename:
             filename = tablename
         if not hasattr(self, tablename):
@@ -480,6 +616,11 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     tsv_writer.writerow(i)
 
     def protein_to_go_table(self):
+        """
+        The function `protein_to_go_table` iterates through the assemblies, loci, and features of a
+        given object, and yields tuples containing the protein hash and GO term for each feature that
+        has GO terms, for import into Neo4j.
+        """
         for av in self.assemblies.values():
             for v in av.loci.values():
                 for feature in v.features:
@@ -492,6 +633,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             )
 
     def locus_to_protein_table(self):
+        """
+        The function `locus_to_protein_table` generates a table of protein information from each locus, for import into Neo4j.
+        """
         for ak, av in self.assemblies.items():
             for k, loci in av.loci.items():
                 temp_list = list(loci.features)
@@ -521,31 +665,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             feature.incomplete,
                         )
 
-    def protein_info_table(self):
-        """Protein table for import into Neo4j
-
-        Args:
-            outdir (str, optional): Defaults to ".".
-        """
-        for protein in self.proteins.values():
-            if protein.sequence is None:
-                prot_len = None
-            else:
-                prot_len = len(protein.sequence)
-            yield (
-                protein.hash_id,
-                protein.crc64,
-                protein.external_protein_id,
-                protein.description,
-                prot_len,
-            )
-
     def protein_ids_table(self):
-        """Protein id table for import into Neo4j
-
-        Args:
-            outdir (str, optional): Defaults to ".".
-        """
+        """Protein hash id table for import into Neo4j"""
         for protein in self.proteins.values():
             yield (
                 protein.hash_id,

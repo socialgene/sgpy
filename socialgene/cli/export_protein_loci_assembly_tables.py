@@ -78,6 +78,29 @@ def export_tables(
     file_list: List = None,
     sequence_files_glob: str = "",
 ):
+    """
+    The function `export_tables` takes in various parameters, including an output directory, the number
+    of fasta splits, a flag to determine if tables should be collected in memory, a compression method,
+    and a list of files or a glob pattern to find files. It then imports the files into a SocialGene
+    object and writes the tables to the specified output directory.
+
+    Args:
+      outdir (str): The `outdir` parameter is a string that specifies the directory where the exported
+    tables will be saved.
+      n_fasta_splits (int): The `n_fasta_splits` parameter specifies the number of splits to be made
+    when exporting the tables. It is used by the `_writer` function to determine how many splits to
+    create when writing the tables to files.
+      collect_tables_in_memory (bool): A boolean flag indicating whether the tables should be collected
+    in memory before writing them to files. If set to True, the tables will be stored in memory and then
+    written to files. If set to False, the tables will be written to files immediately after parsing
+    each input file.
+      compression (str): The "compression" parameter is a string that specifies the compression format
+    to use when exporting the tables. It can be one of the following options: "gzip", "bz2", "lzma", or
+    "none".
+      file_list (List): A list of file paths to input sequence files.
+      sequence_files_glob (str): A string representing a glob pattern used to find sequence files. This
+    pattern can include wildcards (*) to match multiple files.
+    """
     outdir = Path(outdir)
     sequence_files = list()
     # find files using the input glob

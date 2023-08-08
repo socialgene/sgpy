@@ -20,6 +20,18 @@ class Compression(Enum):
 
 
 def is_compressed(filepath: Path) -> Compression:
+    """
+    Determines the compression type of a file based on its signature.
+
+    Args:
+      filepath (Path): The `filepath` parameter is a `Path` object that represents the path to the file
+    that you want to check for compression.
+
+    Returns:
+      The function `is_compressed` returns the type of compression used for the file specified by the
+    `filepath` parameter. The possible return values are `Compression.gzip`, `Compression.bzip2`,
+    `Compression.xz`, or `Compression.uncompressed`.
+    """
     with open(filepath, "rb") as f:
         signature = f.peek(8)[:8]
         if tuple(signature[:2]) == (0x1F, 0x8B):
@@ -33,6 +45,14 @@ def is_compressed(filepath: Path) -> Compression:
 
 
 def gunzip(filepath: Path) -> None:
+    """
+    The function `gunzip` decompresses a gzip file and saves the decompressed file with the same name
+    but without the ".gz" extension.
+
+    Args:
+      filepath (Path): Path to the compressed file that you want to
+    decompress.
+    """
     if is_compressed(filepath).name == "gzip":
         # remove ".gz" for the new filepath
         new_hmm_path = Path(filepath.parents[0], filepath.stem)
@@ -46,6 +66,14 @@ def gunzip(filepath: Path) -> None:
 
 @contextmanager
 def open_read(filepath: Path) -> IO:
+    """
+    The function `open_read` opens a file for reading, taking into account different compression
+    formats.
+
+    Args:
+      filepath (Path): The `filepath` parameter is the path to the file that you want to open and read.
+    It should be a string representing the file path.
+    """
     filepath_compression = is_compressed(filepath)
     if filepath_compression == Compression.gzip:
         f = gzip.open(filepath, "rt")
@@ -103,7 +131,8 @@ def guess_filetype(filepath):
     Args:
         filepath: file path of file to guess
     Returns:
-        bool: true/false
+      a string indicating the type of file. The possible return values are "genbank", "fasta", "gff", or
+    "domtblout".
     """
     with open_read(filepath) as f:
         l1 = f.readline()
