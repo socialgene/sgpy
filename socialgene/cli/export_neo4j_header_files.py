@@ -9,13 +9,11 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument(
     "--outdir",
-    metavar="filepath",
     help="Output directory filepath",
     required=True,
 )
 parser.add_argument(
     "--sg_modules",
-    metavar="list",
     help="Modules for data import; current choices: ['base', 'blastp', 'hmms', 'mmseqs2', 'ncbi_taxonomy', 'paired_omics']",
     required=True,
     nargs="+",

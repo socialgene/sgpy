@@ -9,7 +9,6 @@ from socialgene.config import env_vars
 parser = argparse.ArgumentParser(description="Hash a string/amino acids")
 parser.add_argument(
     "--input",
-    metavar="string",
     help="single string to hash",
     required=True,
 )

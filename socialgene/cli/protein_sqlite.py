@@ -10,19 +10,16 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument(
     "--input",
-    metavar="filepath",
     help='A "glob" style input path. Make sure to use single quotes (\'), not double("). See https://docs.python.org/3/library/glob.html for info about globs.',
     required=True,
 )
 parser.add_argument(
     "--outpath",
-    metavar="filepath",
     help="Path sqlite file will be written to",
     required=True,
 )
 parser.add_argument(
     "--build_in_memory",
-    metavar="bool",
     help="Path sqlite file will be written to",
     required=False,
     default=True,

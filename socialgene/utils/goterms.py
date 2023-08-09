@@ -12,7 +12,6 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument(
     "--outdir",
-    metavar="filepath",
     help="Output directory filepath",
     required=True,
 )

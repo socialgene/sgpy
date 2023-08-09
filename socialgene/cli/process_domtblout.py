@@ -9,13 +9,11 @@ from socialgene.utils.logging import log
 parser = argparse.ArgumentParser(description="Create *.locus_to_protein a genbank file")
 parser.add_argument(
     "--domtblout_file",
-    metavar="filepath",
     help="input domtblout file. **Must** be an HMMSEARCH (**not** hmmscan) domtblout file ",
     required=True,
 )
 parser.add_argument(
     "--outpath",
-    metavar="filepath",
     help="Output filepath",
     required=True,
 )

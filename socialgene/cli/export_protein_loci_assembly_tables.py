@@ -13,7 +13,6 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument(
     "--sequence_files_glob",
-    metavar="filepath",
     help='A "glob" style input path. See https://docs.python.org/3/library/glob.html for info about globs',
     required=False,
 )
@@ -27,20 +26,17 @@ parser.add_argument(
 )
 parser.add_argument(
     "--outdir",
-    metavar="filepath",
     help="Output directory filepath",
     required=True,
 )
 parser.add_argument(
     "--n_fasta_splits",
-    metavar="filepath",
     help="Number of fasta files to create",
     required=True,
     default=1,
 )
 parser.add_argument(
     "--collect_tables_in_memory",
-    metavar="bool",
     help="Should all tables be collected in RAM before writing to disk?",
     required=False,
     default=False,
@@ -48,7 +44,6 @@ parser.add_argument(
 )
 parser.add_argument(
     "--compression",
-    metavar="bool",
     help="Gzip compress output?",
     required=False,
     default=False,

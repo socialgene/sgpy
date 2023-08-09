@@ -6,7 +6,6 @@ from socialgene.hmm.hmminfo import HmmInfo
 parser = argparse.ArgumentParser(description="Merging tsv")
 parser.add_argument(
     "--all_hmms_path",
-    metavar="filepath",
     help=".sg_hmm_nodes filepath",
     required=True,
 )

@@ -9,25 +9,27 @@ from socialgene.parsers.hmmmodel import HMM_SOURCES, HmmModelHandler
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
 parser.add_argument(
     "--input_dir",
-    metavar="filepath",
+    metavar="input filepath",
+    type=Path,
     help="input_dir",
     required=True,
 )
 parser.add_argument(
     "--outdir",
-    metavar="filepath",
+    metavar="output directory",
+    type=Path,
     help="outdir",
     required=True,
 )
 parser.add_argument(
     "--numoutfiles",
-    metavar="int",
+    metavar="Number of out files",
+    type=int,
     help="numoutfiles file",
     required=True,
 )
 parser.add_argument(
     "--splitcutoffs",
-    metavar="bool",
     default="false",
     help="Create two file, one with models that have cutoff values, one with models that don't",
     required=True,

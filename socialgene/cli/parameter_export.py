@@ -11,7 +11,6 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument(
     "--outpath",
-    metavar="filepath",
     help="Output filepath",
     default="socialgene_parameters",
 )

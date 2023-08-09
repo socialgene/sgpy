@@ -16,7 +16,6 @@ from socialgene.utils.untargz import untargz
 parser = argparse.ArgumentParser(description="Parse NcbiAssemblies taxonomy")
 parser.add_argument(
     "--taxdump_path",
-    metavar="filepath",
     help="path to ncbi's taxdump.tar.gz",
     required=True,
 )
