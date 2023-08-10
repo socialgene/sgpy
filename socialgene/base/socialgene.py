@@ -84,8 +84,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for domain in protein["domains"]:
                     new_dict = temp | domain["domain_properties"]
                     new_dict["hmm_id"] = domain["hmm_id"]
-                    self.proteins[protein["p1.protein_hash"]].add_domain(
-                        exponentialized=False,
+                    self.proteins[protein["p1.uid"]].add_domain(
                         **new_dict,
                     )
         else:
