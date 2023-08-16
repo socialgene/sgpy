@@ -1,7 +1,6 @@
 import logging
-from typing import Dict, List, Set
+from typing import Dict, Set
 
-from socialgene.config import env_vars
 from socialgene.hashing.hashing import hasher
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log

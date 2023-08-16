@@ -1,5 +1,5 @@
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log

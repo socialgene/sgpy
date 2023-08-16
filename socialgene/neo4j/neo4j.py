@@ -1,6 +1,5 @@
 import atexit
 import importlib.resources
-import time
 from typing import Any
 
 from neo4j import GraphDatabase

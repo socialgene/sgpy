@@ -1,8 +1,6 @@
 import argparse
 import logging
-from io import BytesIO
 
-import requests
 from rich.progress import Progress, SpinnerColumn
 
 from socialgene.external_db_classes.classyfire import ClassyFire
