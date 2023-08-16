@@ -40,11 +40,11 @@ class PKS:
         self.subclasses = None
         self.synthases = None
 
-    def _assign_subclass():
-        try:
-            input_json["cluster"]["polyketide"]["synthases"][0]["subclass"]
-        except Exception:
-            pass
+    # def _assign_subclass():
+    #     try:
+    #         input_json["cluster"]["polyketide"]["synthases"][0]["subclass"]
+    #     except Exception:
+    #         pass
 
     def assign(self, input_json):
         self.assembly = input_json["cluster"]["mibig_accession"]
