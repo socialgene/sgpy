@@ -1,15 +1,16 @@
+import time
 from typing import Any
 
 import atexit
 import importlib.resources
 
 from neo4j import GraphDatabase
+from rich.console import Console
 
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
 
-# TODO: Not sure whether the driver should be persistent (with active check)
-# or a new connection each time
+console = Console()
 
 
 # Read in queries from cypher file, as dictionary
@@ -68,15 +69,21 @@ class GraphDriver(object):
 
     def __init__(self) -> None:
         self.session = None
+        # self.spinner handled by class' context management protocol
+        self.spinner = console.status(
+            "Executing Neo4j transaction", spinner="bouncingBar"
+        )
 
     def check_connection(self):
         self.driver.verify_connectivity()
 
     def __enter__(self):
+        self.spinner.start()
         self.session = self.driver.session()
         return self.session
 
     def __exit__(self, *args, **kwargs):
+        self.spinner.stop()
         self.session.close()
 
     @classmethod
