@@ -1,10 +1,11 @@
 import re
+from io import BytesIO
+from zipfile import ZipFile
+
+import requests
+
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
-from zipfile import ZipFile
-import requests
-from io import BytesIO
-
 
 OBO_URL = (
     "http://classyfire.wishartlab.com/system/downloads/1_0/chemont/ChemOnt_2_1.obo.zip"

@@ -1,8 +1,7 @@
-from typing import Generator
-
 import subprocess
 from pathlib import Path
 from shutil import which
+from typing import Generator
 
 import socialgene.utils.file_handling as fh
 from socialgene.config import env_vars

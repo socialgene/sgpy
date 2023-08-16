@@ -2,7 +2,6 @@ from socialgene.dbmodifiers.classyfire.importer import main as get_classyfire
 from socialgene.external_db_classes.classyfire import ClassyFire
 from socialgene.external_db_classes.npatlas import Npatlas
 
-
 get_classyfire()
 
 temp1 = Npatlas.download()

@@ -1,9 +1,11 @@
 import argparse
 import csv
-from pathlib import Path
-import requests
 import re
 from copy import deepcopy
+from pathlib import Path
+
+import requests
+
 from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(
