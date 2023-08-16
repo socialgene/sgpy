@@ -3,7 +3,6 @@
 
 from glob import glob
 from os.path import basename, splitext
-
 ############
 #  https://packaging.python.org/en/latest/guides/making-a-pypi-friendly-readme/
 from pathlib import Path

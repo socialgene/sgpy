@@ -1,5 +1,3 @@
-from typing import IO
-
 import bz2
 import gzip
 import lzma
@@ -8,6 +6,7 @@ import tarfile
 from contextlib import contextmanager
 from enum import Enum, auto
 from pathlib import Path
+from typing import IO
 
 from socialgene.utils.logging import log
 

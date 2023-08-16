@@ -1,22 +1,5 @@
-import json
-from pathlib import Path
-import tempfile
-import requests
-import tarfile
-from socialgene.dbmodifiers.mibig.nrps import NRPS
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
-from socialgene.config import env_vars
-from socialgene.dbmodifiers.mibig.compound import Mibig_Compound
-from rich import inspect
-from neo4j import GraphDatabase
-from socialgene.config import env_vars
-import logging
-from rich.progress import Progress, SpinnerColumn
-from rich.console import Console
-import time
-
-console = Console()
 
 
 def _add_to_neo4j(statement, **kwargs):

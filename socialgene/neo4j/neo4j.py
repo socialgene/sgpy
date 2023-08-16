@@ -1,8 +1,7 @@
-import time
-from typing import Any
-
 import atexit
 import importlib.resources
+import time
+from typing import Any
 
 from neo4j import GraphDatabase
 from rich.console import Console

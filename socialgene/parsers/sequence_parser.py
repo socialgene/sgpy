@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import gzip
 import re
 import zlib
@@ -8,6 +6,7 @@ from functools import partial
 from io import StringIO
 from mimetypes import guess_type
 from pathlib import Path
+from typing import Dict, List
 from uuid import uuid4
 
 from Bio import Seq, SeqIO

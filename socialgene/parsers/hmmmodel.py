@@ -1,11 +1,10 @@
-from typing import List
-
 import csv
 import os
 import re
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import List
 
 import socialgene.utils.file_handling as fh
 from socialgene.hashing.hashing import hasher

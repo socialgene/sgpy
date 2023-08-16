@@ -1,5 +1,6 @@
 from socialgene.base.socialgene import SocialGene
-from socialgene.clustermap.clustermap import Clustermap, ClustermapUuids, UuidCount
+from socialgene.clustermap.clustermap import (Clustermap, ClustermapUuids,
+                                              UuidCount)
 
 
 def test_UuidCount_slots():
