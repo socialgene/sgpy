@@ -103,7 +103,7 @@ class Massage:
 
     @staticmethod
     def culture_collections_as_nodes_rels():
-        _add_to_neo4j(
+        _run_transaction_function(
             """
                 MATCH (a1:assembly) where a1.culture_collection is not null
                 WITH a1, split(a1.culture_collection,":")[0] as cc_agency
@@ -119,5 +119,42 @@ class Massage:
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1:nucleotide)
                 WHERE a1.uid STARTS WITH "BGC00" AND n1.external_id STARTS WITH "BGC00"
                 SET a1:mibig_bgc;
+            """
+        )
+
+    @staticmethod
+    def fix_mibig_taxonomy():
+        _add_to_neo4j(
+            """
+                // Link mibig BGCs to taxa if they aren't
+                MATCH (n:assembly)
+                where n.uid starts with "BGC00" and not (n)-[:IS_TAXON]->() and n.db_xref is not null
+                MATCH (t1:taxid {uid:split(n.db_xref, "taxon:")[1]})
+                MERGE (n)-[:IS_TAXON]->(t1);
+
+            """
+        )
+
+    @staticmethod
+    def antismash_as_separate_nodes():
+        log.info("Adding new constrain for (:antismash_bgc {nuid})")
+        _run_transaction_function(
+            """
+                CREATE CONSTRAINT FOR (n:antismash_bgc) REQUIRE n.nuid IS UNIQUE;
+            """
+        )
+        log.info("Creating new antismash nodes and linking them to proteins")
+        _run_transaction_function(
+            """
+                MATCH (p1:protein)<-[e1:ENCODES]-(n1:nucleotide)
+                WHERE  e1.antismash_region is not null
+                WITH n1, e1.antismash_region as ar, collect(DISTINCT(p1)) as prots
+                call {
+                WITH n1, ar, prots
+                create (bgc:antismash_bgc {nuid:n1.uid, region:ar})
+                WITH prots, bgc
+                UNWIND prots as prot
+                MERGE (prot)<-[:ENCODES]-(bgc)
+                } IN TRANSACTIONS OF 1000 rows;
             """
         )
