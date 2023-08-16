@@ -1,6 +1,3 @@
-from socialgene.external_db_classes.base_class import ExternalBaseClass
-
-
 class Npmrd:
     __slots__ = ["uid"]
 

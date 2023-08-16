@@ -1,5 +1,4 @@
 import os
-import pwd
 from pathlib import Path
 
 from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
