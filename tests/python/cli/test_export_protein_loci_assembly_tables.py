@@ -68,8 +68,7 @@ def create_files(
 ):
     from pathlib import Path
 
-    from socialgene.cli.export_protein_loci_assembly_tables import \
-        export_tables
+    from socialgene.cli.export_protein_loci_assembly_tables import export_tables
     from socialgene.config import env_vars
 
     TEST_GENOMES_DIR = tg
