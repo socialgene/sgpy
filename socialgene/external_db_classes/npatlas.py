@@ -1,7 +1,4 @@
 import json
-import re
-from pathlib import Path
-from typing import List
 
 import requests
 from rich.progress import Progress

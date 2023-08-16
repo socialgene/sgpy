@@ -4,7 +4,7 @@ from socialgene.base.socialgene import SocialGene
 
 sg_obj = SocialGene()
 fapath = "/home/chase/Downloads/ttd_database/P2-06-TTD_sequence_all.txt"
-
+protein_id = 1
 with open(fapath, "rt") as h:
     sequence = ""
     after_header = False
