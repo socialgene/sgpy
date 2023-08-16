@@ -1,7 +1,4 @@
-from typing import List
-
 import csv
-
 import itertools
 import pickle
 import tempfile
@@ -10,6 +7,7 @@ from copy import deepcopy
 from multiprocessing import cpu_count
 from operator import attrgetter
 from pathlib import Path
+from typing import List
 
 import pandas as pd
 from rich.progress import Progress

@@ -1,9 +1,11 @@
 import json
-from pathlib import Path
 import re
-from rich.progress import Progress
+from pathlib import Path
 from typing import List
+
 import requests
+from rich.progress import Progress
+
 from socialgene.external_db_classes.base_class import ExternalBaseClass
 from socialgene.external_db_classes.gnps import GnpsLibrarySpectrum
 from socialgene.external_db_classes.mibig import Mibig

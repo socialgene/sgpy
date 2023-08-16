@@ -1,14 +1,12 @@
 import argparse
-import requests
-import argparse
+import logging
+from io import BytesIO
 
 import requests
-from io import BytesIO
-import logging
-from socialgene.utils.logging import log
+from rich.progress import Progress, SpinnerColumn
 
 from socialgene.external_db_classes.classyfire import ClassyFire
-from rich.progress import Progress, SpinnerColumn
+from socialgene.utils.logging import log
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 

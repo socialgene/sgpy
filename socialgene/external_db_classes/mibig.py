@@ -1,5 +1,6 @@
-from socialgene.external_db_classes.base_class import ExternalBaseClass
 import re
+
+from socialgene.external_db_classes.base_class import ExternalBaseClass
 
 
 class Mibig(ExternalBaseClass):

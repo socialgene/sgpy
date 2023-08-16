@@ -1,18 +1,19 @@
 import json
-from pathlib import Path
-import tempfile
-import requests
+import logging
 import tarfile
+import tempfile
+from pathlib import Path
+
+import requests
+from neo4j import GraphDatabase
+from rich import inspect
+from rich.progress import Progress, SpinnerColumn
+
+from socialgene.config import env_vars
+from socialgene.dbmodifiers.mibig.compound import Mibig_Compound
 from socialgene.dbmodifiers.mibig.nrps import NRPS
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
-from socialgene.config import env_vars
-from socialgene.dbmodifiers.mibig.compound import Mibig_Compound
-from rich import inspect
-from neo4j import GraphDatabase
-from socialgene.config import env_vars
-import logging
-from rich.progress import Progress, SpinnerColumn
 
 # logging.getLogger("neo4j").setLevel(logging.WARNING)
 # logging.getLogger().setLevel(logging.INFO)

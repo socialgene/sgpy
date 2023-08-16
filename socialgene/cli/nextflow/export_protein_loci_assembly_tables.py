@@ -1,8 +1,7 @@
-from typing import List
-
 import argparse
 import glob
 from pathlib import Path
+from typing import List
 
 from socialgene.base.socialgene import SocialGene
 from socialgene.config import env_vars

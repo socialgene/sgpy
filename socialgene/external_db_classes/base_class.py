@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
-from socialgene.utils.logging import log
 import logging
+from abc import ABC, abstractmethod
+
 from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.utils.logging import log
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.INFO)
