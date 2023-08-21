@@ -67,6 +67,7 @@ def search(fasta_path, target_database, argstring=""):
             "0",
         ]
         if argstring:
+            argstring = [str(i) for i in argstring.split()]
             command_list.extend(argstring)
         mes = run_subprocess(
             command_list=command_list, check=False, shell=False, capture_output=True
