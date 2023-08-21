@@ -60,6 +60,7 @@ def gunzip(filepath: Path) -> None:
         with gzip.open(filepath, "rb") as f_in:
             with open(new_hmm_path, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
+        filepath.unlink()
         log.info(f"Finished decompressing: {str(Path(filepath).stem)}")
 
 

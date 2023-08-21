@@ -189,6 +189,7 @@ class Location:
         start: int = None,
         end: int = None,
         strand: int = None,
+        **kwargs,  # this kwarg isn't accessed but is here so that calling Location with dict unpacking with extra args doesn't fail
     ):
         """Class describing genomic coordinates and strand direction.
 

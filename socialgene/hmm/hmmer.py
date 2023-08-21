@@ -1,3 +1,5 @@
+from typing import Generator
+import re
 import subprocess
 from pathlib import Path
 from shutil import which
@@ -19,7 +21,8 @@ class HMMER:
 
     def __init__(self):
         self._check_hmmer()
-        self.hmm_filepath = None
+        self.hmm_filepaths_with_cutoffs = None
+        self.hmm_filepaths_without_cutoffs = None
 
     @staticmethod
     def _check_hmmer():
@@ -38,25 +41,24 @@ class HMMER:
 
     def _append_hmmpress_suffixes(
         self,
+        hmm_filepath,
     ) -> Generator[str, None, None]:
         """Appends each of the hmmpress file extensions to the given filepath
         Returns:
             Generator: new paths of expected hmmpress output files
         """
-        return (
-            f"{self.hmm_filepath.suffix}.{i}" for i in self.HMMPRESS_OUTPUT_SUFFIXES
-        )
+        return (f"{hmm_filepath.suffix}.{i}" for i in self.HMMPRESS_OUTPUT_SUFFIXES)
 
-    def _check_hmmpress_files_exist(self):
+    def _check_hmmpress_files_exist(self, hmm_filepath):
         """Checks if all the expected files are present after running hmmpress
         Raises:
             FileNotFoundError: Missing hmmpress input/output files
         """
         expected_files = [
-            Path(self.hmm_filepath.with_suffix(i))
-            for i in self._append_hmmpress_suffixes()
+            Path(hmm_filepath.with_suffix(i))
+            for i in self._append_hmmpress_suffixes(hmm_filepath)
         ]
-        expected_files = expected_files
+        print(expected_files)
 
         if not all([i.exists() for i in expected_files]):
             return False
@@ -80,7 +82,9 @@ class HMMER:
         hmm_path = Path(hmm_path)
 
         if not str(hmm_path).endswith((".hmm", ".hmm.gz")):
-            raise ValueError("HMM file must have an '.hmm' or '.hmm.gz' extension")
+            raise ValueError(
+                f"HMM file must have an '.hmm' or '.hmm.gz' extension: {hmm_path}"
+            )
 
         if fh.is_compressed(hmm_path).name == "gzip":
             # .with_suffix("") removes .gz but leaves .hmm
@@ -88,7 +92,7 @@ class HMMER:
         else:
             self.hmm_filepath = hmm_path
 
-        if not force and self._check_hmmpress_files_exist():
+        if not force and self._check_hmmpress_files_exist(hmm_path):
             log.info(
                 "hmmpress outputs found and hmmpress(force=False), skipping hmmpress"
             )
@@ -104,19 +108,51 @@ class HMMER:
             #  Decompress first if hmm file is gzipped
             command_list = ["hmmpress", str(self.hmm_filepath)]
         command_list = [str(i) for i in command_list]
+        print(command_list)
         run_subprocess(
             command_list=command_list,
         )
-        if not self._check_hmmpress_files_exist():
+        if not self._check_hmmpress_files_exist(hmm_path):
             raise FileNotFoundError("Didn't find expected files after running hmmpress")
 
+    def hmmscan(self, hmm_directory, outdirectory, **kwargs):
+        hmmdir = Path(hmm_directory)
+
+        self.hmm_filepaths_with_cutoffs = [
+            i
+            for i in hmmdir.glob("*with_cutoffs*")
+            if re.search("\.hmm$|hmm\.gz$", str(i))
+        ]
+        self.hmm_filepaths_without_cutoffs = [
+            i
+            for i in hmmdir.glob("*without_cutoffs*")
+            if re.search("\.hmm$|hmm\.gz$", str(i))
+        ]
+        if not any(
+            [self.hmm_filepaths_with_cutoffs, self.hmm_filepaths_without_cutoffs]
+        ):
+            raise FileNotFoundError("No HMM model files found")
+        for i in self.hmm_filepaths_with_cutoffs:
+            self.hmmpress(i)
+            temp = dict(**kwargs) | {
+                "use_ga_cutoffs": True,
+                "domtblout_path": Path(outdirectory, "with_cutoffs.domtblout"),
+            }
+            self._hmmscan(i, **temp)
+        for i in self.hmm_filepaths_without_cutoffs:
+            self.hmmpress(i)
+            temp = dict(**kwargs) | {
+                "use_ga_cutoffs": False,
+                "domtblout_path": Path(outdirectory, "without_cutoffs.domtblout"),
+            }
+            self._hmmscan(i, **temp)
+
     @staticmethod
-    def hmmscan(
-        fasta_path: str,
-        input: str,
+    def _hmmscan(
         hmm_filepath: str,
         domtblout_path: str,
-        cut_ga: bool= False,
+        fasta_path: str,
+        input: str = None,
         f1: float = env_vars["HMMSEARCH_F1"],
         f2: float = env_vars["HMMSEARCH_F2"],
         f3: float = env_vars["HMMSEARCH_F3"],
@@ -128,6 +164,7 @@ class HMMER:
         seed: int = env_vars["HMMSEARCH_SEED"],
         cpus: int = 1,
         overwrite=False,
+        use_ga_cutoffs: bool = False,
     ) -> None:
         """
         The `hmmscan` function runs HMMER's hmmscan tool to search for protein domains in a given FASTA
@@ -175,6 +212,8 @@ class HMMER:
         already exists at `domtblout_path`, a `FileExistsError` will be raised. Defaults to False
         """
         hmm_filepath = Path(hmm_filepath)
+        if input:
+            fasta_path = "-"
         if not hmm_filepath.exists():
             raise FileNotFoundError(f"No file found at {hmm_filepath}")
         domtblout_path = Path(domtblout_path)
@@ -187,9 +226,10 @@ class HMMER:
             "--cpu",
             int(cpus),
             "-Z",
-            z,]
+            z,
+        ]
 
-        c3=[
+        c3 = [
             "--F1",
             f1,
             "--F2",
@@ -201,18 +241,20 @@ class HMMER:
             hmm_filepath,
             fasta_path,
         ]
-        if cut_ga:
-             c2= ["--cut_ga"]
+        if use_ga_cutoffs:
+            c2 = ["--cut_ga"]
         else:
-            c2=[ "-E",
-            e,
-            "--incE",
-            inc_e,
-            "--incdomE",
-            incdom_e,
-            "--domE",
-            dom_e,]
-        command_list= c1+c2+c3
+            c2 = [
+                "-E",
+                e,
+                "--incE",
+                inc_e,
+                "--incdomE",
+                incdom_e,
+                "--domE",
+                dom_e,
+            ]
+        command_list = c1 + c2 + c3
         command_list = [str(i) for i in command_list]
         run_subprocess(
             command_list=command_list,

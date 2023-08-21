@@ -16,7 +16,7 @@ from socialgene.base.compare_protein import CompareProtein
 from socialgene.base.molbio import Molbio
 from socialgene.hashing.hashing import hasher
 from socialgene.hmm.hmmer import HMMER
-from socialgene.neo4j.neo4j import Neo4jQuery
+from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
 from socialgene.parsers.hmmer_parser import HmmerParser
 from socialgene.parsers.sequence_parser import SequenceParser
@@ -181,12 +181,14 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 **kwargs,
             )
 
-    def annotate_with_hmmscan(self, protein_id_list, hmm_filepath, cpus=None, **kwargs):
+    def annotate_with_hmmscan(
+        self, protein_id_list, hmm_directory, cpus=None, **kwargs
+    ):
         """Run hmmscan in parallel (meant to be when the number of proteins is relatively small)
 
         Args:
             protein_id_list (list): list of protein hash ids to run hmmscan on
-            hmm_filepath (str): path to hmm file (must have be hmmpressed first)
+            hmm_directory (str): path to directory containing hmm files
             cpus (int): number of parallel processes to spawn
         """
         log.info(f"Annotating {len(protein_id_list)} proteins with HMMER's hmmscan")
@@ -205,27 +207,25 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             log.info("None of the input sequences contain an amino acid sequence")
             return
         # create a list of lists of proteins as FASTA
-        if cpus > (len(temp1) - 1) and len(temp1) > 10:
-            temp2 = chunk_a_list_with_numpy(input_list=temp1, n_chunks=cpus)
-        else:
-            temp2 = [temp1]
-        del temp1
+        # if cpus > (len(temp1) - 1) and len(temp1) > 10:
+        #     temp2 = chunk_a_list_with_numpy(input_list=temp1, n_chunks=cpus)
+        # else:
+        #     temp2 = [temp1]
+        # del temp1
         # create tempfiles for hmmscan to write domtblout files to
-        files = [tempfile.NamedTemporaryFile() for i in temp2]
-        filenames = [i.name for i in files]
-        for i in zip(temp2, itertools.repeat(hmm_filepath), filenames):
-            HMMER.hmmscan(
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            HMMER().hmmscan(
                 fasta_path="-",
-                input="\n".join(i[0]).encode(),
-                hmm_filepath=i[1],
-                domtblout_path=i[2],
+                input="\n".join(temp1).encode(),
+                hmm_directory=hmm_directory,
+                outdirectory=tmpdirname,
                 overwrite=True,
                 **kwargs,
             )
-        # parse the resulting domtblout files, saving results to the class proteins/domains
-        for i, ii in zip(filenames, files):
-            self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
-            ii.close()
+            # parse the resulting domtblout files, saving results to the class proteins/domains
+            for i in Path(tmpdirname).glob("*.domtblout"):
+                self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
 
     @staticmethod
     def compare_two_proteins(protein_1, protein_2):
@@ -242,8 +242,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         The function `compare_two_proteins` compares the domain vectors of two proteins using the
         return mod_score(protein_1.domain_vector, protein_2.domain_vector)
 
-    def fill_locus_assembly_from_db(self):
-        """Retrieve all locus and assembly info for self.proteins, from a running Neo4j database"""
+    def fill_from_proteins(self):
+        """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
         for result in Neo4jQuery.query_neo4j(
             cypher_name="retrieve_protein_locations",
             param=list(self.proteins.keys()),
@@ -263,6 +263,61 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             strand=feature["strand"],
                         )
                     )
+
+    def fill_given_locus_range(self, locus_uid, start, end):
+        """Given a locus uid that's in the database, pull asssembly, locus, protein info for those proteins"""
+        with GraphDriver() as db:
+            assembly_uid = db.run(
+                """
+                MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1:nucleotide {uid: $locus_uid})
+                RETURN
+                a1.uid as a_uid
+            """,
+                locus_uid=locus_uid,
+            ).value()
+        if not assembly_uid:
+            raise ValueError("No assembly found in database")
+        elif not isinstance(assembly_uid, list):
+            raise ValueError("Expected list")
+        else:
+            assembly_uid = assembly_uid[0]
+        self.add_assembly(assembly_uid)
+        with GraphDriver() as db:
+            res = db.run(
+                """
+                MATCH (n1:nucleotide {uid: $locus_uid})
+                RETURN
+                n1 as nucleotide_node
+            """,
+                locus_uid=locus_uid,
+            ).data()
+        external_id = res[0]["nucleotide_node"]["external_id"]
+        self.assemblies[assembly_uid].add_locus(id=external_id)
+
+        self.assemblies[assembly_uid].loci[external_id].info = (
+            self.assemblies[assembly_uid].loci[external_id].info
+            | res[0]["nucleotide_node"]
+        )
+
+        with GraphDriver() as db:
+            res = db.run(
+                """
+                MATCH (n1:nucleotide {uid: $locus_uid})-[e1:ENCODES]->(p1:protein)
+                WHERE e1.start >= $start AND e1.start <= $end
+                RETURN e1, p1
+            """,
+                locus_uid=locus_uid,
+                start=start,
+                end=end,
+            ).value()
+        for feature in res:
+            self.assemblies[assembly_uid].loci[external_id].add_feature(
+                type="protein", protein_hash=feature.end_node["uid"], **feature
+            )
+            self.add_protein(hash_id=feature.end_node["uid"])
+        self.annotate_proteins_with_neo4j(
+            protein_hash_ids=None, annotate_all=True, progress=False
+        )
 
     def get_db_protein_info(self):
         """Pull name (original identifier) and description of proteins from Neo4j"""

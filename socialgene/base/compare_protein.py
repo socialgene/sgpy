@@ -10,7 +10,7 @@ from socialgene.utils.logging import log
 
 def _mod_return(i1, i2):
     """for running mod_score() in parallel"""
-    return [
+    return (
         i1[0],  # hash of protein 1
         i2[0],  # hash of protein 2
         *(
@@ -19,7 +19,7 @@ def _mod_return(i1, i2):
                 i2[1].domain_vector,
             ).values()
         ),
-    ]
+    )
 
 
 def append_or_not(result_list, result, append=False):
