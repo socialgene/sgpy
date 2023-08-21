@@ -16,6 +16,7 @@ from socialgene.base.compare_protein import CompareProtein
 from socialgene.base.molbio import Molbio
 from socialgene.hashing.hashing import hasher
 from socialgene.hmm.hmmer import HMMER
+from socialgene.mmseqs.search import search as mmseqs_search
 from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
 from socialgene.parsers.hmmer_parser import HmmerParser
@@ -151,6 +152,15 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for protein_id_list in chunked_list:
                     self.get_protein_domains_from_db(protein_id_list=protein_id_list)
         return search_result
+
+    def search_with_mmseqs(self, target_database, argstring):
+        with tempfile.NamedTemporaryFile() as temp_path:
+            self.write_fasta(temp_path.name)
+            self.mmseqs_results = mmseqs_search(
+                fasta_path=temp_path.name,
+                target_database=target_database,
+                argstring=argstring,
+            )
 
     def annotate(
         self, use_neo4j_precalc: bool = False, neo4j_chunk_size: int = 1000, **kwargs
