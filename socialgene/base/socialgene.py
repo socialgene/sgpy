@@ -162,6 +162,18 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 argstring=argstring,
             )
 
+    def compare_to_another_sg_object(sg1, sg2, argstring=""):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            sg1fa_path = Path(tmpdirname, "sg1.faa")
+            sg2fa_path = Path(tmpdirname, "sg2.faa")
+            sg1.write_fasta(sg1fa_path)
+            sg2.write_fasta(sg2fa_path)
+            return mmseqs_search(
+                fasta_path=str(sg1fa_path),
+                target_database=str(sg2fa_path),
+                argstring=argstring,
+            )
+
     def annotate(
         self, use_neo4j_precalc: bool = False, neo4j_chunk_size: int = 1000, **kwargs
     ):

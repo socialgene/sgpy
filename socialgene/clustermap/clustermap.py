@@ -105,64 +105,68 @@ class Clustermap(ClustermapUuids, CompareProtein):
             default=np_json_converter,
         )
 
-    def add_cluster(self, sg_object):
-        for assembly_k, assembly_v in sg_object.assemblies.items():
-            _loci = []
-            for locus_k, locus_v in assembly_v.loci.items():
-                _genes = []
-                _gene_starts = []
-                _gene_ends = []
-                for feature in locus_v.features:
-                    if feature.feature_is_protein():
-                        protein_key = self.build_protein_key(
-                            assembly_key=assembly_k,
-                            locus_key=locus_k,
-                            locus_value=feature.protein_hash,
-                        )
-                        # Keep track of {protein: protein_key}
-                        if feature.protein_hash not in self.prot_loc:
-                            self.prot_loc[feature.protein_hash] = []
-                        self.prot_loc[feature.protein_hash].append(protein_key)
-                        _genes.append(
-                            {
-                                "uid": self.uuid_dict.get(protein_key),
-                                "label": sg_object.proteins[
+    def _add_loci(self, assembly_key, sg_object):
+        _loci = []
+        assembly_v = sg_object.assemblies[assembly_key]
+        for locus_k, locus_v in assembly_v.loci.items():
+            _genes = []
+            _gene_starts = []
+            _gene_ends = []
+            for feature in locus_v.features:
+                if feature.feature_is_protein():
+                    protein_key = self.build_protein_key(
+                        assembly_key=assembly_key,
+                        locus_key=locus_k,
+                        locus_value=feature.protein_hash,
+                    )
+                    # Keep track of {protein: protein_key}
+                    if feature.protein_hash not in self.prot_loc:
+                        self.prot_loc[feature.protein_hash] = []
+                    self.prot_loc[feature.protein_hash].append(protein_key)
+                    _genes.append(
+                        {
+                            "uid": self.uuid_dict.get(protein_key),
+                            "label": sg_object.proteins[
+                                feature.protein_hash
+                            ].external_protein_id,
+                            "names": {
+                                "name": sg_object.proteins[
                                     feature.protein_hash
                                 ].external_protein_id,
-                                "names": {
-                                    "name": sg_object.proteins[
-                                        feature.protein_hash
-                                    ].external_protein_id,
-                                    "description": sg_object.proteins[
-                                        feature.protein_hash
-                                    ].description,
-                                },
-                                "start": feature.start,
-                                "end": feature.end,
-                                "strand": feature.strand,
-                            }
-                        )
-                        _gene_starts.append(feature.start)
-                        _gene_ends.append(feature.end)
-                if not _gene_starts:
-                    # stop here if no genes
-                    break
-                _loci.append(
-                    {
-                        "uid": self.uuid_dict.get(locus_k),
-                        "name": locus_k,
-                        "start": min(_gene_starts),
-                        "end": max(_gene_ends),
-                        "genes": _genes,
-                    }
-                )
-            self.clusters.append(
+                                "description": sg_object.proteins[
+                                    feature.protein_hash
+                                ].description,
+                            },
+                            "start": feature.start,
+                            "end": feature.end,
+                            "strand": feature.strand,
+                        }
+                    )
+                    _gene_starts.append(feature.start)
+                    _gene_ends.append(feature.end)
+            if not _gene_starts:
+                # stop here if no genes
+                break
+            _loci.append(
                 {
-                    "uid": self.uuid_dict.get(assembly_k),
-                    "name": assembly_k,
-                    "loci": _loci,
+                    "uid": self.uuid_dict.get(locus_k),
+                    "name": locus_k,
+                    "start": min(_gene_starts),
+                    "end": max(_gene_ends),
+                    "genes": _genes,
                 }
             )
+        self.clusters.append(
+            {
+                "uid": self.uuid_dict.get(assembly_key),
+                "name": assembly_key,
+                "loci": _loci,
+            }
+        )
+
+    def add_cluster(self, sg_object):
+        for assembly_key in sg_object.assemblies.keys():
+            self._add_loci(assembly_key=assembly_key, sg_object=sg_object)
 
     def add_groups(self, sg_object, cutoff: int = 0):
         # pandas explanaton- group pandas df and return as dict = {query:[target, target, target]}

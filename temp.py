@@ -148,7 +148,7 @@ input_protein_domain_df=input_protein_domain_df.head(5)
 # Find DB proteins that match the input proteins
 ########################################
 
-def find_sim_protein(protein=sg_object.proteins['M-XQN-LZbGTFgj0rp2dFnIsF9bQm9chC']):
+def find_sim_protein(protein):
     # This could be done for the whole BGC at once, but is done protein by protein to be more atomic
     dv = list(set(protein.domain_vector))[0:3]
     with GraphDriver() as db:
