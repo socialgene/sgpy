@@ -1,4 +1,4 @@
-from itertools import combinations
+from itertools import combinations_with_replacement
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
@@ -115,7 +115,9 @@ class CompareProtein(Neo4jQuery):
                     result_list=self.protein_comparison,
                     result=[
                         _mod_return(i1=i1, i2=i2)
-                        for i1, i2 in combinations(self.proteins.items(), r=2)
+                        for i1, i2 in combinations_with_replacement(
+                            self.proteins.items(), r=2
+                        )
                     ],
                     append=append,
                 )
@@ -132,7 +134,8 @@ class CompareProtein(Neo4jQuery):
                     append_or_not(
                         result_list=self.protein_comparison,
                         result=p.starmap(
-                            _mod_return, combinations(self.proteins.items(), r=2)
+                            _mod_return,
+                            combinations_with_replacement(self.proteins.items(), r=2),
                         ),
                         append=append,
                     )

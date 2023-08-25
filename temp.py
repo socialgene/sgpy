@@ -15,8 +15,8 @@ from socialgene.scoring.search import (
 from rich.progress import Progress
 
 
-mibig_id = "BGC0001848"
-gbk_path = f"/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0000001.gbk"
+mibig_id = "BGC0000001"
+gbk_path = f"/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/{mibig_id}.gbk"
 
 hmm_dir = (
     "/home/chase/Documents/socialgene_data/streptomyces/socialgene_per_run/hmm_cache"
@@ -49,6 +49,7 @@ sg_object.parse(gbk_path)
 # fragile implementation; add string input BGC id to keep track/separate input BGC from those added to class later
 input_bgc_name = list(sg_object.assemblies.keys())[0]
 sg_object.assemblies[f"socialgene_query_{input_bgc_name}"] = sg_object.assemblies.pop(input_bgc_name)
+sg_object.assemblies[f"socialgene_query_{input_bgc_name}"].id=f"socialgene_query_{input_bgc_name}"
 
 # Annotate input BGC proteins with HMM models using external hmmscan
 sg_object.annotate(
@@ -124,8 +125,8 @@ sg_res_object = sg_object
 with Progress(transient=True) as pg:
     task = pg.add_task("Progress...", total=len(bro2))
     for result in bro2:
-        sg_res_object.fill_given_locus_range(
-            locus_uid=result[0], start=result[1] - 10000, end=result[2] + 10000
+        sg_object.fill_given_locus_range(
+            locus_uid=result[0], start=result[1] - 100, end=result[2] + 100
         )
         pg.update(task, advance=1)
 
@@ -133,10 +134,32 @@ sg_res_object.protein_comparison = []
 sg_res_object.compare_proteins(append=True, cpus=20)
 sg_res_object.protein_comparison_to_df()
 sg_res_object.protein_comparison = sg_res_object.protein_comparison[
-    sg_res_object.protein_comparison.jaccard > 0.2
+    sg_res_object.protein_comparison.mod_score >1.4
 ]
 
 
+import json
+
+
+
+a=Clustermap()
+
+z=a.doit(sg_object, groupdict=groupdict, group_dict_info=group_dict_info, assembly_order=list(sg_object.assemblies.keys()))
+
+
+with open("/home/chase/Downloads/ttt/tempppp/clinker/clinker/plot/data.json", "w") as outfile:
+    json.dump(z, outfile)
+
+
+
+
+
+
+
+########################################################################################################################
+############################################################
+############################################################
+############################################################
 cm_object = Clustermap()
 cm_object.create_clustermap_uuids(sg_object=sg_res_object)
 cm_object.add_cluster(sg_object=sg_res_object)

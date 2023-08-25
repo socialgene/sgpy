@@ -636,10 +636,11 @@ class Locus:
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
-    __slots__ = ["loci", "taxid", "info"]
+    __slots__ = ["loci", "taxid", "info", "id"]
 
-    def __init__(self):
+    def __init__(self, id):
         super().__init__()
+        self.id = id
         self.loci = {}
         self.taxid = None
         self.info = self.create_source_key_dict()
@@ -714,6 +715,6 @@ class Molbio:
         if id is None:
             id = str(uuid4())
         if id not in self.assemblies:
-            self.assemblies[id] = Assembly()
+            self.assemblies[id] = Assembly(id)
         else:
             log.debug(f"{id} already present")
