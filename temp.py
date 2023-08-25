@@ -14,21 +14,20 @@ from socialgene.scoring.search import (
 )
 from rich.progress import Progress
 
-
-mibig_id = "BGC0000001"
+mibig_id = "BGC0001850"
 gbk_path = f"/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/{mibig_id}.gbk"
 
-hmm_dir = (
-    "/home/chase/Documents/socialgene_data/streptomyces/socialgene_per_run/hmm_cache"
-)
+# hmm_dir = (
+#     "/home/chase/Documents/socialgene_data/streptomyces/socialgene_per_run/hmm_cache"
+# )
 
-# hmm_dir='/home/chase/Downloads/ttt/hmm'
+hmm_dir = "/home/chase/Downloads/ttt/hmm"
 
 
 # hmm file with cutoffs
-h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm.gz")
+h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm")
 # hmm file without cutoffs
-h2 = Path(hmm_dir, "socialgene_nr_hmms_file_without_cutoffs_1_of_1.hmm.gz")
+h2 = Path(hmm_dir, "socialgene_nr_hmms_file_without_cutoffs_1_of_1.hmm")
 
 ########################################
 # Setup hmmsearch
@@ -48,8 +47,13 @@ sg_object.parse(gbk_path)
 
 # fragile implementation; add string input BGC id to keep track/separate input BGC from those added to class later
 input_bgc_name = list(sg_object.assemblies.keys())[0]
-sg_object.assemblies[f"socialgene_query_{input_bgc_name}"] = sg_object.assemblies.pop(input_bgc_name)
-sg_object.assemblies[f"socialgene_query_{input_bgc_name}"].id=f"socialgene_query_{input_bgc_name}"
+modified_input_bgc_name = f"socialgene_query_{input_bgc_name}"
+
+# change input assembly name
+sg_object.assemblies[modified_input_bgc_name] = sg_object.assemblies.pop(input_bgc_name)
+sg_object.assemblies[modified_input_bgc_name].id = modified_input_bgc_name
+
+input_bgc_nuc_id = list(sg_object.assemblies[modified_input_bgc_name].loci.keys())[0]
 
 # Annotate input BGC proteins with HMM models using external hmmscan
 sg_object.annotate(
@@ -64,12 +68,9 @@ if not check_for_hmm_outdegree():
     set_hmm_outdegree()
 
 
-input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=1, max_out=50)
+input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=1, max_out=100)
 
 initial_search_results = search_for_similar_proteins(input_protein_domain_df, sg_object)
-
-
-
 
 
 prioritized_nucleotide_seqs = count_matches_per_nucleotide_sequence(
@@ -79,10 +80,10 @@ prioritized_nucleotide_seqs = count_matches_per_nucleotide_sequence(
 
 prioritized_nucleotide_seqs = prioritized_nucleotide_seqs[
     prioritized_nucleotide_seqs.count_of_matched_inputs
-    >= len(input_protein_domain_df.query_prot_uid) * 0.5
+    >= len(input_protein_domain_df) * 0.5
 ]
 
-bro = []
+intermediate_df_1 = []
 
 with Progress(transient=True) as pg:
     task = pg.add_task(
@@ -95,91 +96,77 @@ with Progress(transient=True) as pg:
     ].groupby(["nuc_uid"]):
         result = prioritize_cluster_windows(group, return_df_not_tuple=True)
         if isinstance(result, pd.DataFrame):
-            bro.append(result)
+            intermediate_df_1.append(result)
         pg.update(task, advance=1)
 
 
-bro = pd.concat(bro)
+intermediate_df_1 = pd.concat(intermediate_df_1)
 
-a = count_matches_per_nucleotide_sequence(bro)
-a = a[a.count_of_matched_inputs > 1]
-
-bro2 = []
-
-with Progress(transient=True) as pg:
-    task = pg.add_task("Processing initial matches...", total=len(a))
-    for name, group in bro[bro["nuc_uid"].isin(list(a.nucleotide_uid))].groupby(
-        ["nuc_uid"]
-    ):
-        result = prioritize_cluster_windows(group)
-        if result:
-            bro2.append(result)
-        pg.update(task, advance=1)
-
-
-groupdict = bro.groupby('query_prot_uid')['target_prot_uid'].apply(list).to_dict()
-
-sg_res_object = sg_object
-
-
-with Progress(transient=True) as pg:
-    task = pg.add_task("Progress...", total=len(bro2))
-    for result in bro2:
-        sg_object.fill_given_locus_range(
-            locus_uid=result[0], start=result[1] - 100, end=result[2] + 100
-        )
-        pg.update(task, advance=1)
-
-sg_res_object.protein_comparison = []
-sg_res_object.compare_proteins(append=True, cpus=20)
-sg_res_object.protein_comparison_to_df()
-sg_res_object.protein_comparison = sg_res_object.protein_comparison[
-    sg_res_object.protein_comparison.mod_score >1.4
+df_nucuid_n_matches = count_matches_per_nucleotide_sequence(intermediate_df_1)
+df_nucuid_n_matches = df_nucuid_n_matches[
+    df_nucuid_n_matches.count_of_matched_inputs > len(input_protein_domain_df) * 0.5
 ]
 
+intermediate_df_2 = []
 
-import json
-
-
-
-a=Clustermap()
-
-z=a.doit(sg_object, groupdict=groupdict, group_dict_info=group_dict_info, assembly_order=list(sg_object.assemblies.keys()))
-
-
-with open("/home/chase/Downloads/ttt/tempppp/clinker/clinker/plot/data.json", "w") as outfile:
-    json.dump(z, outfile)
-
+with Progress(transient=True) as pg:
+    task = pg.add_task("Processing initial matches...", total=len(df_nucuid_n_matches))
+    for name, group in intermediate_df_1[
+        intermediate_df_1["nuc_uid"].isin(list(df_nucuid_n_matches.nucleotide_uid))
+    ].groupby(["nuc_uid"]):
+        result = prioritize_cluster_windows(group)
+        if result:
+            intermediate_df_2.append(result)
+        pg.update(task, advance=1)
 
 
-
-
-
-
-########################################################################################################################
-############################################################
-############################################################
-############################################################
-cm_object = Clustermap()
-cm_object.create_clustermap_uuids(sg_object=sg_res_object)
-cm_object.add_cluster(sg_object=sg_res_object)
-cm_object.add_groups(sg_object=sg_res_object, cutoff=0.8)
-cm_object.add_links(sg_object=sg_res_object)
-cm_object.write_clustermap("/home/chase/Downloads/ttt/data.json")
-
-
-input_group_data = (
-    initial_search_results.groupby("query_prot_uid")["target_prot_uid"]
-    .apply(set)
-    .reset_index()
+groupdict = (
+    intermediate_df_1.groupby("query_prot_uid")["target_prot_uid"].apply(list).to_dict()
 )
 
 
-input_group_data = {
-    row["query_prot_uid"]: list(row["target_prot_uid"])
-    for index, row in input_group_data.iterrows()
+with Progress(transient=True) as pg:
+    task = pg.add_task("Progress...", total=len(intermediate_df_2))
+    for result in intermediate_df_2:
+        sg_object.fill_given_locus_range(
+            locus_uid=result[0], start=result[1] - 10000, end=result[2] + 10000
+        )
+        pg.update(task, advance=1)
+
+sg_object.protein_comparison = []
+sg_object.compare_proteins(append=True, cpus=20)
+sg_object.protein_comparison_to_df()
+sg_object.protein_comparison = sg_object.protein_comparison[
+    sg_object.protein_comparison.mod_score > 1.4
+]
+
+
+group_dict_info = {
+    f.protein_hash: (f.protein_id, f.description)
+    for f in sg_object.assemblies[modified_input_bgc_name]
+    .loci[input_bgc_nuc_id]
+    .features
 }
 
-input_group_data
 
-AXO35216.1
+# get {nucleotide_hash: assembly_uid}
+zz = {
+    sg_object._create_internal_locus_id(k, k2): k
+    for k, v in sg_object.assemblies.items()
+    for k2 in v.loci.keys()
+}
+
+order1 = [zz[i] for i in list(df_nucuid_n_matches.nucleotide_uid) if i in zz]
+
+order2 = [modified_input_bgc_name] + order1
+
+
+cmap = Clustermap()
+
+cmap.write(
+    sg_object,
+    groupdict=groupdict,
+    group_dict_info=group_dict_info,
+    assembly_order=order2,
+    outpath="/home/chase/Downloads/ttt/tempppp/clinker/clinker/plot/data.json",
+)

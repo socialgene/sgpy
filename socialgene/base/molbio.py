@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import socialgene.hashing.hashing as hasher
 from socialgene.config import env_vars
+from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
 
@@ -633,17 +634,52 @@ class Locus:
         return OrderedDict({i: None for i in SOURCE_KEYS})
 
 
+class Taxonomy:
+    "Class is a reserved word so just underscore all ranks to be consistent"
+    __slots__ = [
+        "_species",
+        "_genus",
+        "_family",
+        "_order",
+        "_class",
+        "_phylum",
+        "_clade",
+        "_superkingdom",
+    ]
+
+    def __init__(
+        self,
+        _species: str = None,
+        _genus: str = None,
+        _family: str = None,
+        _order: str = None,
+        _class: str = None,
+        _phylum: str = None,
+        _clade: str = None,
+        _superkingdom: str = None,
+        **kwargs,
+    ) -> None:
+        self._species = _species
+        self._genus = _genus
+        self._family = _family
+        self._order = _order
+        self._class = _class
+        self._phylum = _phylum
+        self._clade = _clade
+        self._superkingdom = _superkingdom
+
+
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
-    __slots__ = ["loci", "taxid", "info", "id"]
+    __slots__ = ["loci", "taxid", "info", "id", "taxonomy"]
 
     def __init__(self, id):
         super().__init__()
         self.id = id
         self.loci = {}
         self.taxid = None
-        self.info = self.create_source_key_dict()
+        self.taxonomy = Taxonomy()
 
     @property
     def __dict__(self):
@@ -666,6 +702,23 @@ class Assembly:
 
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in SOURCE_KEYS})
+
+    def fill_taxonomy_from_db(self):
+        """Relies on self.taxid"""
+        if not self.taxid:
+            log.info(f"Assembly {self.id} has no assigned taxid")
+        else:
+            with GraphDriver() as db:
+                res = db.run(
+                    """
+                    MATCH (t2:taxid {uid:$taxid})-[:TAXON_PARENT*1..]->(t1:taxid)
+                    WHERE t1.rank in ["genus", "family", "order", "class", "phylum", "clade", "superkingdom"]
+                    WITH  apoc.map.fromLists([t2.rank],[t2.name]) as a, apoc.map.fromLists([t1.rank],[t1.name]) as b
+                    return  apoc.map.mergeList(collect(a)+collect(b)) as tax_dict
+                    """,
+                    taxid=str(self.taxid),
+                ).value()
+                self.taxonomy = Taxonomy(*res[0])
 
 
 class Molbio:
