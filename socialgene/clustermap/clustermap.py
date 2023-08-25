@@ -26,6 +26,7 @@ from socialgene.utils.np_json_converter import np_json_converter
 
 
 class UuidCount:
+
     """Holds UUIDs for clustermap.js object"""
 
     __slots__ = [
@@ -44,8 +45,6 @@ class ClustermapUuids(UuidCount):
     Returns:
         _type_: _description_
     """
-
-    # track = UuidCount()  # track uuids across all instances of ClustermapUuids()
 
     def __init__(
         self,
@@ -169,58 +168,40 @@ class Clustermap(ClustermapUuids, CompareProtein):
             self._add_loci(assembly_key=assembly_key, sg_object=sg_object)
 
     def add_groups(self, sg_object, cutoff: int = 0):
-        # pandas explanaton- group pandas df and return as dict = {query:[target, target, target]}
-        sg_object.protein_comparison_to_df()
-        for k, v in (
-            sg_object.protein_comparison.loc[
-                sg_object.protein_comparison["mod_score"] > cutoff
-            ]
-            .groupby("query", group_keys=False)["target"]
-            .apply(list)
-            .to_dict()
-            .items()
-        ):
-            # one list containing query and target protein hash_ids
-            v.append(k)
-            # add query protein
-            gene_list = set()
-            # see below for explanation of this list comprehension
-            temp = [val for key, val in self.uuid_dict.items() if key.endswith(k)]
-            for i in temp:
-                gene_list.add(i)
-            del temp
-            # add matched proteins
-            for i in set(v):
-                # to deal with nr proteins having unique ids for clustermap,
-                # the proteins uid keys are concatenated ids for assembly, locus, protein
-                # so we have to find all uuid_dict keys that end with the protein hash
-                # then those uuids to the list
-                for ii in [
-                    val for key, val in self.uuid_dict.items() if key.endswith(i)
-                ]:
-                    gene_list.add(ii)
-            # label is the query protein
-            # genes are match proteins + query protein
-            if k in sg_object.proteins:
-                if (
-                    sg_object.proteins[k].external_protein_id is not None
-                    and sg_object.proteins[k].description is not None
-                ):
-                    label = f"{sg_object.proteins[k].external_protein_id}__{sg_object.proteins[k].description}"
-                elif sg_object.proteins[k].external_protein_id is not None:
-                    label = sg_object.proteins[k].external_protein_id
-                elif sg_object.proteins[k].description is not None:
-                    label = sg_object.proteins[k].description
-                else:
-                    label = "None"
-                self.groups.append(
-                    {
-                        "uid": str(uuid.uuid4()),
-                        "label": label,
-                        "genes": list(gene_list),
-                        "hidden": False,
-                    }
-                )
+        temp = [val for key, val in self.uuid_dict.items() if key.endswith(k)]
+        for i in temp:
+            gene_list.add(i)
+        del temp
+        # add matched proteins
+        for i in set(v):
+            # to deal with nr proteins having unique ids for clustermap,
+            # the proteins uid keys are concatenated ids for assembly, locus, protein
+            # so we have to find all uuid_dict keys that end with the protein hash
+            # then those uuids to the list
+            for ii in [val for key, val in self.uuid_dict.items() if key.endswith(i)]:
+                gene_list.add(ii)
+        # label is the query protein
+        # genes are match proteins + query protein
+        if k in sg_object.proteins:
+            if (
+                sg_object.proteins[k].external_protein_id is not None
+                and sg_object.proteins[k].description is not None
+            ):
+                label = f"{sg_object.proteins[k].external_protein_id}__{sg_object.proteins[k].description}"
+            elif sg_object.proteins[k].external_protein_id is not None:
+                label = sg_object.proteins[k].external_protein_id
+            elif sg_object.proteins[k].description is not None:
+                label = sg_object.proteins[k].description
+            else:
+                label = "None"
+            self.groups.append(
+                {
+                    "uid": str(uuid.uuid4()),
+                    "label": label,
+                    "genes": list(gene_list),
+                    "hidden": False,
+                }
+            )
 
     def add_links(self, sg_object):
         sg_object.protein_comparison_to_df()

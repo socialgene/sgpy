@@ -467,6 +467,7 @@ class Feature(Location):
     """Container class for describing a feature on a locus"""
 
     __slots__ = [
+        "parent_object",
         "protein_hash",
         "protein_id",
         "type",
@@ -488,6 +489,7 @@ class Feature(Location):
 
     def __init__(
         self,
+        parent_object=None,
         protein_hash: str = None,
         protein_id: str = None,
         type: str = None,
@@ -547,6 +549,7 @@ class Feature(Location):
           incomplete: A boolean flag indicating whether the feature is incomplete.
         """
         super().__init__(**kwargs)
+        self.parent_object = parent_object
         self.protein_hash = protein_hash
         self.protein_id = protein_id
         self.type = type
@@ -605,10 +608,11 @@ class Feature(Location):
 class Locus:
     """Container holding a set() of genomic features"""
 
-    __slots__ = ["features", "info"]
+    __slots__ = ["parent_object", "features", "info"]
 
-    def __init__(self):
+    def __init__(self, parent_object=None):
         super().__init__()
+        self.parent_object = parent_object
         self.features = set()
         self.info = self.create_source_key_dict()
 
@@ -618,7 +622,7 @@ class Locus:
 
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
-        self.features.add(Feature(**kwargs))
+        self.features.add(Feature(parent_object=self, **kwargs))
 
     def sort_by_middle(self):
         """Sorts features by mid-coordinate of each feature"""
@@ -649,7 +653,7 @@ class Assembly:
         if id is None:
             id = str(uuid4())
         if id not in self.loci:
-            self.loci[id] = Locus()
+            self.loci[id] = Locus(parent_object=self)
 
     def get_min_maxcoordinates(self):
         # TODO: broken

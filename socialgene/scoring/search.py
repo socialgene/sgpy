@@ -1,14 +1,5 @@
-from collections import defaultdict
 from datetime import datetime
-from socialgene.clustermap.clustermap import Clustermap
-from socialgene.hmm.hmmer import HMMER
-from socialgene.base.socialgene import SocialGene
-from rich import inspect
-from pathlib import Path
 from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.utils.logging import log
-import pandas as pd
-import numpy as np
 from rich.progress import (
     Progress,
     MofNCompleteColumn,
@@ -19,6 +10,7 @@ from rich.progress import (
     TextColumn,
 )
 import logging
+import pandas as pd
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.INFO)
@@ -54,15 +46,14 @@ def check_for_hmm_outdegree():
 
 def set_hmm_outdegree():
     """
-    Writes the (h1:hmm)-[r:ANNOTATES]->() outdegree onto hmm nodes
+    Writes outdegree onto hmm nodes (not just [:ANNOTATES])
     """
     with GraphDriver() as db:
         _ = db.run(
             """
-           MATCH (h1:hmm)-[r:ANNOTATES]->()
-           WITH h1, count(r) as deg
-           SET h1.outdegree = deg
-         """
+            MATCH (h1: hmm)
+            SET h1.outdegree = apoc.node.degree(h1)
+            """
         )
 
 
@@ -152,6 +143,7 @@ def _find_sim_protein(protein):
     WITH input_protein_domains, prot1, collect(DISTINCT(h1.uid)) as target_uids
     WHERE apoc.coll.isEqualCollection(input_protein_domains, target_uids)
     MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
+    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)
     RETURN DISTINCT n1.uid as nuc_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
              """,
             doms=dv,
@@ -260,119 +252,3 @@ def count_matches_per_nucleotide_sequence(df):
             },
         )
     )
-
-    sg_object.annotate(use_neo4j_precalc=True)
-
-
-########################################
-# Setup hmmsearch
-########################################
-h1 = Path(
-    "/home/chase/Documents/socialgene_data/mibig_genomes/socialgene_per_run/hmm_cache/socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm.gz"
-)
-h2 = Path(
-    "/home/chase/Documents/socialgene_data/mibig_genomes/socialgene_per_run/hmm_cache/socialgene_nr_hmms_file_without_cutoffs_1_of_1.hmm.gz"
-)
-
-h = HMMER()
-h.hmmpress(h1)
-h.hmmpress(h2)
-
-########################################
-# Read input BGC
-########################################
-
-sg_object = SocialGene()
-# sg_object.parse("/tmp/BGC0001848.gbk")
-sg_object.parse("/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001850.gbk")
-
-sg_object.annotate(
-    hmm_directory="/home/chase/Documents/socialgene_data/mibig_genomes/socialgene_per_run/hmm_cache",
-    use_neo4j_precalc=False,
-)
-
-########################################
-
-########################################
-if not check_for_hmm_outdegree():
-    set_hmm_outdegree()
-
-
-input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=1, max_out=50)
-
-initial_search_results = search_for_similar_proteins(input_protein_domain_df, sg_object)
-
-
-prioritized_nucleotide_seqs = count_matches_per_nucleotide_sequence(
-    initial_search_results
-)
-
-
-prioritized_nucleotide_seqs = prioritized_nucleotide_seqs[
-    prioritized_nucleotide_seqs.count_of_matched_inputs
-    >= len(input_protein_domain_df.query_prot_uid) * 0.5
-]
-
-bro = []
-
-with progress_bar as pg:
-    task = pg.add_task(
-        "Processing initial matches...", total=len(prioritized_nucleotide_seqs)
-    )
-    for name, group in initial_search_results[
-        initial_search_results["nuc_uid"].isin(
-            list(prioritized_nucleotide_seqs.nucleotide_uid)
-        )
-    ].groupby(["nuc_uid"]):
-        result = prioritize_cluster_windows(group, return_df_not_tuple=True)
-        if isinstance(result, pd.DataFrame):
-            bro.append(result)
-        pg.update(task, advance=1)
-
-
-bro = pd.concat(bro)
-
-a = count_matches_per_nucleotide_sequence(bro)
-a = a[a.count_of_matched_inputs > 1]
-
-bro2 = []
-
-with progress_bar as pg:
-    task = pg.add_task("Processing initial matches...", total=len(a))
-    for name, group in bro[bro["nuc_uid"].isin(list(a.nucleotide_uid))].groupby(
-        ["nuc_uid"]
-    ):
-        result = prioritize_cluster_windows(group)
-        if result:
-            bro2.append(result)
-        pg.update(task, advance=1)
-
-
-SocialGene()
-sg_res_object = sg_object
-
-
-with progress_bar as pg:
-    task = pg.add_task("Progress...", total=len(bro2))
-    for result in bro2:
-        sg_res_object.fill_given_locus_range(
-            locus_uid=result[0], start=result[1] - 10000, end=result[2] + 10000
-        )
-        pg.update(task, advance=1)
-
-sg_res_object.protein_comparison = []
-sg_res_object.compare_proteins(append=True, cpus=20)
-sg_res_object.protein_comparison_to_df()
-sg_res_object.protein_comparison = sg_res_object.protein_comparison[
-    sg_res_object.protein_comparison.jaccard > 0.8
-]
-
-
-cm_object = Clustermap()
-cm_object.create_clustermap_uuids(sg_object=sg_res_object)
-cm_object.add_cluster(sg_object=sg_res_object)
-cm_object.add_groups(sg_object=sg_res_object, cutoff=0.8)
-cm_object.add_links(sg_object=sg_res_object)
-cm_object.write_clustermap(
-    "/home/chase/Downloads/temp/clustermap.js-master/testing.json"
-)
