@@ -143,7 +143,7 @@ def _find_sim_protein(protein):
     WITH input_protein_domains, prot1, collect(DISTINCT(h1.uid)) as target_uids
     WHERE apoc.coll.isEqualCollection(input_protein_domains, target_uids)
     MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)
+    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
     RETURN DISTINCT n1.uid as nuc_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
              """,
             doms=dv,

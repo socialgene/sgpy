@@ -1,4 +1,4 @@
-from socialgene.clustermap.clustermap import Clustermap
+from socialgene.clustermap.old_clustermap import Clustermap
 from socialgene.hmm.hmmer import HMMER
 from socialgene.base.socialgene import SocialGene
 from pathlib import Path
@@ -95,7 +95,6 @@ class Clustermap(json.JSONEncoder):
         self.uid = 0
         # holds mapping between sg objects and clustermap uids
         self.uid_dict = {}
-
     def _get_uid(self, obj=None):
         self.uid += 1
         self.uid_dict[str(self.uid)] = obj
@@ -146,6 +145,7 @@ class Clustermap(json.JSONEncoder):
         for index, row in sg.protein_comparison.iterrows():
                 for query_uid in self._get_gene_uid_of_protein_hash(row.query):
                     for target_uid in self._get_gene_uid_of_protein_hash(row.target):
+                        # don't do self-links they mess up clustermap.js groups
                         if self.uid_dict[query_uid].parent_object != self.uid_dict[target_uid].parent_object:
                             res.append(
                                 {"uid":self._get_uid(),
@@ -161,8 +161,6 @@ class Clustermap(json.JSONEncoder):
                                 }
                                 # row["mod_score"] * 66 adjusts max mod score of 1.5 to ~100 because clustermap.js scale is to 100
                             )
-                        else:
-                            print("hiya")
         return res
 
 
@@ -170,7 +168,32 @@ class Clustermap(json.JSONEncoder):
 sg.protein_comparison.apply()
 
 
-group_dict_info={f.protein_hash:(f.protein_id, f.description) for f in sg_object.assemblies['socialgene_query_BGC0000001'].loci['BGC0000001'].features}
+group_dict_info={f.protein_hash:(f.protein_id, f.description) for f in sg_object.assemblies['socialgene_query_BGC0001848'].loci['BGC0001848'].features}
+
+
+
+# get {nucleotide_hash: assembly_uid}
+zz= {sg_object._create_internal_locus_id(k, k2):k for k,v in sg_object.assemblies.items() for k2 in v.loci.keys()}
+
+order1=[zz[i] for i in list(df_nucuid_n_matches.nucleotide_uid) if i in zz]
+
+order2 = ['socialgene_query_BGC0001848'] + order1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

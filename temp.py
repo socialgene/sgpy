@@ -14,7 +14,7 @@ from socialgene.scoring.search import (
 )
 from rich.progress import Progress
 
-mibig_id = "BGC0001850"
+mibig_id = "BGC0000002"
 gbk_path = f"/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/{mibig_id}.gbk"
 
 # hmm_dir = (
@@ -68,7 +68,7 @@ if not check_for_hmm_outdegree():
     set_hmm_outdegree()
 
 
-input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=1, max_out=100)
+input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=2, max_out=100)
 
 initial_search_results = search_for_similar_proteins(input_protein_domain_df, sg_object)
 

@@ -1,229 +1,131 @@
-import itertools
 import json
-import uuid
-
-from socialgene.base.compare_protein import CompareProtein
-from socialgene.utils.np_json_converter import np_json_converter
-
-# This code is meant to be used to turn a SocialGene object into json
-# that can be read by https://github.com/gamcil/clustermap.js
-
-# step 1: create uuids for everything that will go into clustermap
-# step 2: create clusters
-
-# done for any comparisons
-# step 3: create links
-# step 4: crete groups
-
-# should be generalized so other classes/methods can:
-# create a clustermap for a single socialgene object
-# create a clustermap for multiple socialgene objects
-# create a clustermap for comparative socialgene objects
-# add to existing clustermaps
+from socialgene.utils.logging import log
 
 
-# TODO: error, uid for protein must be assigned within locus because duplicates can exist in different/same loci
+class Clustermap:
+    def __init__(self):
+        self.uid = 0
+        # holds mapping between sg objects and clustermap uids
+        self.uid_dict = {}
 
+    def _get_uid(self, obj=None):
+        self.uid += 1
+        self.uid_dict[str(self.uid)] = obj
+        return str(self.uid)
 
-class UuidCount:
-
-    """Holds UUIDs for clustermap.js object"""
-
-    __slots__ = [
-        "uuid_counter",
-    ]
-
-    def __init__(
-        self,
-    ):
-        self.uuid_counter = 0
-
-
-class ClustermapUuids(UuidCount):
-    """For flexibility `sg_object` was purposefully provided as an argument to each function and not as a class variable
-
-    Returns:
-        _type_: _description_
-    """
-
-    def __init__(
-        self,
-    ):
-        super(ClustermapUuids, self).__init__()
-        self.uuid_dict = {}
-
-    @staticmethod
-    def build_protein_key(assembly_key, locus_key, locus_value):
-        return f"{assembly_key}_{locus_key}_{locus_value}"
-
-    def create_clustermap_uuids(self, sg_object):
-        # create protein ids per-assembly/locus to handle nr proteins (clustermap ids must be unique even for nr)
-        for assembly_key, assembly_values in sg_object.assemblies.items():
-            # create uuid for assebmbly id
-            if assembly_key not in self.uuid_dict:
-                self.uuid_dict[assembly_key] = f"uuid_{str(self.uuid_counter)}"
-                self.uuid_counter += 1
-            for loci_key, loci_value in assembly_values.loci.items():
-                # create uuid for locus id
-                if loci_key not in self.uuid_dict:
-                    self.uuid_dict[loci_key] = f"uuid_{str(self.uuid_counter)}"
-                    self.uuid_counter += 1
-                # create uuid for protein (id)
-                for feature in loci_value.features:
-                    protein_key = self.build_protein_key(
-                        assembly_key=assembly_key,
-                        locus_key=loci_key,
-                        locus_value=feature.protein_hash,
-                    )
-                    if protein_key not in self.uuid_dict:
-                        self.uuid_dict[protein_key] = f"uuid_{str(self.uuid_counter)}"
-                        self.uuid_counter += 1
-
-
-class Clustermap(ClustermapUuids, CompareProtein):
-    def __init__(self, primary_assembly=None):
-        super().__init__()
-        self.primary_assembly = primary_assembly
-        self.clusters = []
-        self.groups = []
-        self.links = []
-        self.prot_loc = {}
-
-    def write_clustermap(self, outpath: str = None):
-        with open(outpath, "w") as handle:
-            handle.write(self.dumps())
-
-    def dumps(self):
-        # np_json_converter() to fix: TypeError: Object of type int64 is not JSON serializable
-        return json.dumps(
-            {
-                "clusters": self.clusters,
-                "links": self.links,
-                "groups": self.groups,
+    def _feature(self, feature_obj):
+        return {
+            "uid": self._get_uid(obj=feature_obj),
+            "label": feature_obj.protein_id,
+            "names": {
+                "name": feature_obj.protein_id,
+                "description": feature_obj.description,
             },
-            default=np_json_converter,
+            "start": feature_obj.start,
+            "end": feature_obj.end,
+            "strand": feature_obj.strand,
+        }
+
+    def _locus(self, locus_name, locus_obj):
+        return {
+            "uid": self._get_uid(obj=locus_obj),
+            "name": locus_name,
+            "genes": [self._feature(feature_obj) for feature_obj in locus_obj.features],
+            "start": min([i.start for i in locus_obj.features]),
+            "end": max([i.end for i in locus_obj.features]),
+        }
+
+    def _loci(self, assembly_obj):
+        return [
+            self._locus(locus_name=k, locus_obj=v) for k, v in assembly_obj.loci.items()
+        ]
+
+    def _clusters(self, sg, assembly_order):
+        log.info("Creating clustermap.js clusters")
+        return {
+            "clusters": [
+                {
+                    "uid": self._get_uid(obj=sg.assemblies[k]),
+                    "name": sg.assemblies[k].id,
+                    "loci": self._loci(sg.assemblies[k]),
+                }
+                for k in assembly_order
+            ]
+        }
+
+    def _get_gene_uid_of_protein_hash(self, protein_hash):
+        return [
+            k
+            for k, v in self.uid_dict.items()
+            if type(v).__name__ == "Feature" and v.protein_hash == protein_hash
+        ]
+
+    def _flatten_list(self, x):
+        return [item for row in x for item in row]
+
+    def _create_group(self, group_dict_info, k, v):
+        return {
+            "uid": self._get_uid(obj=k),
+            "label": group_dict_info[k][1],
+            "genes": self._flatten_list(
+                [self._get_gene_uid_of_protein_hash(i) for i in v]
+            ),
+        }
+
+    def _create_groups_json(self, groupdict, group_dict_info):
+        log.info("Creating clustermap.js groups")
+        return {
+            "groups": [
+                self._create_group(group_dict_info, k, v) for k, v in groupdict.items()
+            ]
+        }
+
+    def doit(self, sg, groupdict, group_dict_info, assembly_order):
+        return (
+            self._clusters(sg, assembly_order)
+            | self._create_groups_json(groupdict, group_dict_info)
+            | {"links": self._links(sg)}
         )
 
-    def _add_loci(self, assembly_key, sg_object):
-        _loci = []
-        assembly_v = sg_object.assemblies[assembly_key]
-        for locus_k, locus_v in assembly_v.loci.items():
-            _genes = []
-            _gene_starts = []
-            _gene_ends = []
-            for feature in locus_v.features:
-                if feature.feature_is_protein():
-                    protein_key = self.build_protein_key(
-                        assembly_key=assembly_key,
-                        locus_key=locus_k,
-                        locus_value=feature.protein_hash,
-                    )
-                    # Keep track of {protein: protein_key}
-                    if feature.protein_hash not in self.prot_loc:
-                        self.prot_loc[feature.protein_hash] = []
-                    self.prot_loc[feature.protein_hash].append(protein_key)
-                    _genes.append(
-                        {
-                            "uid": self.uuid_dict.get(protein_key),
-                            "label": sg_object.proteins[
-                                feature.protein_hash
-                            ].external_protein_id,
-                            "names": {
-                                "name": sg_object.proteins[
-                                    feature.protein_hash
-                                ].external_protein_id,
-                                "description": sg_object.proteins[
-                                    feature.protein_hash
-                                ].description,
-                            },
-                            "start": feature.start,
-                            "end": feature.end,
-                            "strand": feature.strand,
-                        }
-                    )
-                    _gene_starts.append(feature.start)
-                    _gene_ends.append(feature.end)
-            if not _gene_starts:
-                # stop here if no genes
-                break
-            _loci.append(
-                {
-                    "uid": self.uuid_dict.get(locus_k),
-                    "name": locus_k,
-                    "start": min(_gene_starts),
-                    "end": max(_gene_ends),
-                    "genes": _genes,
-                }
-            )
-        self.clusters.append(
-            {
-                "uid": self.uuid_dict.get(assembly_key),
-                "name": assembly_key,
-                "loci": _loci,
-            }
-        )
-
-    def add_cluster(self, sg_object):
-        for assembly_key in sg_object.assemblies.keys():
-            self._add_loci(assembly_key=assembly_key, sg_object=sg_object)
-
-    def add_groups(self, sg_object, cutoff: int = 0):
-        temp = [val for key, val in self.uuid_dict.items() if key.endswith(k)]
-        for i in temp:
-            gene_list.add(i)
-        del temp
-        # add matched proteins
-        for i in set(v):
-            # to deal with nr proteins having unique ids for clustermap,
-            # the proteins uid keys are concatenated ids for assembly, locus, protein
-            # so we have to find all uuid_dict keys that end with the protein hash
-            # then those uuids to the list
-            for ii in [val for key, val in self.uuid_dict.items() if key.endswith(i)]:
-                gene_list.add(ii)
-        # label is the query protein
-        # genes are match proteins + query protein
-        if k in sg_object.proteins:
-            if (
-                sg_object.proteins[k].external_protein_id is not None
-                and sg_object.proteins[k].description is not None
-            ):
-                label = f"{sg_object.proteins[k].external_protein_id}__{sg_object.proteins[k].description}"
-            elif sg_object.proteins[k].external_protein_id is not None:
-                label = sg_object.proteins[k].external_protein_id
-            elif sg_object.proteins[k].description is not None:
-                label = sg_object.proteins[k].description
-            else:
-                label = "None"
-            self.groups.append(
-                {
-                    "uid": str(uuid.uuid4()),
-                    "label": label,
-                    "genes": list(gene_list),
-                    "hidden": False,
-                }
-            )
-
-    def add_links(self, sg_object):
-        sg_object.protein_comparison_to_df()
+    def _links(self, sg):
+        log.info("Creating clustermap.js links")
+        sg.protein_comparison_to_df()
+        res = list()
         # ugly because it first filters the protein_comparison table for proteins present in the sg_object
-        for index, row in sg_object.protein_comparison.iterrows():
-            if row[0] in self.prot_loc and row[1] in self.prot_loc:
-                for x, y in itertools.product(
-                    self.prot_loc[row[0]],
-                    self.prot_loc[row[1]],
-                ):
-                    self.links.append(
-                        {
-                            "uid": str(uuid.uuid4()),
-                            "query": {
-                                "uid": self.uuid_dict.get(x),
-                                "name": row[0],
-                            },
-                            "target": {
-                                "uid": self.uuid_dict.get(y),
-                                "name": row[1],
-                            },
-                            "identity": row["mod_score"] * 66,
-                        }
-                        # row["mod_score"] * 66 adjusts max mod score of 1.5 to ~100
-                    )
+        for index, row in sg.protein_comparison.iterrows():
+            for query_uid in self._get_gene_uid_of_protein_hash(row.query):
+                for target_uid in self._get_gene_uid_of_protein_hash(row.target):
+                    # don't do self-links they mess up clustermap.js groups
+                    if (
+                        self.uid_dict[query_uid].parent_object
+                        != self.uid_dict[target_uid].parent_object
+                    ):
+                        res.append(
+                            {
+                                "uid": self._get_uid(),
+                                "query": {
+                                    "uid": query_uid,
+                                    "name": self._get_uid(),
+                                },
+                                "target": {
+                                    "uid": target_uid,
+                                    "name": self._get_uid(),
+                                },
+                                "identity": row.mod_score * 66,
+                            }
+                            # row["mod_score"] * 66 adjusts max mod score of 1.5 to ~100 because clustermap.js scale is to 100
+                        )
+        return res
+
+    def write(self, sg_object, groupdict, group_dict_info, assembly_order, outpath):
+        log.info(f"Writing clustermap.js output to: {outpath}")
+        with open(outpath, "w") as outfile:
+            json.dump(
+                self.doit(
+                    sg_object,
+                    groupdict=groupdict,
+                    group_dict_info=group_dict_info,
+                    assembly_order=assembly_order,
+                ),
+                outfile,
+            )
