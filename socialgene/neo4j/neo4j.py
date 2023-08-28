@@ -68,20 +68,20 @@ class GraphDriver(object):
     def __init__(self) -> None:
         self.session = None
         # self.spinner handled by class' context management protocol
-        self.spinner = console.status(
-            "Executing Neo4j transaction", spinner="bouncingBar"
-        )
+        # self.spinner = console.status(
+        #     "Executing Neo4j transaction", spinner="bouncingBar"
+        # )
 
     def check_connection(self):
         self.driver.verify_connectivity()
 
     def __enter__(self):
-        self.spinner.start()
+        # self.spinner.start()
         self.session = self.driver.session()
         return self.session
 
     def __exit__(self, *args, **kwargs):
-        self.spinner.stop()
+        # self.spinner.stop()
         self.session.close()
 
     @classmethod
@@ -141,3 +141,5 @@ class Neo4jQuery:
             # make the query against the db
             results = db.run(query, param=param)
             return getattr(results, rettype)(*args, **kwargs)
+
+

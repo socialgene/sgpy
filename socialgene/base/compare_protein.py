@@ -1,4 +1,4 @@
-from itertools import combinations_with_replacement
+from itertools import combinations_with_replacement, product
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
@@ -71,6 +71,32 @@ class CompareProtein(Neo4jQuery):
             protein_id_2,
             *(mod_score(input_list_1=input_list_1, input_list_2=input_list_2).values()),
         ]
+    
+    @staticmethod
+    def compare_two_proteins(protein_1, protein_2):
+        """
+        dict: {l1, l2, levenshtein, jaccard, mod_score}; mod_score -> 2 = Perfectly similar; otherwise (1/Levenshtein + Jaccard)
+        Returns:
+
+          protein_2: An instance of a protein object representing the second protein.
+          protein_1: An instance of a protein object representing the first protein.
+        Args:
+
+        `mod_score` function.
+        The function `compare_two_proteins` compares the domain vectors of two proteins using the
+        """
+
+        return mod_score(protein_1.domain_vector, protein_2.domain_vector)      
+    
+    def bro(self, queries, targets, **kwargs):
+        """Compare a list fo proteins to another list of proteins
+
+        Args:
+            query (List(str)): list of protein hashes
+            targets (List(str): list of protein hashes
+        """
+        self.compare_proteins(product(queries,targets), **kwargs)
+            
 
     def compare_proteins(
         self,
@@ -87,12 +113,7 @@ class CompareProtein(Neo4jQuery):
             append (bool, optional): Should results be appended to previously calculated comparisons? Defaults to False.
             verbose (bool, optional): If `True` then additional info will be printed. Defaults to False.
         """
-        if isinstance(hash_id_list_of_tuples, list) and not all(
-            [len(i) == 2 for i in hash_id_list_of_tuples]
-        ):
-            raise ValueError("hash_id must be None, or a list of tuples of length two.")
-
-        if isinstance(hash_id_list_of_tuples, list):
+        if hash_id_list_of_tuples is not None:
             for id_pair in hash_id_list_of_tuples:
                 _temp = self._calculate_mod_score_from_domain_lists(
                     protein_id_1=id_pair[0],

@@ -14,14 +14,14 @@ from socialgene.scoring.search import (
 )
 from rich.progress import Progress
 
-mibig_id = "BGC0000002"
-gbk_path = f"/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/{mibig_id}.gbk"
+mibig_id = "BGC0000001"
+gbk_path = f"/home/chase/mibig_gbk/mibig_gbk_3.1/{mibig_id}.gbk"
 
 # hmm_dir = (
 #     "/home/chase/Documents/socialgene_data/streptomyces/socialgene_per_run/hmm_cache"
 # )
 
-hmm_dir = "/home/chase/Downloads/ttt/hmm"
+hmm_dir = "/media/bigdrive2/chase/socialgene_v0.2.3/refseq/socialgene_per_run/hmm_cache"
 
 
 # hmm file with cutoffs
@@ -68,7 +68,7 @@ if not check_for_hmm_outdegree():
     set_hmm_outdegree()
 
 
-input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=2, max_out=100)
+input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=3, max_out=25)
 
 initial_search_results = search_for_similar_proteins(input_protein_domain_df, sg_object)
 
@@ -120,10 +120,6 @@ with Progress(transient=True) as pg:
         pg.update(task, advance=1)
 
 
-groupdict = (
-    intermediate_df_1.groupby("query_prot_uid")["target_prot_uid"].apply(list).to_dict()
-)
-
 
 with Progress(transient=True) as pg:
     task = pg.add_task("Progress...", total=len(intermediate_df_2))
@@ -134,11 +130,30 @@ with Progress(transient=True) as pg:
         pg.update(task, advance=1)
 
 sg_object.protein_comparison = []
-sg_object.compare_proteins(append=True, cpus=20)
+
+
+query_assembly=[v for k,v in sg_object.assemblies.items() if k.startswith("socialgene_query_")][0]
+query_proteins = query_assembly.get_all_proteins()
+
+target_proteins=set()
+
+for k,v in sg_object.assemblies.items():
+    if not k.startswith("socialgene_query_"):
+       target_proteins.update(v.get_all_proteins())
+
+
+sg_object.bro(queries=query_proteins, targets=target_proteins, append=True)
 sg_object.protein_comparison_to_df()
+# sg_object.protein_comparison = sg_object.protein_comparison[
+#     sg_object.protein_comparison.mod_score > 1.4
+# ]
+
 sg_object.protein_comparison = sg_object.protein_comparison[
-    sg_object.protein_comparison.mod_score > 1.4
+    sg_object.protein_comparison.jaccard > 0.2
 ]
+
+
+groupdict = sg_object.protein_comparison.groupby("query")['target'].apply(list).to_dict()
 
 
 group_dict_info = {
@@ -148,7 +163,7 @@ group_dict_info = {
     .features
 }
 
-
+######################## ORDER THE OUTPUT BGCs
 # get {nucleotide_hash: assembly_uid}
 zz = {
     sg_object._create_internal_locus_id(k, k2): k
@@ -159,7 +174,7 @@ zz = {
 order1 = [zz[i] for i in list(df_nucuid_n_matches.nucleotide_uid) if i in zz]
 
 order2 = [modified_input_bgc_name] + order1
-
+######################## ORDER THE OUTPUT BGCs
 
 cmap = Clustermap()
 
@@ -168,5 +183,8 @@ cmap.write(
     groupdict=groupdict,
     group_dict_info=group_dict_info,
     assembly_order=order2,
-    outpath="/home/chase/Downloads/ttt/tempppp/clinker/clinker/plot/data.json",
+    outpath="/home/chase/data.json",
 )
+
+
+

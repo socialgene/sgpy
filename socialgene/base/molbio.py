@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Set
 from uuid import uuid4
 
 import socialgene.hashing.hashing as hasher
@@ -632,6 +633,11 @@ class Locus:
 
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in SOURCE_KEYS})
+    
+    def get_all_proteins(self)->Set[str]:
+        """Get a Set of proteins associated with the Locus"""
+        return {i.protein_hash for i in self.features}
+        
 
 
 class Taxonomy:
@@ -680,6 +686,7 @@ class Assembly:
         self.loci = {}
         self.taxid = None
         self.taxonomy = Taxonomy()
+        self.info = self.create_source_key_dict()
 
     @property
     def __dict__(self):
@@ -719,7 +726,13 @@ class Assembly:
                     taxid=str(self.taxid),
                 ).value()
                 self.taxonomy = Taxonomy(*res[0])
-
+    
+    def get_all_proteins(self)->Set[str]:
+        """Get a Set of proteins associated with the Assembly"""
+        all_prots=set()
+        for v in self.loci.values():
+            all_prots.update(v.get_all_proteins())
+        return all_prots
 
 class Molbio:
     """Class for inheriting by SocialGene()"""

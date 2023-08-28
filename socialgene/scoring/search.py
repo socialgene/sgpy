@@ -133,7 +133,6 @@ def _find_sim_protein(protein):
     WITH $doms AS input_protein_domains
     MATCH (h0:hmm)
     WHERE h0.uid IN input_protein_domains[0..3]
-
     MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0)
     // Search 3 HMMs, if present, compare to all
     WITH input_protein_domains,prot1, count(DISTINCT(h0)) as initial_count
@@ -146,7 +145,7 @@ def _find_sim_protein(protein):
     WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
     RETURN DISTINCT n1.uid as nuc_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
              """,
-            doms=dv,
+            doms=list(dv),
         )
         return res.data()
 
@@ -173,12 +172,15 @@ def search_for_similar_proteins(input_protein_domain_df, sg_object):
     with progress_bar as pg:
         task = pg.add_task("Progress...", total=len(input_protein_domain_df))
         for prot in list(input_protein_domain_df["query_prot_uid"]):
-            bb.extend(
+            try:
+                bb.extend(
                 [
                     {"query_prot_uid": prot} | i
                     for i in _find_sim_protein(sg_object.proteins[prot])
                 ]
-            )
+                )
+            except:
+                pass
             pg.update(task, advance=1)
     bb = pd.DataFrame(bb)
     zz = bb.sort_values(by=["n_start"], ascending=[True], na_position="first")
@@ -252,3 +254,5 @@ def count_matches_per_nucleotide_sequence(df):
             },
         )
     )
+
+    

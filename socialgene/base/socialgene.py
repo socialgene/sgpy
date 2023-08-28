@@ -249,22 +249,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for i in Path(tmpdirname).glob("*.domtblout"):
                 self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
 
-    @staticmethod
-    def compare_two_proteins(protein_1, protein_2):
-        """
-        dict: {l1, l2, levenshtein, jaccard, mod_score}; mod_score -> 2 = Perfectly similar; otherwise (1/Levenshtein + Jaccard)
-        Returns:
-
-          protein_2: An instance of a protein object representing the second protein.
-          protein_1: An instance of a protein object representing the first protein.
-        Args:
-
-        `mod_score` function.
-        The function `compare_two_proteins` compares the domain vectors of two proteins using the
-        """
-
-        return mod_score(protein_1.domain_vector, protein_2.domain_vector)
-
     def fill_from_proteins(self):
         """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
         for result in Neo4jQuery.query_neo4j(
