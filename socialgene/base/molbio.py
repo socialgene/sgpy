@@ -643,42 +643,41 @@ class Locus:
 class Taxonomy:
     "Class is a reserved word so just underscore all ranks to be consistent"
     __slots__ = [
-        "_species",
-        "_genus",
-        "_family",
-        "_order",
-        "_class",
-        "_phylum",
-        "_clade",
-        "_superkingdom",
+        "species_",
+        "genus_",
+        "family_",
+        "order_",
+        "class_",
+        "phylum_",
+        "clade_",
+        "superkingdom_",
     ]
-
     def __init__(
         self,
-        _species: str = None,
-        _genus: str = None,
-        _family: str = None,
-        _order: str = None,
-        _class: str = None,
-        _phylum: str = None,
-        _clade: str = None,
-        _superkingdom: str = None,
+        species_: str = None,
+        genus_: str = None,
+        family_: str = None,
+        order_: str = None,
+        class_: str = None,
+        phylum_: str = None,
+        clade_: str = None,
+        superkingdom_: str = None,
         **kwargs,
     ) -> None:
-        self._species = _species
-        self._genus = _genus
-        self._family = _family
-        self._order = _order
-        self._class = _class
-        self._phylum = _phylum
-        self._clade = _clade
-        self._superkingdom = _superkingdom
+        self.species_ = species_
+        self.genus_ = genus_
+        self.family_ = family_
+        self.order_ = order_
+        self.class_ = class_
+        self.phylum_ =phylum_
+        self.clade_ =clade_
+        self.superkingdom_ = superkingdom_
 
 
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
-    __slots__ = ["loci", "taxid", "info", "id", "taxonomy"]
+    __slots__ = ["loci", "taxid", "info", "id", "taxonomy", "name"]
 
     def __init__(self, id):
         super().__init__()
@@ -687,6 +686,7 @@ class Assembly:
         self.taxid = None
         self.taxonomy = Taxonomy()
         self.info = self.create_source_key_dict()
+        self.name=id
 
     @property
     def __dict__(self):
@@ -711,21 +711,21 @@ class Assembly:
         return OrderedDict({i: None for i in SOURCE_KEYS})
 
     def fill_taxonomy_from_db(self):
-        """Relies on self.taxid"""
-        if not self.taxid:
-            log.info(f"Assembly {self.id} has no assigned taxid")
-        else:
-            with GraphDriver() as db:
-                res = db.run(
-                    """
-                    MATCH (t2:taxid {uid:$taxid})-[:TAXON_PARENT*1..]->(t1:taxid)
-                    WHERE t1.rank in ["genus", "family", "order", "class", "phylum", "clade", "superkingdom"]
-                    WITH  apoc.map.fromLists([t2.rank],[t2.name]) as a, apoc.map.fromLists([t1.rank],[t1.name]) as b
-                    return  apoc.map.mergeList(collect(a)+collect(b)) as tax_dict
-                    """,
-                    taxid=str(self.taxid),
-                ).value()
-                self.taxonomy = Taxonomy(*res[0])
+        try:
+                with GraphDriver() as db:
+                    res = db.run(
+                        """
+                        MATCH (a1:assembly {uid: $uid})-[:IS_TAXON]->(t2:taxid)-[:TAXON_PARENT*1..]->(t1:taxid)
+                        WHERE t1.rank in ["genus", "family", "order", "class", "phylum", "clade", "superkingdom"]
+                        WITH  apoc.map.fromLists([t2.rank],[t2.name]) as a, apoc.map.fromLists([t1.rank],[t1.name]) as b
+                        return  apoc.map.mergeList(collect(a)+collect(b)) as tax_dict
+                        """,
+                        uid=str(self.id),
+                    ).value()
+                    # Dict comprehension appends '_' to the keys, to match the args in Taxonomy
+                    self.taxonomy = Taxonomy(**{f'{k}_': v for k, v in res[0].items()})
+        except:
+                log.debug(f"Error trying to retrieve taxonomy for {self.id}")
     
     def get_all_proteins(self)->Set[str]:
         """Get a Set of proteins associated with the Assembly"""
@@ -733,6 +733,24 @@ class Assembly:
         for v in self.loci.values():
             all_prots.update(v.get_all_proteins())
         return all_prots
+    
+    def fill_properties(self):
+        try:
+                with GraphDriver() as db:
+                    res = db.run(
+                        """
+                        MATCH (a1:assembly {uid: $uid})
+                        return properties(a1)
+                        """,
+                        uid=self.id,
+                    ).value()[0]
+                    for k in self.info.keys():
+                        if k in res:
+                            self.info[k] = res[k]
+        except:
+                log.debug(f"Error trying to retrieve taxonomy for {self.id}")
+    
+       
 
 class Molbio:
     """Class for inheriting by SocialGene()"""

@@ -46,7 +46,7 @@ class Clustermap:
             "clusters": [
                 {
                     "uid": self._get_uid(obj=sg.assemblies[k]),
-                    "name": sg.assemblies[k].id,
+                    "name": sg.assemblies[k].name,
                     "loci": self._loci(sg.assemblies[k]),
                 }
                 for k in assembly_order
@@ -111,9 +111,9 @@ class Clustermap:
                                     "uid": target_uid,
                                     "name": self._get_uid(),
                                 },
-                                "identity": row.mod_score * 66,
+                                "identity": row.mod_score * 0.66,
                             }
-                            # row["mod_score"] * 66 adjusts max mod score of 1.5 to ~100 because clustermap.js scale is to 100
+                            # row["mod_score"] * 0.66 adjusts max mod score of 1.5 to ~1 because clustermap.js scale is to 100
                         )
         return res
 

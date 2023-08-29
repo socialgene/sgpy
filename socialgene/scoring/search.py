@@ -143,7 +143,7 @@ def _find_sim_protein(protein):
     WHERE apoc.coll.isEqualCollection(input_protein_domains, target_uids)
     MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
     WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
-    RETURN DISTINCT n1.uid as nuc_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
+    RETURN DISTINCT n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
              """,
             doms=list(dv),
         )
@@ -198,7 +198,7 @@ def prioritize_cluster_windows(df, tolerance=40000, return_df_not_tuple=False):
     diverse set of hits to input proteins
 
     Args:
-        df (DataFrame): ['query_prot_uid', 'nuc_uid', 'target_prot_uid', 'n_start', 'n_end']
+        df (DataFrame): ['query_prot_uid', 'nucleotide_uid', 'target_prot_uid', 'n_start', 'n_end']
         tolerance (int, optional): Max nucleotide (base pair) distance two genes can be from each other. (some PKS/NRPS can be 10's of thousands bp long) Defaults to 40000.
         return_df_not_tuple (bool, optional) If True, returns filtered Dataframe instead of tuple
 
@@ -233,7 +233,7 @@ def prioritize_cluster_windows(df, tolerance=40000, return_df_not_tuple=False):
         return df.iloc[max_match[0] : max_match[1]]
     else:
         return (
-            df.iloc[0].nuc_uid,
+            df.iloc[0].nucleotide_uid,
             df.iloc[max_match[0]].n_start,
             df.iloc[max_match[1]].n_end,
         )
@@ -241,15 +241,15 @@ def prioritize_cluster_windows(df, tolerance=40000, return_df_not_tuple=False):
 
 def count_matches_per_nucleotide_sequence(df):
     return (
-        df.filter(["nuc_uid", "query_prot_uid"])
+        df.filter(["nucleotide_uid", "query_prot_uid"])
         .drop_duplicates()
-        .groupby(["nuc_uid"])
+        .groupby(["nucleotide_uid"])
         .count()
         .sort_values(by=["query_prot_uid"], ascending=[False], na_position="first")
         .reset_index(drop=False)
         .rename(
             columns={
-                "nuc_uid": "nucleotide_uid",
+                "nucleotide_uid": "nucleotide_uid",
                 "query_prot_uid": "count_of_matched_inputs",
             },
         )
