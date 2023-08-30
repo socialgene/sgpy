@@ -11,6 +11,7 @@ from rich.progress import (
 )
 import logging
 import pandas as pd
+from socialgene.utils.logging import log
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.INFO)
@@ -127,12 +128,14 @@ def _find_sim_protein(protein):
     """
     # This could be done for the whole BGC at once, but is done protein by protein to be more atomic
     dv = list(set(protein.domain_vector))
+    log.info(f"Searching for proteins/genome location matching to {len(dv)} HMM models")
     with GraphDriver() as db:
         res = db.run(
             """
-    WITH $doms AS input_protein_domains
+       WITH $doms AS input_protein_domains
     MATCH (h0:hmm)
     WHERE h0.uid IN input_protein_domains[0..3]
+
     MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0)
     // Search 3 HMMs, if present, compare to all
     WITH input_protein_domains,prot1, count(DISTINCT(h0)) as initial_count
@@ -144,7 +147,7 @@ def _find_sim_protein(protein):
     MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
     WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
     RETURN DISTINCT n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
-             """,
+            """,
             doms=list(dv),
         )
         return res.data()
@@ -174,10 +177,10 @@ def search_for_similar_proteins(input_protein_domain_df, sg_object):
         for prot in list(input_protein_domain_df["query_prot_uid"]):
             try:
                 bb.extend(
-                [
-                    {"query_prot_uid": prot} | i
-                    for i in _find_sim_protein(sg_object.proteins[prot])
-                ]
+                    [
+                        {"query_prot_uid": prot} | i
+                        for i in _find_sim_protein(sg_object.proteins[prot])
+                    ]
                 )
             except:
                 pass
@@ -192,7 +195,7 @@ def search_for_similar_proteins(input_protein_domain_df, sg_object):
 ############################################################
 
 
-def prioritize_cluster_windows(df, tolerance=40000, return_df_not_tuple=False):
+def prioritize_cluster_windows(df, tolerance=50000, return_df_not_tuple=False):
     """Scan a DataFrame representing a single nucleotide sequence and
     find the set of genes within a nucleotide distance of each other that contain the most
     diverse set of hits to input proteins
@@ -228,7 +231,8 @@ def prioritize_cluster_windows(df, tolerance=40000, return_df_not_tuple=False):
     # account for no splits
     if max_match == (0, 0, 0):
         max_match = (s, e - 1, len(set(df.iloc[s:e].query_prot_uid)))
-    # if max_match[2] > 0:
+    # +1 because  non-inclusive
+    max_match = (max_match[0], max_match[1] + 1, max_match[2])
     if return_df_not_tuple:
         return df.iloc[max_match[0] : max_match[1]]
     else:
@@ -239,20 +243,61 @@ def prioritize_cluster_windows(df, tolerance=40000, return_df_not_tuple=False):
         )
 
 
+def split_df_into_nucl(df):
+    for name, group in df.groupby(["nucleotide_uid"]):
+        yield group
+
+
+# a=["pxchmC6JnOKe3miY4Sl-q2GtE-Bp_EsG", "mtmXphnHA8rXHCnw9NTLx6kfBgS0EH2_", "hntB6KFAW_FBC88h_ddLjN6NC2KEouPX", "ZmesxiO51UP4sObKnCNi9uKAkxKcim6W", "PYaLvUL3QKOPoFRg_Ad9FOs8i_IPUsZT", "KH7Md4jb1JFf_stuDUOdiJt-CbrBJmvA", "EY4gYJguMq0I87toz0hLXqtV-nRDhG-1", "CxeY9ZvRAg1F1da2SsBK3lwmp3A4GpFj", "BWPyB1IrZBw5NKdchqjqqPCDCRwJCLcq", "7MxxSFzI-jhUm3TtyCwoDOBwiL1luO91", "1rz1Hm8TaUfF6oapA2ON38scOvJhLbLM"]
+# df.groupby('nucleotide_uid').agg({'n_start':'min', 'n_end':'max'})
+
+
 def count_matches_per_nucleotide_sequence(df):
     return (
         df.filter(["nucleotide_uid", "query_prot_uid"])
         .drop_duplicates()
         .groupby(["nucleotide_uid"])
         .count()
-        .sort_values(by=["query_prot_uid"], ascending=[False], na_position="first")
         .reset_index(drop=False)
         .rename(
             columns={
                 "nucleotide_uid": "nucleotide_uid",
-                "query_prot_uid": "count_of_matched_inputs",
+                "query_prot_uid": "locus_contains_n_queries",
             },
         )
     )
 
-    
+
+def count_matches_per_assembly(df):
+    with GraphDriver() as db:
+        res = db.run(
+            """
+            WITH $nucid as nuc_ids
+            unwind nuc_ids as nuc_id
+            MATCH (n1: nucleotide {uid: nuc_id})-[:ASSEMBLES_TO]->(a1:assembly)
+            RETURN n1.uid as nucleotide_uid, a1.uid as assembly_uid
+            """,
+            nucid=list(df["nucleotide_uid"]),
+        ).to_df()
+    temp = (
+        df.merge(res, how="left")
+        .filter(["assembly_uid", "query_prot_uid"])
+        .drop_duplicates()
+        .groupby(["assembly_uid"])
+        .count()
+        .sort_values(by=["query_prot_uid"], ascending=[False], na_position="first")
+        .reset_index(drop=False)
+        .rename(
+            columns={
+                "assembly_uid": "assembly_uid",
+                "query_prot_uid": "assembly_contains_n_queries",
+            },
+        )
+    )
+    return res.merge(temp, how="inner").drop_duplicates()
+
+
+def count_matches(df):
+    df2 = count_matches_per_nucleotide_sequence(df)
+    df3 = count_matches_per_assembly(df)
+    return df2.merge(df3, how="inner")

@@ -20,6 +20,7 @@ class Clustermap:
             "names": {
                 "name": feature_obj.protein_id,
                 "description": feature_obj.description,
+                "hash": feature_obj.protein_hash,
             },
             "start": feature_obj.start,
             "end": feature_obj.end,
@@ -111,7 +112,7 @@ class Clustermap:
                                     "uid": target_uid,
                                     "name": self._get_uid(),
                                 },
-                                "identity": row.mod_score * 0.66,
+                                "identity": round(row.mod_score * 0.66, 2),
                             }
                             # row["mod_score"] * 0.66 adjusts max mod score of 1.5 to ~1 because clustermap.js scale is to 100
                         )

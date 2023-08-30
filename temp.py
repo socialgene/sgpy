@@ -43,7 +43,7 @@ def main(a):
     try:
         main2(a)
     except:
-        pass
+        print("1")
               
 
 def main2(input_tuple):
