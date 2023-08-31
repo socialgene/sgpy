@@ -430,26 +430,15 @@ class Protein(
     @property
     def domain_vector(
         self,
-        only_unique=True,
     ):
         """Get the domain hash_ids for a protein as an ordered list
 
-        Args:
-            only_unique (bool, optional): Whether duplicate domain hash_ids should be included in the returned results. Defaults to False.
-
-        Returns:
-            list: list of domain hash_ids
+        list: list of domain hash_ids
         """
         if not self.domains:
             log.debug(f"Tried to get domains from domain-less protein {self}")
             return []
-        if only_unique:
-            # self.domains is a set() but that takes in to account more than just
-            # the id so we need to get unique ids here
-            return list(set([i.get_hmm_id() for i in self.domains]))
-        else:
-            sorted_domain_list = self.sort_domains_by_mean_envelope_position()
-            return [i.get_hmm_id() for i in sorted_domain_list]
+        return [i.get_hmm_id() for i in self.sort_domains_by_mean_envelope_position()]
 
     def filter_domains(self):
         """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
@@ -633,11 +622,10 @@ class Locus:
 
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in SOURCE_KEYS})
-    
-    def get_all_proteins(self)->Set[str]:
+
+    def get_all_proteins(self) -> Set[str]:
         """Get a Set of proteins associated with the Locus"""
         return {i.protein_hash for i in self.features}
-        
 
 
 class Taxonomy:
@@ -652,6 +640,7 @@ class Taxonomy:
         "clade_",
         "superkingdom_",
     ]
+
     def __init__(
         self,
         species_: str = None,
@@ -669,8 +658,8 @@ class Taxonomy:
         self.family_ = family_
         self.order_ = order_
         self.class_ = class_
-        self.phylum_ =phylum_
-        self.clade_ =clade_
+        self.phylum_ = phylum_
+        self.clade_ = clade_
         self.superkingdom_ = superkingdom_
 
 
@@ -686,7 +675,7 @@ class Assembly:
         self.taxid = None
         self.taxonomy = Taxonomy()
         self.info = self.create_source_key_dict()
-        self.name=id
+        self.name = id
 
     @property
     def __dict__(self):
@@ -712,45 +701,44 @@ class Assembly:
 
     def fill_taxonomy_from_db(self):
         try:
-                with GraphDriver() as db:
-                    res = db.run(
-                        """
+            with GraphDriver() as db:
+                res = db.run(
+                    """
                         MATCH (a1:assembly {uid: $uid})-[:IS_TAXON]->(t2:taxid)-[:TAXON_PARENT*1..]->(t1:taxid)
                         WHERE t1.rank in ["genus", "family", "order", "class", "phylum", "clade", "superkingdom"]
                         WITH  apoc.map.fromLists([t2.rank],[t2.name]) as a, apoc.map.fromLists([t1.rank],[t1.name]) as b
                         return  apoc.map.mergeList(collect(a)+collect(b)) as tax_dict
                         """,
-                        uid=str(self.id),
-                    ).value()
-                    # Dict comprehension appends '_' to the keys, to match the args in Taxonomy
-                    self.taxonomy = Taxonomy(**{f'{k}_': v for k, v in res[0].items()})
+                    uid=str(self.id),
+                ).value()
+                # Dict comprehension appends '_' to the keys, to match the args in Taxonomy
+                self.taxonomy = Taxonomy(**{f"{k}_": v for k, v in res[0].items()})
         except:
-                log.debug(f"Error trying to retrieve taxonomy for {self.id}")
-    
-    def get_all_proteins(self)->Set[str]:
+            log.debug(f"Error trying to retrieve taxonomy for {self.id}")
+
+    def get_all_proteins(self) -> Set[str]:
         """Get a Set of proteins associated with the Assembly"""
-        all_prots=set()
+        all_prots = set()
         for v in self.loci.values():
             all_prots.update(v.get_all_proteins())
         return all_prots
-    
+
     def fill_properties(self):
         try:
-                with GraphDriver() as db:
-                    res = db.run(
-                        """
+            with GraphDriver() as db:
+                res = db.run(
+                    """
                         MATCH (a1:assembly {uid: $uid})
                         return properties(a1)
                         """,
-                        uid=self.id,
-                    ).value()[0]
-                    for k in self.info.keys():
-                        if k in res:
-                            self.info[k] = res[k]
+                    uid=self.id,
+                ).value()[0]
+                for k in self.info.keys():
+                    if k in res:
+                        self.info[k] = res[k]
         except:
-                log.debug(f"Error trying to retrieve taxonomy for {self.id}")
-    
-       
+            log.debug(f"Error trying to retrieve taxonomy for {self.id}")
+
 
 class Molbio:
     """Class for inheriting by SocialGene()"""
