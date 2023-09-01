@@ -1,4 +1,4 @@
-from datetime import datetime
+from collections import OrderedDict
 from socialgene.neo4j.neo4j import GraphDriver
 from rich.progress import (
     Progress,
@@ -9,13 +9,14 @@ from rich.progress import (
     TimeElapsedColumn,
     TextColumn,
 )
+from itertools import product
 import logging
 import pandas as pd
 from socialgene.utils.logging import log
 
+
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.INFO)
-then = datetime.now()
 
 
 progress_bar = Progress(
@@ -56,6 +57,127 @@ def set_hmm_outdegree():
             SET h1.outdegree = apoc.node.degree(h1)
             """
         )
+
+
+def get_lowest_outdegree_model_per_protein(sg_object):
+    """
+    Args:
+        sg_object (SocialGene): SocialGene object
+    Returns:
+        DataFrame: pd.DataFrame with columns ["query_prot_uid", "hmm_model_uid", "outdegree"]
+    """
+    # Prioritize based in the cumulative outdegree of HMM nodes per input protein
+    doms = set()
+    # Create a dictionary of protein to domains (turned into a DF)
+    # and a set of domains across all inputs
+    for v in sg_object.proteins.values():
+        for i in v.domain_vector:
+            doms.add(i)
+    doms = list(doms)
+    with GraphDriver() as db:
+        res = db.run(
+            """
+           WITH $doms as doms
+           MATCH (h1:hmm)
+           WHERE h1.uid in doms
+           RETURN h1.uid as hmm_uid, h1.outdegree as outdegree
+         """,
+            doms=doms,
+        ).to_df()
+    temp = []
+    for k, v in sg_object.proteins.items():
+        if v.domain_vector:
+            temp.append(
+                pd.DataFrame(
+                    product([k], v.domain_vector),
+                    columns=["protein_uid", "hmm_uid"],
+                )
+            )
+    temp = pd.concat(temp)
+    temp = temp.merge(res, how="left")
+    return (
+        temp.sort_values("outdegree")
+        .groupby(["protein_uid"], sort=False)["hmm_uid"]
+        .apply(list)
+        .to_dict()
+    )
+
+
+def _find_sim_protein(domain_list):
+    """Use HMM annotations to find similar proteins in a Neo4j Database
+
+    Args:
+        protein_obj (Protein): SocialGene Protein object
+        single_domain (str): prioritized HMM uid
+
+    Returns:
+        DataFrame: pd.DataFrame with columns
+    """
+    # keep order because the domain list is sorted by outdegree
+    nr_list = list(OrderedDict.fromkeys(domain_list))[:3]
+    with GraphDriver() as db:
+        res = db.run(
+            """
+    WITH $domain_list AS input_protein_domains
+    MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0:hmm)
+    WHERE h0.uid IN input_protein_domains
+    WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
+    WHERE initial_count > size(input_protein_domains) *0.75 
+    MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
+    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
+    MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+    RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
+            """,
+            domain_list=nr_list,
+        ).data()
+        # log.info(f"{len(res)} results")
+        return res
+
+
+def search_for_similar_proteins(protein_domain_dict):
+    """Loop _find_sim_protein() through input proteins and get df of all results
+
+    Args:
+        protein_domain_dict (dict): {protein_uid:[hmm_uids]}
+        sg_object (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    bb = []
+    progress_bar = Progress(
+        TextColumn("Searching database for input proteins..."),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TextColumn("• Time elapsed "),
+        TimeElapsedColumn(),
+    )
+    with progress_bar as pg:
+        task = pg.add_task("Progress...", total=len(protein_domain_dict))
+        for k, v in protein_domain_dict.items():
+            try:
+                bb.extend(
+                    [
+                        {"query_prot_uid": k} | i
+                        for i in _find_sim_protein(domain_list=v)
+                    ]
+                )
+            except:
+                pass
+            pg.update(task, advance=1)
+    return pd.DataFrame(bb)
+    if bb:
+        bb = pd.DataFrame(bb)
+        zz = bb.sort_values(by=["n_start"], ascending=[True], na_position="first")
+        zz.reset_index(inplace=True, drop=True)
+        return zz
+    else:
+        log.info("no results")
+
+
+############################################################
+############################################################
 
 
 def prioritize_input_proteins(sg_object, reduce_by=1, max_out=5):
@@ -115,84 +237,6 @@ def prioritize_input_proteins(sg_object, reduce_by=1, max_out=5):
     if out_len > max_out:
         out_len = max_out
     return input_protein_domain_df.head(out_len)
-
-
-def _find_sim_protein(protein):
-    """Use HMM annotations to find similar proteins in a Neo4j Database
-
-    Args:
-        protein (Protein): SocialGene Protein object
-
-    Returns:
-        DataFrame: pd.DataFrame with columns
-    """
-    # This could be done for the whole BGC at once, but is done protein by protein to be more atomic
-    dv = list(set(protein.domain_vector))
-    log.info(f"Searching for proteins/genome location matching to {len(dv)} HMM models")
-    with GraphDriver() as db:
-        res = db.run(
-            """
-       WITH $doms AS input_protein_domains
-    MATCH (h0:hmm)
-    WHERE h0.uid IN input_protein_domains[0..3]
-
-    MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0)
-    // Search 3 HMMs, if present, compare to all
-    WITH input_protein_domains,prot1, count(DISTINCT(h0)) as initial_count
-    // size(input_protein_domains[0..3]) in case less than 3 input domains
-    WHERE initial_count = size(input_protein_domains[0..3])
-    MATCH (prot1)<-[a2:ANNOTATES]-(h1:hmm)
-    WITH input_protein_domains, prot1, collect(DISTINCT(h1.uid)) as target_uids
-    WHERE apoc.coll.isEqualCollection(input_protein_domains, target_uids)
-    MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
-    RETURN DISTINCT n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
-            """,
-            doms=list(dv),
-        )
-        return res.data()
-
-
-def search_for_similar_proteins(input_protein_domain_df, sg_object):
-    """Loop _find_sim_protein() through input proteins and get df of all results
-
-    Args:
-        input_protein_domain_df (DataFrame()): datafram with
-        sg_object (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-    bb = []
-    progress_bar = Progress(
-        TextColumn("Searching database for input proteins..."),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TextColumn("• Time elapsed "),
-        TimeElapsedColumn(),
-    )
-    with progress_bar as pg:
-        task = pg.add_task("Progress...", total=len(input_protein_domain_df))
-        for prot in list(input_protein_domain_df["query_prot_uid"]):
-            try:
-                bb.extend(
-                    [
-                        {"query_prot_uid": prot} | i
-                        for i in _find_sim_protein(sg_object.proteins[prot])
-                    ]
-                )
-            except:
-                pass
-            pg.update(task, advance=1)
-    bb = pd.DataFrame(bb)
-    zz = bb.sort_values(by=["n_start"], ascending=[True], na_position="first")
-    zz.reset_index(inplace=True, drop=True)
-    return zz
-
-
-############################################################
-############################################################
 
 
 def prioritize_cluster_windows(df, tolerance=50000, return_df_not_tuple=False):
