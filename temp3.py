@@ -2,22 +2,15 @@ from socialgene.clustermap.clustermap import Clustermap
 from socialgene.hmm.hmmer import HMMER
 from socialgene.base.socialgene import SocialGene
 from pathlib import Path
-import pandas as pd
-from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.scoring.scoring import mod_score
 
 from socialgene.scoring.search import (
     check_for_hmm_outdegree,
-    count_matches,
-    count_matches_per_nucleotide_sequence,
-    prioritize_cluster_windows,
-    prioritize_input_proteins,
     get_lowest_outdegree_model_per_protein,
     search_for_similar_proteins,
     set_hmm_outdegree,
 )
 from rich.progress import Progress
-from datetime import datetime
-from socialgene.neo4j.neo4j import GraphDriver
 from rich.progress import (
     Progress,
 )
@@ -25,11 +18,12 @@ from math import ceil
 import logging
 import pandas as pd
 from socialgene.utils.logging import log
+from textdistance import smith_waterman
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.INFO)
 
-mibig_id = "BGC0001646"
+mibig_id = "BGC0001850"
 gbk_path = f"/home/chase/mibig_gbk/mibig_gbk_3.1/{mibig_id}.gbk"
 hmm_dir = "/media/bigdrive2/chase/socialgene_v0.2.3/refseq/socialgene_per_run/hmm_cache"
 
@@ -85,6 +79,15 @@ if not check_for_hmm_outdegree():
 protein_domain_dict = get_lowest_outdegree_model_per_protein(sg_object)
 
 searched_protein_set = set(protein_domain_dict.keys())
+sg_object.assemblies[modified_input_bgc_name].loci[input_bgc_nuc_id].sort_by_middle()
+
+input_sorted_protein_hashlist = [
+    i.protein_hash
+    for i in sg_object.assemblies[modified_input_bgc_name]
+    .loci[input_bgc_nuc_id]
+    .features
+]
+
 
 # input_proteinget_lowest_outdegree_model_per_protein
 
@@ -140,10 +143,10 @@ assembly_counts = (
 )
 
 
-zz = assembly_counts[assembly_counts.query_prot_uid > assemblies_must_have_x_matches]
+assembly_counts[assembly_counts.query_prot_uid > assemblies_must_have_x_matches * 0.75]
 
 reduced = initial_search_results.merge(
-    assembly_counts[assembly_counts.query_prot_uid > assemblies_must_have_x_matches][
+    assembly_counts[assembly_counts.query_prot_uid >= assemblies_must_have_x_matches][
         "assembly_uid"
     ],
     how="inner",
@@ -155,104 +158,110 @@ reduced = reduced.sort_values(by=["n_start"], ascending=[True], na_position="fir
 reduced.reset_index(inplace=True, drop=True)
 
 
-#####################################
-# first pass
-#####################################
-big_clusters = []
-with Progress(transient=True) as pg:
-    task = pg.add_task("Finding clusters...", total=reduced["nucleotide_uid"].nunique())
-    for name, group in reduced.groupby(["nucleotide_uid"]):
-        group["cluster"] = (
-            group["n_start"] > (group["n_end"].shift() + 10000)
-        ).cumsum()
-        group["unique_hits"] = group.groupby("cluster")["query_prot_uid"].transform(
-            "nunique"
-        )
-        big_clusters.append(group)
-        pg.update(task, advance=1)
+# #####################################
+# # first pass
+# #####################################
+# big_clusters = []
+
+# with Progress(transient=True) as pg:
+#     task = pg.add_task("Finding clusters...", total=reduced["nucleotide_uid"].nunique())
+#     for name, group in reduced.groupby(["nucleotide_uid"]):
+#         reduced["cluster"] = (
+#             group["n_start"] > (group["n_end"].shift() + 10000)
+#         ).cumsum()
+#         reduced["unique_hits"] = group.groupby("cluster")["query_prot_uid"].transform(
+#             "nunique"
+#         )
+#         # big_clusters.append(group)
+#         pg.update(task, advance=1)
+
+##################################################################################################################
+reduced["cluster"] = (
+    reduced.groupby("nucleotide_uid")
+    .apply(lambda group: group["n_start"] > (group["n_end"].shift() + 10000))
+    .cumsum()
+    .reset_index(level=[0])[0]
+)
 
 
-big_clusters = pd.concat(big_clusters)
+reduced["cluster_unique_hits"] = reduced.groupby(["nucleotide_uid", "cluster"])[
+    "query_prot_uid"
+].transform("nunique")
 
-main_clusters = big_clusters[
-    big_clusters["unique_hits"] > must_find_more_than_x_per_nuc_sequence
+
+reduced["assembly_unique_hits"] = reduced.groupby(["assembly_uid"])[
+    "query_prot_uid"
+].transform("nunique")
+
+
+reduced[reduced["assembly_uid"] == "GCF_002362315.1"]
+
+
+clusters_above_threshold = reduced[
+    reduced["cluster_unique_hits"] > must_find_more_than_x_per_nuc_sequence
+]
+clusters_above_threshold_final_df = (
+    clusters_above_threshold.groupby("nucleotide_uid")
+    .agg({"n_start": "min", "n_end": "max"})
+    .reset_index()
+)
+
+
+reduced.drop(clusters_above_threshold.index, inplace=True)
+# reduce to only genome assemblies that hada large clusters
+reduced = reduced[
+    reduced["assembly_uid"].isin(clusters_above_threshold["assembly_uid"].unique())
+]
+reduced = reduced[
+    reduced["assembly_uid"].isin(clusters_above_threshold["assembly_uid"].unique())
 ]
 
-reduced.drop(main_clusters.index, inplace=True)
 
-reduced = reduced[
-    reduced["assembly_uid"].isin(main_clusters["assembly_uid"])
-].reset_index(drop=True)
-
-reduced = reduced.sort_values(by=["n_start"], ascending=[True], na_position="first")
-reduced.reset_index(inplace=True, drop=True)
-reduced
-
-#####################################
-# second pass
-#####################################
-small_clusters = []
-with Progress(transient=True) as pg:
-    task = pg.add_task("Finding clusters...", total=reduced["assembly_uid"].nunique())
-    for name, group in reduced.groupby(["assembly_uid"]):
-        already_found_proteins = main_clusters[
-            main_clusters["assembly_uid"] == name[0]
-        ]["query_prot_uid"].unique()
-        group["cluster"] = (
-            group["n_start"] > (group["n_end"].shift() + 100000)
-        ).cumsum()
-        group["new_hits"] = group.groupby("cluster")["query_prot_uid"].transform(
-            lambda x: len(set(x) - set(already_found_proteins))
-        )
-        small_clusters.append(group)
-        pg.update(task, advance=1)
+reduced["cluster_unique_hits"] = reduced.groupby(["nucleotide_uid", "cluster"])[
+    "query_prot_uid"
+].transform("nunique")
 
 
-small_clusters = pd.concat(small_clusters)
+# small_groups = []
+# for name, group in small_clusters.groupby(["assembly_uid"]):
+#     lg = group[group["new_hits"] == group["new_hits"].max()]
+#     lg = (
+#         lg.groupby("nucleotide_uid")
+#         .agg({"n_start": "min", "n_end": "max"})
+#         .reset_index()
+#     )
+#     small_groups.append(
+#         lg.iloc[(lg["n_end"] - lg["n_start"]).idxmin()]
+#         .to_frame()
+#         .transpose()
+#         .reset_index(drop=True)
+#     )
+#     # reduced.drop(lg.index, inplace=True)
 
 
-small_groups = []
-for name, group in small_clusters.groupby(["assembly_uid"]):
-    lg = group[group["new_hits"] == group["new_hits"].max()]
-    lg = (
-        lg.groupby("nucleotide_uid")
-        .agg({"n_start": "min", "n_end": "max"})
-        .reset_index()
-    )
-    small_groups.append(
-        lg.iloc[(lg["n_end"] - lg["n_start"]).idxmin()]
-        .to_frame()
-        .transpose()
-        .reset_index(drop=True)
-    )
-
-    small_groups.append(lg)
-    # reduced.drop(lg.index, inplace=True)
-
-
-small_groups = pd.concat(small_groups)
+# small_groups = pd.concat(small_groups)
 
 
 #######################################
 # By here we have found all genomes with initial BGCs
 #######################################
 
-big_clusters2 = (
-    main_groups.groupby("nucleotide_uid")
-    .agg({"n_start": "min", "n_end": "max"})
-    .reset_index()
-)
+# big_clusters2 = (
+#     main_clusters.groupby("nucleotide_uid")
+#     .agg({"n_start": "min", "n_end": "max"})
+#     .reset_index()
+# )
 
-sm_clusters2 = small_groups
+# sm_clusters2 = small_groups
 
-
-big_clusters2 = big_clusters2[0:20]
 
 # Add big clusters
 
 with Progress(transient=True) as pg:
-    task = pg.add_task("Adding best hits...", total=len(big_clusters2))
-    for index, result in big_clusters2.filter(
+    task = pg.add_task(
+        "Adding best hits...", total=len(clusters_above_threshold_final_df)
+    )
+    for index, result in clusters_above_threshold_final_df.filter(
         ["nucleotide_uid", "n_start", "n_end"]
     ).iterrows():
         sg_object.fill_given_locus_range(
@@ -266,6 +275,22 @@ with Progress(transient=True) as pg:
 #     for index, result in other_proteins.filter(['nucleotide_uid','n_start','n_end']).iterrows():
 #         sg_object.fill_given_locus_range(
 #             locus_uid=result[0], start=result[1], end=result[2]
+#         )
+#         pg.update(task, advance=1)
+
+
+#######################################
+
+
+# Add small clusters
+
+# with Progress(transient=True) as pg:
+#     task = pg.add_task("Adding best hits...", total=len(sm_clusters2))
+#     for index, result in sm_clusters2.filter(
+#         ["nucleotide_uid", "n_start", "n_end"]
+#     ).iterrows():
+#         sg_object.fill_given_locus_range(
+#             locus_uid=result[0], start=result[1] - 5000, end=result[2] + 5000
 #         )
 #         pg.update(task, advance=1)
 
@@ -285,6 +310,11 @@ for k, v in sg_object.assemblies.items():
 
 
 sg_object.bro(queries=query_proteins, targets=target_proteins, append=True)
+
+
+#######################################
+
+
 sg_object.protein_comparison_to_df()
 # sg_object.protein_comparison = sg_object.protein_comparison[
 #     sg_object.protein_comparison.mod_score > 1.4
@@ -316,16 +346,22 @@ zz = {
 }
 
 
-df_nucuid_n_matches = (
-    big_clusters.groupby(["nucleotide_uid"])
-    .first()
-    .filter(["nucleotide_uid", "unique_queries"])
-    .reset_index(drop=False)
-)
+clusters_above_threshold.sort_values("cluster_unique_hits", ascending=False)[
+    "assembly_uid"
+].unique()
 
-order1 = [zz[i] for i in list(df_nucuid_n_matches.nucleotide_uid) if i in zz]
 
-order2 = [modified_input_bgc_name] + list(set(order1))
+a = clusters_above_threshold.groupby(["assembly_uid", "nucleotide_uid", "cluster"])[
+    "query_prot_uid"
+].apply(lambda x: mod_score(list(x), input_sorted_protein_hashlist)["mod_score"])
+
+a = a.reset_index()
+a = a.sort_values("query_prot_uid", ascending=True)
+
+a = a["assembly_uid"].unique()
+
+
+order2 = [modified_input_bgc_name] + list(a)
 ########################
 
 ######################## Modify Assembly names

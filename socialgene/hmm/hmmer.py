@@ -58,8 +58,6 @@ class HMMER:
             Path(hmm_filepath.with_suffix(i))
             for i in self._append_hmmpress_suffixes(hmm_filepath)
         ]
-        print(expected_files)
-
         if not all([i.exists() for i in expected_files]):
             return False
         else:
