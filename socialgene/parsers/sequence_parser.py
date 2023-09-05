@@ -96,7 +96,7 @@ class GenbankParser:
             )
             log.debug(f"{assembly_id} is taxon: {self.assemblies[assembly_id].taxid}")
         except Exception as e:
-            log.info(e)
+            log.debug(e)
 
     def _process_feature_note_protein_exceptions(self, note: str) -> Dict[str, bool]:
         """

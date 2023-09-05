@@ -54,7 +54,7 @@ def set_hmm_outdegree():
         _ = db.run(
             """
             MATCH (h1: hmm)
-            SET h1.outdegree = apoc.node.degree(h1)
+            SET h1.outdegree = apoc.node.degree.in(h1, "ANNOTATES")
             """
         )
 
