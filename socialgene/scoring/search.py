@@ -122,7 +122,7 @@ def _find_sim_protein(domain_list):
     MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0:hmm)
     WHERE h0.uid IN input_protein_domains
     WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
-    WHERE initial_count > size(input_protein_domains) *0.75 
+    WHERE initial_count > size(input_protein_domains) * 0.75 
     MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
     WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
     MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
