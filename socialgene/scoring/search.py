@@ -123,9 +123,8 @@ def _find_sim_protein(domain_list):
     WHERE h0.uid IN input_protein_domains
     WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
     WHERE initial_count > size(input_protein_domains) * 0.75 
-    MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)
-    MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+    MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)    
+    MATCH (a1:assembly {uid:"GCF_000720215.1"})<-[:ASSEMBLES_TO]-(n1)
     RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
             """,
             domain_list=nr_list,
