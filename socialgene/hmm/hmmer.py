@@ -84,6 +84,12 @@ class HMMER:
                 f"HMM file must have an '.hmm' or '.hmm.gz' extension: {hmm_path}"
             )
 
+        if not hmm_path.exists() and hmm_path.suffix == ".gz":
+            if hmm_path.with_suffix("").exists():
+                hmm_path = hmm_path.with_suffix("")
+            else:
+                raise FileExistsError
+
         if fh.is_compressed(hmm_path).name == "gzip":
             # .with_suffix("") removes .gz but leaves .hmm
             self.hmm_filepath = hmm_path.with_suffix("")
