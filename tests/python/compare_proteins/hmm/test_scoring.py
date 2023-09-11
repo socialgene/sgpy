@@ -6,6 +6,7 @@ import os
 from socialgene.base.socialgene import SocialGene
 import pytest
 
+
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "test_genomes")
@@ -16,6 +17,10 @@ FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
 hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
+
+
+# gbk_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data/test_genomes/lagriamide_mibig_bgc0001946.gbk"
+# hmm_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data"
 
 
 @pytest.mark.parametrize("n", [0, 1, 2, 3, 4, 5, 6])

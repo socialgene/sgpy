@@ -4,8 +4,13 @@ from socialgene.compare_proteins.base_class import CompareProteinsBaseClass
 
 from collections import namedtuple
 
-from socialgene.compare_proteins.hmm.scoring import mod_score
+from socialgene.compare_proteins.hmm.scoring import mod_score, _mod_score_tupler
 import pandas as pd
+
+
+def picklable_modscore(p1, p2):
+    # named tuple doesn't work in multiprocessing
+    return mod_score(p1, p2)._asdict()
 
 
 class CompareDomains(CompareProteinsBaseClass):
@@ -27,35 +32,32 @@ class CompareDomains(CompareProteinsBaseClass):
         )
 
     def compare_one_to_one(self, p1, p2):
-        return calculate_mod_score(p1, p2)
+        return mod_score(p1, p2)
 
-    def compare_one_to_many(self, p1_obj, p2_obj_list):
+    def compare_one_to_many(self, p1_obj, p2_obj_list, filter=True):
         for i in p2_obj_list:
-            temp = calculate_mod_score(p1_obj, i)
-            if temp.jaccard > 0:
+            temp = mod_score(p1_obj, i)
+            if not filter or temp.jaccard > 0:
                 self.protein_comparisons.add(temp)
 
-    def compare_many_to_many(self, p1_obj_list, p2_obj_list):
+    def compare_many_to_many(self, p1_obj_list, p2_obj_list, filter=True):
         for i1, i2 in product(p1_obj_list, p2_obj_list):
-            temp = calculate_mod_score(i1, i2)
-            if temp.jaccard > 0:
+            temp = mod_score(i1, i2)
+            if not filter or temp.jaccard > 0:
                 self.protein_comparisons.add(temp)
 
-    def compare_all_to_all(self, p1_obj_list):
+    def compare_all_to_all(self, p1_obj_list, filter=True):
         for i1, i2 in combinations(p1_obj_list, 2):
-            temp = calculate_mod_score(i1, i2)
-            if temp.jaccard > 0:
-                temp
+            temp = mod_score(i1, i2)
+            if not filter or temp.jaccard > 0:
                 self.protein_comparisons.add(temp)
 
     def compare_all_to_all_parallel(self, p1_obj_list, cpus=1, only_hits=True):
         # have to use _calculate_mod_score_not_named because named tuple can't pickle "protein_comparison_modscore"
         with Pool(cpus) as p:
             for i in p.starmap(
-                _calculate_mod_score_not_named,
+                picklable_modscore,
                 combinations(p1_obj_list, 2),
             ):
-                if only_hits and i[5] < 0.001:
-                    continue
-                else:
-                    self.protein_comparisons.add(_create_tuple(*i))
+                if not only_hits or i["jaccard"] > 0.001:
+                    self.protein_comparisons.add(_mod_score_tupler(**i))
