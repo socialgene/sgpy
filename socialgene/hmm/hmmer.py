@@ -1,4 +1,3 @@
-from typing import Generator
 import re
 import subprocess
 from pathlib import Path
@@ -21,8 +20,9 @@ class HMMER:
 
     def __init__(self):
         self._check_hmmer()
-        self.hmm_filepaths_with_cutoffs = None
-        self.hmm_filepaths_without_cutoffs = None
+        self.hmm_filepaths_with_cutoffs = []
+        self.hmm_filepaths_without_cutoffs = []
+        self.hmm_filepaths_other = []
 
     @staticmethod
     def _check_hmmer():
@@ -120,20 +120,20 @@ class HMMER:
             raise FileNotFoundError("Didn't find expected files after running hmmpress")
 
     def hmmscan(self, hmm_directory, outdirectory, **kwargs):
-        hmmdir = Path(hmm_directory)
-
-        self.hmm_filepaths_with_cutoffs = [
-            i
-            for i in hmmdir.glob("*with_cutoffs*")
-            if re.search("\.hmm$|hmm\.gz$", str(i))
-        ]
-        self.hmm_filepaths_without_cutoffs = [
-            i
-            for i in hmmdir.glob("*without_cutoffs*")
-            if re.search("\.hmm$|hmm\.gz$", str(i))
-        ]
+        for x in Path(hmm_directory).iterdir():
+            if re.search("\.hmm$|hmm\.gz$", str(x)):
+                if "with_cutoffs" in x.stem:
+                    self.hmm_filepaths_with_cutoffs.append(x)
+                elif "without_cutoffs" in x.stem:
+                    self.hmm_filepaths_without_cutoffs.append(x)
+                else:
+                    self.hmm_filepaths_other.append(x)
         if not any(
-            [self.hmm_filepaths_with_cutoffs, self.hmm_filepaths_without_cutoffs]
+            [
+                self.hmm_filepaths_with_cutoffs,
+                self.hmm_filepaths_without_cutoffs,
+                self.hmm_filepaths_other,
+            ]
         ):
             raise FileNotFoundError("No HMM model files found")
         for i in self.hmm_filepaths_with_cutoffs:
@@ -148,6 +148,13 @@ class HMMER:
             temp = dict(**kwargs) | {
                 "use_ga_cutoffs": False,
                 "domtblout_path": Path(outdirectory, "without_cutoffs.domtblout"),
+            }
+            self._hmmscan(i, **temp)
+        for i in self.hmm_filepaths_other:
+            self.hmmpress(i)
+            temp = dict(**kwargs) | {
+                "use_ga_cutoffs": False,
+                "domtblout_path": Path(outdirectory, "other.domtblout"),
             }
             self._hmmscan(i, **temp)
 
