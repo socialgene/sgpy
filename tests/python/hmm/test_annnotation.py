@@ -56,7 +56,7 @@ def test_hmmscan():
     h = HMMER()
     h.hmmpress(hmm_path)
     sg_object.annotate_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_filepath=hmm_path, cpus=1
+        protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     prots = list(sg_object.proteins.keys())
     prots.sort()
