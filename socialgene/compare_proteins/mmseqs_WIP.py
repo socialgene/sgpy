@@ -8,7 +8,7 @@ from socialgene.mmseqs.create_database import create_database
 from socialgene.mmseqs.search import search
 from socialgene.mmseqs.subset_database import createsubdb
 
-from socialgene.scoring.scoring import mod_score
+from socialgene.compare_proteins.hmm.scoring import mod_score
 import pandas as pd
 import tempfile
 

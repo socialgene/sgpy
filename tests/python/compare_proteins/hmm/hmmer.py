@@ -1,4 +1,4 @@
-from socialgene.compare_proteins.hmmer import (
+from socialgene.compare_proteins.hmm.hmmer import (
     _calculate_mod_score_not_named,
     _create_tuple,
     calculate_mod_score,
@@ -24,49 +24,6 @@ hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
 
 # gbk_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data/test_genomes/lagriamide_mibig_bgc0001946.gbk"
 # hmm_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data"
-
-
-def test_hmmscan():
-    _create_tuple
-    _calculate_mod_score_not_named
-
-
-@pytest.mark.parametrize("n", [0, 1, 2, 3, 4, 5, 6])
-def test_create_tuple_error(n):
-    with pytest.raises(TypeError) as exc_info:
-        _create_tuple(*[i for i in range(n)])
-
-
-def test_create_tuple_len():
-    assert _create_tuple(*[i for i in range(7)])
-
-
-def test_create_tuple_type():
-    a = _create_tuple(*[i for i in range(7)])
-    assert (
-        str(type(a))
-        == "<class 'socialgene.compare_proteins.hmmer.protein_comparison_modscore'>"
-    )
-
-
-def test_create_tuple_fields():
-    a = _create_tuple(*[i for i in range(7)])
-    assert a._fields == (
-        "query",
-        "target",
-        "query_n_domains",
-        "target_n_domains",
-        "levenshtein",
-        "jaccard",
-        "mod_score",
-    )
-
-
-def test_create_tuple_repr():
-    a = _create_tuple(*[i for i in range(7)])
-    assert a.__repr__() == (
-        "protein_comparison_modscore(query=0, target=1, query_n_domains=2, target_n_domains=3, levenshtein=4, jaccard=5, mod_score=6)"
-    )
 
 
 def test_calculate_mod_score_not_named():
@@ -342,3 +299,15 @@ def test_CompareDomains_compare_many_to_many():
         a.df.sort_values(["query", "target", "score"], ignore_index=True),
         expected.sort_values(["query", "target", "score"], ignore_index=True),
     )
+
+
+def test_CompareDomains_compare_all_to_all_parallel():
+    sg_object = SocialGene()
+    sg_object.parse(gbk_path)
+    protein_id_list = list(sg_object.proteins.keys())
+    sg_object.annotate_with_hmmscan(
+        protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
+    )
+    a = CompareDomains()
+    p2 = list(sg_object.proteins.values())
+    a.compare_all_to_all_parallel(p2)

@@ -4,7 +4,7 @@ from multiprocessing import Pool, cpu_count
 import pandas as pd
 
 from socialgene.neo4j.neo4j import Neo4jQuery
-from socialgene.scoring.scoring import mod_score
+from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.utils.logging import log
 
 
@@ -15,7 +15,7 @@ def _mod_return(i1, i2):
         i2[0],  # hash of protein 2
         *(
             mod_score(
-                i1[1].domain_vector,
+                i1[1],
                 i2[1].domain_vector,
             ).values()
         ),
@@ -71,7 +71,7 @@ class CompareProtein(Neo4jQuery):
             protein_id_2,
             *(mod_score(input_list_1=input_list_1, input_list_2=input_list_2).values()),
         ]
-    
+
     @staticmethod
     def compare_two_proteins(protein_1, protein_2):
         """
@@ -86,8 +86,8 @@ class CompareProtein(Neo4jQuery):
         The function `compare_two_proteins` compares the domain vectors of two proteins using the
         """
 
-        return mod_score(protein_1.domain_vector, protein_2.domain_vector)      
-    
+        return mod_score(protein_1.domain_vector, protein_2.domain_vector)
+
     def bro(self, queries, targets, **kwargs):
         """Compare a list fo proteins to another list of proteins
 
@@ -95,8 +95,7 @@ class CompareProtein(Neo4jQuery):
             query (List(str)): list of protein hashes
             targets (List(str): list of protein hashes
         """
-        self.compare_proteins(product(queries,targets), **kwargs)
-            
+        self.compare_proteins(product(queries, targets), **kwargs)
 
     def compare_proteins(
         self,

@@ -452,6 +452,7 @@ class Protein(
         log.debug(
             f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
         )
+
     @property
     def fasta_string_defline_hash_id(self):
         return f">{self.hash_id}\n{self.sequence}\n"

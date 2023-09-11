@@ -4,55 +4,8 @@ from socialgene.compare_proteins.base_class import CompareProteinsBaseClass
 
 from collections import namedtuple
 
-from socialgene.scoring.scoring import mod_score
+from socialgene.compare_proteins.hmm.scoring import mod_score
 import pandas as pd
-
-
-_create_tuple = namedtuple(
-    "protein_comparison_modscore",
-    (
-        "query",
-        "target",
-        "query_n_domains",
-        "target_n_domains",
-        "levenshtein",
-        "jaccard",
-        "mod_score",
-    ),
-)
-
-
-def _calculate_mod_score_not_named(p1, p2):
-    """Compare domains between two proteins
-
-    Args:
-        p1 (Protein): SocialGene Protein Object
-        p2 (Protein): SocialGene Protein Object
-
-    Returns:
-        tuple:
-    """
-    return (
-        p1.hash_id,
-        p2.hash_id,
-        *mod_score(
-            p1.domain_vector,
-            p2.domain_vector,
-        ),
-    )
-
-
-def calculate_mod_score(p1, p2):
-    """Compare domains between two proteins
-
-    Args:
-        p1 (Protein): SocialGene Protein Object
-        p2 (Protein): SocialGene Protein Object
-
-    Returns:
-        namedtuple:
-    """
-    return _create_tuple(*_calculate_mod_score_not_named(p1, p2))
 
 
 class CompareDomains(CompareProteinsBaseClass):
@@ -102,7 +55,7 @@ class CompareDomains(CompareProteinsBaseClass):
                 _calculate_mod_score_not_named,
                 combinations(p1_obj_list, 2),
             ):
-                if only_hits and i[5] > 0.001:
-                    self.protein_comparisons.add(_create_tuple(*i))
+                if only_hits and i[5] < 0.001:
+                    continue
                 else:
                     self.protein_comparisons.add(_create_tuple(*i))

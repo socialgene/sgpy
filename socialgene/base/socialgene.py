@@ -21,7 +21,7 @@ from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
 from socialgene.parsers.hmmer_parser import HmmerParser
 from socialgene.parsers.sequence_parser import SequenceParser
-from socialgene.scoring.scoring import mod_score
+from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.utils.chunker import chunk_a_list_with_numpy
 from socialgene.utils.file_handling import open_write
 from socialgene.utils.logging import log

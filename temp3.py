@@ -6,7 +6,7 @@ from socialgene.clustermap.clustermap import Clustermap
 from socialgene.hmm.hmmer import HMMER
 from socialgene.base.socialgene import SocialGene
 from pathlib import Path
-from socialgene.scoring.scoring import mod_score
+from socialgene.compare_proteins.hmm.scoring import mod_score
 
 from socialgene.scoring.search import (
     check_for_hmm_outdegree,
