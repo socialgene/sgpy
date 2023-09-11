@@ -42,6 +42,7 @@ with open(mmseqs_lookup, "r") as l:
             if temp[1] in protids:
                 z = "\t"
                 h.writelines(f"{i.split(z)[0]}\n")
+
 createsubdb(olddb=mmseqs_path, newdb=mmseqs_subset_db, idfile=mmseqs_output_subset_ids)
 
 
