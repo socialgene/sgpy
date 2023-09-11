@@ -95,13 +95,14 @@ class CompareDomains(CompareProteinsBaseClass):
                 temp
                 self.protein_comparisons.add(temp)
 
-    def compare_all_to_all_parallel(self, p1_obj_list, cpus=1):
+    def compare_all_to_all_parallel(self, p1_obj_list, cpus=1, only_hits=True):
         # have to use _calculate_mod_score_not_named because named tuple can't pickle "protein_comparison_modscore"
         with Pool(cpus) as p:
             for i in p.starmap(
                 _calculate_mod_score_not_named,
                 combinations(p1_obj_list, 2),
             ):
-                # i[5] == jaccard
-                if i[5] > 0.001:
+                if only_hits and i[5] > 0.001:
+                    self.protein_comparisons.add(_create_tuple(*i))
+                else:
                     self.protein_comparisons.add(_create_tuple(*i))
