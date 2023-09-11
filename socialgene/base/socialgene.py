@@ -427,11 +427,12 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for k, v in temp_iter:
                 if v.sequence is not None:
                     counter += 1
+                    v.fasta_string(external_protein_id=external_protein_id)
                     if external_protein_id:
-                        out_id = self.proteins[k].external_protein_id
+                        handle.writelines(v.fasta_string_defline_external_id)
                     else:
-                        out_id = k
-                    handle.writelines(f">{out_id}\n{v.sequence}\n")
+                        handle.writelines(v.fasta_string_defline_hash_id)
+
         log.info(f"Wrote {str(counter)} proteins to {outpath}")
 
     def single_protein_to_fasta(self, hash_id):
@@ -526,14 +527,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """
         self._merge_proteins(sg_object)
         self._merge_assemblies(sg_object)
-        # check if self.protein_comparison is pandas or a list and append accordingly
-        if isinstance(self.protein_comparison, pd.core.frame.DataFrame):
-            sg_object.protein_comparison_to_df()
-            self.protein_comparison.append(sg_object.protein_comparison)
-        elif isinstance(self.protein_comparison, list):
-            self.protein_comparison.extend(sg_object.protein_comparison)
-        else:
-            raise TypeError()
+        self.protein_comparison.extend(sg_object.protein_comparison)
 
     def break_loci(self, gap_tolerance: int = 10000):
         """

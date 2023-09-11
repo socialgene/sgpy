@@ -1,6 +1,4 @@
 import itertools
-from collections import namedtuple
-
 from multiprocessing import Pool
 from socialgene.clustermap.clustermap import Clustermap
 from socialgene.hmm.hmmer import HMMER
@@ -47,12 +45,12 @@ parser.add_argument(
     help="HMM file directory",
 )
 
-gbk_path = "/home/chase/mibig_gbk/mibig_gbk_3.1/BGC0001478.gbk"
-hmm_dir = "/media/bigdrive2/chase/socialgene_v0.2.3/refseq/socialgene_per_run/hmm_cache"
+gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001850.gbk"
+hmm_dir = "/home/chase/Downloads/old3/work/06/45cc132a2e746452c578fefc8c34a7"
 # hmm file with cutoffs
-h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm")
+h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm.gz")
 # hmm file without cutoffs
-h2 = Path(hmm_dir, "socialgene_nr_hmms_file_without_cutoffs_1_of_1.hmm")
+h2 = Path(hmm_dir, "socialgene_nr_hmms_file_without_cutoffs_1_of_1.hmm.gz")
 ########################################
 # Setup hmmsearch
 ########################################
@@ -206,6 +204,7 @@ reduced[reduced["assembly_uid"] == "GCF_002362315.1"]
 clusters_above_threshold = reduced[
     reduced["cluster_unique_hits"] > must_find_more_than_x_per_nuc_sequence
 ]
+
 clusters_above_threshold_final_df = (
     clusters_above_threshold.groupby(["assembly_uid", "nucleotide_uid", "cluster"])
     .agg({"n_start": "min", "n_end": "max"})
@@ -270,7 +269,7 @@ with Progress(transient=True) as pg:
         )
         pg.update(task, advance=1)
 
-# Drop likely cross-origin proteins
+# Drop likely cross-origin-spanning proteins
 for ak, av in sg_object.assemblies.items():
     for nk, nv in av.loci.items():
         sg_object.assemblies[ak].loci[nk].features = set(
@@ -300,7 +299,6 @@ for ak, av in sg_object.assemblies.items():
 #         )
 #         pg.update(task, advance=1)
 
-sg_object.protein_comparison = []
 
 # get the input BGC's assembly id
 query_assembly = [
@@ -318,7 +316,7 @@ sg_object.bro(queries=query_proteins, targets=target_proteins, append=True)
 
 #######################################
 
-sg_object.protein_comparison_to_df()
+sg_object.protein_comparison_df
 # sg_object.protein_comparison = sg_object.protein_comparison[
 #     sg_object.protein_comparison.mod_score > 1.4
 # ]
@@ -398,5 +396,14 @@ cmap.write(
     groupdict=groupdict,
     group_dict_info=group_dict_info,
     assembly_order=order2,
-    outpath=Path("/home/chase/data.json"),
+    outpath=Path(
+        "/home/chase/Downloads/ttt/tempppp/clinker/clinker/plot/clinker/clinker/plot/data.json"
+    ),
 )
+
+# main_groups
+# secondary_groups (must occur in more than 1)
+
+sg_object
+
+sg_object.protein_comparison

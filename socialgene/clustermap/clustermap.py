@@ -81,13 +81,6 @@ class Clustermap:
             ]
         }
 
-    def doit(self, sg, groupdict, group_dict_info, assembly_order):
-        return (
-            self._clusters(sg, assembly_order)
-            | self._create_groups_json(groupdict, group_dict_info)
-            | {"links": self._links(sg)}
-        )
-
     def _links(self, sg):
         log.info("Creating clustermap.js links")
         sg.protein_comparison_to_df()
@@ -112,17 +105,24 @@ class Clustermap:
                                     "uid": target_uid,
                                     "name": self._get_uid(),
                                 },
-                                "identity": round(row.mod_score * 0.66, 2),
+                                "identity": round(row.mod_score * 2 / 3, 2),
                             }
-                            # row["mod_score"] * 0.66 adjusts max mod score of 1.5 to ~1 because clustermap.js scale is to 100
+                            # row["mod_score"] * 2/3 adjusts max mod score of 1.5 to ~1
                         )
         return res
+
+    def _build(self, sg, groupdict, group_dict_info, assembly_order):
+        return (
+            self._clusters(sg, assembly_order)
+            | self._create_groups_json(groupdict, group_dict_info)
+            | {"links": self._links(sg)}
+        )
 
     def write(self, sg_object, groupdict, group_dict_info, assembly_order, outpath):
         log.info(f"Writing clustermap.js output to: {outpath}")
         with open(outpath, "w") as outfile:
             json.dump(
-                self.doit(
+                self._build(
                     sg_object,
                     groupdict=groupdict,
                     group_dict_info=group_dict_info,

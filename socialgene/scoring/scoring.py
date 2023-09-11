@@ -1,6 +1,9 @@
-from collections import OrderedDict
+from collections import namedtuple
 
 from textdistance import jaccard, levenshtein
+
+SCORE_COLUMNS = ["l1", "l2", "levenshtein", "jaccard", "mod_score"]
+_mod_score_tupler = namedtuple("scoretuple", SCORE_COLUMNS)
 
 
 def mod_score(input_list_1, input_list_2):
@@ -46,12 +49,10 @@ def mod_score(input_list_1, input_list_2):
         else:
             mod_score_value = (jaccard_score * 0.5) + mod_levenshtein_score
 
-    return OrderedDict(
-        {
-            "l1": length_input_list_1,
-            "l2": length_input_list_2,
-            "levenshtein": round(mod_levenshtein_score, 2),
-            "jaccard": round(jaccard_score, 2),
-            "mod_score": round(mod_score_value, 2),
-        }
+    return _mod_score_tupler(
+        length_input_list_1,
+        length_input_list_2,
+        round(mod_levenshtein_score, 2),
+        round(jaccard_score, 2),
+        round(mod_score_value, 2),
     )

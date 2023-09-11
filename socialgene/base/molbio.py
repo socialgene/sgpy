@@ -452,6 +452,13 @@ class Protein(
         log.debug(
             f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
         )
+    @property
+    def fasta_string_defline_hash_id(self):
+        return f">{self.hash_id}\n{self.sequence}\n"
+
+    @property
+    def fasta_string_defline_external_id(self):
+        return f">{self.external_protein_id}\n{self.sequence}\n"
 
 
 class Feature(Location):
@@ -611,6 +618,10 @@ class Locus:
     def __dict__(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
+    @property
+    def protein_hash_set(self):
+        return {i.protein_hash for i in self.features}
+
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
         self.features.add(Feature(parent_object=self, **kwargs))
@@ -676,6 +687,14 @@ class Assembly:
         self.taxonomy = Taxonomy()
         self.info = self.create_source_key_dict()
         self.name = id
+
+    @property
+    def protein_hash_set(self):
+        """Return all protein hashes within assembly
+        Returns:
+            set: protein hashes
+        """
+        return set().union(*[i.protein_hash_set for i in self.loci.values()])
 
     @property
     def __dict__(self):
