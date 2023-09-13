@@ -1,4 +1,5 @@
 import json
+
 from socialgene.utils.logging import log
 
 

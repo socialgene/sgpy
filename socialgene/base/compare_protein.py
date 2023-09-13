@@ -3,8 +3,8 @@ from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 
-from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.compare_proteins.hmm.scoring import mod_score
+from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.utils.logging import log
 
 

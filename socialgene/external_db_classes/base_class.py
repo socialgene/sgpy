@@ -1,11 +1,7 @@
-import logging
 from abc import ABC
 
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
-
-logging.getLogger("neo4j").setLevel(logging.WARNING)
-logging.getLogger().setLevel(logging.INFO)
 
 
 class ExternalBaseClass(ABC):

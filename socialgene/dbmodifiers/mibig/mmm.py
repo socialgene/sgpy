@@ -9,8 +9,7 @@ from rich.progress import Progress, SpinnerColumn
 from socialgene.dbmodifiers.mibig.compound import Mibig_Compound
 from socialgene.neo4j.neo4j import GraphDriver
 
-# logging.getLogger("neo4j").setLevel(logging.WARNING)
-# logging.getLogger().setLevel(logging.INFO)
+# #
 
 
 # CREATE CONSTRAINT FOR (n:chemical) REQUIRE n.uid IS UNIQUE;

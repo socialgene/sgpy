@@ -1,23 +1,24 @@
 import tempfile
 
 from socialgene.base.socialgene import SocialGene
-from socialgene.config import env_vars
 
 
 def test_export_all_domains_as_tsv():
     expected = [
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t1\t1\t100\t1.1\t0\t2\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
         "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t1\t1\t100\t1.1\t0\t-1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t1\t1\t100\t1.1\t1.1\t100.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t2\t1\t100\t1.1\t1.1\t2.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t2\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t3\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t3\t1\t100\t1.1\t1.1\t1.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t4\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
-        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t5\t1\t100\t1.1\t1.1\t0.1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t10\t1\t100\t1.1\t1.1\t1.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t11\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t12\t1\t100\t1.1\t1.1\t0.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t2\t1\t100\t1.1\t1.1\t0.1\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t3\t1\t100\t1.1\t0\t2\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t4\t1\t100\t1.1\t1.1\t100.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t5\t1\t100\t1.1\t0\t3\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t6\t1\t100\t1.1\t1.1\t1000.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t7\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t8\t1\t100\t1.1\t1.1\t2.0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tFalse\n",
+        "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\t9\t1\t100\t1.1\t0\t0\t1.1\t1.1\t1.1\t1\t100\t1\t100\tTrue\n",
     ]
     sg_obj = SocialGene()
-    env_vars["HMMSEARCH_IEVALUE"] = 500
     sg_obj.add_protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
@@ -38,25 +39,25 @@ def test_export_all_domains_as_tsv():
     }
     tempd = (
         {"hmm_id": "1", "exponentialized": True, "i_evalue": 0.1},
-        {"hmm_id": "5", "exponentialized": False, "i_evalue": 0.1},
-        {"hmm_id": "1", "exponentialized": True, "i_evalue": 100},
-        {"hmm_id": "1", "exponentialized": False, "i_evalue": 100},
+        {"hmm_id": "2", "exponentialized": False, "i_evalue": 0.1},
+        {"hmm_id": "3", "exponentialized": True, "i_evalue": 100},
+        {"hmm_id": "4", "exponentialized": False, "i_evalue": 100},
         {
-            "hmm_id": "1",
+            "hmm_id": "5",
             "exponentialized": True,
             "i_evalue": 1000,
         },  # should fail to pass threshold
         {
-            "hmm_id": "1",
+            "hmm_id": "6",
             "exponentialized": False,
             "i_evalue": 1000,
         },  # should fail to pass threshold
-        {"hmm_id": "2", "exponentialized": True, "i_evalue": 2},
-        {"hmm_id": "2", "exponentialized": False, "i_evalue": 2},
-        {"hmm_id": "3", "exponentialized": True, "i_evalue": 1},
-        {"hmm_id": "3", "exponentialized": False, "i_evalue": 1},
-        {"hmm_id": "4", "exponentialized": True, "i_evalue": 0},
-        {"hmm_id": "4", "exponentialized": False, "i_evalue": 0},
+        {"hmm_id": "7", "exponentialized": True, "i_evalue": 2},
+        {"hmm_id": "8", "exponentialized": False, "i_evalue": 2},
+        {"hmm_id": "9", "exponentialized": True, "i_evalue": 1},
+        {"hmm_id": "10", "exponentialized": False, "i_evalue": 1},
+        {"hmm_id": "11", "exponentialized": True, "i_evalue": 0},
+        {"hmm_id": "12", "exponentialized": False, "i_evalue": 0},
     )
     for i in [base_dict | i for i in tempd]:
         sg_obj.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].add_domain(**i)
@@ -67,3 +68,6 @@ def test_export_all_domains_as_tsv():
             z = h.readlines()
     # domains are stored internally as sets, so may have different order in tsv
     assert sorted(z) == sorted(expected)
+
+
+TODO: 1

@@ -1,0 +1,83 @@
+format-version: 1.2
+data-version: releases/2023-07-27
+subsetdef: chebi_ph7_3 "Rhea list of ChEBI terms representing the major species at pH 7.3."
+subsetdef: gocheck_do_not_annotate "Term not to be used for direct annotation"
+subsetdef: gocheck_do_not_manually_annotate "Term not to be used for direct manual annotation"
+subsetdef: goslim_agr "AGR slim"
+subsetdef: goslim_aspergillus "Aspergillus GO slim"
+subsetdef: goslim_candida "Candida GO slim"
+subsetdef: goslim_chembl "ChEMBL protein targets summary"
+subsetdef: goslim_drosophila "Drosophila GO slim"
+subsetdef: goslim_flybase_ribbon "FlyBase Drosophila GO ribbon slim"
+subsetdef: goslim_generic "Generic GO slim"
+subsetdef: goslim_metagenomics "Metagenomics GO slim"
+subsetdef: goslim_mouse "Mouse GO slim"
+subsetdef: goslim_pir "PIR GO slim"
+subsetdef: goslim_plant "Plant GO slim"
+subsetdef: goslim_pombe "Fission yeast GO slim"
+subsetdef: goslim_synapse "synapse GO slim"
+subsetdef: goslim_yeast "Yeast GO slim"
+subsetdef: prokaryote_subset "GO subset for prokaryotes"
+synonymtypedef: syngo_official_label "label approved by the SynGO project"
+synonymtypedef: systematic_synonym "Systematic synonym" EXACT
+default-namespace: gene_ontology
+ontology: go
+
+[Term]
+id: GO:0000001
+name: mitochondrion inheritance
+namespace: biological_process
+def: "The distribution of mitochondria, including the mitochondrial genome, into daughter cells after mitosis or meiosis, mediated by interactions between mitochondria and the cytoskeleton." [GOC:mcc, PMID:10873824, PMID:11389764]
+synonym: "mitochondrial inheritance" EXACT []
+is_a: GO:0048308 ! organelle inheritance
+is_a: GO:0048311 ! mitochondrion distribution
+
+[Term]
+id: GO:0000002
+name: mitochondrial genome maintenance
+namespace: biological_process
+def: "The maintenance of the structure and integrity of the mitochondrial genome; includes replication and segregation of the mitochondrial chromosome." [GOC:ai, GOC:vw]
+is_a: GO:0007005 ! mitochondrion organization
+
+[Term]
+id: GO:0000016
+name: lactase activity
+namespace: molecular_function
+def: "Catalysis of the reaction: lactose + H2O = D-glucose + D-galactose." [PMID:12023280]
+synonym: "lactose galactohydrolase activity" EXACT []
+xref: EC:3.2.1.108
+xref: MetaCyc:LACTASE-RXN
+xref: Reactome:R-HSA-189062 "lactose + H2O => D-glucose + D-galactose"
+--
+namespace: biological_process
+def: "The directed movement of alpha-glucosides into, out of or within a cell, or between cells, by means of some agent such as a transporter or pore. Alpha-glucosides are glycosides in which the sugar group is a glucose residue, and the anomeric carbon of the bond is in an alpha configuration." [GOC:jl, ISBN:0198506732, PMID:9919658]
+is_a: GO:0042946 ! glucoside transport
+
+[Term]
+id: GO:0000018
+name: regulation of DNA recombination
+namespace: biological_process
+def: "Any process that modulates the frequency, rate or extent of DNA recombination, a DNA metabolic process in which a new genotype is formed by reassortment of genes resulting in gene combinations different from those that were present in the parents." [GOC:go_curators, ISBN:0198506732]
+is_a: GO:0051052 ! regulation of DNA metabolic process
+relationship: regulates GO:0006310 ! DNA recombination
+
+[Term]
+id: GO:0000008
+name: obsolete thioredoxin
+namespace: molecular_function
+alt_id: GO:0000013
+def: "OBSOLETE. A small disulfide-containing redox protein that serves as a general protein disulfide oxidoreductase. Interacts with a broad range of proteins by a redox mechanism, based on the reversible oxidation of 2 cysteine thiol groups to a disulfide, accompanied by the transfer of 2 electrons and 2 protons. The net result is the covalent interconversion of a disulfide and a dithiol." [GOC:kd]
+comment: This term was made obsolete because it represents gene products.
+synonym: "thioredoxin" EXACT []
+is_obsolete: true
+consider: GO:0003756
+consider: GO:0015036
+
+
+[Typedef]
+id: term_tracker_item
+name: term tracker item
+namespace: external
+xref: IAO:0000233
+is_metadata_tag: true
+is_class_level: true

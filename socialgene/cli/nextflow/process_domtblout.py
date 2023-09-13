@@ -28,11 +28,12 @@ def read_domtblout_write_tsv(domtblout_file, outpath):
         for i in socialgene_object._parse_domtblout(
             input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
         ):
-            domain_obj = Domain(**i)
-            _temp = [i["protein_id"]]
-            _temp.extend(list(domain_obj.get_dict().values()))
-            tsv_writer.writerow(_temp)
-            _domain_counter += 1
+            if float(i["i_evalue"]) <= env_vars["HMMSEARCH_IEVALUE"]:
+                domain_obj = Domain(**i, exponentialized=True)
+                _temp = [i["protein_id"]]
+                _temp.extend(list(domain_obj.__dict__.values()))
+                tsv_writer.writerow(_temp)
+                _domain_counter += 1
     log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from rich.progress import Progress, SpinnerColumn
 
 from socialgene.parsers.hmmmodel import HMM_SOURCES, HmmModelHandler
+from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
 parser.add_argument(
@@ -37,9 +38,10 @@ parser.add_argument(
 )
 
 
-def run_nf_workflow(input_dir, outdir, n_files, splitcutoffs):
+def run_nf_workflow(
+    input_dir, outdir, n_files, splitcutoffs, input_glob="**/*.socialgene.hmm.gz"
+):
     # glob determined by https://github.com/socialgene/sgnf/blob/17f9cde454c13a91bac95917237cf35ddcbe52c3/bin/hmmconvert_loop.shL10
-    input_glob = "**/*.socialgene.hmm.gz"
     hmms_object = HmmModelHandler()
     # currently expects all HMM databases to be saved in a folder named for
     # the database in which it was downloaded from. To add more, see HMMParser().hmm_dbs
@@ -61,11 +63,12 @@ def run_nf_workflow(input_dir, outdir, n_files, splitcutoffs):
     with Progress(
         SpinnerColumn(spinner_name="runner"),
         *Progress.get_default_columns(),
+        transient=True,
     ) as progress:
         task = progress.add_task("Progress...", total=len(hmm_paths))
         for i in hmm_paths:
             hmms_object.read(filepath=i.get("filepath"), base_dir=i.get("base_dir"))
-            progress.console.print(f"Parsing {i.get('filepath')}\r")
+            log.debug(f"Parsing {i.get('filepath')}\r")
             progress.update(task, advance=1)
     # Update info, make non-redundant, and write out
     hmms_object.hydrate_cull()
@@ -80,9 +83,6 @@ def run_nf_workflow(input_dir, outdir, n_files, splitcutoffs):
 
 def main():
     args = parser.parse_args()
-    # input_dir = "/home/chase/Documents/socialgene_outdir/hmm_downloads"
-    # numoutfiles = 5
-    # outdir = "/home/chase/Documents/socialgene_outdir/socialgene_hmms_info"
     input_dir = args.input_dir
     outdir = args.outdir
     numoutfiles = int(args.numoutfiles)

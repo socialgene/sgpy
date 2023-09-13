@@ -1,12 +1,14 @@
-import itertools
-from socialgene.clustermap.clustermap import Clustermap
-from socialgene.hmm.hmmer import HMMER
-from socialgene.base.socialgene import SocialGene
-from pathlib import Path
-import pandas as pd
 import argparse
+import itertools
 from multiprocessing import Pool
 from pathlib import Path
+
+import pandas as pd
+from rich.progress import Progress
+
+from socialgene.base.socialgene import SocialGene
+from socialgene.clustermap.clustermap import Clustermap
+from socialgene.hmm.hmmer import HMMER
 from socialgene.scoring.search import (
     check_for_hmm_outdegree,
     count_matches_per_nucleotide_sequence,
@@ -15,8 +17,6 @@ from socialgene.scoring.search import (
     search_for_similar_proteins,
     set_hmm_outdegree,
 )
-from rich.progress import Progress
-
 
 parser = argparse.ArgumentParser(
     description="Create a clustermap.js file for an input BGC"
@@ -44,18 +44,18 @@ def main(a):
         main2(a)
     except:
         print("1")
-              
+
 
 def main2(input_tuple):
     print(input_tuple)
     gbk_path = input_tuple[0]
-    json_dir= input_tuple[1]
-    hmm_dir = input_tuple[2] 
-    
+    json_dir = input_tuple[1]
+    hmm_dir = input_tuple[2]
+
     json_path = Path(json_dir, f"{Path(gbk_path).stem}.json")
     if json_path.exists():
         return
-    
+
     # hmm file with cutoffs
     h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm")
     # hmm file without cutoffs
@@ -82,10 +82,14 @@ def main2(input_tuple):
     modified_input_bgc_name = f"socialgene_query_{input_bgc_name}"
 
     # change input assembly name
-    sg_object.assemblies[modified_input_bgc_name] = sg_object.assemblies.pop(input_bgc_name)
+    sg_object.assemblies[modified_input_bgc_name] = sg_object.assemblies.pop(
+        input_bgc_name
+    )
     sg_object.assemblies[modified_input_bgc_name].id = modified_input_bgc_name
 
-    input_bgc_nuc_id = list(sg_object.assemblies[modified_input_bgc_name].loci.keys())[0]
+    input_bgc_nuc_id = list(sg_object.assemblies[modified_input_bgc_name].loci.keys())[
+        0
+    ]
 
     # Annotate input BGC proteins with HMM models using external hmmscan
     sg_object.annotate(
@@ -99,16 +103,17 @@ def main2(input_tuple):
     if not check_for_hmm_outdegree():
         set_hmm_outdegree()
 
+    input_protein_domain_df = prioritize_input_proteins(
+        sg_object, reduce_by=1.5, max_out=25
+    )
 
-    input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=1.5, max_out=25)
-
-    initial_search_results = search_for_similar_proteins(input_protein_domain_df, sg_object)
-
+    initial_search_results = search_for_similar_proteins(
+        input_protein_domain_df, sg_object
+    )
 
     prioritized_nucleotide_seqs = count_matches_per_nucleotide_sequence(
         initial_search_results
     )
-
 
     prioritized_nucleotide_seqs = prioritized_nucleotide_seqs[
         prioritized_nucleotide_seqs.count_of_matched_inputs
@@ -131,7 +136,6 @@ def main2(input_tuple):
                 intermediate_df_1.append(result)
             pg.update(task, advance=1)
 
-
     intermediate_df_1 = pd.concat(intermediate_df_1)
 
     df_nucuid_n_matches = count_matches_per_nucleotide_sequence(intermediate_df_1)
@@ -142,16 +146,18 @@ def main2(input_tuple):
     intermediate_df_2 = []
 
     with Progress(transient=True) as pg:
-        task = pg.add_task("Processing initial matches...", total=len(df_nucuid_n_matches))
+        task = pg.add_task(
+            "Processing initial matches...", total=len(df_nucuid_n_matches)
+        )
         for name, group in intermediate_df_1[
-            intermediate_df_1["nucleotide_uid"].isin(list(df_nucuid_n_matches.nucleotide_uid))
+            intermediate_df_1["nucleotide_uid"].isin(
+                list(df_nucuid_n_matches.nucleotide_uid)
+            )
         ].groupby(["nucleotide_uid"]):
             result = prioritize_cluster_windows(group)
             if result:
                 intermediate_df_2.append(result)
             pg.update(task, advance=1)
-
-
 
     with Progress(transient=True) as pg:
         task = pg.add_task("Progress...", total=len(intermediate_df_2))
@@ -163,16 +169,16 @@ def main2(input_tuple):
 
     sg_object.protein_comparison = []
 
-
-    query_assembly=[v for k,v in sg_object.assemblies.items() if k.startswith("socialgene_query_")][0]
+    query_assembly = [
+        v for k, v in sg_object.assemblies.items() if k.startswith("socialgene_query_")
+    ][0]
     query_proteins = query_assembly.get_all_proteins()
 
-    target_proteins=set()
+    target_proteins = set()
 
-    for k,v in sg_object.assemblies.items():
+    for k, v in sg_object.assemblies.items():
         if not k.startswith("socialgene_query_"):
-           target_proteins.update(v.get_all_proteins())
-
+            target_proteins.update(v.get_all_proteins())
 
     sg_object.bro(queries=query_proteins, targets=target_proteins, append=True)
     sg_object.protein_comparison_to_df()
@@ -181,9 +187,9 @@ def main2(input_tuple):
         sg_object.protein_comparison.jaccard > 0.7
     ]
 
-
-    groupdict = sg_object.protein_comparison.groupby("query")['target'].apply(list).to_dict()
-
+    groupdict = (
+        sg_object.protein_comparison.groupby("query")["target"].apply(list).to_dict()
+    )
 
     group_dict_info = {
         f.protein_hash: (f.protein_id, f.description)
@@ -207,17 +213,15 @@ def main2(input_tuple):
 
     ######################## Modify Assembly names
 
-
-
-    for k,v in sg_object.assemblies.items():
+    for k, v in sg_object.assemblies.items():
         v.fill_taxonomy_from_db()
         v.fill_properties()
 
-    for k,v in sg_object.assemblies.items():
+    for k, v in sg_object.assemblies.items():
         if v.taxonomy.genus_:
-            v.name=f"{v.id}__{v.taxonomy.genus_}__{v.info['culture_collection']}"
+            v.name = f"{v.id}__{v.taxonomy.genus_}__{v.info['culture_collection']}"
         else:
-            v.name=f"{v.id}____{v.info['culture_collection']}"
+            v.name = f"{v.id}____{v.info['culture_collection']}"
 
     cmap = Clustermap()
 
@@ -229,17 +233,11 @@ def main2(input_tuple):
         outpath=json_path,
     )
 
+
 if __name__ == "__main__":
     args = parser.parse_args()
     gb_dir = args.input
-    json_dir=args.output
-    hmm_dir = args.hmmdir 
+    json_dir = args.output
+    hmm_dir = args.hmmdir
     p = Pool(60)
     p.map(main, itertools.product(Path(gb_dir).glob("*.gbk"), [json_dir], [hmm_dir]))
-
-
-
-
-
-
-    

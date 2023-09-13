@@ -121,7 +121,7 @@ class HMMER:
 
     def hmmscan(self, hmm_directory, outdirectory, **kwargs):
         for x in Path(hmm_directory).iterdir():
-            if re.search("\.hmm$|hmm\.gz$", str(x)):
+            if re.search(r"\.hmm$|hmm\.gz$", str(x)):
                 if "with_cutoffs" in x.stem:
                     self.hmm_filepaths_with_cutoffs.append(x)
                 elif "without_cutoffs" in x.stem:

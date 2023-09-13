@@ -88,7 +88,7 @@ class ParsedDomtblout:
     def __init__(self):
         pass
 
-    def parse_parseddomtblout(self, input_path):
+    def parse_parseddomtblout(self, input_path, **kwargs):
         """
         The function `parse_parseddomtblout` reads data from a parsed domtblout TSV and adds protein and domain
         information to a data structure.
@@ -104,20 +104,22 @@ class ParsedDomtblout:
                 self.add_protein(
                     hash_id=line[0],
                 )
+                print(bool(line[14]))
                 self.proteins[line[0]].add_domain(
                     hash_id=line[1],
                     env_from=int(line[2]),
                     env_to=int(line[3]),
-                    seq_pro_score=float(line[4]),  # maybe 7? TODO:
+                    seq_pro_score=float(line[4]),
                     evalue=float(line[5]),
                     i_evalue=float(line[6]),
-                    domain_bias=float(line[7]),  # or 8
-                    domain_score=float(line[8]),  # or 7
-                    seq_pro_bias=float(line[9]),  # ?
+                    domain_bias=float(line[7]),
+                    domain_score=float(line[8]),
+                    seq_pro_bias=float(line[9]),
                     hmm_from=int(line[10]),
                     hmm_to=int(line[11]),
                     ali_from=int(line[12]),
                     ali_to=int(line[13]),
+                    exponentialized=bool(line[14]),
                 )
         log.info(
             f"Read {str(len(self.proteins))} proteins and {str(sum([len(i.domains) for i in self.proteins.values()]))} domains from {str(input_path)}"
@@ -133,8 +135,6 @@ class HmmerParser(Domtblout, ParsedDomtblout):
         Args:
             filepath (str): path to sequence file
         """
-        # TODO: fh.check_if_tar(filepath=filepath)
-
         if check_if_domtblout(filepath):
             self.parse_domtblout(filepath, **kwargs)
         elif check_if_parseddomtblout(filepath):
@@ -162,7 +162,7 @@ def check_if_parseddomtblout(filepath):
         l2 = f.readline()
         a = l1.count("\t")
         b = l2.count("\t")
-    return all(i == 13 for i in [a, b])
+    return all(i == 14 for i in [a, b])
 
 
 def check_if_domtblout(filepath):

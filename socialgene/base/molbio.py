@@ -149,7 +149,7 @@ class ProteinSequence:
             str: sequence of amino acids
         """
         if self.sequence is None:
-            return "NA"
+            return "-".join(["0" for i in self._one_letter_amino_acids()])
         else:
             return "-".join(
                 [str(self.sequence.count(i)) for i in self._one_letter_amino_acids()]
@@ -313,11 +313,27 @@ class Domain:
 
     @property
     def __dict__(self):
-        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+        ord_dict = OrderedDict()
+        ord_dict["hmm_id"] = str(self.hmm_id)
+        ord_dict["env_from"] = int(self.env_from)
+        ord_dict["env_to"] = int(self.env_to)
+        ord_dict["seq_pro_score"] = round(self.seq_pro_score, 1)
+        ord_dict["evalue"] = round(self.evalue, 1)
+        ord_dict["i_evalue"] = round(self.i_evalue, 1)
+        ord_dict["domain_bias"] = round(self.domain_bias, 1)
+        ord_dict["domain_score"] = round(self.domain_score, 1)
+        ord_dict["seq_pro_bias"] = round(self.seq_pro_bias, 1)
+        ord_dict["hmm_from"] = int(self.hmm_from)
+        ord_dict["hmm_to"] = int(self.hmm_to)
+        ord_dict["ali_from"] = int(self.ali_from)
+        ord_dict["ali_to"] = int(self.ali_to)
+        ord_dict["exponentialized"] = bool(self.exponentialized)
+        return ord_dict
 
     def get_hmm_id(self):
         return self.hmm_id
 
+    @property
     def domain_within_threshold(self):
         """Check if a protein's domain annotation is within the threshold for inclusion (currently i_evalue based)
         Returns:
@@ -328,25 +344,6 @@ class Domain:
         else:
             return self.i_evalue <= env_vars["HMMSEARCH_IEVALUE"]
 
-    def get_dict(self):
-        ord_dict = OrderedDict()
-        ord_dict["hmm_id"] = str(self.hmm_id)
-        ord_dict["env_from"] = int(self.env_from)
-        ord_dict["env_to"] = int(self.env_to)
-        ord_dict["seq_pro_score"] = round(self.seq_pro_score, 2)
-        ord_dict["evalue"] = round(self.evalue, 2)
-        ord_dict["i_evalue"] = round(self.i_evalue, 2)
-        ord_dict["domain_bias"] = round(self.domain_bias, 2)
-        ord_dict["domain_score"] = round(self.domain_score, 2)
-        ord_dict["seq_pro_bias"] = round(self.seq_pro_bias, 2)
-        ord_dict["hmm_from"] = int(self.hmm_from)
-        ord_dict["hmm_to"] = int(self.hmm_to)
-        ord_dict["ali_from"] = int(self.ali_from)
-        ord_dict["ali_to"] = int(self.ali_to)
-        ord_dict["exponentialized"] = bool(self.exponentialized)
-
-        return ord_dict
-
     def __hash__(self):
         """Used to prevent adding duplicate domains
         Returns:
@@ -354,7 +351,7 @@ class Domain:
         """
         return hash((self.hmm_id, self.env_from, self.env_to, self.i_evalue))
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # pragma: no cover
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
@@ -400,11 +397,6 @@ class Protein(
     def __dict__(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
-    def only_id(self):
-        self.description = None
-        self.external_protein_id = None
-        self.domains = set()
-
     def add_domain(
         self,
         *args,
@@ -417,7 +409,8 @@ class Protein(
         """
         self.domains.add(Domain(*args, **kwargs))
 
-    def sort_domains_by_mean_envelope_position(self):
+    @property
+    def domain_list_sorted_by_mean_envelope_position(self):
         # (ie can't sort a set())
         # 'if' is to check whether domains is None
         # A tuple is passed so that the HMM annnotations are first sorted by the envelope midpoint
@@ -438,16 +431,16 @@ class Protein(
         if not self.domains:
             log.debug(f"Tried to get domains from domain-less protein {self}")
             return []
-        return [i.get_hmm_id() for i in self.sort_domains_by_mean_envelope_position()]
+        return [
+            i.get_hmm_id() for i in self.domain_list_sorted_by_mean_envelope_position
+        ]
 
     def filter_domains(self):
         """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
         _before_count = len(self.domains)
         temp = []
-        for domain in self.domains:
-            if domain.domain_within_threshold():
-                temp.append(domain)
-        self.domains = set(temp)
+        self.domains = {i for i in self.domains if i.domain_within_threshold}
+
         del temp
         log.debug(
             f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
@@ -615,6 +608,10 @@ class Locus:
         self.features = set()
         self.info = self.create_source_key_dict()
 
+    def add_feature(self, **kwargs):
+        """Add a feature to a locus"""
+        self.features.add(Feature(parent_object=self, **kwargs))
+
     @property
     def __dict__(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
@@ -623,14 +620,11 @@ class Locus:
     def protein_hash_set(self):
         return {i.protein_hash for i in self.features}
 
-    def add_feature(self, **kwargs):
-        """Add a feature to a locus"""
-        self.features.add(Feature(parent_object=self, **kwargs))
-
-    def sort_by_middle(self):
+    @property
+    def features_sorted_by_midpoint(self):
         """Sorts features by mid-coordinate of each feature"""
-        self.features = list(self.features)
-        self.features.sort(key=lambda i: int((i.end + i.start) / 2))
+        for i in sorted(list(self.features), key=lambda i: int((i.end + i.start) / 2)):
+            yield i
 
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in SOURCE_KEYS})
@@ -638,6 +632,9 @@ class Locus:
     def get_all_proteins(self) -> Set[str]:
         """Get a Set of proteins associated with the Locus"""
         return {i.protein_hash for i in self.features}
+
+    def drop_non_protein_features(self):
+        self.features = {i for i in self.features if i.type == "protein"}
 
 
 class Taxonomy:
@@ -708,14 +705,6 @@ class Assembly:
         if id not in self.loci:
             self.loci[id] = Locus(parent_object=self)
 
-    def get_min_maxcoordinates(self):
-        # TODO: broken
-        """Get the minimum and maximum start/stop for a set of loci"""
-        return {
-            k: (min([i.start for i in v]), max([i.start for i in v]))
-            for k, v in self.loci.items()
-        }
-
     def create_source_key_dict(self):
         return OrderedDict({i: None for i in SOURCE_KEYS})
 
@@ -733,7 +722,7 @@ class Assembly:
                 ).value()
                 # Dict comprehension appends '_' to the keys, to match the args in Taxonomy
                 self.taxonomy = Taxonomy(**{f"{k}_": v for k, v in res[0].items()})
-        except:
+        except Exception:
             log.debug(f"Error trying to retrieve taxonomy for {self.id}")
 
     def get_all_proteins(self) -> Set[str]:
@@ -756,7 +745,7 @@ class Assembly:
                 for k in self.info.keys():
                     if k in res:
                         self.info[k] = res[k]
-        except:
+        except Exception:
             log.debug(f"Error trying to retrieve taxonomy for {self.id}")
 
 

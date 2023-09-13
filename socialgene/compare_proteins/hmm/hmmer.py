@@ -1,11 +1,10 @@
 from itertools import combinations, product
 from multiprocessing import Pool
-from socialgene.compare_proteins.base_class import CompareProteinsBaseClass
 
-from collections import namedtuple
-
-from socialgene.compare_proteins.hmm.scoring import mod_score, _mod_score_tupler
 import pandas as pd
+
+from socialgene.compare_proteins.base_class import CompareProteinsBaseClass
+from socialgene.compare_proteins.hmm.scoring import _mod_score_tupler, mod_score
 
 
 def picklable_modscore(p1, p2):

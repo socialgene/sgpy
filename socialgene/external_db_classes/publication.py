@@ -19,7 +19,7 @@ class Publication:
         title: str = None,
         journal: str = None,
         year: str = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         self.doi = doi
         self.pmid = pmid

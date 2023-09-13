@@ -23,6 +23,25 @@ def test_ProteinSequence_2():
 
 
 def test_ProteinSequence_3():
+    temp = ProteinSequence(hash_id="")
+    assert (
+        temp._amino_acid_count()
+        == "0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0"
+    )
+    temp = ProteinSequence(sequence="")
+    assert (
+        temp._amino_acid_count()
+        == "0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0"
+    )
+    temp = ProteinSequence(sequence="")
+    temp.sequence = None
+    assert (
+        temp._amino_acid_count()
+        == "0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0"
+    )
+
+
+def test_ProteinSequence_4():
     temp = ProteinSequence(sequence="ARNDCQEGHILKMFPSTWYVXZJU")
     assert temp.sequence_length() == 24
 
@@ -35,3 +54,12 @@ def test_fail():
 def test_fail2():
     with pytest.raises(ValueError):
         ProteinSequence(sequence="1ARNDCQEGHILKMFPSTWYVXZJU")
+
+
+def test_dict():
+    temp = ProteinSequence(sequence="ZJUAARNDCQEGHIILKMFPSTWTYVXZJU")
+    assert temp.__dict__ == {
+        "crc64": "29CAA4E569304732",
+        "hash_id": "DeAsyYJZ1XS1-LHOf15YN7OMk-gzJgbL",
+        "sequence": "ZJUAARNDCQEGHIILKMFPSTWTYVXZJU",
+    }

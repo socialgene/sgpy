@@ -1,15 +1,12 @@
 import csv
-import itertools
 import pickle
 import tempfile
 from collections import defaultdict
-from copy import deepcopy
 from multiprocessing import cpu_count
 from operator import attrgetter
 from pathlib import Path
 from typing import List
 
-import pandas as pd
 from rich.progress import Progress
 
 from socialgene.base.compare_protein import CompareProtein
@@ -21,7 +18,6 @@ from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
 from socialgene.parsers.hmmer_parser import HmmerParser
 from socialgene.parsers.sequence_parser import SequenceParser
-from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.utils.chunker import chunk_a_list_with_numpy
 from socialgene.utils.file_handling import open_write
 from socialgene.utils.logging import log
@@ -50,9 +46,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def get_loci_ids(self):
         return list(self.loci.keys())
-
-    def get_min_maxcoordinates(self):
-        return {k: v.get_min_maxcoordinates() for k, v in self.assemblies.items()}
 
     ########################################
     # Filter
@@ -198,20 +191,54 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         else:
             n_not_in_db = list(self.proteins.keys())
         if n_not_in_db:
-            self.annotate_with_hmmscan(
+            self.annotate_proteins_with_hmmscan(
                 protein_id_list=n_not_in_db,
                 **kwargs,
             )
 
-    def annotate_with_hmmscan(
+    def annotate_proteins_with_hmmscan(
         self, protein_id_list, hmm_directory, cpus=None, **kwargs
     ):
-        """Run hmmscan in parallel (meant to be when the number of proteins is relatively small)
+        """Run hmmscan on Protein objects
 
         Args:
             protein_id_list (list): list of protein hash ids to run hmmscan on
             hmm_directory (str): path to directory containing hmm files
             cpus (int): number of parallel processes to spawn
+
+        Kwargs:
+            These are all set within from common_parameters.env if not provided to kwargs here
+            f1 (float): The parameter `f1` is a float value representing the gathering threshold for the
+        first domain architecture. It is used in the HMMER's hmmscan command to set the threshold for
+        the first domain architecture. The default value is obtained from the `env_vars` dictionary with
+        the key "H
+            f2 (float): The parameter `f2` in the `hmmscan` method is a float that represents the
+        gathering threshold for the second domain architecture. It is used as an optional argument in
+        the `hmmscan` command.
+            f3 (float): The parameter `f3` is a float value that represents the threshold for the third
+        stage of the HMMER's hmmscan algorithm. It is used to control the trade-off between sensitivity
+        and speed during the search. A higher value of `f3` will increase the speed of the search
+            dom_e: The `dom_e` parameter is the E-value threshold for reporting domain hits. It is used to
+        control the significance threshold for reporting individual domains in the output.
+          inc_e: The `inc_e` parameter is the inclusion threshold for the E-value. It is used to
+        determine if a hit is significant enough to be included in the output. Hits with E-values below
+        the inclusion threshold will be reported.
+            incdom_e: The `incdom_e` parameter is the inclusion threshold for domain E-values in HMMER's
+        hmmscan. It is used to control the sensitivity of the search by setting a threshold for the
+        significance of domain hits. Any domain hit with an E-value below the `incdom_e` threshold
+            e: The parameter `e` in the `hmmscan` method is the E-value threshold for reporting domains.
+        It is a floating-point value that determines the significance threshold for the reported
+        matches. A lower E-value indicates a more significant match.
+            z: The parameter `z` in the `hmmscan` method is used to set the reporting threshold for the
+        gathering score. The gathering score is a measure of the significance of a match between a
+        sequence and a profile hidden Markov model (HMM). The `z` parameter specifies the number of
+            seed (int): The `seed` parameter in the `hmmscan` method is an optional integer parameter that
+        specifies the random number seed for the HMMER's hmmscan algorithm.
+            cpus (int): The `cpus` parameter specifies the number of CPUs (or cores) to be used for
+        running the hmmscan process. Defaults to 1
+            overwrite: The `overwrite` parameter is a boolean flag that determines whether to overwrite an
+        existing file at the `domtblout_path` location. If `overwrite` is set to `False` and a file
+        already exists at `domtblout_path`, a `FileExistsError` will be raised. Defaults to False
         """
         log.info(f"Annotating {len(protein_id_list)} proteins with HMMER's hmmscan")
         if cpus is None:
@@ -357,10 +384,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 # sort to standardize the write order
                 for domain in self.proteins[
                     prot_id
-                ].sort_domains_by_mean_envelope_position():
+                ].domain_list_sorted_by_mean_envelope_position:
                     _domain_counter += 1
                     _temp = [prot_id]
-                    _temp.extend(list(domain.get_dict().values()))
+                    _temp.extend(list(domain.__dict__.values()))
                     tsv_writer.writerow(_temp)
         log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
@@ -427,7 +454,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for k, v in temp_iter:
                 if v.sequence is not None:
                     counter += 1
-                    v.fasta_string(external_protein_id=external_protein_id)
                     if external_protein_id:
                         handle.writelines(v.fasta_string_defline_external_id)
                     else:
@@ -789,28 +815,12 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             if v.taxid:
                 yield (k, v.taxid)
 
-    def drop_non_protein_features(self, return_removed=False):
-        """Drop features that aren't proteins
-
-        Args:
-            return_removed (bool, optional): . Defaults to False.
+    def drop_all_non_protein_features(self):
+        """Drop features from all assembly/loci that aren't proteins/pseudo-proteins
 
         Returns:
             list: list of features that were removed (if return_removed=True)
         """
-        report = {}
-        for a_k, a_v in self.assemblies.items():
-            report[a_k] = {}
-            for l_k, l_v in a_v.loci.items():
-                report[a_k][l_k] = {"retained": 0, "removed": 0}
-                kept_features = set()
-                for feature in l_v.features:
-                    if feature.feature_is_protein():
-                        # TODO: remove the need for deepcopy
-                        kept_features.add(deepcopy(feature))
-                        report[a_k][l_k]["retained"] += 1
-                    else:
-                        report[a_k][l_k]["removed"] += 1
-                self.assemblies[a_k].loci[l_k].features = kept_features
-        if return_removed:
-            return report
+        for a_v in self.assemblies.values():
+            for l_v in a_v.loci.values():
+                l_v.drop_non_protein_features()

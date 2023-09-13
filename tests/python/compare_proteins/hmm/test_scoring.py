@@ -1,13 +1,12 @@
-import pytest
-
-from socialgene.compare_proteins.hmm.scoring import mod_score, _mod_score_tupler
-
 import os
-from socialgene.base.socialgene import SocialGene
+
 import pytest
 
+from socialgene.base.socialgene import SocialGene
+from socialgene.compare_proteins.hmm.scoring import _mod_score_tupler, mod_score
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "test_genomes")
 gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
@@ -15,17 +14,14 @@ gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
-hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
-
-
-# gbk_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data/test_genomes/lagriamide_mibig_bgc0001946.gbk"
-# hmm_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data"
+hmm_path = FIXTURE_DIR
 
 
 @pytest.mark.parametrize("n", [0, 1, 2, 3, 4, 5, 6])
 def test_mod_score_tupler(n):
-    with pytest.raises(TypeError) as exc_info:
+    with pytest.raises(TypeError):
         _mod_score_tupler(*[i for i in range(n)])
 
 
@@ -65,7 +61,7 @@ def test_mod_score():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    sg_object.annotate_with_hmmscan(
+    sg_object.annotate_proteins_with_hmmscan(
         protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
@@ -105,7 +101,7 @@ def test_mod_score_same_hash_with_domains():
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     protein_id_list = list(sg_object.proteins.keys())
-    sg_object.annotate_with_hmmscan(
+    sg_object.annotate_proteins_with_hmmscan(
         protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     res = mod_score(p1, p2)
@@ -138,5 +134,5 @@ def test_mod_score_same_hash_no_domains():
 
 
 def test_mod_score_input_error():
-    with pytest.raises(TypeError) as exc_info:
+    with pytest.raises(TypeError):
         mod_score("p1", 1)

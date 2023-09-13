@@ -86,6 +86,47 @@ class HmmModel:
     COMPO: str = None
     MODEL: List[str] = field(default_factory=lambda: [])
 
+    @property
+    def __dict__(self):
+        """Template dictionary to hold the desired info of a single hmm model"""
+        if isinstance(self._notes, list):
+            notes = "; ".join(self._notes)
+        else:
+            notes = str(self._notes)
+
+        if self._new_hash:
+            hash_to_use = self._new_hash
+        else:
+            hash_to_use = self._hash
+        # need tigrfam ids to actually be the tigrfam ids (not f"{self._model_source}_{self._n}"),
+        # so that tigrfam_to_go, etc will associate
+        # need some others to be f"{self._model_source}_{self._n}" because can't assume they will be
+        # unique within a source db (ie same model in different antismash categories)
+        if self._model_source == "tigrfam":
+            mod_id = self.NAME
+        else:
+            mod_id = f"{self._model_source}_{self._n}"
+        return OrderedDict(
+            {
+                "id": mod_id,
+                "source": self._model_source,
+                "rel_path": self._rel_path,
+                "name": self.NAME,
+                "acc": self.ACC,
+                "notes": notes,
+                "description": self.DESC,
+                "date": self.DATE,
+                "hash": self._hash,
+                "hash_used": hash_to_use,
+                "model_length": len(self.MODEL),
+                "category": self._category,
+                "subcategory": self._subcategory,
+                "ga": self.GA,
+                "tc": self.TC,
+                "nc": self.NC,
+            }
+        )
+
     def add_attr(self, line):
         """
         The function `add_attr` checks if a line is an HMM attribute and adds it to the appropriate
@@ -98,6 +139,8 @@ class HmmModel:
         stripped_line = line.strip()
         line_val = stripped_line.split(maxsplit=1)
         line_val = [i.rstrip() for i in line_val]
+        if not line_val:
+            return
         if stripped_line.startswith("HMMER3"):
             self.HMMER3_f = stripped_line
         elif line_val[0] == "STATS":
@@ -290,46 +333,6 @@ class HmmModel:
         self._category = category
         self._subcategory = subcategory
 
-    def _tsv_dict(self):
-        """Template dictionary to hold the desired info of a single hmm model"""
-        if isinstance(self._notes, list):
-            notes = "; ".join(self._notes)
-        else:
-            notes = str(self._notes)
-
-        if self._new_hash:
-            hash_to_use = self._new_hash
-        else:
-            hash_to_use = self._hash
-        # need tigrfam ids to actually be the tigrfam ids (not f"{self._model_source}_{self._n}"),
-        # so that tigrfam_to_go, etc will associate
-        # need some others to be f"{self._model_source}_{self._n}" because can't assume they will be
-        # unique within a source db (ie same model in different antismash categories)
-        if self._model_source == "tigrfam":
-            mod_id = self.NAME
-        else:
-            mod_id = f"{self._model_source}_{self._n}"
-        return OrderedDict(
-            {
-                "id": mod_id,
-                "source": self._model_source,
-                "rel_path": self._rel_path,
-                "name": self.NAME,
-                "acc": self.ACC,
-                "notes": notes,
-                "description": self.DESC,
-                "date": self.DATE,
-                "hash": self._hash,
-                "hash_used": hash_to_use,
-                "model_length": len(self.MODEL),
-                "category": self._category,
-                "subcategory": self._subcategory,
-                "ga": self.GA,
-                "tc": self.TC,
-                "nc": self.NC,
-            }
-        )
-
 
 class HmmParse:
     def __init__(self) -> None:
@@ -383,12 +386,12 @@ class HmmParse:
         """
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
             all_hmms_file_writer = csv.DictWriter(
-                tsv_file, self.temp_model._tsv_dict().keys(), delimiter="\t"
+                tsv_file, self.temp_model.__dict__.keys(), delimiter="\t"
             )
             if header:
                 all_hmms_file_writer.writeheader()
             for model in self.models.values():
-                _ = all_hmms_file_writer.writerow(model._tsv_dict())
+                _ = all_hmms_file_writer.writerow(model.__dict__)
 
     def write_hmm_node_tsv(self, outdir):
         """

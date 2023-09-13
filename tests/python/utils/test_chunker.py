@@ -32,6 +32,5 @@ def test_chunk_a_list_with_numpy_type(test_input):
         tmp = [i for i in tmp]
         assert len(tmp) == 9
     else:
-        with pytest.raises(Exception) as e_info:
+        with pytest.raises(Exception):
             chunk_a_list_with_numpy(input_list=one_to_ten, n_chunks=test_input)
-            _ = e_info

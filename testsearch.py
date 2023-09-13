@@ -1,29 +1,9 @@
-import itertools
-from multiprocessing import Pool
-from socialgene.clustermap.clustermap import Clustermap
+import logging
+from pathlib import Path
+
+from socialgene.base.socialgene import SocialGene
 from socialgene.compare_proteins.hmmer import CompareDomains
 from socialgene.hmm.hmmer import HMMER
-from socialgene.base.socialgene import SocialGene
-from pathlib import Path
-from socialgene.scoring.scoring import mod_score
-from rich import inspect
-from socialgene.scoring.search import (
-    check_for_hmm_outdegree,
-    get_lowest_outdegree_model_per_protein,
-    search_for_similar_proteins,
-    set_hmm_outdegree,
-)
-from rich.progress import Progress
-from rich.progress import (
-    Progress,
-)
-from math import ceil
-import logging
-import argparse
-
-import pandas as pd
-from socialgene.utils.logging import log
-from textdistance import smith_waterman
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.INFO)

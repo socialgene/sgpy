@@ -1,12 +1,9 @@
 import argparse
-import logging
 
 from rich.progress import Progress, SpinnerColumn
 
 from socialgene.external_db_classes.classyfire import ClassyFire
 from socialgene.utils.logging import log
-
-logging.getLogger("neo4j").setLevel(logging.WARNING)
 
 parser = argparse.ArgumentParser(
     description="Download and add ClassyFire ontology to a running SocialGene database"

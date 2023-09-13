@@ -1,12 +1,9 @@
-from socialgene.compare_proteins.hmm.hmmer import (
-    CompareDomains,
-)
 import os
-from socialgene.config import env_vars
-from socialgene.base.socialgene import SocialGene
-from socialgene.hmm.hmmer import HMMER
-import pytest
+
 import pandas as pd
+
+from socialgene.base.socialgene import SocialGene
+from socialgene.compare_proteins.hmm.hmmer import CompareDomains
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -19,15 +16,12 @@ FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data")
 hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
 
-# gbk_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data/test_genomes/lagriamide_mibig_bgc0001946.gbk"
-# hmm_path = "/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data"
-
 
 def test_CompareDomains_compare_one_to_one():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    sg_object.annotate_with_hmmscan(
+    sg_object.annotate_proteins_with_hmmscan(
         protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     a = CompareDomains()
@@ -49,7 +43,7 @@ def test_CompareDomains_compare_one_to_many():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    sg_object.annotate_with_hmmscan(
+    sg_object.annotate_proteins_with_hmmscan(
         protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     a = CompareDomains()
@@ -161,7 +155,7 @@ def test_CompareDomains_compare_many_to_many():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    sg_object.annotate_with_hmmscan(
+    sg_object.annotate_proteins_with_hmmscan(
         protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     a = CompareDomains()
@@ -394,7 +388,7 @@ def test_CompareDomains_compare_all_to_all_parallel():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    sg_object.annotate_with_hmmscan(
+    sg_object.annotate_proteins_with_hmmscan(
         protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
     )
     a = CompareDomains()

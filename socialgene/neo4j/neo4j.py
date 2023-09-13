@@ -141,5 +141,3 @@ class Neo4jQuery:
             # make the query against the db
             results = db.run(query, param=param)
             return getattr(results, rettype)(*args, **kwargs)
-
-

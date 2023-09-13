@@ -1,17 +1,16 @@
+import tempfile
+from collections import namedtuple
 from itertools import combinations, product
 from multiprocessing import Pool
 from pathlib import Path
-from socialgene.compare_proteins.base_class import CompareProteinsBaseClass
 
-from collections import namedtuple
+import pandas as pd
+
+from socialgene.compare_proteins.base_class import CompareProteinsBaseClass
+from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.mmseqs.create_database import create_database
 from socialgene.mmseqs.search import search
 from socialgene.mmseqs.subset_database import createsubdb
-
-from socialgene.compare_proteins.hmm.scoring import mod_score
-import pandas as pd
-import tempfile
-
 
 target_proteins = list(sg.proteins.values())
 

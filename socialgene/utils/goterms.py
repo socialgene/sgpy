@@ -41,8 +41,7 @@ class GoNode:
         if goterm := extract_goterm_int_as_str(x):
             self.id = goterm
         else:
-            print(f"'{x}' isn't a goterm")
-            raise
+            raise ValueError(f"'{x}' isn't a goterm")
 
     def add_name(self, x):
         self.name = x.removeprefix("name:").strip()
@@ -130,46 +129,65 @@ def write(
         writer.writerows(input)
 
 
-def main():
-    args = parser.parse_args()
+def download_obo(url=OBO_URL):
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        for line in r.iter_lines():
+            yield line.decode(r.encoding).strip()
+
+
+def read_from_file(filepath):
+    with open(filepath, "r") as h:
+        for i in h:
+            yield i.strip()
+
+
+def parse(outdir, filepath=None, url=None):
     nodes = []
     relationships = []
-    with requests.get(OBO_URL, stream=True) as r:
-        r.raise_for_status()
-        term_open = False
-        for line in r.iter_lines():
-            line = line.decode(r.encoding)
-            if line == "[Term]":
-                term_open = True
-                nodeobj = GoNode()
-                relobj = GoRelationship()
-            if not term_open:
-                continue
-            nodeobj.assign(line=line)
-            # some goterms have "alt_ids" these are sometimes referenced from other sources but only exist
-            # in the obo file as alt ids (no primary entry)
-            if line.startswith("alt_id"):
-                # deepcopy so name and namespace will carry if present
-                alt_node = deepcopy(nodeobj)
-                alt_node.add_id(line)
-                alt_rel = AltRel()
-                alt_rel.assign(main_id=nodeobj.id, line=line)
-                nodes.append(alt_node.output())
-                relationships.append(alt_rel.output())
-                del alt_node, alt_rel
-            relobj.assign(start=nodeobj.id, line=line)
-            if line == "":
-                term_open = False
-                nodes.append(nodeobj.output())
-                # only output full relationhip tuples
-                if out := relobj.output():
-                    relationships.append(out)
-
+    if url:
+        _open = download_obo(url=url)
+    elif filepath:
+        _open = read_from_file(filepath=filepath)
+    else:
+        raise ValueError("Must input url or filepath")
+    term_open = False
+    for line in _open:
+        if line == "[Term]":
+            term_open = True
+            nodeobj = GoNode()
+            relobj = GoRelationship()
+        if not term_open:
+            continue
+        nodeobj.assign(line=line)
+        # some goterms have "alt_ids" these are sometimes referenced from other sources but only exist
+        # in the obo file as alt ids (no primary entry)
+        if line.startswith("alt_id"):
+            # deepcopy so name and namespace will carry if present
+            alt_node = deepcopy(nodeobj)
+            alt_node.add_id(line)
+            alt_rel = AltRel()
+            alt_rel.assign(main_id=nodeobj.id, line=line)
+            nodes.append(alt_node.output())
+            relationships.append(alt_rel.output())
+            del alt_node, alt_rel
+        relobj.assign(start=nodeobj.id, line=line)
+        if line == "":
+            term_open = False
+            nodes.append(nodeobj.output())
+            # only output full relationhip tuples
+            if out := relobj.output():
+                relationships.append(out)
     log.info("Writing goterms nodes")
-    write(nodes, Path(args.outdir, "goterms"))
+    write(nodes, Path(outdir, "goterms"))
     log.info("Writing goterms relationships")
-    write(relationships, Path(args.outdir, "goterm_edgelist"))
+    write(relationships, Path(outdir, "goterm_edgelist"))
     log.info("Finished reading/writing goterms")
+
+
+def main():
+    args = parser.parse_args()
+    parse(OBO_URL=OBO_URL, outdir=args.args)
 
 
 if __name__ == "__main__":

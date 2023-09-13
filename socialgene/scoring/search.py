@@ -1,23 +1,17 @@
 from collections import OrderedDict
-from socialgene.neo4j.neo4j import GraphDriver
+from itertools import product
+
+import pandas as pd
 from rich.progress import (
-    Progress,
-    MofNCompleteColumn,
-    TextColumn,
     BarColumn,
+    MofNCompleteColumn,
+    Progress,
     TextColumn,
     TimeElapsedColumn,
-    TextColumn,
 )
-from itertools import product
-import logging
-import pandas as pd
+
+from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
-
-
-logging.getLogger("neo4j").setLevel(logging.WARNING)
-logging.getLogger().setLevel(logging.INFO)
-
 
 progress_bar = Progress(
     TextColumn("Pulling target clusters from database..."),
@@ -163,7 +157,7 @@ def search_for_similar_proteins(protein_domain_dict):
                         for i in _find_sim_protein(domain_list=v)
                     ]
                 )
-            except:
+            except Exception:
                 pass
             pg.update(task, advance=1)
     return pd.DataFrame(bb)

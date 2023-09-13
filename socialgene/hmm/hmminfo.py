@@ -14,7 +14,7 @@ class HmmInfo:
           all_hmms_path: The `all_hmms_path` parameter is a string that represents the path to a file
         containing data for all HMMs.
         """
-        self.columns = list(HmmModel()._tsv_dict().keys())
+        self.columns = list(HmmModel().__dict__.keys())
         self.all_hmms_path = all_hmms_path
         self.all_hmms_data = list()
 
