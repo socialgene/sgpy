@@ -12,6 +12,7 @@ from textdistance import smith_waterman
 
 from socialgene.base.socialgene import SocialGene
 from socialgene.clustermap.clustermap import Clustermap
+from socialgene.compare_proteins.hmm.hmmer import CompareDomains
 from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.hmm.hmmer import HMMER
 from socialgene.scoring.search import (
@@ -43,8 +44,10 @@ parser.add_argument(
     help="HMM file directory",
 )
 
-gbk_path = "/home/chase/mibig_gbk/mibig_gbk_3.1/BGC0001478.gbk"
-hmm_dir = "/media/bigdrive2/chase/socialgene_v0.2.3/refseq/socialgene_per_run/hmm_cache"
+gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001850.gbk"
+hmm_dir = (
+    "/home/chase/Documents/socialgene_data/streptomyces/socialgene_per_run/hmm_cache"
+)
 # hmm file with cutoffs
 h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm")
 # hmm file without cutoffs
@@ -94,7 +97,6 @@ if not check_for_hmm_outdegree():
 protein_domain_dict = get_lowest_outdegree_model_per_protein(sg_object)
 
 searched_protein_hash_set = set(protein_domain_dict.keys())
-sg_object.assemblies[modified_input_bgc_name].loci[input_bgc_nuc_id].sort_by_middle()
 
 # input_sorted_protein_hashlist = [
 #     i.protein_hash
@@ -266,6 +268,7 @@ with Progress(transient=True) as pg:
         )
         pg.update(task, advance=1)
 
+
 # Drop likely cross-origin proteins
 for ak, av in sg_object.assemblies.items():
     for nk, nv in av.loci.items():
@@ -311,21 +314,24 @@ for k, v in sg_object.assemblies.items():
         target_proteins.update(v.get_all_proteins())
 
 sg_object.bro(queries=query_proteins, targets=target_proteins, append=True)
+a = CompareDomains()
+
+(v for k, v in sg_object.proteins.items() if k in query_proteins)
+
+a.compare_many_to_many(
+    (v for k, v in sg_object.proteins.items() if k in query_proteins),
+    (v for k, v in sg_object.proteins.items() if k in target_proteins),
+)
+
+
+df = a.df
 
 #######################################
 
-sg_object.protein_comparison_to_df()
-# sg_object.protein_comparison = sg_object.protein_comparison[
-#     sg_object.protein_comparison.mod_score > 1.4
-# ]
 
-sg_object.protein_comparison = sg_object.protein_comparison[
-    sg_object.protein_comparison.mod_score > links_must_have_mod_score_above
-]
+df = df[df.score > links_must_have_mod_score_above]
 
-groupdict = (
-    sg_object.protein_comparison.groupby("target")["query"].apply(list).to_dict()
-)
+groupdict = df.groupby("target")["query"].apply(list).to_dict()
 
 group_dict_info = {
     f.protein_hash: (f.protein_id, f.description)

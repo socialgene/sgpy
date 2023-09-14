@@ -29,6 +29,7 @@ log.setLevel(env_vars["SOCIALGENE_LOGLEVEL"])
 handler = logging.StreamHandler(stream=sys.stdout)
 
 log.addHandler(handler)
+logging.getLogger("neo4j").setLevel(logging.WARNING)
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):

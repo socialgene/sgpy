@@ -48,22 +48,30 @@ cd = ["twine"]
 
 [project.scripts]
 # Entry points for the package https://python-poetry.org/docs/pyproject/#scripts
-"socialgene"="socialgene.cli.__main__:main"
+socialgene                     ="socialgene.cli.__main__:main"
+
 # Used in the Nextflow pipeline
-"sg_process_domtblout"="socialgene.cli.nextflow.process_domtblout:main"
-"sg_clean_hmm"="socialgene.cli.nextflow.clean_hmms:main"
-"sg_process_genbank"="socialgene.cli.nextflow.export_protein_loci_assembly_tables:main"
-"sg_ncbi_taxonomy"="socialgene.cli.nextflow.parse_ncbi_taxonomy:main"
-"sg_export_parameters"="socialgene.cli.nextflow.parameter_export:main"
-"sg_export_neo4j_headers"="socialgene.cli.nextflow.export_neo4j_header_files:main"
-"sg_create_neo4j_db"="socialgene.cli.nextflow.create_neo4j_db:main"
-"sg_version"="socialgene.utils.version:main"
-"sg_neo4j_version"="socialgene.utils.version:neo4j"
-"sg_hmm_tsv_parser"="socialgene.cli.nextflow.socialgene_hmm_tsv_parser:main"
-"sg_prothash_sqlite"="socialgene.cli.nextflow.protein_sqlite:main"
-"sg_get_goterms"="socialgene.utils.goterms:main"
+sg_process_domtblout    = "socialgene.cli.nextflow.process_domtblout:main"
+sg_clean_hmm            = "socialgene.cli.nextflow.clean_hmms:main"
+sg_process_genbank      = "socialgene.cli.nextflow.export_protein_loci_assembly_tables:main"
+sg_ncbi_taxonomy        = "socialgene.cli.nextflow.parse_ncbi_taxonomy:main"
+sg_export_parameters    = "socialgene.cli.nextflow.parameter_export:main"
+sg_export_neo4j_headers = "socialgene.cli.nextflow.export_neo4j_header_files:main"
+sg_create_neo4j_db      = "socialgene.cli.nextflow.create_neo4j_db:main"
+sg_version              = "socialgene.utils.version:main"
+sg_neo4j_version        = "socialgene.utils.version:neo4j"
+sg_hmm_tsv_parser       = "socialgene.cli.nextflow.socialgene_hmm_tsv_parser:main"
+sg_prothash_sqlite      = "socialgene.cli.nextflow.protein_sqlite:main"
+sg_get_goterms          = "socialgene.utils.goterms:main"
+
 # search
+sg_mm_create            = "socialgene.mmseqs.create_database:main"
+sg_mm_search            = "socialgene.mmseqs.search:main"
 "sg_mm_create"="socialgene.mmseqs.create_database:main"
 "sg_mm_search"="socialgene.mmseqs.search:main"
 # Modify database
 "sgdb_import_classyfire"="socialgene.dbmodifiers.classyfire.import:main"
+
+# neo4j
+sg_indices              = "socialgene.cli.neo4j.indices:main"
+sg_massage              = "socialgene.cli.neo4j.massage:main"
