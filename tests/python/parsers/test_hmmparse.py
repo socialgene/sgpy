@@ -15,7 +15,7 @@ gbk_path = Path(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
-hmm_dir = Path(FIXTURE_DIR, "data")
+hmm_dir = Path(FIXTURE_DIR, "data", "hmms")
 
 
 def test_read():

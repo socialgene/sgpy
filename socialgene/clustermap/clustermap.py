@@ -63,7 +63,7 @@ class Clustermap:
         ]
 
     def _flatten_list(self, x):
-        return [item for row in x for item in row]
+        return sorted([item for row in x for item in row], reverse=True)
 
     def _create_group(self, group_dict_info, k, v):
         return {
@@ -82,12 +82,11 @@ class Clustermap:
             ]
         }
 
-    def _links(self, sg):
+    def _links(self, df):
         log.info("Creating clustermap.js links")
-        sg.protein_comparison_to_df()
         res = list()
         # ugly because it first filters the protein_comparison table for proteins present in the sg_object
-        for index, row in sg.protein_comparison.iterrows():
+        for index, row in df.iterrows():
             for query_uid in self._get_gene_uid_of_protein_hash(row.query):
                 for target_uid in self._get_gene_uid_of_protein_hash(row.target):
                     # don't do self-links they mess up clustermap.js groups
@@ -106,25 +105,26 @@ class Clustermap:
                                     "uid": target_uid,
                                     "name": self._get_uid(),
                                 },
-                                "identity": round(row.mod_score * 2 / 3, 2),
+                                "identity": round(row.score * 2 / 3, 2),
                             }
                             # row["mod_score"] * 2/3 adjusts max mod score of 1.5 to ~1
                         )
         return res
 
-    def _build(self, sg, groupdict, group_dict_info, assembly_order):
+    def _build(self, sg, df, groupdict, group_dict_info, assembly_order):
         return (
             self._clusters(sg, assembly_order)
             | self._create_groups_json(groupdict, group_dict_info)
-            | {"links": self._links(sg)}
+            | {"links": self._links(df)}
         )
 
-    def write(self, sg_object, groupdict, group_dict_info, assembly_order, outpath):
+    def write(self, sg, linksdf, groupdict, group_dict_info, assembly_order, outpath):
         log.info(f"Writing clustermap.js output to: {outpath}")
         with open(outpath, "w") as outfile:
             json.dump(
                 self._build(
-                    sg_object,
+                    sg,
+                    linksdf,
                     groupdict=groupdict,
                     group_dict_info=group_dict_info,
                     assembly_order=assembly_order,
