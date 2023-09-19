@@ -126,21 +126,21 @@ def antismash_as_separate_nodes():
     log.info("Adding new constrain for (:antismash_bgc {nuid})")
     _run_transaction_function(
         """
-                CREATE CONSTRAINT FOR (n:antismash_bgc) REQUIRE n.nuid IS UNIQUE;
-            """
+                CREATE CONSTRAINT antismash_bgc IF NOT EXISTS
+                FOR (n:antismash_bgc)
+                REQUIRE (n.nuid, n.region) IS UNIQUE;
+        """
     )
     log.info("Creating new antismash nodes and linking them to proteins")
     _run_transaction_function(
         """
                 MATCH (p1:protein)<-[e1:ENCODES]-(n1:nucleotide)
                 WHERE  e1.antismash_region is not null
-                WITH n1, e1.antismash_region as ar, collect(DISTINCT(p1)) as prots
+                WITH n1, e1.antismash_region as ar, min(e1.start) as minstart, max(e1.end) as maxend
                 call {
-                WITH n1, ar, prots
-                create (bgc:antismash_bgc {nuid:n1.uid, region:ar})
-                WITH prots, bgc
-                UNWIND prots as prot
-                MERGE (prot)<-[:ENCODES]-(bgc)
+                WITH n1, ar, minstart, maxend
+                create (bgc:antismash_bgc {region:ar, start:minstart, end:maxend})
+                CREATE (n1)-[:PREDICTED_BGC]->(bgc)
                 } IN TRANSACTIONS OF 1000 rows;
             """
     )
