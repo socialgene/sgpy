@@ -1,19 +1,13 @@
 import argparse
-import itertools
 import logging
-from collections import namedtuple
 from math import ceil
-from multiprocessing import Pool
 from pathlib import Path
 
-import pandas as pd
 from rich.progress import Progress
-from textdistance import smith_waterman
 
 from socialgene.base.socialgene import SocialGene
 from socialgene.clustermap.clustermap import Clustermap
 from socialgene.compare_proteins.hmm.hmmer import CompareDomains
-from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.hmm.hmmer import HMMER
 from socialgene.scoring.search import (
     check_for_hmm_outdegree,
@@ -21,7 +15,6 @@ from socialgene.scoring.search import (
     search_for_similar_proteins,
     set_hmm_outdegree,
 )
-from socialgene.utils.logging import log
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
