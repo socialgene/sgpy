@@ -1,5 +1,6 @@
 import argparse
 import sys
+
 from socialgene.dbmodifiers.massage.indices import (
     assembly_uid,
     hmm_uid,
@@ -7,7 +8,6 @@ from socialgene.dbmodifiers.massage.indices import (
     nucleotide_uid,
     protein_uid,
 )
-
 
 parser = argparse.ArgumentParser(
     description="Add indices to a SocialGene Neo4j Database"

@@ -3,13 +3,7 @@ import logging
 from math import ceil
 from pathlib import Path
 
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-)
+from rich.progress import Progress
 
 from socialgene.base.socialgene import SocialGene
 from socialgene.clustermap.clustermap import Clustermap
@@ -20,6 +14,13 @@ from socialgene.scoring.search import (
     get_lowest_outdegree_model_per_protein,
     search_for_similar_proteins,
     set_hmm_outdegree,
+)
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TextColumn,
+    TimeElapsedColumn,
 )
 
 logging.getLogger("neo4j").setLevel(logging.WARNING)

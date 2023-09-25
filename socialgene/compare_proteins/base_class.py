@@ -40,24 +40,3 @@ class CompareProteinsBaseClass(ABC):
     @abstractmethod
     def compare_all_to_all(self):
         ...
-
-
-class A(ABC):
-    def __init__(self):
-        self.protein_comparisons = []
-
-    def bro(self):
-        self.protein_comparisons = 1
-
-
-class B(ABC):
-    def __init__(self):
-        self.protein_comparisons = []
-
-    def bro(self):
-        self.protein_comparisons = 2
-
-
-class D(A, B):
-    def __init__(self):
-        super().__init__()

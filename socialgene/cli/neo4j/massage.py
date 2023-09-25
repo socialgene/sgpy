@@ -11,7 +11,6 @@ from socialgene.dbmodifiers.massage.massage import (
 )
 from socialgene.utils.logging import log
 
-
 NCBI_RANKS = [
     "biotype",
     "clade",
