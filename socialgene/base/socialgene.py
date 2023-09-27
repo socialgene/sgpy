@@ -94,21 +94,11 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for matching proteins, and retrieves their HMM annotations.
 
         Args:
-          protein_hash_ids (List[str]): A list of protein hash IDs. These are unique identifiers for
-        proteins in the database that you want to annotate.
-          chunk_size (int): The `chunk_size` parameter determines the number of proteins to query at a
-        time. Proteins are divided into chunks to improve efficiency when querying the database.  Defaults to 1000
-          annotate_all (bool): The `annotate_all` parameter is a boolean flag that determines whether to
-        annotate all proteins in the database or not. If set to `True`, all proteins in the database
-        will be annotated. If set to `False`, you need to provide a list of protein hash IDs in the
-        `protein_hash_ids. Defaults to False
-          progress (bool): The `progress` parameter is a boolean flag that determines whether or not to
-        display a progress bar during the execution of the function. If `progress` is set to `True`, a
-        progress bar will be displayed to track the progress of the function. If `progress` is set to
-        `False`. Defaults to False
+          protein_hash_ids (List[str]): A list of protein hash IDs. These are unique identifiers for proteins in the database that you want to annotate.
+          chunk_size (int): The `chunk_size` parameter determines the number of proteins to query at a time. Proteins are divided into chunks to improve efficiency when querying the database.  Defaults to 1000
+          annotate_all (bool): The `annotate_all` parameter is a boolean flag that determines whether to annotate all proteins in the database or not. If set to `True`, all proteins in the database will be annotated. If set to `False`, you need to provide a list of protein hash IDs in the `protein_hash_ids. Defaults to False
+          progress (bool): The `progress` parameter is a boolean flag that determines whether or not to display a progress bar during the execution of the function. If `progress` is set to `True`, a progress bar will be displayed to track the progress of the function. If `progress` is set to `False`. Defaults to False
 
-        Returns:
-          the variable `search_result`.
         """
         if protein_hash_ids is None and annotate_all:
             protein_hash_ids = self.get_all_protein_hashes()
@@ -206,39 +196,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             hmm_directory (str): path to directory containing hmm files
             cpus (int): number of parallel processes to spawn
 
-        Kwargs:
-            These are all set within from common_parameters.env if not provided to kwargs here
-            f1 (float): The parameter `f1` is a float value representing the gathering threshold for the
-        first domain architecture. It is used in the HMMER's hmmscan command to set the threshold for
-        the first domain architecture. The default value is obtained from the `env_vars` dictionary with
-        the key "H
-            f2 (float): The parameter `f2` in the `hmmscan` method is a float that represents the
-        gathering threshold for the second domain architecture. It is used as an optional argument in
-        the `hmmscan` command.
-            f3 (float): The parameter `f3` is a float value that represents the threshold for the third
-        stage of the HMMER's hmmscan algorithm. It is used to control the trade-off between sensitivity
-        and speed during the search. A higher value of `f3` will increase the speed of the search
-            dom_e: The `dom_e` parameter is the E-value threshold for reporting domain hits. It is used to
-        control the significance threshold for reporting individual domains in the output.
-          inc_e: The `inc_e` parameter is the inclusion threshold for the E-value. It is used to
-        determine if a hit is significant enough to be included in the output. Hits with E-values below
-        the inclusion threshold will be reported.
-            incdom_e: The `incdom_e` parameter is the inclusion threshold for domain E-values in HMMER's
-        hmmscan. It is used to control the sensitivity of the search by setting a threshold for the
-        significance of domain hits. Any domain hit with an E-value below the `incdom_e` threshold
-            e: The parameter `e` in the `hmmscan` method is the E-value threshold for reporting domains.
-        It is a floating-point value that determines the significance threshold for the reported
-        matches. A lower E-value indicates a more significant match.
-            z: The parameter `z` in the `hmmscan` method is used to set the reporting threshold for the
-        gathering score. The gathering score is a measure of the significance of a match between a
-        sequence and a profile hidden Markov model (HMM). The `z` parameter specifies the number of
-            seed (int): The `seed` parameter in the `hmmscan` method is an optional integer parameter that
-        specifies the random number seed for the HMMER's hmmscan algorithm.
-            cpus (int): The `cpus` parameter specifies the number of CPUs (or cores) to be used for
-        running the hmmscan process. Defaults to 1
-            overwrite: The `overwrite` parameter is a boolean flag that determines whether to overwrite an
-        existing file at the `domtblout_path` location. If `overwrite` is set to `False` and a file
-        already exists at `domtblout_path`, a `FileExistsError` will be raised. Defaults to False
         """
         log.info(f"Annotating {len(protein_id_list)} proteins with HMMER's hmmscan")
         if cpus is None:
@@ -268,7 +225,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for i in Path(tmpdirname).glob("*.domtblout"):
                 self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
 
-    def fill_from_proteins(self):
+    def hydrate_from_proteins(self):
         """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
         for result in Neo4jQuery.query_neo4j(
             cypher_name="retrieve_protein_locations",
@@ -345,7 +302,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             protein_hash_ids=None, annotate_all=True, progress=False
         )
 
-    def get_db_protein_info(self):
+    def hydrate_protein_info(self):
         """Pull name (original identifier) and description of proteins from Neo4j"""
         for result in Neo4jQuery.query_neo4j(
             cypher_name="get_protein_info",
@@ -385,12 +342,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def ferment_pickle(self, outpath):
         """
-        The function `ferment_pickle` saves a SocialGene object to a file using the pickle module in Python.
+        The function `ferment_pickle` saves a SocialGene object to a Python pickle file.
 
         Args:
-          outpath: The `outpath` parameter is a string that represents the path where the pickled object
-        will be saved. It should include the file name and extension. For example,
-        "path/to/save/object.pickle".
+          outpath: The `outpath` parameter is a string that represents the path where the pickled object will be saved. It should include the file name and extension. For example, "/path/to/save/object.pickle".
         """
         with open(outpath, "wb") as handle:
             pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -398,14 +353,14 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     @staticmethod
     def eat_pickle(inpath):
         """
-        The `eat_pickle` function reads a pickle file from the given path and returns the loaded SocialGene object.
+        The `eat_pickle` function reads a saved SocialGene pickle file from the given path and returns a SocialGene object.
 
         Args:
           inpath: The `inpath` parameter is a string that represents the path to the file from which we
         want to load the pickled object.
 
         Returns:
-          the object that was loaded from the pickle file.
+          SocialGene object
         """
         with open(inpath, "rb") as handle:
             return pickle.load(handle)
@@ -414,7 +369,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """Filter proteins by list of hash ids
 
         Args:
-            hash_list (List): List fo protein hash identifiers
+            hash_list (List): List of protein hash identifiers
 
         Returns:
             Generator: generator returning tuple of length two -> Generator[(str, 'Protein'])
@@ -547,94 +502,94 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         self._merge_assemblies(sg_object)
         self.protein_comparison.extend(sg_object.protein_comparison)
 
-    def break_loci(self, gap_tolerance: int = 10000):
-        """
-        The `break_loci` function breaks a locus (nucleotide sequence/contig/scaffold) into pieces based
-        on a specified gap tolerance between proteins.
+    # def break_loci(self, gap_tolerance: int = 10000):
+    #     """
+    #     The `break_loci` function breaks a locus (nucleotide sequence/contig/scaffold) into pieces based
+    #     on a specified gap tolerance between proteins.
 
-        Args:
-          gap_tolerance (int): The `gap_tolerance` parameter is an optional integer that specifies the
-        maximum allowed gap between proteins in nucleotides. If the gap between two proteins is greater
-        than this value, the locus/contig/scaffold will be split into multiple parts. The default value
-        for `gap_tolerance` is 100. Defaults to 10000
-        """
-        for assembly_key, assembly_value in self.assemblies.items():
-            for loci_id in [i for i in assembly_value.loci.keys()]:
-                assembly_value.loci[loci_id].sort_by_middle()
-                # no need to split if there's only 1 feature
-                if len(assembly_value.loci[loci_id].features) == 1:
-                    log.info(
-                        f"`len(loci_values.features) == 1`, doing nothing to {assembly_key}, {loci_id}"
-                    )
-                else:
-                    current_int = 0
-                    temp_locus = defaultdict(set)
-                    # add the first feature
-                    temp_locus[current_int].add(
-                        assembly_value.loci[loci_id].features[0]
-                    )
-                    for j, k in zip(
-                        assembly_value.loci[loci_id].features,
-                        assembly_value.loci[loci_id].features[1:],
-                    ):
-                        if k.start - j.end > gap_tolerance:
-                            current_int += 1
-                        temp_locus[current_int].add(k)
-                    if len(temp_locus) > 1:
-                        for new_locus_k, new_locus_v in temp_locus.items():
-                            new_name = f"{loci_id}_{new_locus_k}"
-                            assembly_value.add_locus(new_name)
-                            for i in new_locus_v:
-                                assembly_value.loci[new_name].features.add(i)
-                        del assembly_value.loci[loci_id]
-                        log.info(
-                            f"Broke assembly: {assembly_key} locus: {loci_id} into {len(temp_locus)} parts based on the provided gap_tolerance of {gap_tolerance}"
-                        )
-                        del temp_locus
+    #     Args:
+    #       gap_tolerance (int): The `gap_tolerance` parameter is an optional integer that specifies the
+    #     maximum allowed gap between proteins in nucleotides. If the gap between two proteins is greater
+    #     than this value, the locus/contig/scaffold will be split into multiple parts. The default value
+    #     for `gap_tolerance` is 100. Defaults to 10000
+    #     """
+    #     for assembly_key, assembly_value in self.assemblies.items():
+    #         for loci_id in [i for i in assembly_value.loci.keys()]:
+    #             assembly_value.loci[loci_id].sort_by_middle()
+    #             # no need to split if there's only 1 feature
+    #             if len(assembly_value.loci[loci_id].features) == 1:
+    #                 log.info(
+    #                     f"`len(loci_values.features) == 1`, doing nothing to {assembly_key}, {loci_id}"
+    #                 )
+    #             else:
+    #                 current_int = 0
+    #                 temp_locus = defaultdict(set)
+    #                 # add the first feature
+    #                 temp_locus[current_int].add(
+    #                     assembly_value.loci[loci_id].features[0]
+    #                 )
+    #                 for j, k in zip(
+    #                     assembly_value.loci[loci_id].features,
+    #                     assembly_value.loci[loci_id].features[1:],
+    #                 ):
+    #                     if k.start - j.end > gap_tolerance:
+    #                         current_int += 1
+    #                     temp_locus[current_int].add(k)
+    #                 if len(temp_locus) > 1:
+    #                     for new_locus_k, new_locus_v in temp_locus.items():
+    #                         new_name = f"{loci_id}_{new_locus_k}"
+    #                         assembly_value.add_locus(new_name)
+    #                         for i in new_locus_v:
+    #                             assembly_value.loci[new_name].features.add(i)
+    #                     del assembly_value.loci[loci_id]
+    #                     log.info(
+    #                         f"Broke assembly: {assembly_key} locus: {loci_id} into {len(temp_locus)} parts based on the provided gap_tolerance of {gap_tolerance}"
+    #                     )
+    #                     del temp_locus
 
-    def prune_loci(self, min_genes=1):
-        """
-        The function `prune_loci` removes loci from an assembly if they have fewer features than the
-        specified minimum number of genes.
+    # # def prune_loci(self, min_genes=1):
+    # #     """
+    # #     The function `prune_loci` removes loci from an assembly if they have fewer features than the
+    # #     specified minimum number of genes.
 
-        Args:
-          min_genes: The `min_genes` parameter is an optional parameter that specifies the minimum
-        number of genes a locus must have in order to be kept. If a locus has fewer genes than the
-        specified minimum, it will be removed from the `self.assemblies` dictionary. Defaults to 1
-        """
-        # remove loci if they don't have any features
-        assembly_keys = list(self.assemblies.keys())
-        for assembly_key in assembly_keys:
-            loci_keys = list(self.assemblies[assembly_key].loci.keys())
-            for loci_key in loci_keys:
-                if (
-                    len(self.assemblies[assembly_key].loci[loci_key].features)
-                    < min_genes
-                ):
-                    del self.assemblies[assembly_key].loci[loci_key]
+    # #     Args:
+    # #       min_genes: The `min_genes` parameter is an optional parameter that specifies the minimum
+    # #     number of genes a locus must have in order to be kept. If a locus has fewer genes than the
+    # #     specified minimum, it will be removed from the `self.assemblies` dictionary. Defaults to 1
+    # #     """
+    # #     # remove loci if they don't have any features
+    # #     assembly_keys = list(self.assemblies.keys())
+    # #     for assembly_key in assembly_keys:
+    # #         loci_keys = list(self.assemblies[assembly_key].loci.keys())
+    # #         for loci_key in loci_keys:
+    # #             if (
+    # #                 len(self.assemblies[assembly_key].loci[loci_key].features)
+    # #                 < min_genes
+    # #             ):
+    # #                 del self.assemblies[assembly_key].loci[loci_key]
 
-    def top_k_loci(self, topk=2):
-        """
-        The function `top_k_loci` removes loci from assemblies that are not in the top k based on the
-        number of features they have.
+    # def top_k_loci(self, topk=2):
+    #     """
+    #     The function `top_k_loci` removes loci from assemblies that are not in the top k based on the
+    #     number of features they have.
 
-        Args:
-          topk: The parameter "topk" is an integer that specifies the number of top loci to keep in each
-        assembly. Defaults to 2
-        """
-        assembly_keys = list(self.assemblies.keys())
-        for assembly_key in assembly_keys:
-            loci_dict = {
-                k: len(v.features)
-                for k, v in self.assemblies[assembly_key].loci.items()
-            }
-            to_delete = [
-                i
-                for i in list(self.assemblies[assembly_key].loci.keys())
-                if i not in sorted(loci_dict, key=loci_dict.get, reverse=True)[:topk]
-            ]
-            for loci_key in to_delete:
-                del self.assemblies[assembly_key].loci[loci_key]
+    #     Args:
+    #       topk: The parameter "topk" is an integer that specifies the number of top loci to keep in each
+    #     assembly. Defaults to 2
+    #     """
+    #     assembly_keys = list(self.assemblies.keys())
+    #     for assembly_key in assembly_keys:
+    #         loci_dict = {
+    #             k: len(v.features)
+    #             for k, v in self.assemblies[assembly_key].loci.items()
+    #         }
+    #         to_delete = [
+    #             i
+    #             for i in list(self.assemblies[assembly_key].loci.keys())
+    #             if i not in sorted(loci_dict, key=loci_dict.get, reverse=True)[:topk]
+    #         ]
+    #         for loci_key in to_delete:
+    #             del self.assemblies[assembly_key].loci[loci_key]
 
     ########################################
     # OUTPUTS FOR NEXTFLOW
