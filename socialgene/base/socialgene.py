@@ -255,14 +255,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         if not temp1:
             log.info("None of the input sequences contain an amino acid sequence")
             return
-        # create a list of lists of proteins as FASTA
-        # if cpus > (len(temp1) - 1) and len(temp1) > 10:
-        #     temp2 = chunk_a_list_with_numpy(input_list=temp1, n_chunks=cpus)
-        # else:
-        #     temp2 = [temp1]
-        # del temp1
-        # create tempfiles for hmmscan to write domtblout files to
-
         with tempfile.TemporaryDirectory() as tmpdirname:
             HMMER().hmmscan(
                 fasta_path="-",

@@ -1,5 +1,9 @@
 from collections import OrderedDict
 from itertools import product
+from typing import Dict, List
+import asyncio
+from neo4j import AsyncGraphDatabase, READ_ACCESS
+from socialgene.config import env_vars
 
 import pandas as pd
 from rich.progress import (
@@ -48,28 +52,30 @@ def set_hmm_outdegree():
         _ = db.run(
             """
             MATCH (h1: hmm)
-            SET h1.outdegree = apoc.node.degree.in(h1, "ANNOTATES")
+            SET h1.outdegree = apoc.node.degree.out(h1, "ANNOTATES")
             """
         )
 
 
-def get_lowest_outdegree_model_per_protein(sg_object):
+def get_outdegree_per_hmm_per_protein(sg_object):
     """
+    Get the outdegree for each domain in each protein in an input sg_object
     Args:
         sg_object (SocialGene): SocialGene object
     Returns:
-        DataFrame: pd.DataFrame with columns ["query_prot_uid", "hmm_model_uid", "outdegree"]
+        DataFrame: pd.DataFrame with columns ["protein_uid", "hmm_uid", "outdegree"]
     """
-    # Prioritize based in the cumulative outdegree of HMM nodes per input protein
+    # Get teh non-redundant set of all domains from all proteins
     doms = set()
-    # Create a dictionary of protein to domains (turned into a DF)
-    # and a set of domains across all inputs
     for v in sg_object.proteins.values():
         for i in v.domain_vector:
             doms.add(i)
+    if doms == set():
+        raise ValueError("No domains in sg_object.proteins")
     doms = list(doms)
+    # Retrieve the outdegree for the non-redundant set of domains
     with GraphDriver() as db:
-        res = db.run(
+        domain_outdegree_df = db.run(
             """
            WITH $doms as doms
            MATCH (h1:hmm)
@@ -78,57 +84,80 @@ def get_lowest_outdegree_model_per_protein(sg_object):
          """,
             doms=doms,
         ).to_df()
-    temp = []
-    for k, v in sg_object.proteins.items():
-        if v.domain_vector:
-            temp.append(
-                pd.DataFrame(
-                    product([k], v.domain_vector),
-                    columns=["protein_uid", "hmm_uid"],
-                )
-            )
-    temp = pd.concat(temp)
-    temp = temp.merge(res, how="left")
-    return (
-        temp.sort_values("outdegree")
-        .groupby(["protein_uid"], sort=False)["hmm_uid"]
-        .apply(list)
-        .to_dict()
+    domain_outdegree_df["hmm_uid"] = domain_outdegree_df["hmm_uid"].astype("category")
+    # Create a DF of proteins and their domains
+    temp = pd.DataFrame(
+        data=(
+            {"protein_uid": k, "hmm_uid": i}
+            for k, v in sg_object.proteins.items()
+            for i in v.domain_vector
+        ),
+        dtype="category",
     )
+    # return a merged df with columns ["protein_uid", "hmm_uid", "outdegree"]
+    return temp.merge(domain_outdegree_df, how="left")
 
 
-def _find_sim_protein(domain_list):
-    """Use HMM annotations to find similar proteins in a Neo4j Database
+async def _find_simimlar_protein(domain_list, frac: float = 0.75):
+    """
+    The function `_find_sim_protein` is an asynchronous function that queries a Neo4j graph database to
+    find similar proteins based on protein domain information.
 
     Args:
-        protein_obj (Protein): SocialGene Protein object
-        single_domain (str): prioritized HMM uid
+      protein_domain_dict (Dict[List[str]]): The `protein_domain_dict` parameter is a dictionary where
+    the keys are protein uids and the values are lists of domain uids.
+      frac (float): The `frac` parameter is a float value that represents the fraction of protein
+    domains that need to match in order for a protein to be considered similar. By default, it is set to
+    0.75, meaning that at least 75% of the protein domains need to match
 
     Returns:
-        DataFrame: pd.DataFrame with columns
+      The function `_find_sim_protein` returns a Pandas DataFrame containing the results of the query
+    executed in the Neo4j database. The DataFrame has columns `assembly_uid`, `nucleotide_uid`,
+    `target_prot_uid`, `n_start`, and `n_end`
     """
-    # keep order because the domain list is sorted by outdegree
-    nr_list = list(OrderedDict.fromkeys(domain_list))[:3]
-    with GraphDriver() as db:
-        res = db.run(
+    # TODO: move async driver to reg driver class module
+    async with AsyncGraphDatabase.driver(
+        env_vars["NEO4J_URI"],
+        auth=(
+            env_vars["NEO4J_USER"],
+            env_vars["NEO4J_PASSWORD"],
+        ),
+    ) as driver:
+        res = await driver.execute_query(
             """
-    WITH $domain_list AS input_protein_domains
-    MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0:hmm)
-    WHERE h0.uid IN input_protein_domains
-    WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
-    WHERE initial_count > size(input_protein_domains) * 0.75
-    MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-    WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)
-    MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
-    RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
+            WITH $domain_list AS input_protein_domains
+            MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0:hmm)
+            WHERE h0.uid IN input_protein_domains
+            WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
+            WHERE initial_count > size(input_protein_domains) * $frac
+            MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
+            WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)
+            MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+            RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target_prot_uid, e1.start as n_start, e1.end as n_end
             """,
-            domain_list=nr_list,
-        ).data()
-        # log.info(f"{len(res)} results")
+            domain_list=list(domain_list),
+            frac=frac,
+        )
+        res = pd.DataFrame(res.records, columns=res.keys)
         return res
 
 
-def search_for_similar_proteins(protein_domain_dict):
+async def _find_similar_protein_multiple(dict_of_domain_lists, frac: float = 0.75):
+    # create task group
+    # TODO: if webserver in future this could be used to control max time of search
+    async with asyncio.TaskGroup() as group:
+        # create and issue tasks
+        tasks = {
+            k: group.create_task(_find_simimlar_protein(domain_list=v, frac=frac))
+            for k, v in dict_of_domain_lists.items()
+        }
+    # wait for all tasks to complete...
+    # report all results
+    # return tasks
+    return pd.concat([v.result().assign(query_prot_uid=k) for k, v in tasks.items()])
+
+
+def search_for_similar_proteins(protein_domain_dict, frac):
     """Loop _find_sim_protein() through input proteins and get df of all results
 
     Args:
@@ -154,20 +183,13 @@ def search_for_similar_proteins(protein_domain_dict):
                 bb.extend(
                     [
                         {"query_prot_uid": k} | i
-                        for i in _find_sim_protein(domain_list=v)
+                        for i in _find_sim_protein(domain_list=v, frac=frac)
                     ]
                 )
             except Exception:
                 pass
             pg.update(task, advance=1)
     return pd.DataFrame(bb)
-    if bb:
-        bb = pd.DataFrame(bb)
-        zz = bb.sort_values(by=["n_start"], ascending=[True], na_position="first")
-        zz.reset_index(inplace=True, drop=True)
-        return zz
-    else:
-        log.info("no results")
 
 
 ############################################################

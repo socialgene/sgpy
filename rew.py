@@ -1,50 +1,19 @@
-import argparse
-import logging
 from math import ceil
-from pathlib import Path
-
-from rich.progress import Progress
-
+from typing import List
 from socialgene.base.socialgene import SocialGene
-from socialgene.clustermap.clustermap import Clustermap
-from socialgene.compare_proteins.hmm.hmmer import CompareDomains
 from socialgene.hmm.hmmer import HMMER
 from socialgene.scoring.search import (
+    _find_similar_protein_multiple,
     check_for_hmm_outdegree,
-    get_lowest_outdegree_model_per_protein,
-    search_for_similar_proteins,
+    get_outdegree_per_hmm_per_protein,
     set_hmm_outdegree,
+    _find_similar_protein_multiple,
 )
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-)
+from pathlib import Path
+import pandas as pd
+import asyncio
 
-logging.getLogger("neo4j").setLevel(logging.WARNING)
-logging.getLogger().setLevel(logging.INFO)
-
-
-parser = argparse.ArgumentParser(
-    description="Create a clustermap.js file for an input BGC"
-)
-
-parser.add_argument(
-    "--input",
-    help="Output directory filepath",
-)
-parser.add_argument(
-    "--output",
-    help="Output directory filepath",
-)
-parser.add_argument(
-    "--hmmdir",
-    help="HMM file directory",
-)
-
-gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001850.gbk"
+input_gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001850.gbk"
 hmm_dir = (
     "/home/chase/Documents/socialgene_data/streptomyces/socialgene_per_run/hmm_cache"
 )
@@ -52,32 +21,35 @@ hmm_dir = (
 h1 = Path(hmm_dir, "socialgene_nr_hmms_file_with_cutoffs_1_of_1.hmm")
 # hmm file without cutoffs
 h2 = Path(hmm_dir, "socialgene_nr_hmms_file_without_cutoffs_1_of_1.hmm")
+hmm_file_list = [h1, h2]
 
-########################################
-# Setup hmmsearch
-########################################
-# hmmpress
-HMMER().hmmpress(h1)
-HMMER().hmmpress(h2)
 
-########################################
-# Read input BGC
-########################################
+def prep_hmms(hmm_file_list: List):
+    for i in hmm_file_list:
+        HMMER().hmmpress(i)
 
-sg_object = SocialGene()
 
-# parse input BGC
-sg_object.parse(gbk_path)
+def read_input_bgc(gbk_path):
+    sg_object = SocialGene()
+    # parse input BGC
+    sg_object.parse(gbk_path)
+    # fragile implementation; add string input BGC id to keep track/separate input BGC from those added to class later
+    input_bgc_name = list(sg_object.assemblies.keys())[0]
+    modified_input_bgc_name = f"socialgene_query_{input_bgc_name}"
+    # change input assembly name
+    sg_object.assemblies[modified_input_bgc_name] = sg_object.assemblies.pop(
+        input_bgc_name
+    )
+    sg_object.assemblies[modified_input_bgc_name].id = modified_input_bgc_name
+    return sg_object
 
-# fragile implementation; add string input BGC id to keep track/separate input BGC from those added to class later
-input_bgc_name = list(sg_object.assemblies.keys())[0]
-modified_input_bgc_name = f"socialgene_query_{input_bgc_name}"
 
-# change input assembly name
-sg_object.assemblies[modified_input_bgc_name] = sg_object.assemblies.pop(input_bgc_name)
-sg_object.assemblies[modified_input_bgc_name].id = modified_input_bgc_name
+prep_hmms(hmm_file_list)
+sg_object = read_input_bgc(input_gbk_path)
+# Check if HMM Neo4j nodes have an outdegree property; if not, calculate and add to node
+if not check_for_hmm_outdegree():
+    set_hmm_outdegree()
 
-input_bgc_nuc_id = list(sg_object.assemblies[modified_input_bgc_name].loci.keys())[0]
 
 # Annotate input BGC proteins with HMM models using external hmmscan
 sg_object.annotate(
@@ -85,45 +57,35 @@ sg_object.annotate(
     use_neo4j_precalc=True,
 )
 
-# Check if HMM Neo4j nodes have an outdegree property; if not, calculate and add to node
-if not check_for_hmm_outdegree():
-    set_hmm_outdegree()
 
 ########################################
-
 # Rank input proteins by how many (:hmm)-[:ANNOTATES]->(:protein) relationships will have to be traversed
 # Don't reduce, but limit to 25 searched proteins per input BGC
 # input_protein_domain_df = prioritize_input_proteins(sg_object, reduce_by=1, max_out=50)
+domain_outdegree_df = get_outdegree_per_hmm_per_protein(sg_object)
+protein_domain_df = domain_outdegree_df.groupby("protein_uid")["hmm_uid"].apply(list)
 
-protein_domain_dict = get_lowest_outdegree_model_per_protein(sg_object)
+initial_search_results = await _find_similar_protein_multiple(
+    protein_domain_df.to_dict()
+)
+# doing it for other columns will increase the mem usage
+initial_search_results["query_prot_uid"] = initial_search_results[
+    "query_prot_uid"
+].astype("category")
 
-searched_protein_hash_set = set(protein_domain_dict.keys())
 
-input_protein_domain_df = protein_domain_dict
-
-initial_search_results = search_for_similar_proteins(protein_domain_dict)
-
-#################################33
-
-must_find_more_than_x_per_nuc_sequence = ceil(len(input_protein_domain_df) * 0.5)
-
-assemblies_must_have_x_matches = ceil(len(input_protein_domain_df)) * 0.75
-
+########################################
+nucleotide_sequences_must_have_x_matches = ceil(len(protein_domain_df) * 0.5)
+gene_clusters_must_have_x_matches = ceil(len(protein_domain_df) * 0.5)
+assemblies_must_have_x_matches = ceil(len(protein_domain_df)) * 0.75
 links_must_have_mod_score_above = 0.4
-
-#####################################
-# SECOND PASS
-#####################################
-
-###################################################################################################################
-
-###################################################################################################################
+########################################
 assembly_counts = (
     initial_search_results.groupby("assembly_uid")["query_prot_uid"]
     .nunique()
     .reset_index()
 )
-
+# filter, keeping assemblies with >= assemblies_must_have_x_matches
 reduced = initial_search_results.merge(
     assembly_counts[assembly_counts.query_prot_uid >= assemblies_must_have_x_matches][
         "assembly_uid"
@@ -132,30 +94,58 @@ reduced = initial_search_results.merge(
     on="assembly_uid",
 )
 
+# filter, keeping nucleotide seqs with >= assemblies_must_have_x_matches
+nuc_counts = reduced.groupby("nucleotide_uid")["query_prot_uid"].nunique().reset_index()
+reduced = reduced.merge(
+    nuc_counts[nuc_counts.query_prot_uid >= nucleotide_sequences_must_have_x_matches][
+        "nucleotide_uid"
+    ],
+    how="inner",
+    on="nucleotide_uid",
+)
+# sort by start position of genes
 reduced = reduced.sort_values(by=["n_start"], ascending=[True], na_position="first")
 reduced.reset_index(inplace=True, drop=True)
+########################################
+########################################
+########################################
 
 ##################################################################################################################
+
+########################################
+# Generate gene clusters
+########################################
+
+MAX_GAP = 20000
+
+# label clusters
 reduced["cluster"] = (
     reduced.groupby("nucleotide_uid")
-    .apply(lambda group: group["n_start"] > (group["n_end"].shift() + 20000))
+    .apply(lambda group: group["n_start"] > (group["n_end"].shift() + MAX_GAP))
     .cumsum()
     .reset_index(level=[0])[0]
 )
 
+# count the number of unique input/query protein hits within each cluster
 reduced["cluster_unique_hits"] = reduced.groupby(["nucleotide_uid", "cluster"])[
     "query_prot_uid"
 ].transform("nunique")
 
+# count the number of unique input/query protein hits within each genome/assembly
 reduced["assembly_unique_hits"] = reduced.groupby(["assembly_uid"])[
     "query_prot_uid"
 ].transform("nunique")
 
-reduced[reduced["assembly_uid"] == "GCF_002362315.1"]
+
+########################################
+# Prune gene clusters
+########################################
 
 clusters_above_threshold = reduced[
-    reduced["cluster_unique_hits"] > must_find_more_than_x_per_nuc_sequence
+    reduced["cluster_unique_hits"] > gene_clusters_must_have_x_matches
 ]
+
+
 clusters_above_threshold_final_df = (
     clusters_above_threshold.groupby(["assembly_uid", "nucleotide_uid", "cluster"])
     .agg({"n_start": "min", "n_end": "max"})
@@ -175,7 +165,9 @@ reduced["cluster_unique_hits"] = reduced.groupby(["nucleotide_uid", "cluster"])[
     "query_prot_uid"
 ].transform("nunique")
 
-clusters_above_threshold_final_df = clusters_above_threshold_final_df[0:3]
+########################################
+# Retreive gene cluster data from database
+########################################
 
 progress_bar = Progress(
     TextColumn(f"Pulling target cluster data from database..."),
@@ -197,7 +189,6 @@ with progress_bar as pg:
         )
         pg.update(task, advance=1)
 
-
 # Drop likely cross-origin proteins
 for ak, av in sg_object.assemblies.items():
     for nk, nv in av.loci.items():
@@ -206,30 +197,9 @@ for ak, av in sg_object.assemblies.items():
         )
 
 
-# with Progress(transient=True) as pg:
-#     task = pg.add_task("Filling proteins found elsewhere...", total=len(other_proteins))
-#     for index, result in other_proteins.filter(['nucleotide_uid','n_start','n_end']).iterrows():
-#         sg_object.fill_given_locus_range(
-#             locus_uid=result[0], start=result[1], end=result[2]
-#         )
-#         pg.update(task, advance=1)
-
-#######################################
-
-# Add small clusters
-
-# with Progress(transient=True) as pg:
-#     task = pg.add_task("Adding best hits...", total=len(sm_clusters2))
-#     for index, result in sm_clusters2.filter(
-#         ["nucleotide_uid", "n_start", "n_end"]
-#     ).iterrows():
-#         sg_object.fill_given_locus_range(
-#             locus_uid=result[0], start=result[1] - 5000, end=result[2] + 5000
-#         )
-#         pg.update(task, advance=1)
-
-#######################################
-#######################################
+########################################
+# Compare proteins input_bgc proteins against those found on initial pass
+########################################
 # First compare input proteins to all others to ensure groups
 a = CompareDomains()
 query_proteins = sg_object.assemblies[modified_input_bgc_name].get_all_proteins()
@@ -239,12 +209,10 @@ a.compare_many_to_many(
 )
 df = a.df
 df = df[df.score > links_must_have_mod_score_above]
-#######################################
-#######################################
 
-
-#######################################
-#######################################
+########################################
+# Compare proteins all-vs-all
+########################################
 a = CompareDomains()
 query_proteins = sg_object.assemblies[modified_input_bgc_name].get_all_proteins()
 a.compare_all_to_all_parallel(
@@ -253,20 +221,11 @@ a.compare_all_to_all_parallel(
 df2 = a.df
 df2 = df2[df2.score > links_must_have_mod_score_above]
 
-
-#######################################
-#######################################
-
+########################################
+# Compare proteins all-vs-all
+########################################
 
 df.groupby("query")["target"].apply(list).reset_index(name="new")
-
-
-for index, result in df.iterrows():
-    pass
-
-
-#######################################
-
 
 df = df[df.score > links_must_have_mod_score_above]
 
@@ -279,7 +238,9 @@ group_dict_info = {
     .features
 }
 
-######################## ORDER THE OUTPUT BGCs
+########################################
+# ORDER THE OUTPUT BGCs
+########################################
 # get {nucleotide_hash: assembly_uid}
 zz = {
     sg_object._create_internal_locus_id(k, k2): k
@@ -291,28 +252,20 @@ clusters_above_threshold.sort_values("cluster_unique_hits", ascending=False)[
     "assembly_uid"
 ].unique()
 
-# a = clusters_above_threshold.groupby(["assembly_uid", "nucleotide_uid", "cluster"])[
-#     "query_prot_uid"
-# ].apply(lambda x: mod_score(list(x), input_sorted_protein_hashlist)["mod_score"])
-
-# a = a.reset_index()
-# a = a.sort_values("query_prot_uid", ascending=True)
-
-# a = a["assembly_uid"].unique()
 a = clusters_above_threshold.sort_values("cluster_unique_hits", ascending=False)[
     "assembly_uid"
 ].unique()
 
 order2 = [modified_input_bgc_name] + list(a)
-
-########################
-
-######################## Modify Assembly names
+########################################
+# Create and write clustermap json
+########################################
 
 for k, v in sg_object.assemblies.items():
     v.fill_taxonomy_from_db()
     v.fill_properties()
 
+# Modify names of assemblies for their appearance in clustermap
 for k, v in sg_object.assemblies.items():
     if v.taxonomy.genus_:
         v.name = f"{v.id}_{v.taxonomy.genus_}_{v.info['culture_collection']}"

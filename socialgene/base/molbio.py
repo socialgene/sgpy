@@ -99,7 +99,7 @@ class ProteinSequence:
         "O",
         "*",
     ]
-    __slots__ = ["hash_id", "crc64", "sequence"]
+    __slots__ = ["hash_id", "__crc64", "__md5", "sequence"]
 
     def __init__(self, sequence: str = None, hash_id: str = None):
         """Class for holding an amino acid sequence (protein)
@@ -161,7 +161,14 @@ class ProteinSequence:
         """
         self._standardize_sequence()
         self.hash_id = hasher.hash_aminos(self.sequence)
-        self.crc64 = hasher.hash_aminos(self.sequence, algo="crc64")
+
+    @property
+    def crc64(self):
+        return hasher.hash_aminos(self.sequence, algo="crc64")
+
+    @property
+    def md5(self):
+        return hasher.hash_aminos(self.sequence, algo="md5")
 
     def _standardize_sequence(self):
         """
