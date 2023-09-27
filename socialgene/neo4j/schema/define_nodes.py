@@ -1,11 +1,48 @@
 from socialgene.base.molbio import SOURCE_KEYS
+from socialgene.neo4j.schema.neo4j_element import Neo4jElement
 from socialgene.neo4j.schema.node_relationship_class import NR
+from rich.console import Console, ConsoleOptions, RenderResult
+from rich.table import Table
+import builtins
+from rich import print
+
+# use rich to print
+builtins.print = print
 
 
-class Nodes(NR):
-    def _import(self):
+class Node(Neo4jElement):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        table = Table(title="Node")
+        table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
+        table.add_column(
+            "Description",
+            justify="left",
+            style="cyan",
+            no_wrap=False,
+            ratio=4,
+            max_width=50,
+        )
+        table.add_column("NF results subdirectory", style="magenta", ratio=1)
+        table.add_column("Neo4j header file", style="magenta", ratio=1)
+        table.add_row(self.neo4j_label, self.target_subdirectory, self.header_filename)
+        yield table
+
+
+class Nodes:
+    __slots__ = ["nodes"]
+
+    def __init__(
+        self,
+    ):
+        self.nodes = set()
         self.add_node(
             neo4j_label="parameters",
+            description="Parameters and environmental variables used during database creation",
             header_filename="parameters.header",
             target_subdirectory="parameters",
             target_extension="socialgene_parameters",
@@ -41,6 +78,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="assembly",
+            description="Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from.",
             header_filename="assembly.header",
             target_subdirectory="genomic_info",
             target_extension="assemblies",
@@ -49,6 +87,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="nucleotide",
+            description="Represents a single nucleotide sequence (e.g. a contig/scaffold/chromosome)",
             header_filename="locus.header",
             target_subdirectory="genomic_info",
             target_extension="loci",
@@ -57,6 +96,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="protein",
+            description="Represents a non-redundant protein",
             header_filename="protein_ids.header",
             target_subdirectory="protein_info",
             target_extension="protein_ids",
@@ -67,6 +107,7 @@ class Nodes(NR):
         )
         self.add_node(
             neo4j_label="goterm",
+            description="Represent a GO term",
             header_filename="goterms.header",
             target_subdirectory="goterms",
             target_extension="goterms",
@@ -75,6 +116,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="tigrfam_role",
+            description="Represents a TIGRFAM role",
             header_filename="tigrfam_role.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_role",
@@ -82,6 +124,7 @@ class Nodes(NR):
         )
         self.add_node(
             neo4j_label="tigrfam_mainrole",
+            description="Represents a TIGRFAM main role",
             header_filename="tigrfam_mainrole.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_mainrole",
@@ -90,6 +133,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="tigrfam_subrole",
+            description="Represents a TIGRFAM sub role",
             header_filename="tigrfam_subrole.header",
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_subrole",
@@ -98,6 +142,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="taxid",
+            description="Represents a single taxon within NCBI taxonomy",
             header_filename="taxid.header",
             target_subdirectory="taxdump_process",
             target_extension="nodes_taxid",
@@ -106,6 +151,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="mz_cluster_index",
+            description="Represents a single m/z cluster",
             header_filename="mz_cluster_index_nodes.header",
             target_subdirectory="paired_omics",
             target_extension="mz_cluster_index_nodes",
@@ -127,6 +173,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="mz_source_file",
+            description="Represents the file m/z features came from",
             header_filename="mz_source_file.header",
             target_subdirectory="paired_omics",
             target_extension="hash.mz_source_file",
@@ -137,6 +184,7 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="hmm_source",
+            description="Represents the source of an HMM model (e.g. PFAM)",
             header_filename="hmm_source.header",
             target_subdirectory="hmm_info",
             target_extension="hmminfo",
@@ -162,8 +210,41 @@ class Nodes(NR):
 
         self.add_node(
             neo4j_label="hmm",
+            description="Represents a single non-redundant HMM model",
             header_filename="sg_hmm_nodes.header",
             target_subdirectory="hmm_info",
             target_extension="sg_hmm_nodes",
             header=["uid:ID(hmm)"],
         )
+
+    def add_node(self, **kwargs):
+        self.nodes.add(Node(**kwargs))
+
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        table = Table(title="Nodes", show_lines=True)
+        table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
+        table.add_column(
+            "Description",
+            justify="left",
+            style="cyan",
+            no_wrap=False,
+            ratio=4,
+            max_width=50,
+        )
+        table.add_column("NF results subdirectory", style="magenta", ratio=1)
+        table.add_column("Neo4j header file", style="magenta", ratio=1)
+        for i in sorted(list(self.nodes), key=lambda x: x.neo4j_label):
+            table.add_row(
+                i.neo4j_label, i.description, i.target_subdirectory, i.header_filename
+            )
+        yield table
+
+
+def print_info():
+    print(Nodes())
+
+
+if __name__ == "__main__":
+    print_info()

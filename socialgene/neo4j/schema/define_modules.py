@@ -14,7 +14,7 @@ class Single_Module:
 class Modules:
     # These are used in Nextflow, here: https://github.com/socialgene/sgnf/blob/main/subworkflows/local/sg_modules.nf
     # They simply group the different files/inputs into hopefully-sensible "modules"
-    # It could be coded differently, but this way will hopefully make it easier for someone to add on a group
+    # It could be coded differently, but this way will hopefully make it easier for contributors to extend
     def _add_module(self, **kwargs):
         _module_id = kwargs.get("module_id")
         self.modules.update({_module_id: Single_Module(**kwargs)})

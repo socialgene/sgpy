@@ -58,8 +58,6 @@ sg_ncbi_taxonomy        = "socialgene.cli.nextflow.parse_ncbi_taxonomy:main"
 sg_export_parameters    = "socialgene.cli.nextflow.parameter_export:main"
 sg_export_neo4j_headers = "socialgene.cli.nextflow.export_neo4j_header_files:main"
 sg_create_neo4j_db      = "socialgene.cli.nextflow.create_neo4j_db:main"
-sg_version              = "socialgene.utils.version:main"
-sg_neo4j_version        = "socialgene.utils.version:neo4j"
 sg_hmm_tsv_parser       = "socialgene.cli.nextflow.socialgene_hmm_tsv_parser:main"
 sg_prothash_sqlite      = "socialgene.cli.nextflow.protein_sqlite:main"
 sg_get_goterms          = "socialgene.utils.goterms:main"
@@ -75,3 +73,9 @@ sg_mm_search            = "socialgene.mmseqs.search:main"
 # neo4j
 sg_indices              = "socialgene.cli.neo4j.indices:main"
 sg_massage              = "socialgene.cli.neo4j.massage:main"
+
+# info
+sg_version              = "socialgene.utils.version:main"
+sg_neo4j_version        = "socialgene.utils.version:neo4j"
+sg_nodes                = "socialgene.neo4j.schema.define_nodes:print_info"
+sg_relationships        = "socialgene.neo4j.schema.define_relationships:print_info"
