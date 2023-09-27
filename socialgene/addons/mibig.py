@@ -1,6 +1,6 @@
+"""https://mibig.secondarymetabolites.org/"""
 import re
-
-from socialgene.external_db_classes.base_class import ExternalBaseClass
+from socialgene.addons.base_class import ExternalBaseClass
 
 
 class Mibig(ExternalBaseClass):

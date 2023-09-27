@@ -59,7 +59,6 @@ sg_export_parameters    = "socialgene.cli.nextflow.parameter_export:main"
 sg_export_neo4j_headers = "socialgene.cli.nextflow.export_neo4j_header_files:main"
 sg_create_neo4j_db      = "socialgene.cli.nextflow.create_neo4j_db:main"
 sg_hmm_tsv_parser       = "socialgene.cli.nextflow.socialgene_hmm_tsv_parser:main"
-sg_prothash_sqlite      = "socialgene.cli.nextflow.protein_sqlite:main"
 sg_get_goterms          = "socialgene.utils.goterms:main"
 
 # search

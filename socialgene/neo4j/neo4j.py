@@ -44,6 +44,9 @@ def import_queries():
 # "Create the driver once at application start and then make it available to the application."
 #  https://community.neo4j.com/t/neo4j-python-driver-service-unavailable/4111/9
 class GraphDriver(object):
+    """The `GraphDriver` class provides a connection to a Neo4j database and manages
+    the session for executing transactions."""
+
     instance = None
     driver = None
 
@@ -92,6 +95,8 @@ class GraphDriver(object):
 
 
 class Neo4jQuery:
+    """The `Neo4jQuery` class provides methods for printing and running Neo4j queries."""
+
     def __init__(self):
         pass
 
@@ -115,7 +120,7 @@ class Neo4jQuery:
         cypher_name: str = None,
         cypher: str = None,
         param: Any = None,
-        rettype="data",
+        rettype: str = "data",
         *args,
         **kwargs,
     ):
@@ -124,7 +129,7 @@ class Neo4jQuery:
         Args:
             cypher_name (str, optional): Neo4j Cypher query. Defaults to None.
             cypher (str, optional): Single string of Cypher script.  Defaults to None.
-            param (Any, optional): paramter passed to Neo4j query, type depends on query. Defaults to None.
+            param (Any, optional): parameter passed to Neo4j query, type depends on query. Defaults to None.
             rettype (str, optional): output function. For available methods see (https://neo4j.com/docs/api/python-driver/current/api.html#result). Defaults to "data"
             args/kwargs (Any): pas additional argument(s) to the rettype method
         Returns:

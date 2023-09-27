@@ -1,13 +1,14 @@
+"""https://www.npatlas.org"""
 import json
 
 import requests
 from rich.progress import Progress
 
-from socialgene.external_db_classes.base_class import ExternalBaseClass
-from socialgene.external_db_classes.gnps import GnpsLibrarySpectrum
-from socialgene.external_db_classes.mibig import Mibig
-from socialgene.external_db_classes.npmrd import Npmrd
-from socialgene.external_db_classes.publication import Publication
+from socialgene.addons.base_class import ExternalBaseClass
+from socialgene.addons.gnps import GnpsLibrarySpectrum
+from socialgene.addons.mibig import Mibig
+from socialgene.addons.npmrd import Npmrd
+from socialgene.addons.publication import Publication
 from socialgene.utils.logging import log
 
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
