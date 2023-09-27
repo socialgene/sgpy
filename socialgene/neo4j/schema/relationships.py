@@ -60,12 +60,11 @@ class Relationship(Neo4jElement):
 
 
 class Relationships:
-    __slots__ = ["relationships"]
-
     def __init__(
         self,
     ):
-        self.relationships = set()
+        super().__init__()
+        self.relationships = {}
         self.add_relationship(
             neo4j_label="ANNOTATES",
             description="",
@@ -293,8 +292,10 @@ class Relationships:
             ],
         )
 
-    def add_relationship(self, **kwargs):
-        self.relationships.add(Relationship(**kwargs))
+    def add_relationship(self, neo4j_label, **kwargs):
+        self.relationships[neo4j_label] = Relationship(
+            neo4j_label=neo4j_label, **kwargs
+        )
 
     def __rich_console__(
         self, console: Console, options: ConsoleOptions
@@ -304,7 +305,7 @@ class Relationships:
         table.add_column("Relationship", style="magenta", ratio=1)
         table.add_column("NF results subdirectory", style="magenta", ratio=1)
         table.add_column("Neo4j header file", style="magenta", ratio=1)
-        for i in sorted(list(self.relationships), key=lambda x: x.neo4j_label):
+        for i in (self.relationships[i] for i in sorted(self.relationships.keys())):
             table.add_row(
                 i.neo4j_label,
                 i.cypher_string,

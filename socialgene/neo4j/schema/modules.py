@@ -22,10 +22,11 @@ class Modules:
     def __init__(
         self,
     ):
+        super().__init__()
         self.modules = {}
         self._add_module(
             module_id="base",
-            nodes=["assembly", "nucleotide", "protein", "protein_source"],
+            nodes=["assembly", "nucleotide", "protein"],
             relationships=[
                 "CONTAINS",
                 "ASSEMBLES_TO",
@@ -43,7 +44,7 @@ class Modules:
         )
         self._add_module(
             module_id="protein",
-            nodes=["protein", "protein_source"],
+            nodes=["protein"],
             relationships=["PROTEIN_SOURCE"],
         )
         self._add_module(

@@ -59,7 +59,16 @@ def test_fail2():
 def test_dict():
     temp = ProteinSequence(sequence="ZJUAARNDCQEGHIILKMFPSTWTYVXZJU")
     assert temp.__dict__ == {
-        "crc64": "29CAA4E569304732",
         "hash_id": "DeAsyYJZ1XS1-LHOf15YN7OMk-gzJgbL",
         "sequence": "ZJUAARNDCQEGHIILKMFPSTWTYVXZJU",
     }
+
+
+def test_crc64():
+    temp = ProteinSequence(sequence="ZJUAARNDCQEGHIILKMFPSTWTYVXZJU")
+    assert temp.crc64 == "29CAA4E569304732"
+
+
+def test_md5():
+    temp = ProteinSequence(sequence="ZJUAARNDCQEGHIILKMFPSTWTYVXZJU")
+    assert temp.md5 == "e76c6fd452bb4e1376ed2f825e5d6a02"

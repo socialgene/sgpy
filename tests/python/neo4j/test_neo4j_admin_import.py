@@ -50,7 +50,7 @@ expected_headers = {
 
 def test_creation_and_writing_of_neo4j_headers():
     sg_mod = SocialgeneModules()
-    sg_mod.add_modules(sg_mod.modules.keys())
+    sg_mod.add_modules(list(sg_mod.modules.keys()))
     with tempfile.TemporaryDirectory() as tmpdirname:
         sg_mod.write_neo4j_headers(outdir=tmpdirname)
         p = Path(tmpdirname).glob("**/*")

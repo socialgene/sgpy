@@ -26,14 +26,15 @@ from socialgene.utils.logging import log
 class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser):
     """Main class for building, sotring, working with protein and genomic info"""
 
+    # _genomic_info_export_tablenames exports tables for the nextflow pipeline
     _genomic_info_export_tablenames = [
-        "protein_to_go_table",
-        "assembly_to_locus_table",
-        "loci_table",
-        "locus_to_protein_table",
-        "assembly_table",
-        "assembly_to_taxid_table",
-        "protein_ids_table",
+        "table_protein_to_go",
+        "table_assembly_to_locus",
+        "table_loci",
+        "table_locus_to_protein",
+        "table_assembly",
+        "table_assembly_to_taxid",
+        "table_protein_ids",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -628,22 +629,17 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """
         if not filename:
             filename = tablename
-        if not hasattr(self, tablename):
-            raise ValueError(
-                f"tablename must be one of: {self._genomic_info_export_tablenames}"
+        outpath = Path(outdir, filename)
+        with open_write(outpath, **kwargs) as handle:
+            tsv_writer = csv.writer(
+                handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
             )
-        else:
-            outpath = Path(outdir, filename)
-            with open_write(outpath, **kwargs) as handle:
-                tsv_writer = csv.writer(
-                    handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
-                )
-                for i in getattr(self, tablename)():
-                    tsv_writer.writerow(i)
+            for i in getattr(self, tablename)():
+                tsv_writer.writerow(i)
 
-    def protein_to_go_table(self):
+    def table_protein_to_go(self):
         """
-        The function `protein_to_go_table` iterates through the assemblies, loci, and features of a
+        The function `table_protein_to_go` iterates through the assemblies, loci, and features of a
         given object, and yields tuples containing the protein hash and GO term for each feature that
         has GO terms, for import into Neo4j.
         """
@@ -658,9 +654,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                                 goterm.removeprefix("GO:").strip(),
                             )
 
-    def locus_to_protein_table(self):
+    def table_locus_to_protein(self):
         """
-        The function `locus_to_protein_table` generates a table of protein information from each locus, for import into Neo4j.
+        The function `table_locus_to_protein` generates a table of protein information from each locus, for import into Neo4j.
         """
         for ak, av in self.assemblies.items():
             for k, loci in av.loci.items():
@@ -691,7 +687,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             feature.incomplete,
                         )
 
-    def protein_ids_table(self):
+    def table_protein_ids(self):
         """Protein hash id table for import into Neo4j"""
         for protein in self.proteins.values():
             yield (
@@ -699,7 +695,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 protein.crc64,
             )
 
-    def assembly_to_locus_table(self):
+    def table_assembly_to_locus(self):
         """Assembly to locus table for import into Neo4j
 
         Args:
@@ -710,7 +706,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 #  ["assembly", "internal_locus_id"]
                 yield (ak, self._create_internal_locus_id(assembly_id=ak, locus_id=k))
 
-    def loci_table(self):
+    def table_loci(self):
         """Loci table for import into Neo4j
 
         Args:
@@ -732,7 +728,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 #  ["internal_locus_id" "locus_id"]
                 yield tuple([internal_id] + [k] + temp_v)
 
-    def assembly_table(self):
+    def table_assembly(self):
         """Assembly table for import into Neo4j
 
         Args:
@@ -752,7 +748,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 #  ["internal_locus_id" "locus_id"]
             yield tuple([k] + temp_v)
 
-    def assembly_to_taxid_table(self):
+    def table_assembly_to_taxid(self):
         """Assembly table for import into Neo4j
 
         Args:

@@ -58,7 +58,7 @@ def _writer(socialgene_object, outdir, n_fasta_splits, compression):
         socialgene_object.write_table(
             outdir=outdir,
             tablename=i,
-            filename=i.removesuffix("_table"),
+            filename=i.removeprefix("table_"),
             mode="a",
             compression=compression,
         )

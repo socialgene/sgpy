@@ -11,12 +11,14 @@ builtins.print = print
 
 
 class Node(Neo4jElement):
+    """Represents a single Node"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def __rich_console__(
         self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
+    ) -> RenderResult:  # pragma: no cover
         table = Table(title="Node")
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column(
@@ -34,12 +36,13 @@ class Node(Neo4jElement):
 
 
 class Nodes:
-    __slots__ = ["nodes"]
+    """Represents multiple Nodes and is where all non-addon Nodes are defined"""
 
     def __init__(
         self,
     ):
-        self.nodes = set()
+        super().__init__()
+        self.nodes = {}
         self.add_node(
             neo4j_label="parameters",
             description="Parameters and environmental variables used during database creation",
@@ -217,12 +220,12 @@ class Nodes:
             header=["uid:ID(hmm)"],
         )
 
-    def add_node(self, **kwargs):
-        self.nodes.add(Node(**kwargs))
+    def add_node(self, neo4j_label, **kwargs):
+        self.nodes[neo4j_label] = Node(neo4j_label=neo4j_label, **kwargs)
 
     def __rich_console__(
         self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
+    ) -> RenderResult:  # pragma: no cover
         table = Table(title="Nodes", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column(
@@ -235,14 +238,15 @@ class Nodes:
         )
         table.add_column("NF results subdirectory", style="magenta", ratio=1)
         table.add_column("Neo4j header file", style="magenta", ratio=1)
-        for i in sorted(list(self.nodes), key=lambda x: x.neo4j_label):
+        # sort by label which is the key
+        for i in (self.nodes[i] for i in sorted(self.nodes.keys())):
             table.add_row(
                 i.neo4j_label, i.description, i.target_subdirectory, i.header_filename
             )
         yield table
 
 
-def print_info():
+def print_info():  # pragma: no cover
     print(Nodes())
 
 

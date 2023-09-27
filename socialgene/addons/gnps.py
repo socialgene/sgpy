@@ -1,7 +1,7 @@
 import re
 from typing import List
 
-from socialgene.external_db_classes.base_class import ExternalBaseClass
+from .base_class import ExternalBaseClass
 
 
 class GnpsLibrarySpectrum(ExternalBaseClass):

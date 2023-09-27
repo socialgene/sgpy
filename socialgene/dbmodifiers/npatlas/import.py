@@ -1,5 +1,5 @@
 from socialgene.dbmodifiers.classyfire.importer import main as get_classyfire
-from socialgene.external_db_classes.npatlas import Npatlas
+from socialgene.addons.npatlas import Npatlas
 
 get_classyfire()
 
