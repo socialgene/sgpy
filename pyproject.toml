@@ -76,5 +76,5 @@ sg_massage              = "socialgene.cli.neo4j.massage:main"
 # info
 sg_version              = "socialgene.utils.version:main"
 sg_neo4j_version        = "socialgene.utils.version:neo4j"
-sg_nodes                = "socialgene.neo4j.schema.nodes:print_info"
-sg_relationships        = "socialgene.neo4j.schema.relationships:print_info"
+sg_nodes                = "socialgene.neo4j.schema.nodes:printer"
+sg_relationships        = "socialgene.neo4j.schema.relationships:printer"

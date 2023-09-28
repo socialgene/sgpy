@@ -6,6 +6,8 @@ from rich.table import Table
 import builtins
 from rich import print
 
+from socialgene.utils.lists_to_markdown import markdown_table_from_list
+
 # use rich to print
 builtins.print = print
 
@@ -245,9 +247,58 @@ class Nodes:
             )
         yield table
 
+    def _markdown_table(self):
+        cols = [
+            (
+                "Label",
+                "Description",
+                "NF results subdirectory",
+                "Neo4j header file",
+            )
+        ]
+        rows = [
+            (
+                i.neo4j_label,
+                i.description,
+                i.target_subdirectory,
+                i.header_filename,
+            )
+            for i in (self.nodes[i] for i in sorted(self.nodes.keys()))
+        ]
+        cols.extend(rows)
+        print(
+            markdown_table_from_list(
+                cols,
+                align="left",
+            )
+        )
+
 
 def print_info():  # pragma: no cover
     print(Nodes())
+
+
+def print_markdown():  # pragma: no cover
+    print(Nodes()._markdown_table())
+
+
+def printer():  # pragma: no cover
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Print node info")
+    parser.add_argument(
+        "--markdown",
+        help="",
+        default=False,
+        required=False,
+        action=argparse.BooleanOptionalAction,
+    )
+    args = parser.parse_args()
+    print(args.markdown)
+    if args.markdown:
+        print_markdown()
+    else:
+        print_info()
 
 
 if __name__ == "__main__":
