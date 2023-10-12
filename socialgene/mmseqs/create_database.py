@@ -36,8 +36,8 @@ def create_database(fasta_path, database_path):
     command_list = [
         "mmseqs",
         "createdb",
-        fasta_path,
-        database_path,
+        str(fasta_path),
+        str(database_path),
     ]
     mes = run_subprocess(
         command_list=command_list, check=False, shell=False, capture_output=True

@@ -17,6 +17,16 @@ def test_protein():
     assert temp.sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
 
+def test_create_fasta_string():
+    temp = Protein(
+        sequence="ARNDCQEGHILKMFPSTWYVXZJU",
+        description="description",
+        external_protein_id="external_protein_id",
+    )
+    temp.fasta_string_defline_hash_id == ">0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\nARNDCQEGHILKMFPSTWYVXZJU\n"
+    temp.fasta_string_defline_external_id == ">external_protein_id\nARNDCQEGHILKMFPSTWYVXZJU\n"
+
+
 def test_fail():
     with pytest.raises(ValueError):
         Protein()
@@ -75,3 +85,4 @@ def test_filter_domains():
     env_vars["HMMSEARCH_IEVALUE"] = -1
     temp.filter_domains()
     assert len(temp.domains) == 0
+    assert temp.domain_vector == []

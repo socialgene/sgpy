@@ -57,5 +57,5 @@ def process_nodes_dmp(file_handle):
     return df2
 
 
-def merge_taxonomy(names_df, nodes_df):
+def merge_taxonomy(names_df, nodes_df) -> pd.DataFrame:
     return names_df.merge(nodes_df.iloc[:, [0, 2]], how="inner", on="tax_id")

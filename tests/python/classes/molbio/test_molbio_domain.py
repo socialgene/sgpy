@@ -44,7 +44,7 @@ combos = [(BASE_DICT | i[0], i[1]) for i in temp]
 def test_domain_1(a, expected):
     env_vars["HMMSEARCH_IEVALUE"] = 100
     temp = Domain(**a)
-    assert temp.domain_within_threshold() == expected
+    assert temp.domain_within_threshold == expected
 
 
 def test_domain_dict():
@@ -68,8 +68,11 @@ def test_domain_dict():
     )
     env_vars["HMMSEARCH_IEVALUE"] = 1.5
     temp = BASE_DICT | {"exponentialized": False, "i_evalue": 1.1}
-    temp = Domain(**temp)
-    assert temp.get_dict() == expected
+    temp2 = Domain(**temp)
+    assert temp2.all_attributes == expected
+    temp["exponentialized"] = 1
+    with pytest.raises(ValueError):
+        Domain(**temp)
 
 
 def test_fail_add_domain_with_negative():
@@ -139,7 +142,7 @@ def test_dont_add_redundant_domain():
     for i in [BASE_DICT | i for i in tempd]:
         temp.add_domain(**i)
     assert len(temp.domains) == 1
-    assert temp.domains.pop().__dict__ == {
+    assert temp.domains.pop().all_attributes == {
         "ali_from": 1,
         "ali_to": 100,
         "domain_bias": 1.1,

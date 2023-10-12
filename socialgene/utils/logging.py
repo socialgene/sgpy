@@ -11,7 +11,7 @@ try:
     c = Console(width=150)
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
-        level=env_vars["SOCIALGENE_LOGLEVEL"],
+        level="NOTSET",
         #  format="%(filename)s/%(module)s/%(funcName)s\::: %(message)s",
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -20,23 +20,24 @@ try:
         ],
     )
 
-    log = logging.getLogger("rich")
+    log = logging.getLogger(__name__)
 
 except ImportError:
-    log = logging.getLogger()
+    log = logging.getLogger(__name__)
 
+log.setLevel(env_vars["SOCIALGENE_LOGLEVEL"])
+# handler = logging.StreamHandler(stream=sys.stdout)
 
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler(stream=sys.stdout)
-
-logger.addHandler(handler)
+# log.addHandler(handler)
+logging.getLogger("neo4j").setLevel(logging.WARNING)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
-    logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    log.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 
 sys.excepthook = handle_exception

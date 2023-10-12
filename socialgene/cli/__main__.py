@@ -2,8 +2,6 @@ import sys
 
 import pkg_resources
 
-from socialgene.utils.logging import log
-
 
 def find_entrypoints():
     entrypoints = [
@@ -15,8 +13,8 @@ def find_entrypoints():
 
 
 def main():
-    log.info("Socialgene has the following entry points for direct command line use:\n")
-    log.info("\n".join(find_entrypoints()))
+    print("Socialgene has the following entry points for direct command line use:")
+    print("\n".join(find_entrypoints()))
 
 
 if __name__ == "__main__":

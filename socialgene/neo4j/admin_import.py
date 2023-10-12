@@ -151,7 +151,6 @@ class Neo4jAdminImport(SocialgeneModules):
         missing_input_headers = []
         missing_input_data = []
         p = Path(self.neo4j_top_dir)
-        print(p)
         for i in self.node_relationship_argument_list:
             if not list(p.glob(i[1])):
                 missing_input_headers.append(i[1])

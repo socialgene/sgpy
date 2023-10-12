@@ -59,14 +59,15 @@ def search(fasta_path, target_database, argstring=""):
         command_list = [
             "mmseqs",
             "easy-search",
-            fasta_path,
-            target_database,
-            outpath,
-            tmpdirname,
+            str(fasta_path),
+            str(target_database),
+            str(outpath),
+            str(tmpdirname),
             "--format-mode",
             "0",
         ]
         if argstring:
+            argstring = [str(i) for i in argstring.split()]
             command_list.extend(argstring)
         mes = run_subprocess(
             command_list=command_list, check=False, shell=False, capture_output=True
@@ -75,8 +76,15 @@ def search(fasta_path, target_database, argstring=""):
         if not os.path.exists(outpath):
             logging.warning("No output from MMseqs2 search")
         else:
-            return pd.read_csv(
-                outpath, sep="\t", names=MMSEQS_OUT_COLUMNS, dtype=MMSEQS_OUT_COLUMNS
+            return (
+                pd.read_csv(
+                    outpath,
+                    sep="\t",
+                    names=MMSEQS_OUT_COLUMNS,
+                    dtype=MMSEQS_OUT_COLUMNS,
+                )
+                .sort_values(["pident", "bits"], ascending=False)
+                .reset_index(drop=True)
             )
 
 
