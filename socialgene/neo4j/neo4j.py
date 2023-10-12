@@ -1,15 +1,14 @@
-from typing import Any
-
 import atexit
 import importlib.resources
+from typing import Any
 
 from neo4j import GraphDatabase
+from rich.console import Console
 
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
 
-# TODO: Not sure whether the driver should be persistent (with active check)
-# or a new connection each time
+console = Console()
 
 
 # Read in queries from cypher file, as dictionary
@@ -42,15 +41,20 @@ def import_queries():
     return cypher_dictionary
 
 
+# "Create the driver once at application start and then make it available to the application."
+#  https://community.neo4j.com/t/neo4j-python-driver-service-unavailable/4111/9
 class GraphDriver(object):
-    __instance = None
-    __driver = None
+    """The `GraphDriver` class provides a connection to a Neo4j database and manages
+    the session for executing transactions."""
+
+    instance = None
+    driver = None
 
     def __new__(cls):
-        if cls.__instance is None:
-            inst = cls.__instance = object.__new__(cls)
+        if cls.instance is None:
+            inst = cls.instance = object.__new__(cls)
             try:
-                inst.__driver = GraphDatabase.driver(
+                inst.driver = GraphDatabase.driver(
                     env_vars["NEO4J_URI"],
                     auth=(
                         env_vars["NEO4J_USER"],
@@ -62,29 +66,37 @@ class GraphDriver(object):
                 log.exception("Error connecting to Neo4j database")
                 log.exception(e)
         atexit.register(cls.shutdown)
-        return cls.__instance
+        return cls.instance
 
     def __init__(self) -> None:
         self.session = None
+        # self.spinner handled by class' context management protocol
+        # self.spinner = console.status(
+        #     "Executing Neo4j transaction", spinner="bouncingBar"
+        # )
 
     def check_connection(self):
-        self.__driver.verify_connectivity()
+        self.driver.verify_connectivity()
 
     def __enter__(self):
-        self.session = self.__driver.session()
+        # self.spinner.start()
+        self.session = self.driver.session()
         return self.session
 
     def __exit__(self, *args, **kwargs):
+        # self.spinner.stop()
         self.session.close()
 
     @classmethod
     def shutdown(cls):
-        if cls.__instance:
-            cls.__instance.__driver.close()
-            cls.__instance = None
+        if cls.instance:
+            cls.instance.driver.close()
+            cls.instance = None
 
 
 class Neo4jQuery:
+    """The `Neo4jQuery` class provides methods for printing and running Neo4j queries."""
+
     def __init__(self):
         pass
 
@@ -108,7 +120,7 @@ class Neo4jQuery:
         cypher_name: str = None,
         cypher: str = None,
         param: Any = None,
-        rettype="data",
+        rettype: str = "data",
         *args,
         **kwargs,
     ):
@@ -117,7 +129,7 @@ class Neo4jQuery:
         Args:
             cypher_name (str, optional): Neo4j Cypher query. Defaults to None.
             cypher (str, optional): Single string of Cypher script.  Defaults to None.
-            param (Any, optional): paramter passed to Neo4j query, type depends on query. Defaults to None.
+            param (Any, optional): parameter passed to Neo4j query, type depends on query. Defaults to None.
             rettype (str, optional): output function. For available methods see (https://neo4j.com/docs/api/python-driver/current/api.html#result). Defaults to "data"
             args/kwargs (Any): pas additional argument(s) to the rettype method
         Returns:

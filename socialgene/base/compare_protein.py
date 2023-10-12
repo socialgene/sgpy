@@ -1,25 +1,25 @@
-from itertools import combinations
+from itertools import combinations_with_replacement, product
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 
+from socialgene.compare_proteins.hmm.scoring import mod_score
 from socialgene.neo4j.neo4j import Neo4jQuery
-from socialgene.scoring.scoring import mod_score
 from socialgene.utils.logging import log
 
 
 def _mod_return(i1, i2):
     """for running mod_score() in parallel"""
-    return [
+    return (
         i1[0],  # hash of protein 1
         i2[0],  # hash of protein 2
         *(
             mod_score(
-                i1[1].get_domain_vector(),
-                i2[1].get_domain_vector(),
+                i1[1],
+                i2[1].domain_vector,
             ).values()
         ),
-    ]
+    )
 
 
 def append_or_not(result_list, result, append=False):
@@ -54,8 +54,8 @@ class CompareProtein(Neo4jQuery):
         return self._calculate_mod_score_from_domain_lists(
             protein_id_1=protein_1.hash_id,
             protein_id_2=protein_2.hash_id,
-            input_list_1=protein_1.get_domain_vector(),
-            input_list_2=protein_2.get_domain_vector(),
+            input_list_1=protein_1.domain_vector,
+            input_list_2=protein_2.domain_vector,
             **kwargs,
         )
 
@@ -72,6 +72,31 @@ class CompareProtein(Neo4jQuery):
             *(mod_score(input_list_1=input_list_1, input_list_2=input_list_2).values()),
         ]
 
+    @staticmethod
+    def compare_two_proteins(protein_1, protein_2):
+        """
+        dict: {l1, l2, levenshtein, jaccard, mod_score}; mod_score -> 2 = Perfectly similar; otherwise (1/Levenshtein + Jaccard)
+        Returns:
+
+          protein_2: An instance of a protein object representing the second protein.
+          protein_1: An instance of a protein object representing the first protein.
+        Args:
+
+        `mod_score` function.
+        The function `compare_two_proteins` compares the domain vectors of two proteins using the
+        """
+
+        return mod_score(protein_1.domain_vector, protein_2.domain_vector)
+
+    def bro(self, queries, targets, **kwargs):
+        """Compare a list fo proteins to another list of proteins
+
+        Args:
+            query (List(str)): list of protein hashes
+            targets (List(str): list of protein hashes
+        """
+        self.compare_proteins(product(queries, targets), **kwargs)
+
     def compare_proteins(
         self,
         hash_id_list_of_tuples=None,
@@ -87,18 +112,13 @@ class CompareProtein(Neo4jQuery):
             append (bool, optional): Should results be appended to previously calculated comparisons? Defaults to False.
             verbose (bool, optional): If `True` then additional info will be printed. Defaults to False.
         """
-        if isinstance(hash_id_list_of_tuples, list) and not all(
-            [len(i) == 2 for i in hash_id_list_of_tuples]
-        ):
-            raise ValueError("hash_id must be None, or a list of tuples of length two.")
-
-        if isinstance(hash_id_list_of_tuples, list):
+        if hash_id_list_of_tuples is not None:
             for id_pair in hash_id_list_of_tuples:
                 _temp = self._calculate_mod_score_from_domain_lists(
                     protein_id_1=id_pair[0],
                     protein_id_2=id_pair[1],
-                    input_list_1=self.proteins[id_pair[0]].get_domain_vector(),
-                    input_list_2=self.proteins[id_pair[1]].get_domain_vector(),
+                    input_list_1=self.proteins[id_pair[0]].domain_vector,
+                    input_list_2=self.proteins[id_pair[1]].domain_vector,
                 )
                 if append:
                     self.protein_comparison.append(_temp)
@@ -115,7 +135,9 @@ class CompareProtein(Neo4jQuery):
                     result_list=self.protein_comparison,
                     result=[
                         _mod_return(i1=i1, i2=i2)
-                        for i1, i2 in combinations(self.proteins.items(), r=2)
+                        for i1, i2 in combinations_with_replacement(
+                            self.proteins.items(), r=2
+                        )
                     ],
                     append=append,
                 )
@@ -132,7 +154,8 @@ class CompareProtein(Neo4jQuery):
                     append_or_not(
                         result_list=self.protein_comparison,
                         result=p.starmap(
-                            _mod_return, combinations(self.proteins.items(), r=2)
+                            _mod_return,
+                            combinations_with_replacement(self.proteins.items(), r=2),
                         ),
                         append=append,
                     )

@@ -3,66 +3,52 @@ from uuid import uuid4
 
 import socialgene.hashing.hashing as hasher
 from socialgene.config import env_vars
+from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
 
-SOURCE_KEYS = [
-    "mol_type",
-    "altitude",
-    "bio_material",
-    "bioproject",
-    "biosample",
-    "cell_line",
-    "cell_type",
-    "chromosome",
-    "clone",
-    "clone_lib",
-    "collected_by",
-    "collection_date",
-    "country",
-    "cultivar",
-    "culture_collection",
-    "db_xref",
-    "dev_stage",
-    "ecotype",
-    "environmental_sample",
-    "focus",
-    "germline",
-    "haplogroup",
-    "haplotype",
-    "host",
-    "identified_by",
-    "isolate",
-    "isolation_source",
-    "lab_host",
-    "lat_lon",
-    "macronuclear",
-    "map",
-    "mating_type",
-    "metagenome_source",
-    "note",
-    "organelle",
-    "PCR_primers",
-    "plasmid",
-    "pop_variant",
-    "proviral",
-    "rearranged",
-    "segment",
-    "serotype",
-    "serovar",
-    "sex",
-    "specimen_voucher",
-    "strain",
-    "sub_clone",
-    "submitter_seqid",
-    "sub_species",
-    "sub_strain",
-    "tissue_lib",
-    "tissue_type",
-    "transgenic",
-    "type_material",
-    "variety",
-]
+
+class LocusAssemblyMetadata:
+    # fmt: off
+    __slots__= ["altitude","bio_material","bioproject","biosample","cell_line","cell_type","chromosome","clone","clone_lib","collected_by","collection_date","country","cultivar","culture_collection","db_xref","dev_stage","ecotype","environmental_sample","focus","germline","haplogroup","haplotype","host","identified_by","isolate","isolation_source","lab_host","lat_lon","macronuclear","map","mating_type","metagenome_source","mol_type","note","organelle","organism","pcr_primers","plasmid","pop_variant","proviral","rearranged","segment","serotype","serovar","sex","specimen_voucher","strain","sub_clone","submitter_seqid","sub_species","sub_strain","tissue_lib","tissue_type","transgenic","type_material","variety"]  # noqa: E231,E225
+    # fmt: on
+
+    def __init__(self, **kwargs) -> None:
+        self.update(kwargs)
+
+    @property
+    def all_attributes(self):
+        return OrderedDict({i: self.__getitem__(i) for i in self.__slots__})
+
+    @property
+    def values(self):
+        return self.all_attributes.values()
+
+    def __getitem__(self, item):
+        try:
+            return self.__getattribute__(item)
+        except Exception as e:
+            log.debug(e)
+            return None
+
+    # add a function that takes a dict as input and sets any attributes in the dict keys
+    def update(self, d: dict):
+        for k, v in d.items():
+            temp_v = None
+            if isinstance(v, list):
+                # if info is a list, collapse into a single string
+                if len(v) > 1:
+                    temp_v = ";".join(v)
+                else:
+                    temp_v = v[0]
+            else:
+                temp_v = v
+            temp_v.replace("\t", "")
+            temp_v.replace("\n", "")
+            temp_v.replace("\r", "")
+            temp_v.strip()
+            if k in self.__slots__:
+                setattr(self, k, temp_v)
 
 
 class ProteinSequence:
@@ -97,7 +83,7 @@ class ProteinSequence:
         "O",
         "*",
     ]
-    __slots__ = ["hash_id", "crc64", "sequence"]
+    __slots__ = ["hash_id", "__crc64", "__md5", "sequence"]
 
     def __init__(self, sequence: str = None, hash_id: str = None):
         """Class for holding an amino acid sequence (protein)
@@ -120,7 +106,7 @@ class ProteinSequence:
             self._assign_hash()
 
     @property
-    def __dict__(self):
+    def all_attributes(self):
         """
         The function returns a dictionary containing the attributes of an object.
 
@@ -147,7 +133,7 @@ class ProteinSequence:
             str: sequence of amino acids
         """
         if self.sequence is None:
-            return "NA"
+            return "-".join(["0" for i in self._one_letter_amino_acids()])
         else:
             return "-".join(
                 [str(self.sequence.count(i)) for i in self._one_letter_amino_acids()]
@@ -159,7 +145,14 @@ class ProteinSequence:
         """
         self._standardize_sequence()
         self.hash_id = hasher.hash_aminos(self.sequence)
-        self.crc64 = hasher.hash_aminos(self.sequence, algo="crc64")
+
+    @property
+    def crc64(self):
+        return hasher.hash_aminos(self.sequence, algo="crc64")
+
+    @property
+    def md5(self):
+        return hasher.hash_aminos(self.sequence, algo="md5")
 
     def _standardize_sequence(self):
         """
@@ -189,6 +182,7 @@ class Location:
         start: int = None,
         end: int = None,
         strand: int = None,
+        **kwargs,  # this kwarg isn't accessed but is here so that calling Location with dict unpacking with extra args doesn't fail
     ):
         """Class describing genomic coordinates and strand direction.
 
@@ -202,7 +196,7 @@ class Location:
         self.strand = strand
 
     @property
-    def __dict__(self):
+    def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
 
@@ -309,12 +303,28 @@ class Domain:
         self.ali_to = int(ali_to)
 
     @property
-    def __dict__(self):
-        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+    def all_attributes(self):
+        ord_dict = OrderedDict()
+        ord_dict["hmm_id"] = str(self.hmm_id)
+        ord_dict["env_from"] = int(self.env_from)
+        ord_dict["env_to"] = int(self.env_to)
+        ord_dict["seq_pro_score"] = round(self.seq_pro_score, 1)
+        ord_dict["evalue"] = round(self.evalue, 1)
+        ord_dict["i_evalue"] = round(self.i_evalue, 1)
+        ord_dict["domain_bias"] = round(self.domain_bias, 1)
+        ord_dict["domain_score"] = round(self.domain_score, 1)
+        ord_dict["seq_pro_bias"] = round(self.seq_pro_bias, 1)
+        ord_dict["hmm_from"] = int(self.hmm_from)
+        ord_dict["hmm_to"] = int(self.hmm_to)
+        ord_dict["ali_from"] = int(self.ali_from)
+        ord_dict["ali_to"] = int(self.ali_to)
+        ord_dict["exponentialized"] = bool(self.exponentialized)
+        return ord_dict
 
     def get_hmm_id(self):
         return self.hmm_id
 
+    @property
     def domain_within_threshold(self):
         """Check if a protein's domain annotation is within the threshold for inclusion (currently i_evalue based)
         Returns:
@@ -325,25 +335,6 @@ class Domain:
         else:
             return self.i_evalue <= env_vars["HMMSEARCH_IEVALUE"]
 
-    def get_dict(self):
-        ord_dict = OrderedDict()
-        ord_dict["hmm_id"] = str(self.hmm_id)
-        ord_dict["env_from"] = int(self.env_from)
-        ord_dict["env_to"] = int(self.env_to)
-        ord_dict["seq_pro_score"] = round(self.seq_pro_score, 2)
-        ord_dict["evalue"] = round(self.evalue, 2)
-        ord_dict["i_evalue"] = round(self.i_evalue, 2)
-        ord_dict["domain_bias"] = round(self.domain_bias, 2)
-        ord_dict["domain_score"] = round(self.domain_score, 2)
-        ord_dict["seq_pro_bias"] = round(self.seq_pro_bias, 2)
-        ord_dict["hmm_from"] = int(self.hmm_from)
-        ord_dict["hmm_to"] = int(self.hmm_to)
-        ord_dict["ali_from"] = int(self.ali_from)
-        ord_dict["ali_to"] = int(self.ali_to)
-        ord_dict["exponentialized"] = bool(self.exponentialized)
-
-        return ord_dict
-
     def __hash__(self):
         """Used to prevent adding duplicate domains
         Returns:
@@ -351,7 +342,7 @@ class Domain:
         """
         return hash((self.hmm_id, self.env_from, self.env_to, self.i_evalue))
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # pragma: no cover
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
@@ -394,13 +385,8 @@ class Protein(
         self.domains = domains if domains is not None else set()
 
     @property
-    def __dict__(self):
+    def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
-
-    def only_id(self):
-        self.description = None
-        self.external_protein_id = None
-        self.domains = set()
 
     def add_domain(
         self,
@@ -412,11 +398,25 @@ class Protein(
         Returns:
             bool: used for counting # of domains added to protein
         """
-        temp = Domain(*args, **kwargs)
-        if temp.domain_within_threshold():
-            self.domains.add(temp)
+        self.domains.add(Domain(*args, **kwargs))
 
-    def sort_domains_by_mean_envelope_position(self):
+    def add_domains_from_neo4j(self):
+        try:
+            with GraphDriver() as db:
+                for i in db.run(
+                    """
+                    MATCH (p1:protein)<-[a1:ANNOTATES]-(h1:hmm)
+                    where p1.uid in ["_xvHFg1H1f43WxPcZT1P8Qbcx60chSxh"]
+                    RETURN apoc.map.merge({hmm_id:h1.uid}, properties(a1))
+                    """,
+                    uid=str(self.hash_id),
+                ):
+                    self.add_domain(**i.value())
+        except Exception:
+            log.debug(f"Error trying to retrieve domains for {self.hash_id}")
+
+    @property
+    def domain_list_sorted_by_mean_envelope_position(self):
         # (ie can't sort a set())
         # 'if' is to check whether domains is None
         # A tuple is passed so that the HMM annnotations are first sorted by the envelope midpoint
@@ -426,47 +426,46 @@ class Protein(
             key=lambda tx: ((tx.env_from + tx.env_to) / 2, tx.hmm_id),
         )
 
-    def get_domain_vector(
+    @property
+    def domain_vector(
         self,
-        only_unique=False,
     ):
         """Get the domain hash_ids for a protein as an ordered list
 
-        Args:
-            only_unique (bool, optional): Whether duplicate domain hash_ids should be included in the returned results. Defaults to False.
-
-        Returns:
-            list: list of domain hash_ids
+        list: list of domain hash_ids
         """
         if not self.domains:
             log.debug(f"Tried to get domains from domain-less protein {self}")
             return []
-        if only_unique:
-            # self.domains is a set() but that takes in to account more than just
-            # the id so we need to get unique ids here
-            return list(set([i.get_hmm_id() for i in self.domains]))
-        else:
-            sorted_domain_list = self.sort_domains_by_mean_envelope_position()
-            return [i.get_hmm_id() for i in sorted_domain_list]
+        return [
+            i.get_hmm_id() for i in self.domain_list_sorted_by_mean_envelope_position
+        ]
 
     def filter_domains(self):
         """Prune all domains in all proteins that don't meet the inclusion threshold (currently HMMER's i_evalue)"""
         _before_count = len(self.domains)
         temp = []
-        for domain in self.domains:
-            if domain.domain_within_threshold():
-                temp.append(domain)
-        self.domains = set(temp)
+        self.domains = {i for i in self.domains if i.domain_within_threshold}
+
         del temp
         log.debug(
             f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
         )
+
+    @property
+    def fasta_string_defline_hash_id(self):
+        return f">{self.hash_id}\n{self.sequence}\n"
+
+    @property
+    def fasta_string_defline_external_id(self):
+        return f">{self.external_protein_id}\n{self.sequence}\n"
 
 
 class Feature(Location):
     """Container class for describing a feature on a locus"""
 
     __slots__ = [
+        "parent_object",
         "protein_hash",
         "protein_id",
         "type",
@@ -488,6 +487,7 @@ class Feature(Location):
 
     def __init__(
         self,
+        parent_object=None,
         protein_hash: str = None,
         protein_id: str = None,
         type: str = None,
@@ -547,6 +547,7 @@ class Feature(Location):
           incomplete: A boolean flag indicating whether the feature is incomplete.
         """
         super().__init__(**kwargs)
+        self.parent_object = parent_object
         self.protein_hash = protein_hash
         self.protein_id = protein_id
         self.type = type
@@ -568,7 +569,7 @@ class Feature(Location):
         self.incomplete = incomplete
 
     @property
-    def __dict__(self):
+    def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
     def feature_is_protein(self):
@@ -605,69 +606,148 @@ class Feature(Location):
 class Locus:
     """Container holding a set() of genomic features"""
 
-    __slots__ = ["features", "info"]
+    __slots__ = ["parent_object", "features", "metadata", "external_id", "uid"]
 
-    def __init__(self):
+    def __init__(self, parent_object=None, external_id=None):
         super().__init__()
+        self.parent_object = parent_object
         self.features = set()
-        self.info = self.create_source_key_dict()
-
-    @property
-    def __dict__(self):
-        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+        self.metadata = LocusAssemblyMetadata()
+        self.external_id = external_id
+        self.uid = self.calc_uid()
 
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
-        self.features.add(Feature(**kwargs))
+        self.features.add(Feature(parent_object=self, **kwargs))
 
-    def sort_by_middle(self):
+    def calc_uid(self):
+        return hasher.hasher(f"{self.parent_object.uid}___{self.external_id}")
+
+    @property
+    def all_attributes(self):
+        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+
+    @property
+    def protein_hash_set(self):
+        return {i.protein_hash for i in self.features}
+
+    @property
+    def features_sorted_by_midpoint(self):
         """Sorts features by mid-coordinate of each feature"""
-        self.features = list(self.features)
-        self.features.sort(key=lambda i: int((i.end + i.start) / 2))
+        for i in sorted(list(self.features), key=lambda i: int((i.end + i.start) / 2)):
+            yield i
 
-    def create_source_key_dict(self):
-        return OrderedDict({i: None for i in SOURCE_KEYS})
+    def drop_non_protein_features(self):
+        self.features = {i for i in self.features if i.type == "protein"}
+
+
+class Taxonomy:
+    "Class is a reserved word so just underscore all ranks to be consistent"
+    __slots__ = [
+        "species_",
+        "genus_",
+        "family_",
+        "order_",
+        "class_",
+        "phylum_",
+        "clade_",
+        "superkingdom_",
+    ]
+
+    def __init__(
+        self,
+        species_: str = None,
+        genus_: str = None,
+        family_: str = None,
+        order_: str = None,
+        class_: str = None,
+        phylum_: str = None,
+        clade_: str = None,
+        superkingdom_: str = None,
+        **kwargs,
+    ) -> None:
+        self.species_ = species_
+        self.genus_ = genus_
+        self.family_ = family_
+        self.order_ = order_
+        self.class_ = class_
+        self.phylum_ = phylum_
+        self.clade_ = clade_
+        self.superkingdom_ = superkingdom_
 
 
 class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
-    __slots__ = ["loci", "taxid", "info"]
+    __slots__ = ["loci", "taxid", "metadata", "uid", "taxonomy", "name"]
 
-    def __init__(self):
+    def __init__(self, uid):
         super().__init__()
+        self.uid = uid
         self.loci = {}
         self.taxid = None
-        self.info = self.create_source_key_dict()
+        self.taxonomy = Taxonomy()
+        self.metadata = LocusAssemblyMetadata()
+        self.name = uid
 
     @property
-    def __dict__(self):
+    def protein_hash_set(self):
+        """Return all protein hashes within assembly
+        Returns:
+            set: protein hashes
+        """
+        return set().union(*[i.protein_hash_set for i in self.loci.values()])
+
+    @property
+    def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
-    def add_locus(self, id: str = None):
+    def add_locus(self, external_id: str = None):
         """Add a locus to an assembly object"""
-        if id is None:
-            id = str(uuid4())
-        if id not in self.loci:
-            self.loci[id] = Locus()
+        if external_id is None:
+            external_id = str(uuid4())
+        if external_id not in self.loci:
+            self.loci[external_id] = Locus(parent_object=self, external_id=external_id)
+        else:
+            log.debug(f"{external_id} already present")
 
-    def get_min_maxcoordinates(self):
-        # TODO: broken
-        """Get the minimum and maximum start/stop for a set of loci"""
-        return {
-            k: (min([i.start for i in v]), max([i.start for i in v]))
-            for k, v in self.loci.items()
-        }
+    def fill_taxonomy_from_db(self):
+        try:
+            with GraphDriver() as db:
+                res = db.run(
+                    """
+                        MATCH (a1:assembly {uid: $uid})-[:IS_TAXON]->(t2:taxid)-[:TAXON_PARENT*1..]->(t1:taxid)
+                        WHERE t1.rank in ["genus", "family", "order", "class", "phylum", "clade", "superkingdom"]
+                        WITH  apoc.map.fromLists([t2.rank],[t2.name]) as a, apoc.map.fromLists([t1.rank],[t1.name]) as b
+                        return  apoc.map.mergeList(collect(a)+collect(b)) as tax_dict
+                        """,
+                    uid=str(self.uid),
+                ).value()
+                # Dict comprehension appends '_' to the keys, to match the args in Taxonomy
+                self.taxonomy = Taxonomy(**{f"{k}_": v for k, v in res[0].items()})
+        except Exception:
+            log.debug(f"Error trying to retrieve taxonomy for {self.uid}")
 
-    def create_source_key_dict(self):
-        return OrderedDict({i: None for i in SOURCE_KEYS})
+    def fill_properties(self):
+        try:
+            with GraphDriver() as db:
+                res = db.run(
+                    """
+                        MATCH (a1:assembly {uid: $uid})
+                        return properties(a1)
+                        """,
+                    uid=self.uid,
+                ).value()[0]
+                self.metadata.update(res)
+        except Exception:
+            log.debug(f"Error trying to retrieve taxonomy for {self.uid}")
 
 
 class Molbio:
     """Class for inheriting by SocialGene()"""
 
     def __init__(self):
-        pass  # TODO: ?
+        super().__init__()  # TODO: ?
 
         self.assemblies = {}  # TODO: ?
         self.proteins = {}  # TODO: ?
@@ -682,7 +762,7 @@ class Molbio:
 
     def add_protein(
         self,
-        no_return=False,
+        return_uid=True,
         **kwargs,
     ):
         """Add a protein to the protein dictionary
@@ -698,18 +778,18 @@ class Molbio:
         if temp_protein.hash_id not in self.proteins:
             # deepcopy teo ensure instances aren't shared
             self.proteins[temp_protein.hash_id] = temp_protein
-        if not no_return:
+        if return_uid:
             return temp_protein.hash_id
 
-    def add_assembly(self, id: str = None):
+    def add_assembly(self, uid: str = None):
         """Add an assembly to a SocialGene object
 
         Args:
-            id (str, optional): Assembly identifier, should be unique across parsed input. Defaults to None.
+            uid (str, optional): Assembly identifier, should be unique across parsed input. Defaults to None.
         """
-        if id is None:
-            id = str(uuid4())
-        if id not in self.assemblies:
-            self.assemblies[id] = Assembly()
+        if uid is None:
+            uid = str(uuid4())
+        if uid not in self.assemblies:
+            self.assemblies[uid] = Assembly(uid)
         else:
-            log.debug(f"{id} already present")
+            log.debug(f"{uid} already present")

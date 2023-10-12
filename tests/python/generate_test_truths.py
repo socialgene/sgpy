@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from socialgene.cli.export_protein_loci_assembly_tables import export_tables
+from socialgene.cli.nextflow.export_protein_loci_assembly_tables import export_tables
 from socialgene.config import env_vars
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))

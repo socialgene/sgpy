@@ -15,7 +15,7 @@ temp.add_protein(
 
 temp.add_assembly("myassembly")
 temp.assemblies["myassembly"].add_locus(
-    "my_locus",
+    external_id="my_locus",
 )
 
 temp.assemblies["myassembly"].loci["my_locus"].add_feature(

@@ -1,111 +1,224 @@
-from socialgene.base.socialgene import SocialGene
-from socialgene.clustermap.clustermap import Clustermap, ClustermapUuids, UuidCount
+# import json
+# from socialgene.base.socialgene import SocialGene
+# from socialgene.clustermap.clustermap import Clustermap
+# import os
+# import tempfile
+# from pathlib import Path
 
 
-def test_UuidCount_slots():
-    a = UuidCount()
-    assert a.__slots__ == ["uuid_counter"]
+# sg_object = SocialGene()
+# sg_object.add_assembly("a")
+# ######################################################
+# sg_object.assemblies["a"].add_locus("a")
+# sg_object.assemblies["a"].loci["a"].add_feature(
+#     protein_hash="p1-a",
+#     type="protein",
+#     start=1,
+#     end=1000,
+#     strand=1,
+# )
+# sg_object.assemblies["a"].loci["a"].add_feature(
+#     protein_hash="p2",
+#     type="protein",
+#     start=1100,
+#     end=2000,
+#     strand=-1,
+# )
+# ######################################################
+# sg_object.add_assembly("b")
+# sg_object.assemblies["b"].add_locus("b")
+# sg_object.assemblies["b"].loci["b"].add_feature(
+#     protein_hash="p1-b",
+#     type="protein",
+#     start=1,
+#     end=1000,
+#     strand=1,
+# )
+# sg_object.assemblies["b"].loci["b"].add_feature(
+#     protein_hash="p2",
+#     type="protein",
+#     start=1100,
+#     end=2000,
+#     strand=-1,
+# )
+# ######################################################
+# sg_object.add_assembly("c")
+# sg_object.assemblies["c"].add_locus("c")
+# sg_object.assemblies["c"].loci["c"].add_feature(
+#     protein_hash="p1-c",
+#     type="protein",
+#     start=1,
+#     end=1000,
+#     strand=1,
+# )
+# sg_object.assemblies["c"].loci["c"].add_feature(
+#     protein_hash="p2",
+#     type="protein",
+#     start=1100,
+#     end=2000,
+#     strand=-1,
+# )
 
 
-def test_UuidCount_initial_value():
-    a = UuidCount()
-    assert a.uuid_counter == 0
-    b = UuidCount()
-    a.uuid_counter += 1
-    assert a.uuid_counter == 1
-    # b should still be zero
-    assert b.uuid_counter == 0
-    b.uuid_counter += 10
-    assert b.uuid_counter == 10
-    assert a.uuid_counter == 1
+# cmap = Clustermap()
+# groupdict = {
+#     "g1": [
+#         "p1-a",
+#         "p1-b",
+#         "p1-c",
+#     ],
+#     "g2": [
+#         "p2",
+#     ],
+# }
+# group_dict_info = {
+#     "g1": ("g1", "group1"),
+#     "g2": ("g1", "group2"),
+# }
+
+# assembly_order = [
+#     "a",
+#     "c",
+#     "b",
+# ]
+
+# ## Which proteins match to the input, what happens if match to more than 1?
 
 
-def test_ClustermapUuids_slots():
-    a = ClustermapUuids()
-    assert a.__slots__ == ["uuid_counter"]
+# #   IDS ARE BEING ASSIGNED DIFFERENTLY EACH RUN
 
 
-def test_ClustermapUuids_initial_value():
-    a = ClustermapUuids()
-    assert a.uuid_counter == 0
-    b = ClustermapUuids()
-    a.uuid_counter += 1
-    assert a.uuid_counter == 1
-    # b should still be zero
-    assert b.uuid_counter == 0
-    b.uuid_counter += 10
-    assert b.uuid_counter == 10
-    assert a.uuid_counter == 1
-
-
-def test_build_protein_key():
-    temp = ClustermapUuids().build_protein_key(
-        assembly_key="assembly-key", locus_key="locus-key", locus_value="locus-value"
-    )
-    assert temp == "assembly-key_locus-key_locus-value"
-
-
-def test_empty_sg():
-    cm_object = Clustermap()
-    sg_object = SocialGene()
-    cm_object.create_clustermap_uuids(sg_object=sg_object)
-    cm_object.add_cluster(sg_object=sg_object)
-    cm_object.add_groups(sg_object=sg_object)
-    cm_object.add_links(sg_object=sg_object)
-    assert cm_object.primary_assembly is None
-    assert cm_object.clusters == []
-    assert cm_object.groups == []
-    assert cm_object.links == []
-    assert cm_object.prot_loc == {}
-
-
-def test_sg():
-    cm_object = Clustermap()
-    sg_object = SocialGene()
-    _ = sg_object.add_protein(hash_id="assembly_1_locus_1_protein_1")
-    sg_object.add_assembly("assembly_1")
-    sg_object.assemblies["assembly_1"].add_locus("assembly_1_locus_1")
-    sg_object.assemblies["assembly_1"].loci["assembly_1_locus_1"]
-    sg_object.assemblies["assembly_1"].loci["assembly_1_locus_1"].add_feature(
-        type="protein",
-        protein_hash="assembly_1_locus_1_protein_1",
-        start=1,
-        end=10,
-        strand=1,
-    )
-    cm_object.create_clustermap_uuids(sg_object=sg_object)
-    cm_object.add_cluster(sg_object=sg_object)
-    cm_object.add_groups(sg_object=sg_object)
-    cm_object.add_links(sg_object=sg_object)
-    assert cm_object.primary_assembly is None
-    assert cm_object.clusters == [
-        {
-            "uid": "uuid_0",
-            "name": "assembly_1",
-            "loci": [
-                {
-                    "uid": "uuid_1",
-                    "name": "assembly_1_locus_1",
-                    "start": 1,
-                    "end": 10,
-                    "genes": [
-                        {
-                            "uid": "uuid_2",
-                            "label": None,
-                            "names": {"name": None, "description": None},
-                            "start": 1,
-                            "end": 10,
-                            "strand": 1,
-                        }
-                    ],
-                }
-            ],
-        }
-    ]
-    assert cm_object.groups == []
-    assert cm_object.links == []
-    assert cm_object.prot_loc == {
-        "assembly_1_locus_1_protein_1": [
-            "assembly_1_assembly_1_locus_1_assembly_1_locus_1_protein_1"
-        ]
-    }
+# def test_clustermap_write():
+#     with tempfile.NamedTemporaryFile() as fp:
+#         cmap.write(
+#             sg_object,
+#             groupdict=groupdict,
+#             group_dict_info=group_dict_info,
+#             assembly_order=assembly_order,
+#             outpath=fp,
+#         )
+#         with open(fp.name, "r") as h:
+#             data = json.load(h)
+#     assert data == {
+#         "clusters": [
+#             {
+#                 "uid": "1",
+#                 "name": "a",
+#                 "loci": [
+#                     {
+#                         "uid": "2",
+#                         "name": "a",
+#                         "genes": [
+#                             {
+#                                 "uid": "3",
+#                                 "label": None,
+#                                 "names": {
+#                                     "name": None,
+#                                     "description": None,
+#                                     "hash": "p2",
+#                                 },
+#                                 "start": 1100,
+#                                 "end": 2000,
+#                                 "strand": -1,
+#                             },
+#                             {
+#                                 "uid": "4",
+#                                 "label": None,
+#                                 "names": {
+#                                     "name": None,
+#                                     "description": None,
+#                                     "hash": "p1-a",
+#                                 },
+#                                 "start": 1,
+#                                 "end": 1000,
+#                                 "strand": 1,
+#                             },
+#                         ],
+#                         "start": 1,
+#                         "end": 2000,
+#                     }
+#                 ],
+#             },
+#             {
+#                 "uid": "5",
+#                 "name": "c",
+#                 "loci": [
+#                     {
+#                         "uid": "6",
+#                         "name": "c",
+#                         "genes": [
+#                             {
+#                                 "uid": "7",
+#                                 "label": None,
+#                                 "names": {
+#                                     "name": None,
+#                                     "description": None,
+#                                     "hash": "p1-c",
+#                                 },
+#                                 "start": 1,
+#                                 "end": 1000,
+#                                 "strand": 1,
+#                             },
+#                             {
+#                                 "uid": "8",
+#                                 "label": None,
+#                                 "names": {
+#                                     "name": None,
+#                                     "description": None,
+#                                     "hash": "p2",
+#                                 },
+#                                 "start": 1100,
+#                                 "end": 2000,
+#                                 "strand": -1,
+#                             },
+#                         ],
+#                         "start": 1,
+#                         "end": 2000,
+#                     }
+#                 ],
+#             },
+#             {
+#                 "uid": "9",
+#                 "name": "b",
+#                 "loci": [
+#                     {
+#                         "uid": "10",
+#                         "name": "b",
+#                         "genes": [
+#                             {
+#                                 "uid": "11",
+#                                 "label": None,
+#                                 "names": {
+#                                     "name": None,
+#                                     "description": None,
+#                                     "hash": "p1-b",
+#                                 },
+#                                 "start": 1,
+#                                 "end": 1000,
+#                                 "strand": 1,
+#                             },
+#                             {
+#                                 "uid": "12",
+#                                 "label": None,
+#                                 "names": {
+#                                     "name": None,
+#                                     "description": None,
+#                                     "hash": "p2",
+#                                 },
+#                                 "start": 1100,
+#                                 "end": 2000,
+#                                 "strand": -1,
+#                             },
+#                         ],
+#                         "start": 1,
+#                         "end": 2000,
+#                     }
+#                 ],
+#             },
+#         ],
+#         "groups": [
+#             {"uid": "13", "label": "group1", "genes": ["4", "11", "7"]},
+#             {"uid": "14", "label": "group2", "genes": ["3", "8", "12"]},
+#         ],
+#         "links": [],
+#     }

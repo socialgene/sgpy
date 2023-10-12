@@ -119,7 +119,7 @@
 #     glob_path = os.path.join(FIXTURE_DIR, "*mide_mibig_bgc0001946.gbk")
 
 #     with tempfile.TemporaryDirectory() as tmpdirname:
-#         with pytest.raises(Exception) as e_info:
+#         with pytest.raises(Exception):
 #             export_tables(
 #                 sequence_files_glob="idontexists", outdir=tmpdirname, n_fasta_splits=5
 #             )
@@ -127,9 +127,9 @@
 #                 sequence_files_glob=glob_path, outdir=tmpdirname, n_fasta_splits=5
 #             )
 #             # neither 0 or 6 should be present
-#             with pytest.raises(Exception) as e_info:
+#             with pytest.raises(Exception):
 #                 Path(tmpdirname, "fasta_split_0.faa").read_text()
 #                 print(e_info)  # make linters happy
-#             with pytest.raises(Exception) as e_info:
+#             with pytest.raises(Exception):
 #                 Path(tmpdirname, "fasta_split_6.faa").read_text()
 #                 print(e_info)  # make linters happy

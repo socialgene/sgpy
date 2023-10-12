@@ -1,6 +1,5 @@
-from typing import List
-
 from collections.abc import Generator
+from typing import List
 
 import numpy as np
 
