@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.12](https://github.com/socialgene/sgpy/compare/v0.1.11...v0.1.12) (2023-10-12)
+
+
+### Bug Fixes
+
+* mac compatibility ([380bd9f](https://github.com/socialgene/sgpy/commit/380bd9f057347fedb15f00123abc1f7a06c403bc))
+* Preparing for publication ([#66](https://github.com/socialgene/sgpy/issues/66)) ([6e84b99](https://github.com/socialgene/sgpy/commit/6e84b99fadbd1ec4ce5bfdd0d44b730691567e1a))
+
+
+### Documentation
+
+* ai assisted docs ([20c6a0f](https://github.com/socialgene/sgpy/commit/20c6a0f14c4249e7825b52570b4ca0e5b6f8eaf7))
+
 ## [0.1.11](https://github.com/socialgene/sgpy/compare/v0.1.10...v0.1.11) (2023-07-03)
 
 
