@@ -18,9 +18,7 @@ databases = {
     "t5": "> test 5 \nMAQLAGQPVVILPEGTQRYVGRDAQRLNILAARIIAETVRTTLGPKGMDKMLVDSLGDIV",
     "t6": "> test 6 \nmaqlagqpvvilpegtqryvgrdaqrlnilaariiaetvrttlgpkgmdkmlvdslgdiv",
     "t7": "> test|7 \nmaqlagqpvvilpegtqryvgrdaqrlnilaariiaetvrttlgpkgmdkmlvdslgdiv",
-    "t8": str(
-        r"> te232@#4'4./'\st|7 \nmaqlagqpvvilpegtqryvgrdaqrlnilaariiaetvrttlgpkgmdkmlvdslgdiv"
-    ),
+    "t8": "> te232@#4'4./'\\st|7 \nmaqlagqpvvilpegtqryvgrdaqrlnilaariiaetvrttlgpkgmdkmlvdslgdiv",
 }
 
 protein_hashes = {
