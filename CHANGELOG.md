@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/socialgene/sgpy/compare/v0.1.12...v0.2.0) (2023-11-08)
+
+
+### Features
+
+* large update ([#67](https://github.com/socialgene/sgpy/issues/67)) ([fc8cb37](https://github.com/socialgene/sgpy/commit/fc8cb37d6f87bb429ff6fdc5a30ee70de18b7cce))
+
+
+### Bug Fixes
+
+* . ([b35cb46](https://github.com/socialgene/sgpy/commit/b35cb46c62688770f47cad7ee0a0befc0a13072d))
+
 ## [0.1.12](https://github.com/socialgene/sgpy/compare/v0.1.11...v0.1.12) (2023-10-12)
 
 
