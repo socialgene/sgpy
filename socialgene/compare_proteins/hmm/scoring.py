@@ -35,10 +35,10 @@ def mod_score(p1, p2):
         raise TypeError(f"p1 type: {type(p1)}; p2 type: {type(p2)}")
     length_input_list_1 = len(p1.domains)
     length_input_list_2 = len(p2.domains)
-    if p1.hash_id == p2.hash_id:
+    if p1.uid == p2.uid:
         return _mod_score_tupler(
-            p1.hash_id,
-            p2.hash_id,
+            p1.uid,
+            p2.uid,
             length_input_list_1,
             length_input_list_2,
             round(0, 2),
@@ -49,8 +49,8 @@ def mod_score(p1, p2):
         # If either protein contains no HMM annotations,
         # return a mod score with the worst scores possible
         return _mod_score_tupler(
-            p1.hash_id,
-            p2.hash_id,
+            p1.uid,
+            p2.uid,
             length_input_list_1,
             length_input_list_2,
             round(100, 2),
@@ -81,8 +81,8 @@ def mod_score(p1, p2):
             mod_score_value = (jaccard_score * 0.5) + mod_levenshtein_score
 
     return _mod_score_tupler(
-        p1.hash_id,
-        p2.hash_id,
+        p1.uid,
+        p2.uid,
         length_input_list_1,
         length_input_list_2,
         round(mod_levenshtein_score, 2),

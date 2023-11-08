@@ -14,7 +14,7 @@ class HmmInfo:
           all_hmms_path: The `all_hmms_path` parameter is a string that represents the path to a file
         containing data for all HMMs.
         """
-        self.columns = list(HmmModel().all_attributes.keys())
+        self.columns = list(HmmModel().all_attributes().keys())
         self.all_hmms_path = all_hmms_path
         self.all_hmms_data = list()
 
@@ -60,3 +60,15 @@ class HmmInfo:
                 )
                 for i in (i for i in self.all_hmms_data if i[0] == hmm_database_name):
                     tsv_writer.writerow(i[1:])
+
+
+# write a context manager class that takes a string and returns the string
+class PassThrough:
+    def __init__(self, string):
+        self.string = string
+
+    def __enter__(self):
+        return self.string
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass

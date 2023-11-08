@@ -1,10 +1,10 @@
 import pytest
 
-from socialgene.neo4j.schema.relationships import Relationship, Relationships
+from socialgene.neo4j.schema.relationships import Relationship, RelationshipsMixin
 
 
 def test_relationship_keys():
-    a = Relationships()
+    a = RelationshipsMixin()
     assert list(a.relationships.keys()) == [
         "ANNOTATES",
         "ASSEMBLES_TO",
@@ -27,7 +27,7 @@ def test_relationship_keys():
 
 
 def test_add_node():
-    a = Relationships()
+    a = RelationshipsMixin()
     a.add_relationship(
         neo4j_label="test_neo4j_label",
         description="test_description",
@@ -51,7 +51,7 @@ def test_add_node():
 
 
 def test_add_node_fail():
-    a = Relationships()
+    a = RelationshipsMixin()
     with pytest.raises(TypeError):
         a.add_relationship("a")
     with pytest.raises(TypeError):
@@ -68,6 +68,6 @@ def test_add_node_fail():
         )
 
 
-@pytest.mark.parametrize("rel_label", Relationships().relationships.keys())
+@pytest.mark.parametrize("rel_label", RelationshipsMixin().relationships.keys())
 def test_node_labels_are_keys(rel_label):
-    assert rel_label == Relationships().relationships[rel_label].neo4j_label
+    assert rel_label == RelationshipsMixin().relationships[rel_label].neo4j_label

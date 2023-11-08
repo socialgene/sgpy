@@ -22,7 +22,7 @@ def test_fasta_file_parse():
         fasta_object.parse(fp.name)
 
     protein_parse_results = {
-        k: [v.description, v.external_protein_id, v.domains]
+        k: [v.description, v.external_id, v.domains]
         for k, v in fasta_object.proteins.items()
     }
     assert protein_parse_results == {
@@ -142,10 +142,10 @@ def test_fasta_file_parse():
 
 def test_fasta_string_parse():
     sg_object = SocialGene()
-    sg_object.parse_fasta_string(">asdads\n dasfa")
+    sg_object.parse(">asdads\n dasfa")
     assert list(sg_object.proteins.keys())[0] == "lZA5w9NxutVBhoqjqfsX_GX_dfugQZLQ"
     protein_parse_results = [
-        {k: [v.description, v.external_protein_id, v.domains]}
+        {k: [v.description, v.external_id, v.domains]}
         for k, v in sg_object.proteins.items()
     ]
     assert protein_parse_results == [

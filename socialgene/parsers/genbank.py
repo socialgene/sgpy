@@ -144,7 +144,7 @@ class GenbankParserMixin:
         Args:
           seq_feature: The `seq_feature` parameter is a SeqFeature object that represents a feature
         (e.g., gene, CDS, protein) in a sequence record. It contains information such as the feature
-        type, location, qualifiers (e.g., product, locus_tag, protein_id),
+        type, location, qualifiers (e.g., product, locus_tag, external_id),
 
         Returns:
           a dictionary
@@ -173,7 +173,7 @@ class GenbankParserMixin:
         data, annotations, and features.
           seq_feature: The `seq_feature` parameter is a SeqFeature object that represents a feature
         (e.g., gene, CDS, protein) in a sequence record. It contains information such as the feature
-        type, location, qualifiers (e.g., product, locus_tag, protein_id)
+        type, location, qualifiers (e.g., product, locus_tag, external_id)
           assembly_id: The `assembly_id` parameter is used to identify the assembly to which the
         sequence feature belongs.
           locus_id: The `locus_id` parameter is used to identify a specific locus.
@@ -194,18 +194,18 @@ class GenbankParserMixin:
         if seq_feature.type in ["protein", "CDS"]:
             try:
                 locus_tag = None
-                protein_id = None
+                external_id = None
                 if "locus_tag" in seq_feature.qualifiers:
                     locus_tag = ";".join(seq_feature.qualifiers["locus_tag"])
 
                 if "protein_id" in seq_feature.qualifiers:
-                    protein_id = ";".join(seq_feature.qualifiers["protein_id"])
+                    external_id = ";".join(seq_feature.qualifiers["protein_id"])
                 elif locus_tag:
                     # use locus tag as protein instead
-                    protein_id = locus_tag
+                    external_id = locus_tag
                 else:
                     # else assign random id
-                    protein_id = str(uuid4())
+                    external_id = str(uuid4())
                 if "translation" in seq_feature.qualifiers:
                     translation = seq_feature.qualifiers["translation"][0]
                 elif "pseudo" or "pseudogene" in seq_feature.qualifiers:
@@ -219,18 +219,18 @@ class GenbankParserMixin:
                     raise ValueError(
                         f"Panic!!! Not a protein or pseudo protein: {seq_feature.qualifiers}"
                     )
-                hash_id = self.add_protein(
+                uid = self.add_protein(
                     description=description,
-                    external_protein_id=protein_id.strip(),
+                    external_id=external_id.strip(),
                     sequence=translation.strip(),
                     return_uid=True,
                 )
                 if not keep_sequence:
-                    self.proteins[hash_id].sequence = None
+                    self.proteins[uid].sequence = None
                 self.assemblies[assembly_id].loci[locus_id].add_feature(
                     type=seq_feature.type,
-                    protein_hash=hash_id,
-                    protein_id=protein_id.strip(),
+                    uid=uid,
+                    external_id=external_id.strip(),
                     start=get_seqio_start(seq_feature),
                     end=get_seqio_end(seq_feature),
                     strand=seq_feature.location.strand,
@@ -276,6 +276,7 @@ class GenbankParserMixin:
         input_path,
         assembly_id=None,
         keep_sequence=True,
+        **kwargs,
     ):
         """Internal function that parses a genbank file, adding assembly and taxon information,
          and then calls another function to parse the record and its features.

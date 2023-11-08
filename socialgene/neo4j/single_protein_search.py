@@ -31,8 +31,8 @@ def find_similar_proteins(sg_prot: List) -> Dict:
 
 def add_query_matches_to_result_sg_object(self):
     for matches in self.query_and_match.values():
-        for protein_hash in matches:
-            self.result_sg_object.add_protein(hash_id=protein_hash)
+        for uid in matches:
+            self.result_sg_object.add_protein(uid=uid)
 
 
 def calculate_mod_scores(self):

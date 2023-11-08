@@ -1,10 +1,10 @@
 import pytest
 
-from socialgene.neo4j.schema.nodes import Node, Nodes
+from socialgene.neo4j.schema.nodes import Node, NodesMixin
 
 
 def test_node_keys():
-    a = Nodes()
+    a = NodesMixin(include_sequences=False)
     assert list(a.nodes.keys()) == [
         "parameters",
         "assembly",
@@ -23,7 +23,7 @@ def test_node_keys():
 
 
 def test_add_node():
-    a = Nodes()
+    a = NodesMixin(include_sequences=False)
     a.add_node(
         neo4j_label="test_neo4j_label",
         description="test_description",
@@ -47,7 +47,7 @@ def test_add_node():
 
 
 def test_add_node_fail():
-    a = Nodes()
+    a = NodesMixin(include_sequences=False)
     with pytest.raises(TypeError):
         a.add_node("a")
     with pytest.raises(TypeError):
@@ -64,6 +64,8 @@ def test_add_node_fail():
         )
 
 
-@pytest.mark.parametrize("node_label", Nodes().nodes.keys())
+@pytest.mark.parametrize("node_label", NodesMixin(include_sequences=False).nodes.keys())
 def test_node_labels_are_keys(node_label):
-    assert node_label == Nodes().nodes[node_label].neo4j_label
+    assert (
+        node_label == NodesMixin(include_sequences=False).nodes[node_label].neo4j_label
+    )

@@ -52,8 +52,8 @@ class CompareProtein(Neo4jQuery):
         """
 
         return self._calculate_mod_score_from_domain_lists(
-            protein_id_1=protein_1.hash_id,
-            protein_id_2=protein_2.hash_id,
+            protein_id_1=protein_1.uid,
+            protein_id_2=protein_2.uid,
             input_list_1=protein_1.domain_vector,
             input_list_2=protein_2.domain_vector,
             **kwargs,
@@ -99,7 +99,7 @@ class CompareProtein(Neo4jQuery):
 
     def compare_proteins(
         self,
-        hash_id_list_of_tuples=None,
+        uid_list_of_tuples=None,
         cpus=None,
         append=False,
         verbose=False,
@@ -107,13 +107,13 @@ class CompareProtein(Neo4jQuery):
         """Calculate similarity between proteins based on their domain content
 
         Args:
-            hash_id_list_of_tuples (str, optional): list of two-ples of protein hashes; use `None` to calculate all-vs-all. Defaults to None.
+            uid_list_of_tuples (str, optional): list of two-ples of protein hashes; use `None` to calculate all-vs-all. Defaults to None.
             cpus (int, optional): If >1 then multiprocessing may/may-not be used to speed things up. Defaults to None.
             append (bool, optional): Should results be appended to previously calculated comparisons? Defaults to False.
             verbose (bool, optional): If `True` then additional info will be printed. Defaults to False.
         """
-        if hash_id_list_of_tuples is not None:
-            for id_pair in hash_id_list_of_tuples:
+        if uid_list_of_tuples is not None:
+            for id_pair in uid_list_of_tuples:
                 _temp = self._calculate_mod_score_from_domain_lists(
                     protein_id_1=id_pair[0],
                     protein_id_2=id_pair[1],
@@ -125,7 +125,7 @@ class CompareProtein(Neo4jQuery):
                 else:
                     return _temp
 
-        elif hash_id_list_of_tuples is None:
+        elif uid_list_of_tuples is None:
             if len(self.proteins) < 10:
                 if verbose:
                     log.info(
@@ -249,7 +249,7 @@ class CompareProtein(Neo4jQuery):
             how="left",
             on=None,
             left_on="target",
-            right_on="protein_id",
+            right_on="external_id",
             left_index=False,
             right_index=False,
             sort=False,
@@ -259,7 +259,7 @@ class CompareProtein(Neo4jQuery):
             validate=None,
         )
         self.protein_comparison.drop(
-            "protein_id",
+            "external_id",
             axis=1,
             inplace=True,
         )

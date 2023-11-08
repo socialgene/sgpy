@@ -18,14 +18,14 @@ def test_drop_all_non_protein_features():
         external_id="my_locus",
     )
     temp.assemblies["myassembly"].loci["my_locus"].add_feature(
-        protein_hash="feature_id1",
+        uid="feature_id1",
         type="protein",
         start=1,
         end=10,
         strand=1,
     )
     temp.assemblies["myassembly"].loci["my_locus"].add_feature(
-        protein_hash="feature_id2",
+        uid="feature_id2",
         type="not_a_prot",
         start=90,
         end=100,

@@ -1,4 +1,3 @@
-import re
 import subprocess
 from pathlib import Path
 from shutil import which
@@ -6,8 +5,11 @@ from typing import Generator
 
 import socialgene.utils.file_handling as fh
 from socialgene.config import env_vars
+from socialgene.parsers.hmmmodel import HmmParse
 from socialgene.utils.logging import log
 from socialgene.utils.run_subprocess import run_subprocess
+
+HMMPRESS_OUTPUT_SUFFIXES = ("h3f", "h3i", "h3m", "h3p")
 
 
 class HMMER:
@@ -16,16 +18,13 @@ class HMMER:
     checking for the presence of HMMER installation.
     """
 
-    HMMPRESS_OUTPUT_SUFFIXES = ("h3f", "h3i", "h3m", "h3p")
-
-    def __init__(self):
-        self._check_hmmer()
-        self.hmm_filepaths_with_cutoffs = []
-        self.hmm_filepaths_without_cutoffs = []
-        self.hmm_filepaths_other = []
+    def __init__(self, hmm_filepath=None):
+        self._check_hmmer_exists()
+        self.input_path = hmm_filepath
+        self.decompressed_hmm_path = None
 
     @staticmethod
-    def _check_hmmer():
+    def _check_hmmer_exists():
         """
         The function checks if HMMER is installed and provides the location if found, otherwise it
         displays a warning message.
@@ -39,31 +38,72 @@ class HMMER:
                 "Couldn't find HMMER, make sure it is installed and on your PATH"
             )
 
-    def _append_hmmpress_suffixes(
+    @property
+    def has_cutoffs(self):
+        # Check if the first model in the file has GAthering cutoffs
+        path_to_test = None
+        if Path(self.input_path).exists():
+            path_to_test = self.input_path
+        elif Path(self.decompressed_hmm_path).exists():
+            path_to_test = self.decompressed_hmm_path
+        else:
+            raise FileNotFoundError(
+                f"Couldn't find hmm file: {self.input_path} or {self.decompressed_hmm_path}"
+            )
+        temp = HmmParse()
+        temp_read = temp.read_model_generator(filepath=path_to_test)
+        first_model = temp_read.__next__()
+        return first_model.has_cutoffs
+
+    def _decompress_hmm_file_if_needed(
         self,
-        hmm_filepath,
-    ) -> Generator[str, None, None]:
+    ):
+        # hmmpress requires a decompressed hmm model file
+        # This function checks if the decompressed file exists
+        if not str(self.input_path).endswith((".hmm", ".hmm.gz")):
+            raise ValueError(
+                f"HMM file must have an '.hmm' or '.hmm.gz' extension: {self.input_path}"
+            )
+        is_compressed = fh.is_compressed(self.input_path).name == "gzip"
+        if is_compressed and self.input_path.suffix != ".gz":
+            raise ValueError(
+                f"Compressed hmm file must have a '.gz' extension: {self.input_path}"
+            )
+        if is_compressed and self.input_path.with_suffix("").exists():
+            log.debug(
+                f"Decompressed hmm file already exists: {self.input_path.with_suffix('')}"
+            )
+            return
+        if is_compressed:
+            self.decompressed_hmm_path = fh.gunzip(self.input_path)
+            log.debug(
+                f"Decompressed hmm file: {self.input_path} -> {self.decompressed_hmm_path}"
+            )
+        else:
+            self.decompressed_hmm_path = self.input_path
+
+    def _append_hmmpress_suffixes(self) -> Generator[str, None, None]:
         """Appends each of the hmmpress file extensions to the given filepath
         Returns:
             Generator: new paths of expected hmmpress output files
         """
-        return (f"{hmm_filepath.suffix}.{i}" for i in self.HMMPRESS_OUTPUT_SUFFIXES)
+        return (f"{self.decompressed_hmm_path}.{i}" for i in HMMPRESS_OUTPUT_SUFFIXES)
 
-    def _check_hmmpress_files_exist(self, hmm_filepath):
+    def _check_hmmpress_files_exist(self) -> bool:
         """Checks if all the expected files are present after running hmmpress
-        Raises:
-            FileNotFoundError: Missing hmmpress input/output files
+        Returns:
+            bool: True if all expected files are present, False otherwise
         """
-        expected_files = [
-            Path(hmm_filepath.with_suffix(i))
-            for i in self._append_hmmpress_suffixes(hmm_filepath)
-        ]
-        if not all([i.exists() for i in expected_files]):
-            return False
-        else:
+        if all((Path(i).exists() for i in self._append_hmmpress_suffixes())):
             return True
+        else:
+            log.debug("Not all expected hmmpress files found")
+            log.debug(
+                f"Missing: {(i for i in self._append_hmmpress_suffixes() if not i.exists())}"
+            )
+            return False
 
-    def hmmpress(self, hmm_path, force=False):
+    def hmmpress(self, force=False):
         """
         The function `hmmpress` checks if the HMM file has the correct extension, determines the file
         path, and skips the hmmpress step if the necessary files already exist.
@@ -77,90 +117,26 @@ class HMMER:
         Returns:
           nothing (None).
         """
-        hmm_path = Path(hmm_path)
-
-        if not str(hmm_path).endswith((".hmm", ".hmm.gz")):
-            raise ValueError(
-                f"HMM file must have an '.hmm' or '.hmm.gz' extension: {hmm_path}"
-            )
-
-        if not hmm_path.exists() and hmm_path.suffix == ".gz":
-            if hmm_path.with_suffix("").exists():
-                hmm_path = hmm_path.with_suffix("")
-            else:
-                raise FileExistsError
-
-        if fh.is_compressed(hmm_path).name == "gzip":
-            # .with_suffix("") removes .gz but leaves .hmm
-            self.hmm_filepath = hmm_path.with_suffix("")
-        else:
-            self.hmm_filepath = hmm_path
-
-        if not force and self._check_hmmpress_files_exist(hmm_path):
+        self._decompress_hmm_file_if_needed()
+        # `self._decompress_hmm_file_if_needed()` populates `self.decompressed_hmm_path`
+        if not force and self._check_hmmpress_files_exist():
             log.info(
                 "hmmpress outputs found and hmmpress(force=False), skipping hmmpress"
             )
             return
-
-        if fh.is_compressed(hmm_path).name == "gzip":
-            if force or not self.hmm_filepath.exists():
-                fh.gunzip(hmm_path)
-
         if force:
-            command_list = ["hmmpress", "-f", str(self.hmm_filepath)]
+            command_list = ["hmmpress", "-f", str(self.decompressed_hmm_path)]
         else:
-            #  Decompress first if hmm file is gzipped
-            command_list = ["hmmpress", str(self.hmm_filepath)]
+            command_list = ["hmmpress", str(self.decompressed_hmm_path)]
         command_list = [str(i) for i in command_list]
-        print(command_list)
         run_subprocess(
             command_list=command_list,
         )
-        if not self._check_hmmpress_files_exist(hmm_path):
+        if not self._check_hmmpress_files_exist():
             raise FileNotFoundError("Didn't find expected files after running hmmpress")
 
-    def hmmscan(self, hmm_directory, outdirectory, **kwargs):
-        for x in Path(hmm_directory).iterdir():
-            if re.search(r"\.hmm$|hmm\.gz$", str(x)):
-                if "with_cutoffs" in x.stem:
-                    self.hmm_filepaths_with_cutoffs.append(x)
-                elif "without_cutoffs" in x.stem:
-                    self.hmm_filepaths_without_cutoffs.append(x)
-                else:
-                    self.hmm_filepaths_other.append(x)
-        if not any(
-            [
-                self.hmm_filepaths_with_cutoffs,
-                self.hmm_filepaths_without_cutoffs,
-                self.hmm_filepaths_other,
-            ]
-        ):
-            raise FileNotFoundError("No HMM model files found")
-        for i in self.hmm_filepaths_with_cutoffs:
-            self.hmmpress(i)
-            temp = dict(**kwargs) | {
-                "use_ga_cutoffs": True,
-                "domtblout_path": Path(outdirectory, "with_cutoffs.domtblout"),
-            }
-            self._hmmscan(i, **temp)
-        for i in self.hmm_filepaths_without_cutoffs:
-            self.hmmpress(i)
-            temp = dict(**kwargs) | {
-                "use_ga_cutoffs": False,
-                "domtblout_path": Path(outdirectory, "without_cutoffs.domtblout"),
-            }
-            self._hmmscan(i, **temp)
-        for i in self.hmm_filepaths_other:
-            self.hmmpress(i)
-            temp = dict(**kwargs) | {
-                "use_ga_cutoffs": False,
-                "domtblout_path": Path(outdirectory, "other.domtblout"),
-            }
-            self._hmmscan(i, **temp)
-
-    @staticmethod
-    def _hmmscan(
-        hmm_filepath: str,
+    def hmmscan(
+        self,
         domtblout_path: str,
         fasta_path: str,
         input: str = None,
@@ -175,7 +151,6 @@ class HMMER:
         seed: int = env_vars["HMMSEARCH_SEED"],
         cpus: int = 1,
         overwrite=False,
-        use_ga_cutoffs: bool = False,
     ) -> None:
         """
         The `hmmscan` function runs HMMER's hmmscan tool to search for protein domains in a given FASTA
@@ -184,8 +159,8 @@ class HMMER:
         Args:
           fasta_path (str): The path to the FASTA file that contains the sequences to be searched
         against the HMM profiles.
-          input (str): stdin
-          hmm_filepath (str): The `hmm_filepath` parameter is the path to the HMM file that will be used
+          input (str): use to pass fasta as stdin
+          hmmpath (str): The `hmmpath` parameter is the path to the HMM file that will be used
         for the hmmscan.
           domtblout_path (str): The `domtblout_path` parameter is the path where the output file from
         HMMER's hmmscan will be saved. This file will contain the domain hits found in the input
@@ -222,11 +197,18 @@ class HMMER:
         existing file at the `domtblout_path` location. If `overwrite` is set to `False` and a file
         already exists at `domtblout_path`, a `FileExistsError` will be raised. Defaults to False
         """
-        hmm_filepath = Path(hmm_filepath)
+        self.hmmpress()
+
+        if self.has_cutoffs:
+            # base on the first model in the file
+            use_ga_cutoffs = True
+        else:
+            use_ga_cutoffs = False
+
         if input:
+            # set hmmscan arg to read from stdin
             fasta_path = "-"
-        if not hmm_filepath.exists():
-            raise FileNotFoundError(f"No file found at {hmm_filepath}")
+
         domtblout_path = Path(domtblout_path)
         if domtblout_path.exists() and not overwrite:
             raise FileExistsError(f"File already exists at {domtblout_path}")
@@ -249,7 +231,7 @@ class HMMER:
             f3,
             "--domtblout",
             domtblout_path,
-            hmm_filepath,
+            self.decompressed_hmm_path,
             fasta_path,
         ]
         if use_ga_cutoffs:

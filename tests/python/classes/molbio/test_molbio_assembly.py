@@ -28,14 +28,14 @@ def test_assembly_empty_loci():
 
 def test_assembly_attr_taxonomy():
     a = Assembly(uid="hi")
-    b = a.all_attributes
+    b = a.all_attributes()
     assert isinstance(b["taxonomy"], Taxonomy)
 
 
 def test_assembly_attr_metadata():
     a = Assembly(uid="hi")
     assert isinstance(a.metadata, LocusAssemblyMetadata)
-    assert a.metadata.all_attributes == OrderedDict(
+    assert a.metadata.all_attributes() == OrderedDict(
         [
             ("altitude", None),
             ("bio_material", None),
@@ -109,17 +109,17 @@ def test():
     a = Assembly(uid="a")
     a.add_locus("b")
     a.loci["b"].add_feature(start=1000, end=2000)
-    a.loci["b"].add_feature(start=1000, end=2000, protein_hash="hiya")
-    assert len(a.protein_hash_set) == 2
-    assert None in a.protein_hash_set
-    assert "hiya" in a.protein_hash_set
+    a.loci["b"].add_feature(start=1000, end=2000, uid="hiya")
+    assert len(a.feature_uid_set) == 2
+    assert None in a.feature_uid_set
+    assert "hiya" in a.feature_uid_set
 
 
 def test_sort_by_middle():
     a = Assembly(uid="a")
     a.add_locus("b")
     a.loci["b"].add_feature(start=100, end=5000)
-    a.loci["b"].add_feature(start=1000, end=2000, protein_hash="hiya")
+    a.loci["b"].add_feature(start=1000, end=2000, uid="hiya")
     a = [i for i in a.loci["b"].features_sorted_by_midpoint]
     assert a[0].end == 2000
     assert a[1].end == 5000

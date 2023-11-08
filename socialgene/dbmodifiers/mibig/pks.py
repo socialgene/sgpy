@@ -75,7 +75,7 @@ class PKS:
                 GraphDriver()
                 .driver.execute_query(
                     f"""
-                    MATCH ()-[e1:ENCODES {{protein_id:$gene_id}}]->(p1:protein)
+                    MATCH ()-[e1:ENCODES {{external_id:$gene_id}}]->(p1:protein)
                     UNWIND $substrates as substrate
                     MERGE (sub:substrate {{name: substrate.name}})
                     SET sub += substrate

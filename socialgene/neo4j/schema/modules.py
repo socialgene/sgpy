@@ -11,18 +11,12 @@ class Single_Module:
     relationships: List[str]
 
 
-class Modules:
+class ModulesMixin:
     # These are used in Nextflow, here: https://github.com/socialgene/sgnf/blob/main/subworkflows/local/sg_modules.nf
     # They simply group the different files/inputs into hopefully-sensible "modules"
     # It could be coded differently, but this way will hopefully make it easier for contributors to extend
-    def _add_module(self, **kwargs):
-        _module_id = kwargs.get("module_id")
-        self.modules.update({_module_id: Single_Module(**kwargs)})
-
-    def __init__(
-        self,
-    ):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super(ModulesMixin, self).__init__(*args, **kwargs)
         self.modules = {}
         self._add_module(
             module_id="base",
@@ -92,3 +86,9 @@ class Modules:
             nodes=["mz_cluster_index", "mz_source_file"],
             relationships=["CLUSTER_TO_FILE", "MOLECULAR_NETWORK", "METABO"],
         )
+
+    def _add_module(self, **kwargs):
+        _module_id = kwargs.get("module_id")
+        if _module_id in self.modules:
+            raise ValueError(f"Module ID: {_module_id} already exists")
+        self.modules.update({_module_id: Single_Module(**kwargs)})

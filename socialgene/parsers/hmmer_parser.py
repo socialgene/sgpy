@@ -22,8 +22,8 @@ class Domtblout:
         for i in self._parse_domtblout(
             input_path=input_path, hmmsearch_or_hmmscan=hmmsearch_or_hmmscan
         ):
-            self.add_protein(hash_id=i["protein_id"])
-            self.proteins[i["protein_id"]].add_domain(**i)
+            self.add_protein(uid=i["external_id"])
+            self.proteins[i["external_id"]].add_domain(**i)
 
     def _parse_domtblout(self, input_path, hmmsearch_or_hmmscan="hmmsearch"):
         """
@@ -39,9 +39,9 @@ class Domtblout:
         # For hmmsearch/hmmscan, HMMER switches the query/target for domtblout, so make that variable here
         if hmmsearch_or_hmmscan == "hmmscan":
             target_name = "hmm_id"
-            query_name = "protein_id"
+            query_name = "external_id"
         elif hmmsearch_or_hmmscan == "hmmsearch":
-            target_name = "protein_id"
+            target_name = "external_id"
             query_name = "hmm_id"
         else:
             raise ValueError
@@ -102,11 +102,11 @@ class ParsedDomtblout:
             for line in f:
                 line = line.strip().split("\t")
                 self.add_protein(
-                    hash_id=line[0],
+                    uid=line[0],
                 )
                 print(bool(line[14]))
                 self.proteins[line[0]].add_domain(
-                    hash_id=line[1],
+                    uid=line[1],
                     env_from=int(line[2]),
                     env_to=int(line[3]),
                     seq_pro_score=float(line[4]),

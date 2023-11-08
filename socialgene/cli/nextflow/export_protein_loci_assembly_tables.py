@@ -35,6 +35,13 @@ parser.add_argument(
     default=1,
 )
 parser.add_argument(
+    "--include_sequences",
+    help="Should sequences be included in the database?",
+    required=False,
+    default=False,
+    action=argparse.BooleanOptionalAction,
+)
+parser.add_argument(
     "--collect_tables_in_memory",
     help="Should all tables be collected in RAM before writing to disk?",
     required=False,
@@ -48,19 +55,27 @@ parser.add_argument(
     default=False,
     action=argparse.BooleanOptionalAction,
 )
+parser.add_argument(
+    "--defline_magic",
+    help="Parse out fasta deflines with defined structures, currently only works for uniprot (deflines that begin with: sp| or tr|)",
+    type=bool,
+    required=False,
+    default=False,
+)
 
 
-def _writer(socialgene_object, outdir, n_fasta_splits, compression):
+def _writer(socialgene_object, outdir, n_fasta_splits, compression, include_sequences):
     socialgene_object.write_n_fasta(
         outdir=outdir, n_splits=n_fasta_splits, mode="a", compression=compression
     )
-    for i in SocialGene._genomic_info_export_tablenames:
+    for i in SocialGene._export_table_names:
         socialgene_object.write_table(
             outdir=outdir,
             tablename=i,
             filename=i.removeprefix("table_"),
             mode="a",
             compression=compression,
+            include_sequences=include_sequences,
         )
 
 
@@ -71,6 +86,8 @@ def export_tables(
     compression: str,
     file_list: List = None,
     sequence_files_glob: str = "",
+    include_sequences: bool = False,
+    defline_magic: bool = False,
 ):
     """
     The function `export_tables` takes in various parameters, including an output directory, the number
@@ -94,6 +111,9 @@ def export_tables(
       file_list (List): A list of file paths to input sequence files.
       sequence_files_glob (str): A string representing a glob pattern used to find sequence files. This
     pattern can include wildcards (*) to match multiple files.
+      include_sequences (bool): A boolean flag indicating whether the sequences should be included in the database
+      defleine_magic (bool): Parse out fasta deflines with defined structures, currently only works for uniprot (deflines that begin with: sp| or tr|)
+
     """
     outdir = Path(outdir)
     sequence_files = list()
@@ -106,25 +126,29 @@ def export_tables(
     sequence_files = (Path(i).resolve() for i in sequence_files)
     if not sequence_files:
         raise IOError("No matching file(s)")
-    # Import all files into the same SG object
-    socialgene_object = SocialGene()
-    for i in sequence_files:
-        socialgene_object.parse(Path(i))
-        if not collect_tables_in_memory:
-            _writer(
-                socialgene_object=socialgene_object,
-                outdir=outdir,
-                n_fasta_splits=n_fasta_splits,
-                compression=compression,
-            )
-            socialgene_object = SocialGene()
     if collect_tables_in_memory:
+        # Import all files into the same SG object
+        socialgene_object = SocialGene()
+        for i in sequence_files:
+            socialgene_object.parse(Path(i), defline_magic=defline_magic)
         _writer(
             socialgene_object=socialgene_object,
             outdir=outdir,
             n_fasta_splits=n_fasta_splits,
             compression=compression,
+            include_sequences=include_sequences,
         )
+    else:
+        for i in sequence_files:
+            socialgene_object = SocialGene()
+            socialgene_object.parse(Path(i), defline_magic=defline_magic)
+            _writer(
+                socialgene_object=socialgene_object,
+                outdir=outdir,
+                n_fasta_splits=n_fasta_splits,
+                compression=compression,
+                include_sequences=include_sequences,
+            )
 
 
 def main():
@@ -140,6 +164,8 @@ def main():
         n_fasta_splits=int(args.n_fasta_splits),
         collect_tables_in_memory=args.collect_tables_in_memory,
         compression=compression,
+        include_sequences=args.include_sequences,
+        defline_magic=args.defline_magic,
     )
 
 
