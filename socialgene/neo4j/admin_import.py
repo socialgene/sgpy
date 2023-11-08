@@ -53,6 +53,7 @@ class Neo4jAdminImport(SocialgeneModules):
             self.gid = "$(id -g)"
         else:
             self.gid = gid
+        self.add_modules(module_list)
 
     @staticmethod
     def create_neo4j_directories(neo4j_top_dir):
@@ -128,21 +129,12 @@ class Neo4jAdminImport(SocialgeneModules):
         for i in self.node_relationship_argument_list:
             i[2] = i[2].replace("*.", ".*\\.")
 
-    def get_nodes_and_relationships(self, module_list):
-        """Reduce the expected sg_module list based on the input/selected modules
-
-        Args:
-            module_list (list): sg_modules to build Neo4j admin import arguments for
-            hmm_list (list): if hmms are in module_list then filter which HMM arguments to create for Neo4j admin import
-        """
-        self.add_modules(module_list)
-
     def build_nodes_and_relationships_argument_list(self):
-        for node in self.nodes:
+        for node in self.selected_nodes:
             self.node_relationship_argument_list.append(
                 self._single_arg_string_builder(input=node, type="nodes")
             )
-        for rel in self.relationships:
+        for rel in self.selected_relationships:
             self.node_relationship_argument_list.append(
                 self._single_arg_string_builder(input=rel, type="relationships")
             )
@@ -224,7 +216,6 @@ class Neo4jAdminImport(SocialgeneModules):
 
     def _prerun(self):
         self.create_neo4j_directories(self.neo4j_top_dir)
-        self.get_nodes_and_relationships(self.input_sg_modules)
         self.build_nodes_and_relationships_argument_list()
         self._escape_arg_glob()
 

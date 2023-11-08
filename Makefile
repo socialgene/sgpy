@@ -20,7 +20,6 @@ clean:
 	find . -type f -name "*.py[co]" -exec rm -r {} +
 	find . -type d -name "__pycache__" -exec rm -r {} +
 	find . -type d -name "htmlcov" -exec rm -r {} +
-	find . -type d -name "Autometa.egg-info" -exec rm -r {} +
 	find . -type d -name "dist" -exec rm -r {} +
 	find . -type d -name "build" -exec rm -r {} +
 	find . -type d -name ".eggs" -exec rm -r {} +

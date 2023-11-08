@@ -3,7 +3,8 @@ import os
 import re
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+from posixpath import normpath
 from typing import List
 
 import socialgene.utils.file_handling as fh
@@ -53,6 +54,7 @@ class HmmModel:
     _abs_path: str = None
     _rel_path: str = None
     _model_source: str = None
+    _super_category: str = None
     _category: str = None
     _subcategory: str = None
     _hash: str = None
@@ -87,6 +89,12 @@ class HmmModel:
     MODEL: List[str] = field(default_factory=lambda: [])
 
     @property
+    def has_cutoffs(self):
+        if self.GA:
+            return True
+        else:
+            return False
+
     def all_attributes(self):
         """Template dictionary to hold the desired info of a single hmm model"""
         if isinstance(self._notes, list):
@@ -100,7 +108,7 @@ class HmmModel:
             hash_to_use = self._hash
         # need tigrfam ids to actually be the tigrfam ids (not f"{self._model_source}_{self._n}"),
         # so that tigrfam_to_go, etc will associate
-        # need some others to be f"{self._model_source}_{self._n}" because can't assume they will be
+        # need others to be f"{self._model_source}_{self._n}" because can't assume they will be
         # unique within a source db (ie same model in different antismash categories)
         if self._model_source == "tigrfam":
             mod_id = self.NAME
@@ -119,6 +127,7 @@ class HmmModel:
                 "hash": self._hash,
                 "hash_used": hash_to_use,
                 "model_length": len(self.MODEL),
+                "super_category": self._super_category,
                 "category": self._category,
                 "subcategory": self._subcategory,
                 "ga": self.GA,
@@ -266,107 +275,113 @@ class HmmModel:
         input_path = Path(self._abs_path)
         self._rel_path = input_path.relative_to(input_dir)
 
-    def assign_category(self, input_rel_path=None):
+    def assign_category(self):
         """
         The function `assign_category` is used to parse categories using the input models' directory structure.
 
-        Args:
-          input_rel_path: The `input_rel_path` parameter is a string that represents the relative path
-        to a single file of hmm model(s). It is used to help categorize the hmm models.
-
-        Returns:
-          The function does not explicitly return anything.
         """
-        if not self._base_dir:
-            return
-        input_dir = Path(self._base_dir)
-        if input_rel_path is not None:
-            # used for testing without downloading everything or setting up mock dirs
-            # TODO: mock instead
-            rel_path = input_rel_path
-        else:
-            self._assign_relative_path()
-            rel_path = self._rel_path
-        self._model_source = Path(input_dir).name
-        if self._model_source == "antismash":
-            self._antismash_categories(rel_path)
-        else:
-            self._category
-            self._subcategory
+        self._antismash_categories()
 
-    def _antismash_categories(self, rel_path):
+    def _antismash_categories(self):
         """
         The function extracts and defines categories of antismash models based on the antismash
         directory structure.
 
         Args:
-          rel_path: The `rel_path` parameter is a string that represents the relative path of a file or
-        directory within the antismash directory structure.
+          hmmpath: The absolute path to the hmm file.
         """
-        category = None
-        subcategory = None
-        temp = str(rel_path)
-        temp_split = temp.split("/")
-        if temp_split[2] == "modules":
-            if temp_split[3] == "nrps_pks":
-                category = temp_split[3]
-                if len(temp_split) > 6:
-                    subcategory = temp_split[6]
-            elif temp_split[3] in ["sactipeptides", "thiopeptides", "lanthipeptides"]:
-                if len(temp_split) == 7:
-                    category = temp_split[3]
-                    subcategory = temp_split[5]
-                else:
-                    category = temp_split[3]
-            else:
-                category = temp_split[3]
-        elif temp_split[2] == "detection":
-            if temp_split[3] == "hmm_detection":
-                category = "hmm_detection"
-            elif temp_split[3] == "genefunctions":
-                category = "genefunctions"
-            elif temp_split[3] == "nrps_pks_domains":
-                category = "nrps_pks_domains"
-                subcategory = temp_split[5].split(".", maxsplit=1)[0]
-        else:
-            category = temp_split[2]
-        self._category = category
-        self._subcategory = subcategory
+        # standardize cross-os path
+        st_hmmpath = PureWindowsPath(
+            normpath(PureWindowsPath(self._abs_path).as_posix())
+        ).as_posix()
+        if "antismash/modules" in st_hmmpath:
+            self._super_category = "modules"
+        if "antismash/detection" in st_hmmpath:
+            self._super_category = "detection"
+        if "antismash/modules/nrps_pks" in st_hmmpath:
+            self._category = "nrps_pks"
+            if "antismash/modules/nrps_pks/minowa/data/CAL_HMMs" in st_hmmpath:
+                self._subcategory = "cal_hmms"
+            if "antismash/modules/nrps_pks/minowa/data/AT_HMMs" in st_hmmpath:
+                self._subcategory = "at_hmms"
+        if "antismash/modules/thiopeptides" in st_hmmpath:
+            self._category = "thiopeptides"
+        if "antismash/modules/lanthipeptides" in st_hmmpath:
+            self._category = "lanthipeptides"
+            if "antismash/modules/lanthipeptides/data/non_biosyn_hmms" in st_hmmpath:
+                self._subcategory = "non_biosyn_hmms"
+        if "antismash/modules/t2pks" in st_hmmpath:
+            self._category = "t2pks"
+        if "antismash/modules/sactipeptides" in st_hmmpath:
+            self._category = "sactipeptides"
+            if "antismash/modules/sactipeptides/data/non_biosyn_hmms" in st_hmmpath:
+                self._subcategory = "non_biosyn_hmms"
+        if "antismash/modules/rrefinder" in st_hmmpath:
+            self._category = "rrefinder"
+        if "antismash/modules/lassopeptides" in st_hmmpath:
+            self._category = "lassopeptides"
 
 
 class HmmParse:
     def __init__(self) -> None:
         self.models = dict()
-        self.dict_key_ind = 0
         self.temp_model = HmmModel()
+        self.dict_key_index = 0
 
     def read(self, filepath, base_dir=None):
-        # _temp is used to switch from attribute addition to HMM model additon by switching the function
+        """
+        Reads HMM models from file and adds them to the models dictionary.
+
+        Args:
+            filepath (str): The path to the file containing the HMM models.
+            base_dir (str, optional): The base directory to use when resolving relative file paths and assigning the HMM source.
+
+        Returns:
+            None
+        """
+        for i, model in enumerate(
+            self.read_model_generator(filepath=filepath, base_dir=base_dir)
+        ):
+            log.debug(f"Reading model {str(i+1)} from {filepath}")
+            model._n = self.dict_key_index
+            self.models[self.dict_key_index] = model
+            self.dict_key_index += 1
+
+    def read_model_generator(self, filepath, base_dir=None):
+        # this is used to read a single model
+        # _add_line_contents is used to switch from attribute addition to HMM model additon by switching the function
         # to HMM model's functon after seeing "HMM ", to the end of the model
         # then switch back before the next model starts
-        _temp = self.temp_model.add_attr
+        _add_line_contents = self.temp_model.add_attr
         with fh.open_read(filepath) as h:
+            if not base_dir:
+                base_dir = Path(filepath).parents[0]
             self.temp_model._base_dir = base_dir
             self.temp_model._abs_path = filepath
             self.temp_model._assign_relative_path()
             self.temp_model.assign_category()
+            self.temp_model._model_source = Path(base_dir).name
             for line in h:
                 if line.startswith("HMM "):
-                    _temp = self.temp_model.add_model
+                    # switch to model addition
+                    _add_line_contents = self.temp_model.add_model
                 if line.startswith("//"):
+                    log.warning(Path(base_dir).name)
+                    # yield model
                     self.temp_model.add_model_hash()
                     self.temp_model.find_pfam_accessions()
-                    self.models[self.dict_key_ind] = self.temp_model
-                    self.temp_model._n = self.dict_key_ind
-                    self.dict_key_ind += 1
+                    yield self.temp_model
+                    # Reset temp_model
                     self.temp_model = HmmModel()
                     self.temp_model._base_dir = base_dir
                     self.temp_model._abs_path = filepath
                     self.temp_model._assign_relative_path()
                     self.temp_model.assign_category()
-                    _temp = self.temp_model.add_attr
+                    self.temp_model._model_source = Path(base_dir).name
+                    _add_line_contents = self.temp_model.add_attr
                     continue
-                _temp(line)
+                # add attributes or model
+                _add_line_contents(line)
 
     def write_all(self, outpath, hash_as_name=False):
         # if only self.read(), then this should write exactly the same file back out
@@ -386,12 +401,12 @@ class HmmParse:
         """
         with open(os.path.join(outdir, "all.hmminfo"), "w") as tsv_file:
             all_hmms_file_writer = csv.DictWriter(
-                tsv_file, self.temp_model.all_attributes.keys(), delimiter="\t"
+                tsv_file, self.temp_model.all_attributes().keys(), delimiter="\t"
             )
             if header:
                 all_hmms_file_writer.writeheader()
             for model in self.models.values():
-                _ = all_hmms_file_writer.writerow(model.all_attributes)
+                _ = all_hmms_file_writer.writerow(model.all_attributes())
 
     def write_hmm_node_tsv(self, outdir):
         """
@@ -415,7 +430,9 @@ class HmmModelHandler(HmmParse):
     managing metadata related to the models.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+    ) -> None:
         super().__init__()
         self.cull_index = []
         self._pfam_removed = {}
@@ -488,7 +505,7 @@ class HmmModelHandler(HmmParse):
         for k, v in self.models.items():
             redundant_hash[v._hash].append(k)
         redundant_hash = {k: v for k, v in redundant_hash.items() if len(v) > 1}
-        for hash_id, model_index_list in redundant_hash.items():
+        for uid, model_index_list in redundant_hash.items():
             pass
             keep_this_one = model_index_list.pop(0)
             for i in model_index_list:
@@ -498,7 +515,7 @@ class HmmModelHandler(HmmParse):
                 self.models[i]._notes.append(
                     f"{self.models[keep_this_one]._rel_path} was used instead of this model"
                 )
-            self._same_hash_removed[hash_id] = {
+            self._same_hash_removed[uid] = {
                 "removed": model_index_list,
                 "used": keep_this_one,
             }
@@ -509,19 +526,17 @@ class HmmModelHandler(HmmParse):
     def write(
         self,
         outdir: str,
-        n_files: int = 1,
         hash_as_name: bool = False,
-        splitcutoffs: bool = False,
     ):
-        """Write a non-redundant HMM file, optionally split into n-files, or spliwt based on presence
+        """Write a non-redundant HMM file, optionally split into n-files, or split based on presence
         of cutoff values in a model
 
         Args:
             outdir (str): where to write the outfile
-            n_files (int, optional): split the files into n-files (if splitcutoffs=true will double this value). Defaults to 1.
+            n_files (int,deprecated): split the files into n-files (deprecated). Defaults to 1.
             hash_as_name (bool, optional): Replace model NAME field with the hash of model. Defaults to False.
-            splitcutoffs (bool, optional): Create two file, one with models that have cutoff values, one with models that don't. Defaults to False.
         """
+        n_files = 1
         if any(Path(outdir).glob("socialgene_nr_hmms*")):
             raise FileExistsError(
                 f"Found existing socialgene_nr_hmms* file(s) in {outdir}; cowardly not continuing"

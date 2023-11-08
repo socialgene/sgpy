@@ -2,15 +2,15 @@ import csv
 from pathlib import Path
 from typing import List
 
-from socialgene.neo4j.schema.modules import Modules
-from socialgene.neo4j.schema.nodes import Nodes
-from socialgene.neo4j.schema.relationships import Relationships
+from socialgene.neo4j.schema.modules import ModulesMixin
+from socialgene.neo4j.schema.nodes import NodesMixin
+from socialgene.neo4j.schema.relationships import RelationshipsMixin
 from socialgene.utils.logging import log
 
 
-class SocialgeneModules(Modules, Nodes, Relationships):
-    def __init__(self, **kwargs):
-        super().__init__()
+class SocialgeneModules(ModulesMixin, NodesMixin, RelationshipsMixin):
+    def __init__(self, *args, **kwargs):
+        super(SocialgeneModules, self).__init__(*args, **kwargs)
         self.selected_nodes = set()
         self.selected_relationships = set()
 
@@ -21,17 +21,17 @@ class SocialgeneModules(Modules, Nodes, Relationships):
             module_list (List[str]): list of socialgene modules (e.g. ["base", "protein"])
         """
         # if only a single module str is provided, make sure it's a lists
-        if isinstance(module_list, str):
-            module_list = [module_list]
-        elif isinstance(module_list, list):
-            pass
-        else:
-            raise ValueError(type(module_list))
-        for module in module_list:
+        for module in list(module_list):
+            if module not in self.modules:
+                raise ValueError(
+                    f"Module {module} not found. Please select from: {list(self.modules.keys())}"
+                )
+            # add nodes of module to set
             for node in self.modules.get(module).nodes:
                 if node_obj := self.nodes.get(node):
                     self.selected_nodes.add(node_obj)
             for rel in self.modules.get(module).relationships:
+                # add relationships of module to set
                 if rel_obj := self.relationships.get(rel):
                     self.selected_relationships.add(rel_obj)
 

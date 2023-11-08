@@ -16,13 +16,12 @@ class LocusAssemblyMetadata:
     def __init__(self, **kwargs) -> None:
         self.update(kwargs)
 
-    @property
     def all_attributes(self):
         return OrderedDict({i: self.__getitem__(i) for i in self.__slots__})
 
     @property
     def values(self):
-        return self.all_attributes.values()
+        return self.all_attributes().values()
 
     def __getitem__(self, item):
         try:
@@ -52,7 +51,7 @@ class LocusAssemblyMetadata:
 
 
 class ProteinSequence:
-    """Class used for working with protein sequences and can be initialized with either a sequence or a hash_id."""
+    """Class used for working with protein sequences and can be initialized with either a sequence or a uid."""
 
     _amino_acids = [
         "A",
@@ -83,29 +82,46 @@ class ProteinSequence:
         "O",
         "*",
     ]
-    __slots__ = ["hash_id", "__crc64", "__md5", "sequence"]
+    __slots__ = ["uid", "__crc64", "__md5", "_seq_len", "sequence"]
 
-    def __init__(self, sequence: str = None, hash_id: str = None):
+    def __init__(self, sequence: str = None, uid: str = None, seq_len: int = None):
         """Class for holding an amino acid sequence (protein)
 
         Args:
             sequence (str, optional): amino acid sequence
-            hash_id (str, optional): a hash_id can be provided if a sequence isn't
+            uid (str, optional): a uid can be provided if a sequence isn't
 
         Raises:
-            ValueError: Must provide either a sequence or a hash_id
+            ValueError: Must provide either a sequence or a uid
         """
         # the sequence input variable has a default so that domtblout can create a socialgene object
         self.sequence = sequence
         if isinstance(self.sequence, type(None)):
-            if isinstance(hash_id, type(None)):
-                raise ValueError("Must provide either a sequence or a hash_id")
+            if isinstance(uid, type(None)):
+                raise ValueError("Must provide either a sequence or a uid")
             else:
-                self.hash_id = hash_id
+                self.uid = uid
         else:
             self._assign_hash()
+        if seq_len:
+            self._seq_len = seq_len
 
     @property
+    def seq_len(self):
+        """Return the length of the protein
+
+        Returns:
+            int: number of amino acids
+        """
+        return len(self.sequence)
+
+    @seq_len.setter
+    def seq_len(self, value):
+        if isinstance(value, int):
+            self._seq_len = value
+        else:
+            self._seq_len = len(self.sequence)
+
     def all_attributes(self):
         """
         The function returns a dictionary containing the attributes of an object.
@@ -144,7 +160,7 @@ class ProteinSequence:
         The function assigns a hash value to a sequence of amino acids.
         """
         self._standardize_sequence()
-        self.hash_id = hasher.hash_aminos(self.sequence)
+        self.uid = hasher.hash_aminos(self.sequence)
 
     @property
     def crc64(self):
@@ -163,14 +179,6 @@ class ProteinSequence:
         if not all([i in self._amino_acids for i in set(self.sequence)]):
             log.error(self.sequence)
             raise ValueError("Unknown character/letter in protein sequence")
-
-    def sequence_length(self):
-        """Return the length of the protein
-
-        Returns:
-            int: number of amino acids
-        """
-        return len(self.sequence)
 
 
 class Location:
@@ -195,7 +203,6 @@ class Location:
         self.end = end
         self.strand = strand
 
-    @property
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
@@ -302,8 +309,25 @@ class Domain:
         self.ali_from = int(ali_from)
         self.ali_to = int(ali_to)
 
-    @property
     def all_attributes(self):
+        ord_dict = OrderedDict()
+        ord_dict["hmm_id"] = str(self.hmm_id)
+        ord_dict["env_from"] = int(self.env_from)
+        ord_dict["env_to"] = int(self.env_to)
+        ord_dict["seq_pro_score"] = round(self.seq_pro_score, 1)
+        ord_dict["evalue"] = round(self.evalue, 1)
+        ord_dict["i_evalue"] = round(self.i_evalue, 1)
+        ord_dict["domain_bias"] = round(self.domain_bias, 1)
+        ord_dict["domain_score"] = round(self.domain_score, 1)
+        ord_dict["seq_pro_bias"] = round(self.seq_pro_bias, 1)
+        ord_dict["hmm_from"] = int(self.hmm_from)
+        ord_dict["hmm_to"] = int(self.hmm_to)
+        ord_dict["ali_from"] = int(self.ali_from)
+        ord_dict["ali_to"] = int(self.ali_to)
+        ord_dict["exponentialized"] = bool(self.exponentialized)
+        return ord_dict
+
+    def tsv_attributes(self):
         ord_dict = OrderedDict()
         ord_dict["hmm_id"] = str(self.hmm_id)
         ord_dict["env_from"] = int(self.env_from)
@@ -359,13 +383,12 @@ class Protein(
     """Container class for describing a single protein"""
 
     # seqlen is included as a variable so it can be provided (e.g. a sequence isn't provided and proteins are created manually)
-    __slots__ = ["description", "external_protein_id", "seqlen", "domains"]
+    __slots__ = ["description", "external_id", "domains"]
 
     def __init__(
         self,
         description: str = None,
-        external_protein_id: str = None,
-        seqlen: int = None,
+        external_id: str = None,
         domains: set = None,
         *args,
         **kwargs,
@@ -374,19 +397,19 @@ class Protein(
 
         Args:
             description (str, optional): Protein description.
-            external_protein_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
+            external_id (str, optional): Non-hash-id descriptor (usually a database accession, e.g. NCBI's).
             seqlen (int, optional): Amino acid sequence length
             domains (Set, optional): Set of Domain() objects.
         """
         super().__init__(*args, **kwargs)
         self.description = description
-        self.external_protein_id = external_protein_id
-        self.seqlen = seqlen
+        self.external_id = external_id
         self.domains = domains if domains is not None else set()
 
-    @property
     def all_attributes(self):
-        return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
+        return {
+            s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)
+        } | {"seq_len": self.seq_len}
 
     def add_domain(
         self,
@@ -409,11 +432,11 @@ class Protein(
                     where p1.uid in ["_xvHFg1H1f43WxPcZT1P8Qbcx60chSxh"]
                     RETURN apoc.map.merge({hmm_id:h1.uid}, properties(a1))
                     """,
-                    uid=str(self.hash_id),
+                    uid=str(self.uid),
                 ):
                     self.add_domain(**i.value())
         except Exception:
-            log.debug(f"Error trying to retrieve domains for {self.hash_id}")
+            log.debug(f"Error trying to retrieve domains for {self.uid}")
 
     @property
     def domain_list_sorted_by_mean_envelope_position(self):
@@ -430,9 +453,9 @@ class Protein(
     def domain_vector(
         self,
     ):
-        """Get the domain hash_ids for a protein as an ordered list
+        """Get the domain uids for a protein as an ordered list
 
-        list: list of domain hash_ids
+        list: list of domain uids
         """
         if not self.domains:
             log.debug(f"Tried to get domains from domain-less protein {self}")
@@ -449,16 +472,16 @@ class Protein(
 
         del temp
         log.debug(
-            f"Removed {str(_before_count - len(self.domains))} domains from {self.external_protein_id}"
+            f"Removed {str(_before_count - len(self.domains))} domains from {self.external_id}"
         )
 
     @property
-    def fasta_string_defline_hash_id(self):
-        return f">{self.hash_id}\n{self.sequence}\n"
+    def fasta_string_defline_uid(self):
+        return f">{self.uid}\n{self.sequence}\n"
 
     @property
     def fasta_string_defline_external_id(self):
-        return f">{self.external_protein_id}\n{self.sequence}\n"
+        return f">{self.external_id}\n{self.sequence}\n"
 
 
 class Feature(Location):
@@ -466,8 +489,8 @@ class Feature(Location):
 
     __slots__ = [
         "parent_object",
-        "protein_hash",
-        "protein_id",
+        "uid",
+        "external_id",
         "type",
         "locus_tag",
         "description",
@@ -488,8 +511,8 @@ class Feature(Location):
     def __init__(
         self,
         parent_object=None,
-        protein_hash: str = None,
-        protein_id: str = None,
+        uid: str = None,
+        external_id: str = None,
         type: str = None,
         locus_tag: str = None,
         description=None,
@@ -512,8 +535,8 @@ class Feature(Location):
         various attributes and optional arguments.
 
         Args:
-          protein_hash (str): A string representing the hash value of the protein.
-          protein_id (str): The unique identifier for the protein associated with the feature.
+          uid (str): A string representing the hash value of the protein.
+          external_id (str): The unique identifier for the protein associated with the feature.
           type (str): The "type" parameter is used to specify the type of feature. In this case, it is
         used to specify the type of the feature on a locus, such as "protein".
           locus_tag (str): The locus_tag parameter is a string that represents the unique identifier for
@@ -548,8 +571,8 @@ class Feature(Location):
         """
         super().__init__(**kwargs)
         self.parent_object = parent_object
-        self.protein_hash = protein_hash
-        self.protein_id = protein_id
+        self.uid = uid
+        self.external_id = external_id
         self.type = type
         self.locus_tag = locus_tag
         self.description = description
@@ -568,7 +591,6 @@ class Feature(Location):
         )
         self.incomplete = incomplete
 
-    @property
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
@@ -588,7 +610,7 @@ class Feature(Location):
         Returns:
             hash: hash for set()
         """
-        return hash((self.end, self.start, self.protein_hash, self.strand, self.type))
+        return hash((self.end, self.start, self.uid, self.strand, self.type))
 
     def __eq__(self, other):
         """Used for set() in Assembly.add_locus()"""
@@ -597,39 +619,31 @@ class Feature(Location):
         return (
             self.end == other.end
             and self.start == other.start
-            and self.protein_hash == other.protein_hash
+            and self.uid == other.uid
             and self.strand == other.strand
             and self.type == other.type
         )
 
+    def __lt__(self, other):
+        return self.start < other.start
 
-class Locus:
-    """Container holding a set() of genomic features"""
 
-    __slots__ = ["parent_object", "features", "metadata", "external_id", "uid"]
-
-    def __init__(self, parent_object=None, external_id=None):
-        super().__init__()
-        self.parent_object = parent_object
-        self.features = set()
-        self.metadata = LocusAssemblyMetadata()
-        self.external_id = external_id
-        self.uid = self.calc_uid()
+class FeatureCollection:
+    __slots__ = [
+        "parent_object",
+        "features",
+    ]
 
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
         self.features.add(Feature(parent_object=self, **kwargs))
 
-    def calc_uid(self):
-        return hasher.hasher(f"{self.parent_object.uid}___{self.external_id}")
-
-    @property
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
     @property
-    def protein_hash_set(self):
-        return {i.protein_hash for i in self.features}
+    def feature_uid_set(self):
+        return {i.uid for i in self.features}
 
     @property
     def features_sorted_by_midpoint(self):
@@ -639,6 +653,60 @@ class Locus:
 
     def drop_non_protein_features(self):
         self.features = {i for i in self.features if i.type == "protein"}
+
+    def get_feature_by_uid(self, uid):
+        for k, v in self.features.items():
+            if v.uid == uid:
+                return v
+
+
+class Locus(FeatureCollection):
+    """Container holding a set() of genomic features"""
+
+    __slots__ = [
+        "parent_object",
+        "features",
+        "metadata",
+        "external_id",
+        "uid",
+        "gene_clusters",
+    ]
+
+    def __init__(self, parent_object=None, external_id=None):
+        super().__init__()
+        self.parent_object = parent_object
+        self.features = set()
+        self.metadata = LocusAssemblyMetadata()
+        self.external_id = external_id
+        self.uid = self.calc_uid()
+        self.gene_clusters = list()
+
+    def calc_uid(self):
+        return hasher.hasher(f"{self.parent_object.uid}___{self.external_id}")
+
+    def add_bgcs_by_feature(self, features, **kwargs):
+        if not all([isinstance(i, Feature) for i in features]):
+            raise ValueError(
+                f"All features must be of type Feature, not {[type(i) for i in features if not isinstance(i, Feature)]}"
+            )
+        self.gene_clusters.append(GeneCluster(features, parent_object=self, **kwargs))
+
+    def add_bgcs_by_start_end(self, start, end, **kwargs):
+        features = {i for i in self.features if i.start >= start and i.end <= end}
+        if features:
+            self.add_bgcs_by_feature(features=features, **kwargs)
+
+
+class GeneCluster(FeatureCollection):
+    def __init__(self, features, parent_object=None, uid=None, tool=None, **kwargs):
+        super().__init__()
+        self.parent_object = parent_object
+        self.features = features
+        self.uid = uid
+        # self.tool; e.g.antismash, gecco, etc
+        self.tool = tool
+        # flexible attributes
+        self.__dict__.update(kwargs)
 
 
 class Taxonomy:
@@ -691,14 +759,13 @@ class Assembly:
         self.name = uid
 
     @property
-    def protein_hash_set(self):
+    def feature_uid_set(self):
         """Return all protein hashes within assembly
         Returns:
             set: protein hashes
         """
-        return set().union(*[i.protein_hash_set for i in self.loci.values()])
+        return set().union(*[i.feature_uid_set for i in self.loci.values()])
 
-    @property
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
 
@@ -742,6 +809,11 @@ class Assembly:
         except Exception:
             log.debug(f"Error trying to retrieve taxonomy for {self.uid}")
 
+    def get_locus_by_uid(self, uid):
+        for k, v in self.loci.items():
+            if v.uid == uid:
+                return v
+
 
 class Molbio:
     """Class for inheriting by SocialGene()"""
@@ -752,13 +824,13 @@ class Molbio:
         self.assemblies = {}  # TODO: ?
         self.proteins = {}  # TODO: ?
 
-    def get_all_protein_hashes(self):
-        """Return a list of all proteins hash_ids
+    def get_all_feature_uids(self):
+        """Return a list of all proteins uids
 
         Returns:
-            list: List of all proteins hash_ids
+            list: List of all proteins uids
         """
-        return [i.hash_id for i in self.proteins.values()]
+        return [i.uid for i in self.proteins.values()]
 
     def add_protein(
         self,
@@ -768,18 +840,18 @@ class Molbio:
         """Add a protein to the protein dictionary
 
         Args:
-            no_return (bool, optional): Whether the function should return the protein's hash_id. Defaults to False.
+            no_return (bool, optional): Whether the function should return the protein's uid. Defaults to False.
 
         Returns:
             str: Protein's hash
         """
         temp_protein = Protein(**kwargs)
         # only add protein if it doesn't already exist
-        if temp_protein.hash_id not in self.proteins:
+        if temp_protein.uid not in self.proteins:
             # deepcopy teo ensure instances aren't shared
-            self.proteins[temp_protein.hash_id] = temp_protein
+            self.proteins[temp_protein.uid] = temp_protein
         if return_uid:
-            return temp_protein.hash_id
+            return temp_protein.uid
 
     def add_assembly(self, uid: str = None):
         """Add an assembly to a SocialGene object

@@ -13,9 +13,6 @@ from socialgene.parsers.hmmmodel import (
     parse_hmmlist_input,
 )
 
-tmpdir = tempfile.TemporaryDirectory()
-
-
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = Path(FIXTURE_DIR, "data", "test_genomes")
@@ -29,7 +26,7 @@ hmm_dir = Path(FIXTURE_DIR, "data", "hmms")
 
 def test_HmmModel():
     a = HmmModel()
-    assert a.all_attributes == OrderedDict(
+    assert a.all_attributes() == OrderedDict(
         [
             ("id", "None_None"),
             ("source", None),
@@ -42,6 +39,7 @@ def test_HmmModel():
             ("hash", None),
             ("hash_used", None),
             ("model_length", 0),
+            ("super_category", None),
             ("category", None),
             ("subcategory", None),
             ("ga", None),
@@ -54,7 +52,7 @@ def test_HmmModel():
 def test_notes_1():
     a = HmmModel()
     a._notes = ["1", "a"]
-    assert a.all_attributes == OrderedDict(
+    assert a.all_attributes() == OrderedDict(
         [
             ("id", "None_None"),
             ("source", None),
@@ -67,6 +65,7 @@ def test_notes_1():
             ("hash", None),
             ("hash_used", None),
             ("model_length", 0),
+            ("super_category", None),
             ("category", None),
             ("subcategory", None),
             ("ga", None),
@@ -79,7 +78,7 @@ def test_notes_1():
 def test_notes_2():
     a = HmmModel()
     a._notes = "1"
-    assert a.all_attributes == OrderedDict(
+    assert a.all_attributes() == OrderedDict(
         [
             ("id", "None_None"),
             ("source", None),
@@ -92,6 +91,7 @@ def test_notes_2():
             ("hash", None),
             ("hash_used", None),
             ("model_length", 0),
+            ("super_category", None),
             ("category", None),
             ("subcategory", None),
             ("ga", None),
@@ -187,7 +187,7 @@ def test_model_strings_hash_as_name():
 def test_notes_3():
     a = HmmModel()
     a._notes = "1"
-    assert a.all_attributes == OrderedDict(
+    assert a.all_attributes() == OrderedDict(
         [
             ("id", "None_None"),
             ("source", None),
@@ -200,6 +200,7 @@ def test_notes_3():
             ("hash", None),
             ("hash_used", None),
             ("model_length", 0),
+            ("super_category", None),
             ("category", None),
             ("subcategory", None),
             ("ga", None),

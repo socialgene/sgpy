@@ -5,6 +5,7 @@ from rich.console import Console, ConsoleOptions, RenderResult
 from rich.table import Table
 
 from socialgene.base.molbio import LocusAssemblyMetadata
+from socialgene.config import env_vars
 from socialgene.neo4j.schema.neo4j_element import Neo4jElement
 from socialgene.utils.lists_to_markdown import markdown_table_from_list
 
@@ -42,13 +43,15 @@ class Node(Neo4jElement):
         yield table
 
 
-class Nodes:
+class NodesMixin:
     """Represents multiple Nodes and is where all non-addon Nodes are defined"""
 
     def __init__(
-        self,
+        self, include_sequences=env_vars["INCLUDE_SEQUENCES"], *args, **kwargs
     ):
-        super().__init__()
+        super().__init__(*args, **kwargs)
+        self.include_sequences = include_sequences
+
         self.nodes = {}
         self.add_node(
             neo4j_label="parameters",
@@ -85,7 +88,6 @@ class Nodes:
                 "genome_download_command",
             ],
         )
-
         self.add_node(
             neo4j_label="assembly",
             description="Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from.",
@@ -105,18 +107,24 @@ class Nodes:
             + ["external_id"]
             + LocusAssemblyMetadata.__slots__,
         )
-
-        self.add_node(
-            neo4j_label="protein",
-            description="Represents a non-redundant protein",
-            header_filename="protein_ids.header",
-            target_subdirectory="protein_info",
-            target_extension="protein_ids",
-            header=[
-                "uid:ID(protein)",
-                "crc64",
-            ],
-        )
+        if self.include_sequences:
+            self.add_node(
+                neo4j_label="protein",
+                description="Represents a non-redundant protein",
+                header_filename="protein_ids.header",
+                target_subdirectory="protein_info",
+                target_extension="protein_ids",
+                header=["uid:ID(protein)", "crc64", "sequence"],
+            )
+        else:
+            self.add_node(
+                neo4j_label="protein",
+                description="Represents a non-redundant protein",
+                header_filename="protein_ids.header",
+                target_subdirectory="protein_info",
+                target_extension="protein_ids",
+                header=["uid:ID(protein)", "crc64"],
+            )
         self.add_node(
             neo4j_label="goterm",
             description="Represent a GO term",
@@ -212,6 +220,7 @@ class Nodes:
                 "hash:String",
                 "hash_used:String",
                 "model_length:String",
+                "super_category:String",
                 "category:String",
                 "subcategory:String",
                 "ga:String",
@@ -230,6 +239,8 @@ class Nodes:
         )
 
     def add_node(self, neo4j_label, **kwargs):
+        if neo4j_label in self.nodes:
+            raise ValueError(f"Node with label {neo4j_label} already exists")
         self.nodes[neo4j_label] = Node(neo4j_label=neo4j_label, **kwargs)
 
     def __rich_console__(
@@ -282,11 +293,11 @@ class Nodes:
 
 
 def print_info():  # pragma: no cover
-    print(Nodes())
+    print(NodesMixin())
 
 
 def print_markdown():  # pragma: no cover
-    Nodes()._markdown_table()
+    NodesMixin()._markdown_table()
 
 
 def printer():  # pragma: no cover

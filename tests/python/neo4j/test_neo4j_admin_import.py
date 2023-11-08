@@ -31,7 +31,7 @@ expected_headers = {
     "assembly_to_mz_file": ":START_ID(assembly)\t:END_ID(mz_source_file)\r\n",
     "tigrfamrole_to_mainrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_mainrole)\r\n",
     "assembly_to_locus": ":END_ID(assembly)\t:START_ID(nucleotide)\r\n",
-    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\tprotein_id\tlocus_tag\tstart:Long\tend:Long\tstrand:Long\tdescription\tpartial_on_complete_genome:Boolean\tmissing_start:Boolean\tmissing_stop:Boolean\tinternal_stop:Boolean\tpartial_in_the_middle_of_a_contig:Boolean\tmissing_N_terminus:Boolean\tmissing_C_terminus:Boolean\tframeshifted:Boolean\ttoo_short_partial_abutting_assembly_gap:Boolean\tincomplete:Boolean\r\n",
+    "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\texternal_id\tlocus_tag\tstart:Long\tend:Long\tstrand:Long\tdescription\tpartial_on_complete_genome:Boolean\tmissing_start:Boolean\tmissing_stop:Boolean\tinternal_stop:Boolean\tpartial_in_the_middle_of_a_contig:Boolean\tmissing_N_terminus:Boolean\tmissing_C_terminus:Boolean\tframeshifted:Boolean\ttoo_short_partial_abutting_assembly_gap:Boolean\tincomplete:Boolean\r\n",
     "assembly": "uid:ID(assembly)\taltitude\tbio_material\tbioproject\tbiosample\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tmol_type\tnote\torganelle\torganism\tpcr_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsub_species\tsub_strain\tsubmitter_seqid\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
     "tigrfam_to_role": ":START_ID(hmm_source)\t:END_ID(tigrfam_role)\r\n",
     "protein_to_go": ":START_ID(protein)\t:END_ID(goterm)\r\n",
@@ -42,32 +42,52 @@ expected_headers = {
     "go_to_go": ":START_ID(goterm)\t:END_ID(goterm)\t:TYPE\r\n",
     "tigrfam_to_go": ":START_ID(hmm_source)\t:END_ID(goterm)\r\n",
     "tigrfam_role": "uid:ID(tigrfam_role)\r\n",
-    "hmm_source": "uid:ID(hmm_source)\t:LABEL\trel_path:String\tname:String\tacc:String\tnotes:String\tdescription:String\tdate:String\thash:String\thash_used:String\tmodel_length:String\tcategory:String\tsubcategory:String\tga:String\ttc:String\tnc:String\r\n",
+    "hmm_source": "uid:ID(hmm_source)\t:LABEL\trel_path:String\tname:String\tacc:String\tnotes:String\tdescription:String\tdate:String\thash:String\thash_used:String\tmodel_length:String\tsuper_category:String\tcategory:String\tsubcategory:String\tga:String\ttc:String\tnc:String\r\n",
     "molecular_network": ":START_ID(mz_cluster_index)\t:END_ID(mz_cluster_index)\tdelta_mz:Float\tmeh:Float\tcosine:Float\tother_score:Float\r\n",
     "tigrfamrole_to_subrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_subrole)\r\n",
     "taxid_to_taxid": ":START_ID(taxid)\t:END_ID(taxid)\r\n",
     "goterms": "uid:ID(goterm)\tname\tnamespace\tdef\r\n",
 }
 
-bb = [(k, v) for k, v in expected_headers.items()]
 
-
-@pytest.mark.parametrize("k,v", bb, ids=[i[0] for i in bb])
-def test_creation_and_writing_of_neo4j_headers(k, v):
+@pytest.fixture(scope="session")
+def tempor_dir(tmpdir_factory):
     sg_mod = SocialgeneModules()
     sg_mod.add_modules(list(sg_mod.modules.keys()))
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        sg_mod.write_neo4j_headers(outdir=tmpdirname)
-        p = Path(tmpdirname).glob("**/*")
-        files = [x for x in p if x.is_file()]
-        vals = {i.stem: read_in(i) for i in files}
-        assert vals[k] == v
+    fn = tmpdir_factory.mktemp("data")
+    sg_mod.write_neo4j_headers(outdir=fn)
+    return fn
+
+
+# sg_mod = SocialgeneModules()
+# fn="/home/chase/Downloads/asd"
+# sg_mod.add_modules(list(sg_mod.modules.keys()))
+# sg_mod.write_neo4j_headers(outdir=fn)
+
+# p = Path("/home/chase/Downloads/asd").glob("**/*")
+# files = [x for x in p if x.is_file()]
+# vals = {i.stem: read_in(i) for i in files}
+# if k == "protein_ids":
+#     assert vals[k] == expected_headers[k]
+# else:
+#     assert vals[k] == expected_headers[k]
+
+
+@pytest.mark.parametrize("k", [k for k in expected_headers.keys()])
+def test_creation_and_writing_of_neo4j_headers(tempor_dir, k):
+    p = Path(tempor_dir).glob("**/*")
+    files = [x for x in p if x.is_file()]
+    vals = {i.stem: read_in(i) for i in files}
+    if k == "protein_ids":
+        assert vals[k] == expected_headers[k]
+    else:
+        assert vals[k] == expected_headers[k]
 
 
 def test_neo4j_admin_import_dir_creation():
     temp = Neo4jAdminImport(
         neo4j_top_dir="topdir",
-        module_list=["base", "hmms", "mmseqs2"],
+        module_list=["base", "base_hmm", "mmseqs"],
         cpus=1,
         additional_args=None,
         uid=100,

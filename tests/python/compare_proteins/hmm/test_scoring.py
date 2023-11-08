@@ -16,7 +16,7 @@ FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "hmms")
-hmm_path = FIXTURE_DIR
+hmm_dir = FIXTURE_DIR
 
 
 @pytest.mark.parametrize("n", [0, 1, 2, 3, 4, 5, 6])
@@ -62,7 +62,14 @@ def test_mod_score():
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
     sg_object.annotate_proteins_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
+        protein_id_list=protein_id_list,
+        hmm_filepath=os.path.join(hmm_dir, "pks.hmm"),
+        cpus=1,
+    )
+    sg_object.annotate_proteins_with_hmmscan(
+        protein_id_list=protein_id_list,
+        hmm_filepath=os.path.join(hmm_dir, "single_hmm.hmm"),
+        cpus=1,
     )
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = sg_object.proteins["iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh"]
@@ -70,11 +77,11 @@ def test_mod_score():
     assert res._asdict() == {
         "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
         "target": "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
-        "query_n_domains": 36,
-        "target_n_domains": 50,
-        "levenshtein": 0.64,
+        "query_n_domains": 31,
+        "target_n_domains": 40,
+        "levenshtein": 0.72,
         "jaccard": 1,
-        "mod_score": 1.14,
+        "mod_score": 1.23,
     }
 
 
@@ -102,14 +109,21 @@ def test_mod_score_same_hash_with_domains():
     p2 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     protein_id_list = list(sg_object.proteins.keys())
     sg_object.annotate_proteins_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
+        protein_id_list=protein_id_list,
+        hmm_filepath=os.path.join(hmm_dir, "pks.hmm"),
+        cpus=1,
+    )
+    sg_object.annotate_proteins_with_hmmscan(
+        protein_id_list=protein_id_list,
+        hmm_filepath=os.path.join(hmm_dir, "single_hmm.hmm"),
+        cpus=1,
     )
     res = mod_score(p1, p2)
     assert res._asdict() == {
         "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
         "target": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "query_n_domains": 36,
-        "target_n_domains": 36,
+        "query_n_domains": 31,
+        "target_n_domains": 31,
         "levenshtein": 0,
         "jaccard": 1,
         "mod_score": 1.5,

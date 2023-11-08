@@ -8,7 +8,7 @@ def test_empty():
 
 
 def test_empty2():
-    assert Molbio().get_all_protein_hashes() == []
+    assert Molbio().get_all_feature_uids() == []
 
 
 def add_assembly():

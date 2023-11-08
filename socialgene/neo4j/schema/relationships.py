@@ -62,11 +62,9 @@ class Relationship(Neo4jElement):
         yield table
 
 
-class Relationships:
-    def __init__(
-        self,
-    ):
-        super().__init__()
+class RelationshipsMixin:
+    def __init__(self, **kwargs):
+        super(RelationshipsMixin, self).__init__()
         self.relationships = {}
         self.add_relationship(
             neo4j_label="ANNOTATES",
@@ -111,7 +109,7 @@ class Relationships:
             header=[
                 ":START_ID(nucleotide)",
                 ":END_ID(protein)",
-                "protein_id",
+                "external_id",
                 "locus_tag",
                 "start:Long",
                 "end:Long",
@@ -296,6 +294,8 @@ class Relationships:
         )
 
     def add_relationship(self, neo4j_label, **kwargs):
+        if neo4j_label in self.relationships:
+            raise ValueError(f"Relationship {neo4j_label} already exists")
         self.relationships[neo4j_label] = Relationship(
             neo4j_label=neo4j_label, **kwargs
         )
@@ -345,11 +345,11 @@ class Relationships:
 
 
 def print_info():  # pragma: no cover
-    print(Relationships())
+    print(RelationshipsMixin())
 
 
 def print_markdown():  # pragma: no cover
-    Relationships()._markdown_table()
+    RelationshipsMixin()._markdown_table()
 
 
 def printer():  # pragma: no cover

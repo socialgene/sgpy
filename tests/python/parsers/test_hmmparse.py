@@ -4,9 +4,6 @@ from pathlib import Path
 
 from socialgene.parsers.hmmmodel import HmmModel, HmmParse
 
-tmpdir = tempfile.TemporaryDirectory()
-
-
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = Path(FIXTURE_DIR, "data", "test_genomes")

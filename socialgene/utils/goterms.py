@@ -187,7 +187,7 @@ def parse(outdir, filepath=None, url=None):
 
 def main():
     args = parser.parse_args()
-    parse(OBO_URL=OBO_URL, outdir=args.args)
+    parse(url=OBO_URL, outdir=args.outdir)
 
 
 if __name__ == "__main__":

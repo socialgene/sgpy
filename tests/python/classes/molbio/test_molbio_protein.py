@@ -8,12 +8,12 @@ def test_protein():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
     assert temp.description == "description"
     assert temp.domains == set()
-    assert temp.hash_id == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
-    assert temp.external_protein_id == "external_protein_id"
+    assert temp.uid == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
+    assert temp.external_id == "external_id"
     assert temp.sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
 
@@ -21,10 +21,10 @@ def test_create_fasta_string():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
-    temp.fasta_string_defline_hash_id == ">0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\nARNDCQEGHILKMFPSTWYVXZJU\n"
-    temp.fasta_string_defline_external_id == ">external_protein_id\nARNDCQEGHILKMFPSTWYVXZJU\n"
+    temp.fasta_string_defline_uid == ">0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb\nARNDCQEGHILKMFPSTWYVXZJU\n"
+    temp.fasta_string_defline_external_id == ">external_id\nARNDCQEGHILKMFPSTWYVXZJU\n"
 
 
 def test_fail():
@@ -37,7 +37,7 @@ def test_filter_domains():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
     base_dict = {
         "hmm_id": "hmm_id",

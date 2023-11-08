@@ -1,7 +1,6 @@
 import os
 
 from socialgene.base.socialgene import SocialGene
-from socialgene.hmm.hmmer import HMMER
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -12,7 +11,7 @@ gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "hmms")
-hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
+hmm_dir = FIXTURE_DIR
 
 
 expected_proteins = [
@@ -45,12 +44,12 @@ def test_hmmscan():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-
-    h = HMMER()
-    h.hmmpress(hmm_path)
     sg_object.annotate_proteins_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_directory=os.path.dirname(hmm_path), cpus=1
+        protein_id_list=protein_id_list,
+        hmm_filepath=os.path.join(hmm_dir, "pks.hmm"),
+        cpus=1,
     )
+
     prots = list(sg_object.proteins.keys())
     prots.sort()
     assert prots == expected_proteins
@@ -59,8 +58,6 @@ def test_hmmscan():
     ) == sorted(
         [
             "DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5",
-            "DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5",
-            "xJwofaGb0EIZrSxSeZL5xS6thEM7ck7U",
             "xJwofaGb0EIZrSxSeZL5xS6thEM7ck7U",
         ]
     )
@@ -70,33 +67,17 @@ def test_hmmscan2():
     sg_object = SocialGene()
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
-    h = HMMER()
-    h.hmmpress(hmm_path)
     sg_object.annotate_proteins_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_directory=os.path.dirname(hmm_path), cpus=1
+        protein_id_list=protein_id_list,
+        hmm_filepath=os.path.join(hmm_dir, "pks.hmm"),
+        cpus=1,
     )
     assert [
-        dict(i.all_attributes)
+        dict(i.all_attributes())
         for i in sg_object.proteins[
             "Tdc2m3PRLsyEzjwyux6BF4arDy2mQ_Bl"
         ].domain_list_sorted_by_mean_envelope_position
     ] == [
-        {
-            "hmm_id": "xJwofaGb0EIZrSxSeZL5xS6thEM7ck7U",
-            "env_from": 2,
-            "env_to": 11,
-            "seq_pro_score": 45.5,
-            "evalue": -8,
-            "i_evalue": 7,
-            "domain_bias": 0.3,
-            "domain_score": -3.3,
-            "seq_pro_bias": 0.1,
-            "hmm_from": 46,
-            "hmm_to": 54,
-            "ali_from": 3,
-            "ali_to": 11,
-            "exponentialized": True,
-        },
         {
             "hmm_id": "DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5",
             "env_from": 4,
@@ -111,22 +92,6 @@ def test_hmmscan2():
             "hmm_to": 69,
             "ali_from": 16,
             "ali_to": 65,
-            "exponentialized": True,
-        },
-        {
-            "hmm_id": "DIJQMpAiLKGDPgcpc1IuBzFdf7FhTYu5",
-            "env_from": 93,
-            "env_to": 128,
-            "seq_pro_score": 28.6,
-            "evalue": -3,
-            "i_evalue": 7,
-            "domain_bias": 0.0,
-            "domain_score": -2.2,
-            "seq_pro_bias": 0.2,
-            "hmm_from": 38,
-            "hmm_to": 62,
-            "ali_from": 98,
-            "ali_to": 122,
             "exponentialized": True,
         },
         {

@@ -46,14 +46,12 @@ parser.add_argument(
     type=int,
     help="uid to give to docker, default is the current user",
     required=False,
-    default=None,
 )
 parser.add_argument(
     "--gid",
     type=int,
     help="gid to give to docker, default is the current user",
     required=False,
-    default=None,
 )
 parser.add_argument(
     "--dryrun",

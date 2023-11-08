@@ -5,7 +5,7 @@ from socialgene.base.molbio import ProteinSequence
 
 def test_ProteinSequence_1():
     temp = ProteinSequence(sequence="ARNDCQEGHILKMFPSTWYVXZJU")
-    assert temp.hash_id == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
+    assert temp.uid == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
     assert temp.sequence == "ARNDCQEGHILKMFPSTWYVXZJU"
 
 
@@ -23,7 +23,7 @@ def test_ProteinSequence_2():
 
 
 def test_ProteinSequence_3():
-    temp = ProteinSequence(hash_id="")
+    temp = ProteinSequence(uid="")
     assert (
         temp._amino_acid_count()
         == "0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0"
@@ -43,7 +43,7 @@ def test_ProteinSequence_3():
 
 def test_ProteinSequence_4():
     temp = ProteinSequence(sequence="ARNDCQEGHILKMFPSTWYVXZJU")
-    assert temp.sequence_length() == 24
+    assert temp.seq_len == 24
 
 
 def test_fail():
@@ -58,8 +58,8 @@ def test_fail2():
 
 def test_dict():
     temp = ProteinSequence(sequence="ZJUAARNDCQEGHIILKMFPSTWTYVXZJU")
-    assert temp.all_attributes == {
-        "hash_id": "DeAsyYJZ1XS1-LHOf15YN7OMk-gzJgbL",
+    assert temp.all_attributes() == {
+        "uid": "DeAsyYJZ1XS1-LHOf15YN7OMk-gzJgbL",
         "sequence": "ZJUAARNDCQEGHIILKMFPSTWTYVXZJU",
     }
 

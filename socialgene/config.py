@@ -9,6 +9,18 @@ os_vars = dict(os.environ)
 env_vars = {}
 
 env_file = pkg_resources.resource_filename(__name__, "common_parameters.env")
+
+
+def strtobool(val):
+    val = val.lower()
+    if val == "true":
+        return True
+    elif val == "false":
+        return False
+    else:
+        raise ValueError(f"invalid truth value {val}")
+
+
 internal_vars = {}
 with open(env_file) as f:
     for line in f:
@@ -30,6 +42,13 @@ for k, v in internal_vars.items():
     if isinstance(v, str):
         try:
             internal_vars[k] = float(v)
+        except ValueError:
+            internal_vars[k] = v
+
+for k, v in internal_vars.items():
+    if isinstance(v, str) and v.lower() in ("true", "false"):
+        try:
+            internal_vars[k] = strtobool(v)
         except ValueError:
             internal_vars[k] = v
 

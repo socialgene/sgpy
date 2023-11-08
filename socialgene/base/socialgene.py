@@ -6,10 +6,15 @@ from operator import attrgetter
 from pathlib import Path
 from typing import List
 
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqFeature import FeatureLocation, SeqFeature
+from Bio.SeqRecord import SeqRecord
 from rich.progress import Progress
 
 from socialgene.base.compare_protein import CompareProtein
 from socialgene.base.molbio import Molbio
+from socialgene.clustermap.serialize import SerializeToClustermap
 from socialgene.hmm.hmmer import HMMER
 from socialgene.mmseqs.search import search as mmseqs_search
 from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
@@ -24,8 +29,8 @@ from socialgene.utils.logging import log
 class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser):
     """Main class for building, sotring, working with protein and genomic info"""
 
-    # _genomic_info_export_tablenames exports tables for the nextflow pipeline
-    _genomic_info_export_tablenames = [
+    # _export_table_names exports tables for the nextflow pipeline
+    _export_table_names = [
         "table_protein_to_go",
         "table_assembly_to_locus",
         "table_loci",
@@ -45,6 +50,12 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def get_loci_ids(self):
         return list(self.loci.keys())
+
+    def get_all_gene_clusters(self):
+        for i in self.assemblies.values():
+            for j in i.loci.values():
+                for k in j.gene_clusters:
+                    yield k
 
     ########################################
     # Filter
@@ -79,11 +90,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         **new_dict,
                     )
         else:
-            log.info("None of the input protein ids were found in the database")
+            log.info(
+                "None of the input protein ids were found or had domains in the database"
+            )
 
     def annotate_proteins_with_neo4j(
         self,
-        protein_hash_ids: List[str] = None,
+        protein_uids: List[str] = None,
         chunk_size: int = 1000,
         annotate_all: bool = False,
         progress: bool = False,
@@ -93,35 +106,35 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for matching proteins, and retrieves their HMM annotations.
 
         Args:
-          protein_hash_ids (List[str]): A list of protein hash IDs. These are unique identifiers for proteins in the database that you want to annotate.
+          protein_uids (List[str]): A list of protein hash IDs. These are unique identifiers for proteins in the database that you want to annotate.
           chunk_size (int): The `chunk_size` parameter determines the number of proteins to query at a time. Proteins are divided into chunks to improve efficiency when querying the database.  Defaults to 1000
-          annotate_all (bool): The `annotate_all` parameter is a boolean flag that determines whether to annotate all proteins in the database or not. If set to `True`, all proteins in the database will be annotated. If set to `False`, you need to provide a list of protein hash IDs in the `protein_hash_ids. Defaults to False
+          annotate_all (bool): The `annotate_all` parameter is a boolean flag that determines whether to annotate all proteins in the database or not. If set to `True`, all proteins in the database will be annotated. If set to `False`, you need to provide a list of protein hash IDs in the `protein_uids. Defaults to False
           progress (bool): The `progress` parameter is a boolean flag that determines whether or not to display a progress bar during the execution of the function. If `progress` is set to `True`, a progress bar will be displayed to track the progress of the function. If `progress` is set to `False`. Defaults to False
 
         """
-        if protein_hash_ids is None and annotate_all:
-            protein_hash_ids = self.get_all_protein_hashes()
-        elif isinstance(protein_hash_ids, str):
-            protein_hash_ids = [protein_hash_ids]
-        search_result = search_protein_hash(protein_hash_ids)
+        if protein_uids is None and annotate_all:
+            protein_uids = self.get_all_feature_uids()
+        elif isinstance(protein_uids, str):
+            protein_uids = [protein_uids]
+        search_result = search_protein_hash(protein_uids)
         if not any([i for i in search_result.values()]):
             log.info("No identical proteins found in the database.")
         else:
             # log.info(
-            #     f"{len([i for i in search_result.values() if i])} of {len(protein_hash_ids)} searched proteins were found in the database, pulling their HMM annotations into python..."
+            #     f"{len([i for i in search_result.values() if i])} of {len(protein_uids)} searched proteins were found in the database, pulling their HMM annotations into python..."
             # )
             # get the number of chunks needed to to query "chunk_size" proteins at a time
-            prot_len = len(protein_hash_ids)
+            prot_len = len(protein_uids)
             n_chunks = prot_len // chunk_size
             if n_chunks == 0:
                 n_chunks = 1
-            if n_chunks > (len(protein_hash_ids) - 1):
+            if n_chunks > (len(protein_uids) - 1):
                 chunked_list = chunk_a_list_with_numpy(
-                    input_list=protein_hash_ids, n_chunks=n_chunks
+                    input_list=protein_uids, n_chunks=n_chunks
                 )
             else:
-                chunked_list = [protein_hash_ids]
-            del protein_hash_ids
+                chunked_list = [protein_uids]
+            del protein_uids
             if progress:
                 with Progress(transient=True) as pg:
                     task = pg.add_task("Progress...", total=n_chunks)
@@ -186,13 +199,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             )
 
     def annotate_proteins_with_hmmscan(
-        self, protein_id_list, hmm_directory, cpus=None, **kwargs
+        self, protein_id_list, hmm_filepath, cpus=None, **kwargs
     ):
         """Run hmmscan on Protein objects
 
         Args:
             protein_id_list (list): list of protein hash ids to run hmmscan on
-            hmm_directory (str): path to directory containing hmm files
+            hmm_filepath (str): path to file of HMMs
             cpus (int): number of parallel processes to spawn
 
         """
@@ -211,18 +224,17 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         if not temp1:
             log.info("None of the input sequences contain an amino acid sequence")
             return
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            HMMER().hmmscan(
+        with tempfile.NamedTemporaryFile() as temp_path:
+            hmmer_temp = HMMER(hmm_filepath=hmm_filepath)
+            hmmer_temp.hmmscan(
                 fasta_path="-",
                 input="\n".join(temp1).encode(),
-                hmm_directory=hmm_directory,
-                outdirectory=tmpdirname,
+                domtblout_path=temp_path.name,
                 overwrite=True,
                 **kwargs,
             )
-            # parse the resulting domtblout files, saving results to the class proteins/domains
-            for i in Path(tmpdirname).glob("*.domtblout"):
-                self.parse_hmmout(i, hmmsearch_or_hmmscan="hmmscan")
+            # parse the resulting domtblout file, saving results to the class proteins/domains
+            self.parse_hmmout(temp_path.name, hmmsearch_or_hmmscan="hmmscan")
 
     def hydrate_from_proteins(self):
         """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
@@ -241,7 +253,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         .loci[locus["locus"]]
                         .add_feature(
                             type="protein",
-                            protein_hash=feature["protein_id"],
+                            uid=feature["external_id"],
                             start=feature["locus_start"],
                             end=feature["locus_end"],
                             strand=feature["strand"],
@@ -276,10 +288,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             raise ValueError(f"{locus_uid} not found in database")
         external_id = res.value().get("external_id")
         self.assemblies[assembly_uid].add_locus(external_id=external_id)
-
-        self.assemblies[assembly_uid].loci[external_id].info = self.assemblies[
-            assembly_uid
-        ].loci[external_id].info | dict(res.value())
+        self.assemblies[assembly_uid].loci[external_id].metadata.update(
+            dict(res.value())
+        )
 
         with GraphDriver() as db:
             res = db.run(
@@ -295,13 +306,26 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for feature in res:
                 self.assemblies[assembly_uid].loci[external_id].add_feature(
                     type="protein",
-                    protein_hash=feature.value().end_node["uid"],
+                    uid=feature.value().end_node["uid"],
                     **feature.value(),
                 )
-                _ = self.add_protein(hash_id=feature.value().end_node["uid"])
-        # self.annotate_proteins_with_neo4j(
-        #     protein_hash_ids=None, annotate_all=True, progress=False
-        # )
+                _ = self.add_protein(uid=feature.value().end_node["uid"])
+        return {"assembly": assembly_uid, "locus": external_id}
+
+    def _drop_all_cross_origin(self):
+        # Drop likely cross-origin proteins (proteins that are longer than 100k bp)
+        # have to remove from both gene cluster and locus
+        for ak, av in self.assemblies.items():
+            for nk, nv in av.loci.items():
+                self.assemblies[ak].loci[nk].features = {
+                    i for i in nv.features if abs(i.end - i.start) < 100000
+                }
+                for gene_cluster in self.assemblies[ak].loci[nk].gene_clusters:
+                    gene_cluster.features = {
+                        i
+                        for i in gene_cluster.features
+                        if abs(i.end - i.start) < 100000
+                    }
 
     def hydrate_protein_info(self):
         """Pull name (original identifier) and description of proteins from Neo4j"""
@@ -309,8 +333,8 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             cypher_name="get_protein_info",
             param=list(self.proteins.keys()),
         ):
-            self.proteins[result["protein_id"]].external_protein_id = result["name"]
-            self.proteins[result["protein_id"]].description = result["description"]
+            self.proteins[result["external_id"]].external_id = result["name"]
+            self.proteins[result["external_id"]].description = result["description"]
 
     ########################################
     # File Outputs
@@ -337,7 +361,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 ].domain_list_sorted_by_mean_envelope_position:
                     _domain_counter += 1
                     _temp = [prot_id]
-                    _temp.extend(list(domain.all_attributes.values()))
+                    _temp.extend(list(domain.all_attributes().values()))
                     tsv_writer.writerow(_temp)
         log.info(f"Wrote {str(_domain_counter)} domains to {outpath}")
 
@@ -381,7 +405,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         self,
         outpath,
         hash_list: List = None,
-        external_protein_id: bool = False,
+        external_id: bool = False,
         **kwargs,
     ):
         """Write proteins to a FASTA file
@@ -389,7 +413,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         Args:
             outpath (str): path of file that FASTA entries will be appended to
             hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
-            external_protein_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
+            external_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
             **kwargs: see print(open_write.__doc__)
         """
 
@@ -402,23 +426,23 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for k, v in temp_iter:
                 if v.sequence is not None:
                     counter += 1
-                    if external_protein_id:
+                    if external_id:
                         handle.writelines(v.fasta_string_defline_external_id)
                     else:
-                        handle.writelines(v.fasta_string_defline_hash_id)
+                        handle.writelines(v.fasta_string_defline_uid)
 
         log.info(f"Wrote {str(counter)} proteins to {outpath}")
 
-    def single_protein_to_fasta(self, hash_id):
+    def single_protein_to_fasta(self, uid):
         """Create FASTA strings
 
         Args:
-            hash_id (str): hash id of protein to export
+            uid (str): hash id of protein to export
 
         Returns:
             str: fasta string
         """
-        return f">{self.proteins[hash_id].hash_id}\n{self.proteins[hash_id].sequence}"
+        return f">{self.proteins[uid].uid}\n{self.proteins[uid].sequence}"
 
     def write_n_fasta(self, outdir, n_splits=1, **kwargs):
         """
@@ -483,7 +507,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         ):
                             self.assemblies[assembly_k].loci[locus_k].add_feature(
                                 type="protein",
-                                protein_hash=feature.protein_hash,
+                                uid=feature.uid,
                                 start=feature.start,
                                 end=feature.end,
                                 strand=feature.strand,
@@ -503,100 +527,73 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         self._merge_assemblies(sg_object)
         self.protein_comparison.extend(sg_object.protein_comparison)
 
-    # def break_loci(self, gap_tolerance: int = 10000):
-    #     """
-    #     The `break_loci` function breaks a locus (nucleotide sequence/contig/scaffold) into pieces based
-    #     on a specified gap tolerance between proteins.
+    def write_clustermap_json(
+        self,
+        outpath,
+        gene_cluster_order=None,
+    ):
+        raise NotImplementedError("write_clustermap_json needs to be updated")
+        # TODO: Add link_df to clustermap
+        cmap = SerializeToClustermap(bgc_order=gene_cluster_order, sg_object=self)
+        cmap.write(outpath=outpath)
 
-    #     Args:
-    #       gap_tolerance (int): The `gap_tolerance` parameter is an optional integer that specifies the
-    #     maximum allowed gap between proteins in nucleotides. If the gap between two proteins is greater
-    #     than this value, the locus/contig/scaffold will be split into multiple parts. The default value
-    #     for `gap_tolerance` is 100. Defaults to 10000
-    #     """
-    #     for assembly_key, assembly_value in self.assemblies.items():
-    #         for loci_id in [i for i in assembly_value.loci.keys()]:
-    #             assembly_value.loci[loci_id].sort_by_middle()
-    #             # no need to split if there's only 1 feature
-    #             if len(assembly_value.loci[loci_id].features) == 1:
-    #                 log.info(
-    #                     f"`len(loci_values.features) == 1`, doing nothing to {assembly_key}, {loci_id}"
-    #                 )
-    #             else:
-    #                 current_int = 0
-    #                 temp_locus = defaultdict(set)
-    #                 # add the first feature
-    #                 temp_locus[current_int].add(
-    #                     assembly_value.loci[loci_id].features[0]
-    #                 )
-    #                 for j, k in zip(
-    #                     assembly_value.loci[loci_id].features,
-    #                     assembly_value.loci[loci_id].features[1:],
-    #                 ):
-    #                     if k.start - j.end > gap_tolerance:
-    #                         current_int += 1
-    #                     temp_locus[current_int].add(k)
-    #                 if len(temp_locus) > 1:
-    #                     for new_locus_k, new_locus_v in temp_locus.items():
-    #                         new_name = f"{loci_id}_{new_locus_k}"
-    #                         assembly_value.add_locus(new_name)
-    #                         for i in new_locus_v:
-    #                             assembly_value.loci[new_name].features.add(i)
-    #                     del assembly_value.loci[loci_id]
-    #                     log.info(
-    #                         f"Broke assembly: {assembly_key} locus: {loci_id} into {len(temp_locus)} parts based on the provided gap_tolerance of {gap_tolerance}"
-    #                     )
-    #                     del temp_locus
+    def write_genbank(self, outpath):
+        for assembly in self.assemblies.values():
+            for locus in assembly.loci.values():
+                record = SeqRecord(
+                    Seq(""),
+                    id=locus.external_id,
+                    name=locus.external_id,
+                    description="An example GenBank file generated by BioPython",
+                    dbxrefs=[f"Assembly:{locus.parent_object.uid}"],
+                )
+                # Add annotation
+                for feature in locus.features:
+                    biofeat = SeqFeature(
+                        FeatureLocation(
+                            start=feature.start,
+                            end=feature.end,
+                            strand=feature.strand,
+                        ),
+                        type=feature.type,
+                        qualifiers={
+                            k: v
+                            for k, v in feature.all_attributes().items()
+                            if v and k != "parent_object"
+                        }
+                        | {"translation": self.proteins[feature.uid].sequence},
+                    )
+                    record.features.append(biofeat)
+                record.annotations["molecule_type"] = "DNA"
 
-    # # def prune_loci(self, min_genes=1):
-    # #     """
-    # #     The function `prune_loci` removes loci from an assembly if they have fewer features than the
-    # #     specified minimum number of genes.
+            SeqIO.write(
+                record,
+                outpath,
+                "genbank",
+            )
 
-    # #     Args:
-    # #       min_genes: The `min_genes` parameter is an optional parameter that specifies the minimum
-    # #     number of genes a locus must have in order to be kept. If a locus has fewer genes than the
-    # #     specified minimum, it will be removed from the `self.assemblies` dictionary. Defaults to 1
-    # #     """
-    # #     # remove loci if they don't have any features
-    # #     assembly_keys = list(self.assemblies.keys())
-    # #     for assembly_key in assembly_keys:
-    # #         loci_keys = list(self.assemblies[assembly_key].loci.keys())
-    # #         for loci_key in loci_keys:
-    # #             if (
-    # #                 len(self.assemblies[assembly_key].loci[loci_key].features)
-    # #                 < min_genes
-    # #             ):
-    # #                 del self.assemblies[assembly_key].loci[loci_key]
+    def drop_all_non_protein_features(self, **kwargs):
+        """Drop features from all assembly/loci that aren't proteins/pseudo-proteins
 
-    # def top_k_loci(self, topk=2):
-    #     """
-    #     The function `top_k_loci` removes loci from assemblies that are not in the top k based on the
-    #     number of features they have.
-
-    #     Args:
-    #       topk: The parameter "topk" is an integer that specifies the number of top loci to keep in each
-    #     assembly. Defaults to 2
-    #     """
-    #     assembly_keys = list(self.assemblies.keys())
-    #     for assembly_key in assembly_keys:
-    #         loci_dict = {
-    #             k: len(v.features)
-    #             for k, v in self.assemblies[assembly_key].loci.items()
-    #         }
-    #         to_delete = [
-    #             i
-    #             for i in list(self.assemblies[assembly_key].loci.keys())
-    #             if i not in sorted(loci_dict, key=loci_dict.get, reverse=True)[:topk]
-    #         ]
-    #         for loci_key in to_delete:
-    #             del self.assemblies[assembly_key].loci[loci_key]
+        Returns:
+            list: list of features that were removed (if return_removed=True)
+        """
+        for a_v in self.assemblies.values():
+            for l_v in a_v.loci.values():
+                l_v.drop_non_protein_features()
 
     ########################################
     # OUTPUTS FOR NEXTFLOW
     ########################################
 
-    def write_table(self, outdir: str, tablename: str, filename: str = None, **kwargs):
+    def write_table(
+        self,
+        outdir: str,
+        tablename: str,
+        filename: str = None,
+        include_sequences=False,
+        **kwargs,
+    ):
         """
         The function writes a table to a specified output directory in TSV format, for import into Neo4j.
 
@@ -616,10 +613,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             tsv_writer = csv.writer(
                 handle, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
             )
-            for i in getattr(self, tablename)():
+            for i in getattr(self, tablename)(include_sequences=include_sequences):
                 tsv_writer.writerow(i)
 
-    def table_protein_to_go(self):
+    def table_protein_to_go(self, **kwargs):
         """
         The function `table_protein_to_go` iterates through the assemblies, loci, and features of a
         given object, and yields tuples containing the protein hash and GO term for each feature that
@@ -632,11 +629,11 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     if feature.goterms:
                         for goterm in feature.goterms:
                             yield (
-                                feature.protein_hash,
+                                feature.uid,
                                 goterm.removeprefix("GO:").strip(),
                             )
 
-    def table_locus_to_protein(self):
+    def table_locus_to_protein(self, **kwargs):
         """
         The function `table_locus_to_protein` generates a table of protein information from each locus, for import into Neo4j.
         """
@@ -644,14 +641,14 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for k, loci in av.loci.items():
                 temp_list = list(loci.features)
                 # sort features by id then start to maintain consistent output
-                temp_list.sort(key=attrgetter("protein_hash"))
+                temp_list.sort(key=attrgetter("uid"))
                 temp_list.sort(key=attrgetter("start"))
                 for feature in temp_list:
                     if feature.feature_is_protein():
                         yield (
                             feature.parent_object.uid,
-                            feature.protein_hash,
-                            feature.protein_id,
+                            feature.uid,
+                            feature.external_id,
                             feature.locus_tag,
                             feature.start,
                             feature.end,
@@ -669,15 +666,15 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                             feature.incomplete,
                         )
 
-    def table_protein_ids(self):
+    def table_protein_ids(self, include_sequences=False, **kwargs):
         """Protein hash id table for import into Neo4j"""
         for protein in self.proteins.values():
-            yield (
-                protein.hash_id,
-                protein.crc64,
-            )
+            if include_sequences:
+                yield (protein.uid, protein.crc64, protein.sequence)
+            else:
+                yield (protein.uid, protein.crc64)
 
-    def table_assembly_to_locus(self):
+    def table_assembly_to_locus(self, **kwargs):
         """Assembly to locus table for import into Neo4j
 
         Args:
@@ -688,7 +685,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 #  ["assembly", "internal_locus_id"]
                 yield (ak, v.uid)
 
-    def table_loci(self):
+    def table_loci(self, **kwargs):
         """
         Generate a table of loci information.
 
@@ -700,10 +697,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 yield tuple(
                     [locus.uid]
                     + [locus.external_id]
-                    + list(locus.metadata.all_attributes.values())
+                    + list(locus.metadata.all_attributes().values())
                 )
 
-    def table_assembly(self):
+    def table_assembly(self, **kwargs):
         """Assembly table for import into Neo4j
 
         Args:
@@ -711,10 +708,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """
         for assembly in self.assemblies.values():
             yield tuple(
-                [assembly.uid] + list(assembly.metadata.all_attributes.values())
+                [assembly.uid] + list(assembly.metadata.all_attributes().values())
             )
 
-    def table_assembly_to_taxid(self):
+    def table_assembly_to_taxid(self, **kwargs):
         """Assembly table for import into Neo4j
 
         Args:
@@ -723,13 +720,3 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         for k, v in self.assemblies.items():
             if v.taxid:
                 yield (k, v.taxid)
-
-    def drop_all_non_protein_features(self):
-        """Drop features from all assembly/loci that aren't proteins/pseudo-proteins
-
-        Returns:
-            list: list of features that were removed (if return_removed=True)
-        """
-        for a_v in self.assemblies.values():
-            for l_v in a_v.loci.values():
-                l_v.drop_non_protein_features()

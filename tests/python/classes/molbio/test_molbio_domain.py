@@ -69,7 +69,8 @@ def test_domain_dict():
     env_vars["HMMSEARCH_IEVALUE"] = 1.5
     temp = BASE_DICT | {"exponentialized": False, "i_evalue": 1.1}
     temp2 = Domain(**temp)
-    assert temp2.all_attributes == expected
+    assert temp2.all_attributes() == expected
+    assert temp2.tsv_attributes() == expected
     temp["exponentialized"] = 1
     with pytest.raises(ValueError):
         Domain(**temp)
@@ -80,7 +81,7 @@ def test_fail_add_domain_with_negative():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
     BASE_DICT = {
         "hmm_id": "hmm_id",
@@ -107,7 +108,7 @@ def test_dont_fail_add_domain_with_negative():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
     BASE_DICT = {
         "hmm_id": "hmm_id",
@@ -133,7 +134,7 @@ def test_dont_add_redundant_domain():
     temp = Protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
     tempd = (
         {"exponentialized": False, "i_evalue": -1},
@@ -142,7 +143,24 @@ def test_dont_add_redundant_domain():
     for i in [BASE_DICT | i for i in tempd]:
         temp.add_domain(**i)
     assert len(temp.domains) == 1
-    assert temp.domains.pop().all_attributes == {
+    aa = temp.domains.pop()
+    assert aa.all_attributes() == {
+        "ali_from": 1,
+        "ali_to": 100,
+        "domain_bias": 1.1,
+        "domain_score": 1.1,
+        "env_from": 1,
+        "env_to": 100,
+        "evalue": 1.1,
+        "hmm_from": 1,
+        "hmm_id": "hmm_id",
+        "hmm_to": 100,
+        "i_evalue": -1.0,
+        "seq_pro_bias": 1.1,
+        "seq_pro_score": 1.1,
+        "exponentialized": False,
+    }
+    assert aa.tsv_attributes() == {
         "ali_from": 1,
         "ali_to": 100,
         "domain_bias": 1.1,

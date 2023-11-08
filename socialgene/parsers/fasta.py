@@ -1,86 +1,105 @@
-import gzip
 from functools import partial
 from io import StringIO
-from mimetypes import guess_type
 from pathlib import Path
 from uuid import uuid4
 
 from Bio import SeqIO
 
+import socialgene.utils.file_handling as fh
 from socialgene.utils.logging import log
+
+fasta_prefixes = {
+    "swissprot": "sp|",
+    "trembl": "tr|",
+    # "uniclust1": "uc",
+    # "uniclust2": "cl|",
+    # "genbank": "gb|",
+    # "ncbi_ref": "ref|",
+    # "patents": "pat|",
+    # "ncbi_gi": "gi|",
+}
+
+
+def get_after_pipe(x, n=1):
+    return x.split("|")[n]
+
+
+fasta_prefixes_get_identifier = {
+    "swissprot": partial(get_after_pipe, n=1),
+    "trembl": partial(get_after_pipe, n=1),
+}
+
+
+def check_prefix(id):
+    for k, v in fasta_prefixes.items():
+        if id.startswith(v):
+            return k
+    return None
 
 
 class FastaParserMixin:
     def __init__(self):
         pass
 
+    @staticmethod
+    def parse_id(id):
+        try:
+            prefix_key = check_prefix(id)
+            if prefix_key:
+                return fasta_prefixes_get_identifier[prefix_key](id)
+        except Exception:
+            return id
+        return id
+
     # havent tested/worked on this since lots of updates
-    def parse_fasta_file(self, input=None):
+    def parse_fasta_file(
+        self,
+        input: str = None,
+        defline_magic: bool = False,
+    ):
         """Parse a protein fasta file
 
         Args:
             input (str): path to fasta file
+            defline_magic (bool): Parse out fasta deflines with defined structures, currently only works for uniprot (deflines that begin with: sp| or tr|)
         """
         # if not appending, reset self.records
-        input = Path(input)
-        try:
-            assembly_id = input.stem
-        except Exception:
+        if isinstance(input, str) and input.startswith(">"):
             assembly_id = str(uuid4())
-        encoding = guess_type(input)[1]
-        if encoding == "gzip":
-            _open = partial(gzip.open, mode="rt")
+            _open = StringIO(input)
+            input_from = "input string"
         else:
-            _open = open
-        with _open(input) as handle:
+            input = Path(input)
+            try:
+                assembly_id = input.stem
+            except Exception:
+                assembly_id = str(uuid4())
+            _open = fh.open_read(input)
+            input_from = input
+        with _open as handle:
             self.add_assembly(uid=assembly_id)
             self.assemblies[assembly_id].add_locus(external_id=assembly_id)
             record_counter = 0
             for seq_record in SeqIO.parse(handle, "fasta"):
                 # probably could use some more defensive programming here
-                hash_id = self.add_protein(
+                if defline_magic:
+                    id = self.parse_id(seq_record.id)
+                else:
+                    id = seq_record.id
+                uid = self.add_protein(
                     description=seq_record.description,
-                    external_protein_id=seq_record.id,
+                    external_id=id,
                     sequence=str(seq_record.seq),
                     return_uid=True,
                 )
-                # set the start/end to the order of records
                 self.assemblies[assembly_id].loci[assembly_id].add_feature(
                     type="protein",
                     description=seq_record.description,
-                    protein_id=seq_record.id,
-                    protein_hash=hash_id,
+                    external_id=id,
+                    uid=uid,
                     start=record_counter,
                     end=record_counter,
                     strand=0,
                 )
                 record_counter += 1
-        log.info(f"Read {record_counter} proteins from {input}")
-
-    def parse_fasta_string(self, input):
-        """Parse a protein fasta file from a string
-
-        Args:
-            input (str): path to fasta file
-        """
-        # if not appending, reset self.records
-        record_counter = 0
-        count_proteins_in_file = 0
-        with StringIO(input) as handle:
-            assembly_id = str(Path(input).stem)
-            self.add_assembly(uid=assembly_id)
-            self.assemblies[assembly_id].add_locus(external_id=assembly_id)
-            for seq_record in SeqIO.parse(handle, "fasta"):
-                prot_hash = self.add_protein(
-                    description=seq_record.description,
-                    external_protein_id=seq_record.id,
-                    sequence=str(seq_record.seq),
-                    return_uid=True,
-                )
-                self.assemblies[assembly_id].loci[assembly_id].add_feature(
-                    type="CDS",
-                    protein_hash=prot_hash,
-                )
-                record_counter += 1
-                count_proteins_in_file += 1
-        log.info(f"Read {count_proteins_in_file} proteins from input string")
+        log.info(f"Read {record_counter} proteins from {input_from}")

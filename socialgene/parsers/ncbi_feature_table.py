@@ -53,18 +53,18 @@
 #                 temp = line.split("\t")
 #                 self.add_assembly(id=temp[2])
 #                 self.assemblies[temp[2]].add_locus(id=temp[6])
-#                 hash_id = self.sql_hash_lookup(temp[10])
+#                 uid = self.sql_hash_lookup(temp[10])
 #                 self.assemblies[temp[2]].loci[temp[6]].add_feature(
 #                     type="protein",
-#                     id=hash_id,
+#                     id=uid,
 #                     start=temp[7],
 #                     end=temp[8],
 #                     strand=temp[9],
 #                 )
 #                 self.add_protein(
 #                     description=temp[13],
-#                     external_protein_id=temp[10],
-#                     hash_id=hash_id,
+#                     external_id=temp[10],
+#                     uid=uid,
 #                 )
 #         log.info(f"Parsed {len(self.assemblies)} assemblies")
 #         log.info(f"Parsed {sum([len(i.loci) for i in self.assemblies.values()])} loci")

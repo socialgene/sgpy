@@ -14,12 +14,18 @@ class SequenceParser(GenbankParserMixin, FastaParserMixin):
             filepath (str): path to sequence file
         """
         # TODO: fh.check_if_tar(filepath=filepath)
-        filetype = fh.guess_filetype(filepath)
-        if filetype == "genbank":
-            self._open_genbank(filepath, **kwargs)
-        elif filetype == "fasta":
-            self.parse_fasta_file(filepath)
+        if isinstance(filepath, str) and filepath.startswith(">"):
+            self.parse_fasta_file(input=filepath, **kwargs)
+            return
         else:
-            raise NotImplementedError(
-                "May not be implemented, or you need to use the genbank/fasta parser directly. (e.g. for tar archives)"
-            )
+            filetype = fh.guess_filetype(filepath)
+            if filetype == "genbank":
+                self._open_genbank(input_path=filepath, **kwargs)
+                return
+            elif filetype == "fasta":
+                self.parse_fasta_file(input=filepath, **kwargs)
+                return
+
+        raise NotImplementedError(
+            "May not be implemented, or you need to use the genbank/fasta parser directly. (e.g. for tar archives)"
+        )

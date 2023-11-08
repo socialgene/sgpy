@@ -18,12 +18,19 @@ parser.add_argument(
     required=True,
     nargs="+",
 )
+parser.add_argument(
+    "--include_sequences",
+    help="Should sequences be included in the database?",
+    required=False,
+    default=False,
+    action=argparse.BooleanOptionalAction,
+)
 
 
 def main():
     args = parser.parse_args()
     log.info(args.sg_modules)
-    sg_mod = SocialgeneModules()
+    sg_mod = SocialgeneModules(include_sequences=args.include_sequences)
     sg_mod.add_modules(args.sg_modules)
     sg_mod.write_neo4j_headers(outdir=args.outdir)
 

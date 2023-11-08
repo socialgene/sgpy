@@ -22,7 +22,7 @@ def test_export_all_domains_as_tsv():
     sg_obj.add_protein(
         sequence="ARNDCQEGHILKMFPSTWYVXZJU",
         description="description",
-        external_protein_id="external_protein_id",
+        external_id="external_id",
     )
     base_dict = {
         "env_from": 1,

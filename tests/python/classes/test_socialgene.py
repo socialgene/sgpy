@@ -8,7 +8,7 @@ temp = SocialGene()
 temp.add_protein(
     sequence="ARNDCQEGHILKMFPSTWYVXZJU",
     description="description",
-    external_protein_id="external_protein_id",
+    external_id="external_id",
     domains=[],
 )
 
@@ -19,7 +19,7 @@ temp.assemblies["myassembly"].add_locus(
 )
 
 temp.assemblies["myassembly"].loci["my_locus"].add_feature(
-    protein_hash="feature_id",
+    uid="feature_id",
     type="prot",
     start=1,
     end=10,
@@ -33,12 +33,11 @@ def test_add_protein():
     )
     assert temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].domains == []
     assert (
-        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].hash_id
+        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].uid
         == "0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"
     )
     assert (
-        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].external_protein_id
-        == "external_protein_id"
+        temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].external_id == "external_id"
     )
     assert (
         temp.proteins["0hMjYRUCOMiDkJnVKlZ4QVMGhG8mkwdb"].sequence
@@ -69,5 +68,5 @@ def test_add_feature():
     assert a.start == 1
     assert a.end == 10
     assert a.strand == 1
-    assert a.protein_hash == "feature_id"
+    assert a.uid == "feature_id"
     assert a.type == "prot"

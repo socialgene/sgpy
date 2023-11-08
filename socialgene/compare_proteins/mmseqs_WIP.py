@@ -20,7 +20,7 @@ mmseqs_path = "/home/chase/Downloads/work/mmseqsdb"
 
 with open(fasta_path, "w") as handle:
     handle.writelines(
-        (i.fasta_string_defline_hash_id for i in target_proteins if i.sequence)
+        (i.fasta_string_defline_uid for i in target_proteins if i.sequence)
     )
 
 
@@ -31,7 +31,7 @@ mmseqs_output_subset_ids = "/home/chase/Downloads/work/subset_ids"
 mmseqs_subset_db = "/home/chase/Downloads/work/subset_db"
 
 # create a subdb using protein hash ids
-protids = [i.hash_id for i in target_proteins][0:4]
+protids = [i.uid for i in target_proteins][0:4]
 with open(mmseqs_lookup, "r") as mml:
     with open(mmseqs_output_subset_ids, "w") as h:
         for i in mml:
