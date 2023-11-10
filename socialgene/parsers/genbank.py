@@ -319,6 +319,9 @@ class GenbankParserMixin:
         compressed with gzip or tar. (tar hasn't been tested in a while)
         """
         # self._count_loci_in_file is mostly for sending a summary of parsed features to the logger
+        log.info(
+            f"Parsing: {input_path}"
+        )
         self._count_loci_in_file = Counter()
         input_path = Path(input_path)
         if fh.check_if_tar(input_path):
