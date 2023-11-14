@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-
-
+import importlib.resources as importlib_resources
 import os
-
-import pkg_resources
 
 os_vars = dict(os.environ)
 env_vars = {}
 
-env_file = pkg_resources.resource_filename(__name__, "common_parameters.env")
+
+env_file = importlib_resources.files("socialgene") / "common_parameters.env"
 
 
 def strtobool(val):

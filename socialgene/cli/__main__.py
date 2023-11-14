@@ -1,14 +1,14 @@
 import sys
-
-import pkg_resources
+from importlib.metadata import entry_points
 
 
 def find_entrypoints():
     entrypoints = [
-        ep.name
-        for ep in pkg_resources.iter_entry_points("console_scripts")
-        if ep.module_name.startswith("socialgene") and ep.name != "socialgene"
+        i.name
+        for i in entry_points(group="console_scripts")
+        if i.value.startswith("socialgene")
     ]
+    entrypoints.sort()
     return entrypoints
 
 
