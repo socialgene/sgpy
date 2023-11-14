@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/socialgene/sgpy/compare/v0.2.0...v0.2.1) (2023-11-14)
+
+
+### Bug Fixes
+
+* fixes for python 3.12 ([#69](https://github.com/socialgene/sgpy/issues/69)) ([954c4a6](https://github.com/socialgene/sgpy/commit/954c4a6d7e0ce4624110463b9262fdc4e8c83d01))
+
 ## [0.2.0](https://github.com/socialgene/sgpy/compare/v0.1.12...v0.2.0) (2023-11-08)
 
 
