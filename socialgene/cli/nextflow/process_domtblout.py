@@ -7,6 +7,7 @@ from socialgene.base.molbio import Domain
 from socialgene.base.socialgene import SocialGene
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
+import functools
 
 parser = argparse.ArgumentParser(description="Create *.locus_to_protein a genbank file")
 
@@ -29,23 +30,36 @@ parser.add_argument(
     required=True,
 )
 parser.add_argument(
+    "--ievaluefilter",
+    help="If true, will filter hmmsearch results by env['HMMSEARCH_IEVALUE'] default limit set in common_parameters.env.",
+    required=False,
+    default=None,
+    action=argparse.BooleanOptionalAction,
+)
+parser.add_argument(
     "--cpus", help="Number of cpus", required=False, default=1, type=int
 )
 
 
-def process_domtblout_file(domtblout_file):
+def process_domtblout_file(domtblout_file, ievaluefilter):
     domain_counter = 0
     socialgene_object = SocialGene()
     _to_return = []
     for i in socialgene_object._parse_domtblout(
         input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
     ):
-        if float(i["i_evalue"]) <= float(env_vars["HMMSEARCH_IEVALUE"]):
+        if ievaluefilter:
+            filter_value = float(env_vars["HMMSEARCH_IEVALUE"])
+        else:
+            # if not set, use infinity (keep everything)
+            filter_value = float("inf")
+        if float(i["i_evalue"]) <= filter_value:
             domain_obj = Domain(**i, exponentialized=True)
             _temp = [i["external_id"]]
             _temp.extend(list(domain_obj.tsv_attributes().values()))
             domain_counter += 1
             _to_return.append(_temp)
+
     return (_to_return, domain_counter)
 
 
@@ -75,7 +89,9 @@ def main():
         p = Pool(args.cpus)
         with open(args.outpath, "w") as f:
             tsv_writer = csv.writer(f, delimiter="\t")
-            for result in p.imap(process_domtblout_file, hmm_files):
+            for result in p.imap(
+                functools.partial(process_domtblout_file, hmm_files, args.ievaluefilter)
+            ):
                 for i in result[0]:
                     tsv_writer.writerow(i)
                 domain_counter += result[1]
