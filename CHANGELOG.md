@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/socialgene/sgpy/compare/v0.2.2...v0.3.0) (2023-11-16)
+
+
+### Features
+
+* enable filtering or not when processing domtblout ([4614e4c](https://github.com/socialgene/sgpy/commit/4614e4c06627693570fb00ee7828a7b9a45e31b2))
+
 ## [0.2.2](https://github.com/socialgene/sgpy/compare/v0.2.1...v0.2.2) (2023-11-16)
 
 
