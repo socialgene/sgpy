@@ -23,7 +23,6 @@ parser.add_argument(
     required=False,
     type=str,
 )
-
 parser.add_argument(
     "--outpath",
     help="Output filepath",
@@ -41,7 +40,7 @@ def process_domtblout_file(domtblout_file):
     for i in socialgene_object._parse_domtblout(
         input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
     ):
-        if float(i["i_evalue"]) <= env_vars["HMMSEARCH_IEVALUE"]:
+        if float(i["i_evalue"]) <= float(env_vars["HMMSEARCH_IEVALUE"]):
             domain_obj = Domain(**i, exponentialized=True)
             _temp = [i["external_id"]]
             _temp.extend(list(domain_obj.tsv_attributes().values()))
