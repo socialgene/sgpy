@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/socialgene/sgpy/compare/v0.2.1...v0.2.2) (2023-11-16)
+
+
+### Bug Fixes
+
+* read env HMMSEARCH_IEVALUE as float ([#71](https://github.com/socialgene/sgpy/issues/71)) ([d0bc557](https://github.com/socialgene/sgpy/commit/d0bc5570077b67898777c0c72e70ced0c9d6e504))
+
 ## [0.2.1](https://github.com/socialgene/sgpy/compare/v0.2.0...v0.2.1) (2023-11-14)
 
 
