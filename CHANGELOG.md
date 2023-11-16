@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/socialgene/sgpy/compare/v0.3.1...v0.3.2) (2023-11-16)
+
+
+### Bug Fixes
+
+* imap ([e1b77d9](https://github.com/socialgene/sgpy/commit/e1b77d97e570124bcb7618edc95bbacef385013d))
+
 ## [0.3.1](https://github.com/socialgene/sgpy/compare/v0.3.0...v0.3.1) (2023-11-16)
 
 
