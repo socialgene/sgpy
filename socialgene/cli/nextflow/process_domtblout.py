@@ -90,7 +90,10 @@ def main():
         with open(args.outpath, "w") as f:
             tsv_writer = csv.writer(f, delimiter="\t")
             for result in p.imap(
-                functools.partial(process_domtblout_file, hmm_files, args.ievaluefilter)
+                functools.partial(
+                    process_domtblout_file, hmm_files, args.ievaluefilter
+                ),
+                hmm_files,
             ):
                 for i in result[0]:
                     tsv_writer.writerow(i)
