@@ -91,7 +91,7 @@ def main():
             tsv_writer = csv.writer(f, delimiter="\t")
             for result in p.imap(
                 functools.partial(
-                    process_domtblout_file, hmm_files, args.ievaluefilter
+                    process_domtblout_file, ievaluefilter=args.ievaluefilter
                 ),
                 hmm_files,
             ):
