@@ -2,7 +2,7 @@ import argparse
 import csv
 from multiprocessing import Pool
 from pathlib import Path
-
+import gzip
 from socialgene.base.molbio import Domain
 from socialgene.base.socialgene import SocialGene
 from socialgene.config import env_vars
@@ -57,8 +57,8 @@ def process_domtblout_file(domtblout_file, ievaluefilter, domain_counter):
             yield _temp
 
 
-def main():
-    args = parser.parse_args()
+def main(args=None):
+    args = parser.parse_args(args)
     hmm_files = []
     for i in (Path(i) for i in list(args.input)):
         if i.is_dir():
@@ -77,9 +77,8 @@ def main():
     else:
         domain_counter = 0
         log.info(f"Socialgene variables: \n{env_vars}")
-        args = parser.parse_args()
         log.info(f"sg_process_domtblout will write data to {args.outpath}")
-        with open(args.outpath, "w") as f:
+        with gzip.open(args.outpath, "wt", compresslevel=3) as f:
             tsv_writer = csv.writer(f, delimiter="\t")
             for domtblout_file in hmm_files:
                 for i in process_domtblout_file(
