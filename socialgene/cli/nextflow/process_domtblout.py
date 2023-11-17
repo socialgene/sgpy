@@ -1,13 +1,12 @@
 import argparse
 import csv
-from multiprocessing import Pool
+import gzip
 from pathlib import Path
 
 from socialgene.base.molbio import Domain
 from socialgene.base.socialgene import SocialGene
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
-import functools
 
 parser = argparse.ArgumentParser(description="Create *.locus_to_protein a genbank file")
 
@@ -36,15 +35,10 @@ parser.add_argument(
     default=None,
     action=argparse.BooleanOptionalAction,
 )
-parser.add_argument(
-    "--cpus", help="Number of cpus", required=False, default=1, type=int
-)
 
 
-def process_domtblout_file(domtblout_file, ievaluefilter):
-    domain_counter = 0
+def process_domtblout_file(domtblout_file, ievaluefilter, domain_counter):
     socialgene_object = SocialGene()
-    _to_return = []
     for i in socialgene_object._parse_domtblout(
         input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
     ):
@@ -58,13 +52,11 @@ def process_domtblout_file(domtblout_file, ievaluefilter):
             _temp = [i["external_id"]]
             _temp.extend(list(domain_obj.tsv_attributes().values()))
             domain_counter += 1
-            _to_return.append(_temp)
-
-    return (_to_return, domain_counter)
+            yield _temp
 
 
-def main():
-    args = parser.parse_args()
+def main(args=None):
+    args = parser.parse_args(args)
     hmm_files = []
     for i in (Path(i) for i in list(args.input)):
         if i.is_dir():
@@ -83,21 +75,17 @@ def main():
     else:
         domain_counter = 0
         log.info(f"Socialgene variables: \n{env_vars}")
-        # print(Panel(f"Socialgene variables: {env_vars}"))
-        args = parser.parse_args()
-        log.info(f"sg_process_domtblout will append data to {args.outpath}")
-        p = Pool(args.cpus)
-        with open(args.outpath, "w") as f:
+        log.info(f"sg_process_domtblout will write data to {args.outpath}")
+        with gzip.open(args.outpath, "wt", compresslevel=3) as f:
             tsv_writer = csv.writer(f, delimiter="\t")
-            for result in p.imap(
-                functools.partial(
-                    process_domtblout_file, ievaluefilter=args.ievaluefilter
-                ),
-                hmm_files,
-            ):
-                for i in result[0]:
+            for domtblout_file in hmm_files:
+                for i in process_domtblout_file(
+                    domtblout_file,
+                    ievaluefilter=args.ievaluefilter,
+                    domain_counter=domain_counter,
+                ):
                     tsv_writer.writerow(i)
-                domain_counter += result[1]
+                    domain_counter += 1
         log.info(f"Wrote {str(domain_counter)} domains to {args.outpath}")
 
 
