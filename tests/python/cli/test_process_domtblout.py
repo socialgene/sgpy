@@ -1,8 +1,9 @@
+import gzip
 import os
 import tempfile
 from pathlib import Path
-import gzip
-from socialgene.cli.nextflow.process_domtblout import main, process_domtblout_file
+
+from socialgene.cli.nextflow.process_domtblout import main
 from socialgene.config import env_vars
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))

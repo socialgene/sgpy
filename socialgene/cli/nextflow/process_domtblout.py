@@ -1,13 +1,12 @@
 import argparse
 import csv
-from multiprocessing import Pool
-from pathlib import Path
 import gzip
+from pathlib import Path
+
 from socialgene.base.molbio import Domain
 from socialgene.base.socialgene import SocialGene
 from socialgene.config import env_vars
 from socialgene.utils.logging import log
-import functools
 
 parser = argparse.ArgumentParser(description="Create *.locus_to_protein a genbank file")
 
@@ -40,7 +39,6 @@ parser.add_argument(
 
 def process_domtblout_file(domtblout_file, ievaluefilter, domain_counter):
     socialgene_object = SocialGene()
-    _to_return = []
     for i in socialgene_object._parse_domtblout(
         input_path=domtblout_file, hmmsearch_or_hmmscan="hmmsearch"
     ):
