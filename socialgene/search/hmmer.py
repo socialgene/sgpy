@@ -357,6 +357,7 @@ class SearchDomains(SearchBase):
                 threshold = ceil(n_input_proteins * max_query_proteins)
             else:
                 threshold = max_query_proteins
+            m_start = self.outdegree_df["outdegree"].sum()
             if scatter:
                 temp = list(
                     self.input_assembly.loci[
@@ -372,7 +373,6 @@ class SearchDomains(SearchBase):
                     | self.outdegree_df["protein_uid"].isin(loci_protein_ids)
                 ]
             else:
-                m_start = self.outdegree_df["outdegree"].sum()
                 log.info(
                     f"'max_query_proteins' is set to {threshold}, will limit search to {threshold} of {n_input_proteins} input proteins"
                 )
