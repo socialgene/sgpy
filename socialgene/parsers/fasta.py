@@ -77,7 +77,7 @@ class FastaParserMixin:
             _open = fh.open_read(input)
             input_from = input
         with _open as handle:
-            self.add_assembly(uid=assembly_id)
+            self.add_assembly(uid=assembly_id, parent_object=self)
             self.assemblies[assembly_id].add_locus(external_id=assembly_id)
             record_counter = 0
             for seq_record in SeqIO.parse(handle, "fasta"):
