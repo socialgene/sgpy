@@ -35,30 +35,6 @@ progress_bar = Progress(
 )
 
 
-def _find_similar_proteins_sync_multiple(
-    dict_of_domain_lists,
-    frac: float = 0.75,
-    only_culture_collection: bool = False,
-):
-    results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        futures = []
-        for k, v in dict_of_domain_lists.items():
-            future = executor.submit(
-                _find_similar_proteins,
-                domain_list=v,
-                frac=frac,
-                only_culture_collection=only_culture_collection,
-            )
-            futures.append((k, future))
-
-        for k, future in futures:
-            result = future.result()
-            result["query"] = k
-            results.append(result)
-    return pd.concat(results)
-
-
 def _find_similar_proteins(
     domain_list, frac: float = 0.75, only_culture_collection: bool = False
 ):
@@ -79,7 +55,8 @@ def _find_similar_proteins(
     `target`, `n_start`, and `n_end`
     """
     # TODO: move async driver to reg driver class module
-    with GraphDriver() as driver:
+    # with GraphDriver() as driver:
+    with GraphDriver().driver.session() as driver:
         res = driver.run(
             f"""
                 WITH $domain_list AS input_protein_domains
@@ -171,6 +148,31 @@ async def _find_similar_proteins_async_multiple(
         # report all results
         # return tasks
         return pd.concat([v.result().assign(query=k) for k, v in tasks.items()])
+
+
+def _find_similar_proteins_sync_multiple(
+    dict_of_domain_lists,
+    frac: float = 0.75,
+    only_culture_collection: bool = False,
+):
+    results = []
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=20,
+    ) as executor:
+        futures = {}
+        for k, v in dict_of_domain_lists.items():
+            future = executor.submit(
+                _find_similar_proteins,
+                domain_list=v,
+                frac=frac,
+                only_culture_collection=only_culture_collection,
+            )
+            futures[future] = k
+        for f in concurrent.futures.as_completed(futures):
+            result = f.result()
+            result["query"] = futures[f]
+            results.append(result)
+    return pd.concat(results)
 
 
 def run_search(
