@@ -4,12 +4,15 @@
 from socialgene.base.socialgene import SocialGene
 from socialgene.clustermap.serialize import SerializeToClustermap
 from socialgene.search.hmmer import SearchDomains
+from socialgene.config import env_vars
 
-input_gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001646.gbk"
+env_vars["NEO4J_URI"] = "bolt://localhost:7687"
+
+input_gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001850.gbk"
 # input_gbk_path = "/home/chase/Documents/data/mibig/3_1/mibig_gbk_3.1/BGC0001848.gbk"
 hmm_dir = None
 # hmm_dir = "/home/chase/Downloads/meh/socialgene_per_run/hmm_cache"
-hmm_dir = "/home/chase/Downloads/para/socialgene_per_run/hmm_cache"
+hmm_dir = "/home/chase/Documents/socialgene_data/v0_4_1/streptomyces/socialgene_per_run/hmm_cache"
 
 a = SocialGene()
 a.parse(input_gbk_path)
@@ -19,11 +22,11 @@ search_object = SearchDomains(
     gbk_path=input_gbk_path,
     hmm_dir=hmm_dir,
     use_neo4j_precalc=True,
-    assemblies_must_have_x_matches=0.4,
-    nucleotide_sequences_must_have_x_matches=0.4,
-    gene_clusters_must_have_x_matches=0.2,
+    assemblies_must_have_x_matches=0.6,
+    nucleotide_sequences_must_have_x_matches=0.6,
+    gene_clusters_must_have_x_matches=0.6,
     break_bgc_on_gap_of=10000,
-    target_bgc_padding=15000,
+    target_bgc_padding=50000,
 )
 self = search_object
 
@@ -31,9 +34,9 @@ search_object.outdegree_table
 
 
 search_object.prioritize_input_proteins(
-    max_domains_per_protein=None,
+    max_domains_per_protein=5,
     max_outdegree=None,
-    max_query_proteins=None,
+    max_query_proteins=8,
     scatter=False,
     # loci=["MicB006_2899"]
     # bypass_eid=["AXA20096.1"],
@@ -42,7 +45,7 @@ search_object.prioritize_input_proteins(
 search_object.outdegree_table
 
 # TODO frac is redundant with the outdegree table
-search_object.search(only_culture_collection=False, frac=0.75)
+search_object.search(only_culture_collection=True, frac=0.75)
 
 
 search_object.filter()
@@ -85,4 +88,14 @@ z = SerializeToClustermap(
     group_df=self.group_df,
 )
 
-z.write("/home/chase/Downloads/clinker-master(2)/clinker-master/clinker/plot/data.json")
+z.write("/home/chase/Downloads/clinker/clinker/plot/data.json")
+
+
+# for v in self.sg_object.proteins.values():
+#     v.add_sequences_from_neo4j()
+
+# self.sg_object.assemblies["GCF_000720145.1"].loci["NZ_JOIS01000040.1"].write_genbank(
+#     "test.gbk", start=34872, end=54001
+# )
+
+# inspect(self.sg_object.assemblies["GCF_000720145.1"])

@@ -23,6 +23,8 @@ from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.search.base import SearchBase
 from socialgene.utils.logging import log
 
+import concurrent.futures
+
 progress_bar = Progress(
     TextColumn("Ingesting target clusters from database..."),
     TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
@@ -33,11 +35,74 @@ progress_bar = Progress(
 )
 
 
-async def _find_similar_protein(
+def _find_similar_proteins_sync_multiple(
+    dict_of_domain_lists,
+    frac: float = 0.75,
+    only_culture_collection: bool = False,
+):
+    results = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for k, v in dict_of_domain_lists.items():
+            future = executor.submit(
+                _find_similar_proteins,
+                domain_list=v,
+                frac=frac,
+                only_culture_collection=only_culture_collection,
+            )
+            futures.append((k, future))
+
+        for k, future in futures:
+            result = future.result()
+            result["query"] = k
+            results.append(result)
+    return pd.concat(results)
+
+
+def _find_similar_proteins(
     domain_list, frac: float = 0.75, only_culture_collection: bool = False
 ):
     """
-    The function `_find_sim_protein` is an asynchronous function that queries a Neo4j graph database to
+    The function `_find_similar_proteins` is a synchronous function that queries a Neo4j graph database to
+    find similar proteins based on protein domain information.
+
+    Args:
+      protein_domain_dict (Dict[List[str]]): The `protein_domain_dict` parameter is a dictionary where
+    the keys are protein uids and the values are lists of domain uids.
+      frac (float): The `frac` parameter is a float value that represents the fraction of protein
+    domains that need to match in order for a protein to be considered similar. By default, it is set to
+    0.75, meaning that at least 75% of the protein domains need to match
+
+    Returns:
+      The function `_find_sim_protein` returns a Pandas DataFrame containing the results of the query
+    executed in the Neo4j database. The DataFrame has columns `assembly_uid`, `nucleotide_uid`,
+    `target`, `n_start`, and `n_end`
+    """
+    # TODO: move async driver to reg driver class module
+    with GraphDriver() as driver:
+        res = driver.run(
+            f"""
+                WITH $domain_list AS input_protein_domains
+                MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0:hmm)
+                WHERE h0.uid IN input_protein_domains
+                WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
+                WHERE initial_count > size(input_protein_domains) * $frac
+                MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
+                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else '' }
+                MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+                RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
+                """,
+            domain_list=list(domain_list),
+            frac=frac,
+        ).to_df()
+        return res
+
+
+async def _find_similar_proteins_async(
+    domain_list, frac: float = 0.75, only_culture_collection: bool = False
+):
+    """
+    The function `_find_similar_proteins_async` is an asynchronous function that queries a Neo4j graph database to
     find similar proteins based on protein domain information.
 
     Args:
@@ -82,8 +147,10 @@ async def _find_similar_protein(
 sema = asyncio.BoundedSemaphore(5)
 
 
-async def _find_similar_protein_multiple(
-    dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
+async def _find_similar_proteins_async_multiple(
+    dict_of_domain_lists,
+    frac: float = 0.75,
+    only_culture_collection: bool = False,
 ):
     # create task group
     # TODO: if webserver in future this could be used to control max time of search
@@ -92,7 +159,7 @@ async def _find_similar_protein_multiple(
             # create and issue tasks
             tasks = {
                 k: group.create_task(
-                    _find_similar_protein(
+                    _find_similar_proteins_async(
                         domain_list=v,
                         frac=frac,
                         only_culture_collection=only_culture_collection,
@@ -106,15 +173,36 @@ async def _find_similar_protein_multiple(
         return pd.concat([v.result().assign(query=k) for k, v in tasks.items()])
 
 
+def run_search(
+    dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
+):
+    for k, v in dict_of_domain_lists.items():
+        _find_similar_proteins(
+            domain_list=v,
+            frac=frac,
+            only_culture_collection=only_culture_collection,
+        )
+
+
 def run_async_search(
     dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
 ):
     return asyncio.run(
-        _find_similar_protein_multiple(
+        _find_similar_proteins_async_multiple(
             dict_of_domain_lists=dict_of_domain_lists,
             frac=frac,
             only_culture_collection=only_culture_collection,
         )
+    )
+
+
+def run_sync_search(
+    dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
+):
+    return _find_similar_proteins_sync_multiple(
+        dict_of_domain_lists=dict_of_domain_lists,
+        frac=frac,
+        only_culture_collection=only_culture_collection,
     )
 
 
@@ -158,7 +246,7 @@ class SearchDomains(SearchBase):
             self._set_hmm_outdegree()
         self._get_outdegree_per_hmm_per_protein()
 
-    def search(self, **kwargs):
+    def search(self, run_async=True, **kwargs):
         dict_of_domain_lists = (
             self.outdegree_df.groupby("protein_uid", observed=True)["hmm_uid"]
             .apply(list)
@@ -172,13 +260,22 @@ class SearchDomains(SearchBase):
         ) as progress:
             task = progress.add_task("Progress...", total=2)
             progress.update(task, advance=1)
-            self.raw_search_results_df = run_async_search(
-                dict_of_domain_lists, **kwargs
-            )
-            self.raw_search_results_df["query"] = self.raw_search_results_df[
-                "query"
-            ].astype("category")
-            progress.update(task, advance=1)
+            if run_async:
+                self.raw_search_results_df = run_async_search(
+                    dict_of_domain_lists, **kwargs
+                )
+                self.raw_search_results_df["query"] = self.raw_search_results_df[
+                    "query"
+                ].astype("category")
+                progress.update(task, advance=1)
+            else:
+                self.raw_search_results_df = run_sync_search(
+                    dict_of_domain_lists, **kwargs
+                )
+                self.raw_search_results_df["query"] = self.raw_search_results_df[
+                    "query"
+                ].astype("category")
+                progress.update(task, advance=1)
         log.info(
             f"Initial search returned {len(self.raw_search_results_df):,} proteins, found in {self.raw_search_results_df.assembly_uid.nunique():,} genomes"
         )
