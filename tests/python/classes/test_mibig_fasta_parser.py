@@ -17,7 +17,7 @@ def test_fasta_file_parse():
         sg_object = SocialGene()
         gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
         sg_object.parse(gbk_path)
-        sg_object.write_fasta(outpath=fp.name)
+        sg_object.write_fasta(outpath=fp.name, external_id=True)
         fasta_object = SocialGene()
         fasta_object.parse(fp.name)
 
