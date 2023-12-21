@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/socialgene/sgpy/compare/v0.3.3...v0.4.0) (2023-12-21)
+
+
+### Miscellaneous Chores
+
+* release 0.4.0 ([cafc013](https://github.com/socialgene/sgpy/commit/cafc013904b93561f23abb26a4a7a575718dd86f))
+
 ## [0.3.3](https://github.com/socialgene/sgpy/compare/v0.3.2...v0.3.3) (2023-11-17)
 
 
