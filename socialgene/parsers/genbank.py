@@ -51,7 +51,7 @@ class GenbankParserMixin:
         if not assembly_id:
             # use random unique id as assembly id
             assembly_id = str(uuid4())
-        self.add_assembly(uid=assembly_id, parent_object=self)
+        self.add_assembly(uid=assembly_id, parent=self)
         return assembly_id
 
     def _add_locus(self, seq_record, assembly_id):

@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import re
 from math import ceil
 from pathlib import Path
@@ -18,12 +19,11 @@ from rich.progress import (
 from rich.table import Table
 
 from socialgene.base.socialgene import SocialGene
+from socialgene.compare_proteins.hmmer import CompareDomains
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.search.base import SearchBase
 from socialgene.utils.logging import log
-
-import concurrent.futures
 
 progress_bar = Progress(
     TextColumn("Ingesting target clusters from database..."),
@@ -65,7 +65,7 @@ def _find_similar_proteins(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else '' }
+                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
@@ -110,7 +110,7 @@ async def _find_similar_proteins_async(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else '' }
+                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
@@ -208,7 +208,7 @@ def run_sync_search(
     )
 
 
-class SearchDomains(SearchBase):
+class SearchDomains(SearchBase, CompareDomains):
     """
     Class search for similar BGCs in a SocialGene database, using domains
     Args:
@@ -369,8 +369,8 @@ class SearchDomains(SearchBase):
         max_domains_per_protein: int = None,
         max_outdegree: int = None,
         scatter: bool = False,
-        bypass_locus: List[str] = None,
-        bypass_pid: List[str] = None,
+        locus_tag_bypass_list: List[str] = None,
+        protein_id_bypass_list: List[str] = None,
     ):
         """Rank input proteins by how many (:hmm)-[:ANNOTATES]->(:protein) relationships will have to be traversed
 
@@ -380,27 +380,27 @@ class SearchDomains(SearchBase):
             max_domains_per_protein (int): Max domains to retain for each individual protein (highest outdegree dropped first)
             max_outdegree (int): HMM model annotations with an outdegree higher than this will be dropped
             scatter (bool, optional): Choose a random subset of proteins to search that are spread across the length of the input BGC. Defaults to False.
-            bypass_locus (List[str], optional): List of locus tags that will bypass filtering. This is the ID found in a GenBank file "/locus_tag=" field.  Defaults to None.
-            bypass_eid (List[str], optional): Less preferred than `bypass`. List of external protein IDs that will bypass filtering. This is the ID found in a GenBank file "/protein_id=" field. Defaults to None.
+            locus_tag_bypass_list (List[str], optional): List of locus tags that will bypass filtering. This is the ID found in a GenBank file "/locus_tag=" field.  Defaults to None.
+            protein_id_bypass_list (List[str], optional): Less preferred than `bypass`. List of external protein IDs that will bypass filtering. This is the ID found in a GenBank file "/protein_id=" field. Defaults to None.
         Returns:
             pd.DataFrame: pd.DataFrame({"external_id":[], "hmm_uid":[], "outdegree":[]})
         """
         log.info("Prioritizing input proteins by outdegree")
         loci_protein_ids = set()
-        if bypass_locus:
+        if locus_tag_bypass_list:
             # bypass using locus tags
             loci_protein_ids = {
                 i.uid
-                for i in self.input_assembly.loci[self.input_bgc_id].features
-                if i.locus_tag in list(bypass_locus)
+                for i in self.input_bgc.features
+                if i.locus_tag in list(locus_tag_bypass_list)
             }
-        if bypass_pid:
+        if protein_id_bypass_list:
             # bypass using an external protein ids
             loci_protein_ids.update(
                 {
                     i.uid
-                    for i in self.input_assembly.loci[self.input_bgc_id].features
-                    if i.external_id in list(bypass_pid)
+                    for i in self.input_bgc.features
+                    if i.external_id in list(protein_id_bypass_list)
                 }
             )
         len_start = self.outdegree_df["outdegree"].sum()
@@ -548,9 +548,9 @@ class SearchDomains(SearchBase):
         d = [
             {
                 "protein_uid": i.uid,
-                "desc": f"{i.external_id} | {i.locus_tag if i.locus_tag  else 'no-locus-tag'} | {i.description}",
+                "desc": f"{i.external_id} | {i.locus_tag if i.locus_tag else 'no-locus-tag'} | {i.description}",
             }
-            for i in self.input_assembly.loci[self.input_bgc_id].features
+            for i in self.input_bgc.features
         ]
         d = pd.DataFrame(d)
         temp = pd.merge(temp, d, on="protein_uid", how="left")

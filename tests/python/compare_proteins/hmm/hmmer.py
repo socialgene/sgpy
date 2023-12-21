@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 from socialgene.base.socialgene import SocialGene
-from socialgene.compare_proteins.hmm.hmmer import CompareDomains
+from socialgene.compare_proteins.hmmer import CompareDomains
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -49,7 +49,7 @@ def test_CompareDomains_compare_one_to_many():
     a = CompareDomains()
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = list(sg_object.proteins.values())
-    a.compare_one_to_many(p1, p2)
+    df = a.compare_one_to_many(p1, p2)
     expected = pd.DataFrame(
         {
             "query": {
@@ -71,7 +71,7 @@ def test_CompareDomains_compare_one_to_many():
             "score": {0: 1.5, 1: 1.14, 2: 0.78, 3: 0.6, 4: 0.52, 5: 0.18},
         }
     )
-    pd.testing.assert_frame_equal(a.df, expected)
+    pd.testing.assert_frame_equal(df, expected)
     a.compare_one_to_many(p1, p2, filter=False)
     expected = pd.DataFrame(
         {
@@ -161,7 +161,7 @@ def test_CompareDomains_compare_many_to_many():
     a = CompareDomains()
     p1 = list(sg_object.proteins.values())
     p2 = list(sg_object.proteins.values())
-    a.compare_many_to_many(p1, p2)
+    df = a.compare_many_to_many(p1, p2)
     expected = pd.DataFrame(
         {
             "query": {
@@ -335,14 +335,14 @@ def test_CompareDomains_compare_many_to_many():
         }
     )
     pd.testing.assert_frame_equal(
-        a.df.sort_values(["query", "target", "score"], ignore_index=True),
+        df.sort_values(["query", "target", "score"], ignore_index=True),
         expected.sort_values(["query", "target", "score"], ignore_index=True),
     )
-    a.compare_many_to_many(p1, p2, filter=False)
+    df = a.compare_many_to_many(p1, p2, filter=False)
     # 22 inputs * 22 inputs = 484
-    assert len(a.df) == 484
+    assert len(df) == 484
     pd.testing.assert_frame_equal(
-        pd.DataFrame(a.df["score"].value_counts()).reset_index(),
+        pd.DataFrame(df["score"].value_counts()).reset_index(),
         pd.DataFrame(
             {
                 "score": {

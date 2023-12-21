@@ -16,7 +16,6 @@ from socialgene.base.compare_protein import CompareProtein
 from socialgene.base.molbio import Molbio
 from socialgene.clustermap.serialize import SerializeToClustermap
 from socialgene.hmm.hmmer import HMMER
-from socialgene.mmseqs.search import search as mmseqs_search
 from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
 from socialgene.parsers.hmmer_parser import HmmerParser
@@ -56,6 +55,11 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             for j in i.loci.values():
                 for k in j.gene_clusters:
                     yield k
+
+    @property
+    def protein_iter(self):
+        for i in self.proteins.values():
+            yield i
 
     ########################################
     # Filter
@@ -148,27 +152,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     self.get_protein_domains_from_db(protein_id_list=protein_id_list)
         return search_result
 
-    def search_with_mmseqs(self, target_database, argstring):
-        with tempfile.NamedTemporaryFile() as temp_path:
-            self.write_fasta(temp_path.name)
-            self.mmseqs_results = mmseqs_search(
-                fasta_path=temp_path.name,
-                target_database=target_database,
-                argstring=argstring,
-            )
-
-    def compare_to_another_sg_object(sg1, sg2, argstring=""):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            sg1fa_path = Path(tmpdirname, "sg1.faa")
-            sg2fa_path = Path(tmpdirname, "sg2.faa")
-            sg1.write_fasta(sg1fa_path)
-            sg2.write_fasta(sg2fa_path)
-            return mmseqs_search(
-                fasta_path=str(sg1fa_path),
-                target_database=str(sg2fa_path),
-                argstring=argstring,
-            )
-
     def annotate(
         self, use_neo4j_precalc: bool = False, neo4j_chunk_size: int = 1000, **kwargs
     ):
@@ -217,7 +200,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 cpus = 1
         # create a list of proteins as FASTA
         temp1 = [
-            self.single_protein_to_fasta(i)
+            self.proteins[i].fasta_string_defline_uid
             for i in protein_id_list
             if self.proteins[i].sequence
         ]
@@ -231,10 +214,27 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 input="\n".join(temp1).encode(),
                 domtblout_path=temp_path.name,
                 overwrite=True,
+                cpus=cpus,
                 **kwargs,
             )
             # parse the resulting domtblout file, saving results to the class proteins/domains
             self.parse_hmmout(temp_path.name, hmmsearch_or_hmmscan="hmmscan")
+
+    def add_sequences_from_neo4j(self):
+        try:
+            with GraphDriver() as db:
+                for i in db.run(
+                    """
+                    MATCH (p1:protein)
+                    WHERE p1.uid in $uid
+                    RETURN p1.uid as uid, p1.sequence as sequence
+                    """,
+                    uid=[i.uid for i in self.protein_iter],
+                ):
+                    if i["uid"] in self.proteins:
+                        self.proteins[i["uid"]].sequence = i["sequence"]
+        except Exception:
+            log.debug(f"Error trying to retrieve domains for {self.uid}")
 
     def hydrate_from_proteins(self):
         """Given a SocialGene object with proteins, retrieve from a running Neo4j database all locus and asssembly info for those proteins"""
@@ -242,7 +242,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             cypher_name="retrieve_protein_locations",
             param=list(self.proteins.keys()),
         ):
-            self.add_assembly(uid=result["assembly"], parent_object=self)
+            self.add_assembly(uid=result["assembly"], parent=self)
             for locus in result["loci"]:
                 _ = self.assemblies[result["assembly"]].add_locus(
                     external_id=locus["locus"]
@@ -275,7 +275,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             raise ValueError("No assembly found in database")
         else:
             assembly_uid = assembly_uid.value()
-        self.add_assembly(uid=assembly_uid, parent_object=self)
+        self.add_assembly(uid=assembly_uid, parent=self)
         with GraphDriver() as db:
             res = db.run(
                 """
@@ -401,48 +401,41 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         """
         return ((k, v) for k, v in self.proteins.items() if k in hash_list)
 
+    @property
+    def fasta_string_defline_uid(self):
+        for v in self.proteins.values():
+            yield f">{v.uid}\n{v.sequence}\n"
+
+    @property
+    def fasta_string_defline_external_id(self):
+        for v in self.proteins.values():
+            yield f">{v.external_id}\n{v.sequence}\n"
+
     def write_fasta(
         self,
         outpath,
-        hash_list: List = None,
         external_id: bool = False,
         **kwargs,
     ):
-        """Write proteins to a FASTA file
+        """Write all proteins to a FASTA file
 
         Args:
             outpath (str): path of file that FASTA entries will be appended to
-            hash_list (List, optional): hash id of the protein(s) to export. Defaults to None.
             external_id (bool, optional): Write protein identifiers as the hash (True) or the original identifier (False). Defaults to False.
             **kwargs: see print(open_write.__doc__)
         """
 
         with open_write(filepath=outpath, **kwargs) as handle:
             counter = 0
-            if hash_list:
-                temp_iter = self.filter_proteins(hash_list)
+            if external_id:
+                fasta_gen = self.fasta_string_defline_external_id
             else:
-                temp_iter = self.proteins.items()
-            for k, v in temp_iter:
-                if v.sequence is not None:
-                    counter += 1
-                    if external_id:
-                        handle.writelines(v.fasta_string_defline_external_id)
-                    else:
-                        handle.writelines(v.fasta_string_defline_uid)
+                fasta_gen = self.fasta_string_defline_uid
+            for i in fasta_gen:
+                counter += 1
+                handle.writelines(i)
 
         log.info(f"Wrote {str(counter)} proteins to {outpath}")
-
-    def single_protein_to_fasta(self, uid):
-        """Create FASTA strings
-
-        Args:
-            uid (str): hash id of protein to export
-
-        Returns:
-            str: fasta string
-        """
-        return f">{self.proteins[uid].uid}\n{self.proteins[uid].sequence}"
 
     def write_n_fasta(self, outdir, n_splits=1, **kwargs):
         """
@@ -457,6 +450,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         than. Defaults to 1
         """
 
+        # this can be done with itertools.batched in python 3.12
         def split(a, n):
             # https://stackoverflow.com/a/2135920
             k, m = divmod(len(a), n)
@@ -464,16 +458,17 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n)
             )
 
-        protein_list = split(list(self.proteins.keys()), n_splits)
+        protein_list = split(
+            [value for key, value in sorted(self.proteins.items(), reverse=False)],
+            n_splits,
+        )
         counter = 1
         for protein_group in protein_list:
             with open_write(
                 Path(outdir, f"fasta_split_{counter}.faa"), **kwargs
             ) as handle:
-                for k, v in {
-                    key: self.proteins.get(key) for key in sorted(protein_group)
-                }.items():
-                    handle.writelines(f">{k}\n{v.sequence}\n")
+                for i in protein_group:
+                    handle.writelines(f">{i.uid}\n{i.sequence}\n")
             counter += 1
 
     def _merge_proteins(self, sg_object):
@@ -534,7 +529,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
     ):
         raise NotImplementedError("write_clustermap_json needs to be updated")
         # TODO: Add link_df to clustermap
-        cmap = SerializeToClustermap(bgc_order=gene_cluster_order, sg_object=self)
+        cmap = SerializeToClustermap(sorted_bgcs=gene_cluster_order, sg_object=self)
         cmap.write(outpath=outpath)
 
     def write_genbank(self, outpath):
@@ -545,7 +540,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     id=locus.external_id,
                     name=locus.external_id,
                     description="A GenBank file generated by SocialGene.",
-                    dbxrefs=[f"Assembly:{locus.parent_object.uid}"],
+                    dbxrefs=[f"Assembly:{locus.parent.uid}"],
                 )
                 # Add annotation
                 for feature in locus.features:
@@ -559,7 +554,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                         qualifiers={
                             k: v
                             for k, v in feature.all_attributes().items()
-                            if v and k != "parent_object"
+                            if v and k != "parent"
                         }
                         | {"translation": self.proteins[feature.uid].sequence},
                     )
@@ -646,7 +641,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for feature in temp_list:
                     if feature.feature_is_protein():
                         yield (
-                            feature.parent_object.uid,
+                            feature.parent.uid,
                             feature.uid,
                             feature.external_id,
                             feature.locus_tag,

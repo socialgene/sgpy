@@ -342,7 +342,7 @@ class HmmParse:
         for i, model in enumerate(
             self.read_model_generator(filepath=filepath, base_dir=base_dir)
         ):
-            log.debug(f"Reading model {str(i+1)} from {filepath}")
+            log.debug(f"Reading model {str(i + 1)} from {filepath}")
             model._n = self.dict_key_index
             self.models[self.dict_key_index] = model
             self.dict_key_index += 1
@@ -366,7 +366,6 @@ class HmmParse:
                     # switch to model addition
                     _add_line_contents = self.temp_model.add_model
                 if line.startswith("//"):
-                    log.warning(Path(base_dir).name)
                     # yield model
                     self.temp_model.add_model_hash()
                     self.temp_model.find_pfam_accessions()

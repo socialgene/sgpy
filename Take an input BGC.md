@@ -11,7 +11,7 @@
     - max_outdegree (int): HMM model annotations with an outdegree higher than this will be dropped
     - scatter (bool, optional): Choose a random subset of proteins to search that are spread across the length of the input BGC. Defaults to False.
     - bypass (List[str], optional): List of locus tags that will bypass filtering. This is the ID found in a GenBank file "/locus_tag=" field. Defaults to None.
-    - bypass_eid (List[str], optional): Less preferred than `bypass`. List of external protein IDs that will bypass filtering. This is the ID found in a GenBank file "/protein_id=" field. Defaults to None.
+    - protein_id_bypass_list (List[str], optional): Less preferred than `bypass`. List of external protein IDs that will bypass filtering. This is the ID found in a GenBank file "/protein_id=" field. Defaults to None.
 7. Search the database for all proteins that have the same HMM model annotations as the input BGC proteins
     - Output from database is a data frame with columns: ['assembly_uid', 'nucleotide_uid', 'target', 'n_start', 'n_end', 'query']
 8. The initial hits output is filtered based on the following criteria:

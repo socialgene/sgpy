@@ -9,7 +9,7 @@ class NcbiFtp:
 
     def __init__(self):
         log.debug(
-            f'Connected to "{self.ftp.host}" on {self.ftp.port};\n\n NCBI FTP info: {self.ftp.welcome.replace("220","")}'
+            f'Connected to "{self.ftp.host}" on {self.ftp.port};\n\n NCBI FTP info: {self.ftp.welcome.replace("220", "")}'
         )
         self.ftp.set_pasv(True)
         self.assembly_paths = []

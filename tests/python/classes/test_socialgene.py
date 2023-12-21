@@ -13,7 +13,7 @@ temp.add_protein(
 )
 
 
-temp.add_assembly(uid="myassembly", parent_object=temp)
+temp.add_assembly(uid="myassembly", parent=temp)
 temp.assemblies["myassembly"].add_locus(
     external_id="my_locus",
 )

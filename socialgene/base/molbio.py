@@ -1,15 +1,16 @@
 from collections import OrderedDict
 from uuid import uuid4
+
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
+
 import socialgene.hashing.hashing as hasher
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
-from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 
 
 class LocusAssemblyMetadata:
@@ -410,6 +411,14 @@ class Protein(
         self.external_id = external_id
         self.domains = domains if domains is not None else set()
 
+    def __eq__(self, other):  # pragma: no cover
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.uid == other.uid
+
+    def __hash__(self):
+        return hash(self.uid)
+
     def all_attributes(self):
         return {
             s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)
@@ -455,7 +464,7 @@ class Protein(
                     if x := i.value():
                         self.sequence = x
         except Exception:
-            log.debug(f"Error trying to retrieve domains for {self.uid}")
+            log.debug(f"Error trying to retrieve sequences for {self.uid}")
 
     @property
     def domain_list_sorted_by_mean_envelope_position(self):
@@ -507,7 +516,7 @@ class Feature(Location):
     """Container class for describing a feature on a locus"""
 
     __slots__ = [
-        "parent_object",
+        "parent",
         "uid",
         "external_id",
         "type",
@@ -525,11 +534,12 @@ class Feature(Location):
         "frameshifted",
         "too_short_partial_abutting_assembly_gap",
         "incomplete",
+        "protein",
     ]
 
     def __init__(
         self,
-        parent_object=None,
+        parent=None,
         uid: str = None,
         external_id: str = None,
         type: str = None,
@@ -589,7 +599,7 @@ class Feature(Location):
           incomplete: A boolean flag indicating whether the feature is incomplete.
         """
         super().__init__(**kwargs)
-        self.parent_object = parent_object
+        self.parent = parent
         self.uid = uid
         self.external_id = external_id
         self.type = type
@@ -609,6 +619,21 @@ class Feature(Location):
             too_short_partial_abutting_assembly_gap
         )
         self.incomplete = incomplete
+        if self.feature_is_protein():
+            sg = None
+            current_object = self
+            for i in range(1, 100):
+                if (
+                    f"{current_object.__class__.__module__}.{current_object.__class__.__name__}"
+                    == "socialgene.base.socialgene.SocialGene"
+                ):
+                    sg = current_object
+                    break
+                else:
+                    if hasattr(current_object, "parent"):
+                        current_object = current_object.parent
+            if sg:
+                self.protein = Protein(uid=self.uid)
 
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
@@ -649,13 +674,13 @@ class Feature(Location):
 
 class FeatureCollection:
     __slots__ = [
-        "parent_object",
+        "parent",
         "features",
     ]
 
     def add_feature(self, **kwargs):
         """Add a feature to a locus"""
-        self.features.add(Feature(parent_object=self, **kwargs))
+        self.features.add(Feature(parent=self, **kwargs))
 
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
@@ -678,12 +703,46 @@ class FeatureCollection:
             if v.uid == uid:
                 return v
 
+    @property
+    def proteins(self):
+        sg = None
+        current_object = self
+        for i in range(1, 100):
+            if (
+                str(type(current_object))
+                == "<class 'socialgene.base.socialgene.SocialGene'>"
+            ):
+                sg = current_object
+                break
+            else:
+                current_object = current_object.parent
+        return {
+            i: sg.proteins.get(i, None)
+            for i in {i.uid for i in self.features}
+            if i in sg.proteins
+        }
+
+    @property
+    def protein_iter(self):
+        for i in self.proteins.values():
+            yield i
+
+    @property
+    def fasta_string_defline_uid(self):
+        for v in self.proteins.values():
+            yield f">{v.uid}\n{v.sequence}\n"
+
+    @property
+    def fasta_string_defline_external_id(self):
+        for v in self.proteins.values():
+            yield f">{v.external_id}\n{v.sequence}\n"
+
 
 class Locus(FeatureCollection):
     """Container holding a set() of genomic features"""
 
     __slots__ = [
-        "parent_object",
+        "parent",
         "features",
         "metadata",
         "external_id",
@@ -691,9 +750,9 @@ class Locus(FeatureCollection):
         "gene_clusters",
     ]
 
-    def __init__(self, parent_object=None, external_id=None):
+    def __init__(self, parent=None, external_id=None):
         super().__init__()
-        self.parent_object = parent_object
+        self.parent = parent
         self.features = set()
         self.metadata = LocusAssemblyMetadata()
         self.external_id = external_id
@@ -701,14 +760,14 @@ class Locus(FeatureCollection):
         self.gene_clusters = list()
 
     def calc_uid(self):
-        return hasher.hasher(f"{self.parent_object.uid}___{self.external_id}")
+        return hasher.hasher(f"{self.parent.uid}___{self.external_id}")
 
     def add_bgcs_by_feature(self, features, **kwargs):
         if not all([isinstance(i, Feature) for i in features]):
             raise ValueError(
                 f"All features must be of type Feature, not {[type(i) for i in features if not isinstance(i, Feature)]}"
             )
-        self.gene_clusters.append(GeneCluster(features, parent_object=self, **kwargs))
+        self.gene_clusters.append(GeneCluster(features, parent=self, **kwargs))
 
     def add_bgcs_by_start_end(self, start, end, **kwargs):
         features = {i for i in self.features if i.start >= start and i.end <= end}
@@ -721,7 +780,7 @@ class Locus(FeatureCollection):
             id=self.external_id,
             name=self.external_id,
             description="A GenBank file generated by SocialGene.",
-            dbxrefs=[f"Assembly:{self.parent_object.uid}"],
+            dbxrefs=[f"Assembly:{self.parent.uid}"],
         )
         # Add annotation
         for feature in self.features_sorted_by_midpoint:
@@ -741,13 +800,9 @@ class Locus(FeatureCollection):
                 qualifiers={
                     k: v
                     for k, v in feature.all_attributes().items()
-                    if v and k != "parent_object"
+                    if v and k != "parent"
                 }
-                | {
-                    "translation": self.parent_object.parent_object.proteins[
-                        feature.uid
-                    ].sequence
-                },
+                | {"translation": self.parent.parent.proteins[feature.uid].sequence},
             )
             record.features.append(biofeat)
         record.annotations["molecule_type"] = "DNA"
@@ -759,9 +814,9 @@ class Locus(FeatureCollection):
 
 
 class GeneCluster(FeatureCollection):
-    def __init__(self, features, parent_object=None, uid=None, tool=None, **kwargs):
+    def __init__(self, features, parent=None, uid=None, tool=None, **kwargs):
         super().__init__()
-        self.parent_object = parent_object
+        self.parent = parent
         self.features = features
         self.uid = uid
         # self.tool; e.g.antismash, gecco, etc
@@ -772,10 +827,10 @@ class GeneCluster(FeatureCollection):
     def write_genbank(self, outpath, sg):
         record = SeqRecord(
             Seq(""),
-            id=self.parent_object.external_id,
-            name=self.parent_object.external_id,
+            id=self.parent.external_id,
+            name=self.parent.external_id,
             description="A GenBank file generated by SocialGene.",
-            dbxrefs=[f"Assembly:{self.parent_object.uid}"],
+            dbxrefs=[f"Assembly:{self.parent.uid}"],
         )
         # Add annotation
         for feature in self.features:
@@ -789,7 +844,7 @@ class GeneCluster(FeatureCollection):
                 qualifiers={
                     k: v
                     for k, v in feature.all_attributes().items()
-                    if v and k != "parent_object"
+                    if v and k != "parent"
                 }
                 | {"translation": sg.proteins[feature.uid].sequence},
             )
@@ -841,7 +896,7 @@ class Assembly:
     """Container class holding a dictionary of loci (ie genes/proteins)"""
 
     __slots__ = [
-        "parent_object",
+        "parent",
         "loci",
         "taxid",
         "metadata",
@@ -850,9 +905,9 @@ class Assembly:
         "name",
     ]
 
-    def __init__(self, uid, parent_object=None):
+    def __init__(self, uid, parent=None):
         super().__init__()
-        self.parent_object = parent_object
+        self.parent = parent
         self.uid = uid
         self.loci = {}
         self.taxid = None
@@ -876,7 +931,7 @@ class Assembly:
         if external_id is None:
             external_id = str(uuid4())
         if external_id not in self.loci:
-            self.loci[external_id] = Locus(parent_object=self, external_id=external_id)
+            self.loci[external_id] = Locus(parent=self, external_id=external_id)
         else:
             log.debug(f"{external_id} already present")
 
@@ -915,6 +970,22 @@ class Assembly:
         for k, v in self.loci.items():
             if v.uid == uid:
                 return v
+
+    @property
+    def gene_clusters(self):
+        for locus in self.loci.values():
+            for gene_cluster in locus.gene_clusters:
+                yield gene_cluster
+
+    @property
+    def fasta_string_defline_uid(self):
+        for v in self.loci.values():
+            yield v.fasta_string_defline_uid
+
+    @property
+    def fasta_string_defline_external_id(self):
+        for v in self.loci.values():
+            yield v.fasta_string_defline_external_id
 
 
 class Molbio:
@@ -955,7 +1026,7 @@ class Molbio:
         if return_uid:
             return temp_protein.uid
 
-    def add_assembly(self, uid: str = None, parent_object=None):
+    def add_assembly(self, uid: str = None, parent=None):
         """Add an assembly to a SocialGene object
 
         Args:
@@ -964,6 +1035,6 @@ class Molbio:
         if uid is None:
             uid = str(uuid4())
         if uid not in self.assemblies:
-            self.assemblies[uid] = Assembly(uid=uid, parent_object=parent_object)
+            self.assemblies[uid] = Assembly(uid=uid, parent=parent)
         else:
             log.debug(f"{uid} already present")

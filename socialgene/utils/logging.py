@@ -1,8 +1,6 @@
 import logging
 import sys
 
-from socialgene.config import env_vars
-
 # If {rich} is installed use it, otherwise.... don't
 try:
     from rich.console import Console
@@ -11,7 +9,7 @@ try:
     c = Console(width=150)
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
-        level="NOTSET",
+        level=logging.INFO,
         #  format="%(filename)s/%(module)s/%(funcName)s\::: %(message)s",
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -25,7 +23,7 @@ try:
 except ImportError:
     log = logging.getLogger(__name__)
 
-log.setLevel(env_vars["SOCIALGENE_LOGLEVEL"])
+# log.setLevel(env_vars["SOCIALGENE_LOGLEVEL"])
 # handler = logging.StreamHandler(stream=sys.stdout)
 
 # log.addHandler(handler)
