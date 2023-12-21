@@ -64,6 +64,7 @@ sg_get_goterms          = "socialgene.utils.goterms:main"
 # search
 sg_mm_create            = "socialgene.mmseqs.create_database:main"
 sg_mm_search            = "socialgene.mmseqs.search:main"
+sg_search_gc            = "socialgene.cli.search.gene_cluster:main"
 # Modify database
 sgdb_import_classyfire = "socialgene.dbmodifiers.classyfire.import:main"
 

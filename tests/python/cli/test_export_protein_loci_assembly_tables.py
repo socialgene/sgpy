@@ -35,9 +35,8 @@ files = [
     "loci",
     "locus_to_protein",
     "protein_ids",
-    # "protein_info",
 ]
-hash_algo = ["crc64", "sha512t24u"]  # , "sha256"]
+hash_algo = ["crc64", "sha512t24u"]
 include_sequences = ["True", "False"]
 
 
@@ -72,7 +71,7 @@ def test_gbk_parsing_and_flatfile_for_neo4j_creation_collect_tables_in_memory_fa
 # DO NOT REMOVE, used to create truth files
 def create_files(
     outdir="/tmp/tempsg",
-    tg="/home/chase/Documents/github/kwan_lab/socialgene/sgpy/tests/python/data/test_genomes",
+    tg="./tests/python/data/test_genomes",
 ):
     from pathlib import Path
 

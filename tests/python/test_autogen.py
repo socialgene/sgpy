@@ -20,37 +20,37 @@
 # def test_filter_assemblies(search_result_df):
 #     result = ProcessSearchResult(search_result_df, 2)
 #     result.filter_assemblies(2)
-#     assert len(result.df) == 4
-#     assert set(result.df["assembly_uid"]) == {"A", "B"}
+#     assert len(resultprotein_comparisons_df) == 4
+#     assert set(resultprotein_comparisons_df["assembly_uid"]) == {"A", "B"}
 
 
 # def test_filter_nucleotides(search_result_df):
 #     result = ProcessSearchResult(search_result_df, 2)
 #     result.filter_nucleotides(2)
-#     assert len(result.df) == 4
-#     assert set(result.df["nucleotide_uid"]) == {"a", "b"}
+#     assert len(resultprotein_comparisons_df) == 4
+#     assert set(resultprotein_comparisons_df["nucleotide_uid"]) == {"a", "b"}
 
 
 # def test_label_clusters(search_result_df):
 #     result = ProcessSearchResult(search_result_df, 2)
 #     result._label_clusters(max_gap=5)
-#     assert len(result.df) == 6
-#     assert set(result.df["cluster"]) == {0, 1, 2}
+#     assert len(resultprotein_comparisons_df) == 6
+#     assert set(resultprotein_comparisons_df["cluster"]) == {0, 1, 2}
 
 
 # def test_calc_intrahits(search_result_df):
 #     result = ProcessSearchResult(search_result_df, 2)
 #     result._label_clusters(max_gap=5)
 #     result._calc_intrahits()
-#     assert len(result.df) == 6
-#     assert set(result.df["cluster_unique_hits"]) == {1, 2}
+#     assert len(resultprotein_comparisons_df) == 6
+#     assert set(resultprotein_comparisons_df["cluster_unique_hits"]) == {1, 2}
 
 
 # def test_process(search_result_df):
 #     result = ProcessSearchResult(search_result_df, 2)
 #     result.process(2, 2, 5)
-#     assert len(result.df) == 4
-#     assert set(result.df["assembly_uid"]) == {"A", "B"}
-#     assert set(result.df["nucleotide_uid"]) == {"a", "b"}
-#     assert set(result.df["cluster"]) == {0, 1}
-#     assert set(result.df["cluster_unique_hits"]) == {1, 2}
+#     assert len(resultprotein_comparisons_df) == 4
+#     assert set(resultprotein_comparisons_df["assembly_uid"]) == {"A", "B"}
+#     assert set(resultprotein_comparisons_df["nucleotide_uid"]) == {"a", "b"}
+#     assert set(resultprotein_comparisons_df["cluster"]) == {0, 1}
+#     assert set(resultprotein_comparisons_df["cluster_unique_hits"]) == {1, 2}

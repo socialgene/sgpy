@@ -3,7 +3,7 @@ import os
 import pytest
 
 from socialgene.base.socialgene import SocialGene
-from socialgene.compare_proteins.hmm.scoring import _mod_score_tupler, mod_score
+from socialgene.compare_proteins.hmm_scoring import _mod_score_tupler, mod_score
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -33,7 +33,7 @@ def test_create_tuple_type():
     a = _mod_score_tupler(*[i for i in range(7)])
     assert (
         str(type(a))
-        == "<class 'socialgene.compare_proteins.hmm.scoring.protein_comparison_modscore'>"
+        == "<class 'socialgene.compare_proteins.hmm_scoring.protein_comparison_modscore'>"
     )
 
 
@@ -74,15 +74,13 @@ def test_mod_score():
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = sg_object.proteins["iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh"]
     res = mod_score(p1, p2)
-    assert res._asdict() == {
-        "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "target": "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
-        "query_n_domains": 31,
-        "target_n_domains": 40,
-        "levenshtein": 0.72,
-        "jaccard": 1,
-        "mod_score": 1.23,
-    }
+    assert res.jaccard == 1
+    assert res.levenshtein == 0.72
+    assert res.mod_score == 1.23
+    assert res.query_n_domains == 31
+    assert res.target_n_domains == 40
+    assert res.query == p1
+    assert res.target == p2
 
 
 def test_mod_score_no_domains():
@@ -91,15 +89,13 @@ def test_mod_score_no_domains():
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = sg_object.proteins["iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh"]
     res = mod_score(p1, p2)
-    assert res._asdict() == {
-        "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "target": "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
-        "query_n_domains": 0,
-        "target_n_domains": 0,
-        "levenshtein": 100,
-        "jaccard": 0,
-        "mod_score": 0,
-    }
+    assert res.jaccard == 0
+    assert res.levenshtein == 100
+    assert res.mod_score == 0
+    assert res.query_n_domains == 0
+    assert res.target_n_domains == 0
+    assert res.query == p1
+    assert res.target == p2
 
 
 def test_mod_score_same_hash_with_domains():
@@ -119,15 +115,13 @@ def test_mod_score_same_hash_with_domains():
         cpus=1,
     )
     res = mod_score(p1, p2)
-    assert res._asdict() == {
-        "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "target": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "query_n_domains": 31,
-        "target_n_domains": 31,
-        "levenshtein": 0,
-        "jaccard": 1,
-        "mod_score": 1.5,
-    }
+    assert res.jaccard == 1
+    assert res.levenshtein == 0
+    assert res.mod_score == 1.5
+    assert res.query_n_domains == 31
+    assert res.target_n_domains == 31
+    assert res.query == p1
+    assert res.target == p2
 
 
 def test_mod_score_same_hash_no_domains():
@@ -136,15 +130,13 @@ def test_mod_score_same_hash_no_domains():
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     res = mod_score(p1, p2)
-    assert res._asdict() == {
-        "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "target": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
-        "query_n_domains": 0,
-        "target_n_domains": 0,
-        "levenshtein": 0,
-        "jaccard": 1,
-        "mod_score": 1.5,
-    }
+    assert res.jaccard == 1
+    assert res.levenshtein == 0
+    assert res.mod_score == 1.5
+    assert res.query_n_domains == 0
+    assert res.target_n_domains == 0
+    assert res.query == p1
+    assert res.target == p2
 
 
 def test_mod_score_input_error():

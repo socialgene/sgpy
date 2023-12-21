@@ -20,7 +20,7 @@ class HMMER:
 
     def __init__(self, hmm_filepath=None):
         self._check_hmmer_exists()
-        self.input_path = hmm_filepath
+        self.input_path = Path(hmm_filepath)
         self.decompressed_hmm_path = None
 
     @staticmethod

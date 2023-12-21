@@ -12,6 +12,7 @@ def run_subprocess(
     check=True,
     shell=False,
     capture_output=True,
+    status=False,
     **kwargs,
 ):
     """Run something in a separate process
@@ -31,11 +32,21 @@ def run_subprocess(
         command_list_string = " ".join(command_list)
     else:
         command_list_string = command_list
-    log.info(f"Executing external program:\n{command_list_string}")
-    with console.status(
-        "",
-        spinner="bouncingBar",
-    ) as status:
+    if status:
+        log.info(f"Executing external program:\n{command_list_string}")
+        with console.status(
+            "",
+            spinner="bouncingBar",
+        ) as status:
+            result = subprocess.run(
+                command_list,
+                check=check,
+                shell=shell,
+                capture_output=capture_output,
+                **kwargs,
+            )
+    else:
+        log.debug(f"Executing external program:\n{command_list_string}")
         result = subprocess.run(
             command_list,
             check=check,
@@ -43,8 +54,7 @@ def run_subprocess(
             capture_output=capture_output,
             **kwargs,
         )
-        if result.stderr:
-            log.error(f"Error code: {result.returncode}")
-            log.error(f"Error stdout: {result.stderr.decode('utf-8')}")
-            raise SystemExit
-        _ = status
+    if result.returncode != 0:
+        log.error(f"Error code: {result.returncode}")
+        log.error(f"Error stdout: {result.stderr.decode('utf-8')}")
+        raise SystemExit

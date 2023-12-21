@@ -6,7 +6,7 @@ channels:
   - defaults
 
 dependencies:
-  - conda-forge::python==3.10
+  - conda-forge::python==3.12
   - conda-forge::pip>=23.1.2
   - conda-forge::biopython>=1.79
   - conda-forge::numpy

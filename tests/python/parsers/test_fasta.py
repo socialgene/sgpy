@@ -148,9 +148,12 @@ def test_parse_2():
     for ak, av in a.assemblies.items():
         for lk, lv in av.loci.items():
             for fk in lv.features:
-                assert isinstance(fk.parent_object, molbio.Locus)
-                del fk.parent_object
+                assert isinstance(fk.parent, molbio.Locus)
+                assert isinstance(fk.protein, molbio.Protein)
                 if fk.external_id == "Q5JCW8":
+                    assert fk.protein.uid == "bhdSZvyUK6GzqHTXz4VjgtbefefmHI6x"
+                    del fk.protein
+                    del fk.parent
                     assert fk.all_attributes() == {
                         "description": "tr|Q5JCW8|Q5JCW8_THEKO Hypothetical membrane protein, conserved OS=Thermococcus kodakarensis (strain ATCC BAA-918 / JCM 12380 / KOD1) (Pyrococcus kodakaraensis (strain KOD1)) OX=69014 GN=TK0357 PE=4 SV=1",
                         "external_id": "Q5JCW8",
@@ -171,6 +174,10 @@ def test_parse_2():
                         "uid": "bhdSZvyUK6GzqHTXz4VjgtbefefmHI6x",
                     }
                 if fk.external_id == "Q52500":
+                    assert isinstance(fk.protein, molbio.Protein)
+                    assert fk.protein.uid == "r_qK-VXr_gDUb3NluH3qmgG1I09eOIOT"
+                    del fk.protein
+                    del fk.parent
                     assert fk.all_attributes() == {
                         "description": "sp|Q52500|THSB_THEKO Thermosome subunit beta OS=Thermococcus kodakarensis (strain ATCC BAA-918 / JCM 12380 / KOD1) (Pyrococcus kodakaraensis (strain KOD1)) OX=69014 GN=thsB PE=3 SV=1",
                         "external_id": "Q52500",

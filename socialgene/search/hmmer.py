@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import re
 from math import ceil
 from pathlib import Path
@@ -18,6 +19,7 @@ from rich.progress import (
 from rich.table import Table
 
 from socialgene.base.socialgene import SocialGene
+from socialgene.compare_proteins.hmmer import CompareDomains
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.search.base import SearchBase
@@ -33,11 +35,51 @@ progress_bar = Progress(
 )
 
 
-async def _find_similar_protein(
+def _find_similar_proteins(
     domain_list, frac: float = 0.75, only_culture_collection: bool = False
 ):
     """
-    The function `_find_sim_protein` is an asynchronous function that queries a Neo4j graph database to
+    The function `_find_similar_proteins` is a synchronous function that queries a Neo4j graph database to
+    find similar proteins based on protein domain information.
+
+    Args:
+      protein_domain_dict (Dict[List[str]]): The `protein_domain_dict` parameter is a dictionary where
+    the keys are protein uids and the values are lists of domain uids.
+      frac (float): The `frac` parameter is a float value that represents the fraction of protein
+    domains that need to match in order for a protein to be considered similar. By default, it is set to
+    0.75, meaning that at least 75% of the protein domains need to match
+
+    Returns:
+      The function `_find_sim_protein` returns a Pandas DataFrame containing the results of the query
+    executed in the Neo4j database. The DataFrame has columns `assembly_uid`, `nucleotide_uid`,
+    `target`, `n_start`, and `n_end`
+    """
+    # TODO: move async driver to reg driver class module
+    # with GraphDriver() as driver:
+    with GraphDriver().driver.session() as driver:
+        res = driver.run(
+            f"""
+                WITH $domain_list AS input_protein_domains
+                MATCH (prot1:protein)<-[a1:ANNOTATES]-(h0:hmm)
+                WHERE h0.uid IN input_protein_domains
+                WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
+                WHERE initial_count > size(input_protein_domains) * $frac
+                MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
+                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
+                MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+                RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
+                """,
+            domain_list=list(domain_list),
+            frac=frac,
+        ).to_df()
+        return res
+
+
+async def _find_similar_proteins_async(
+    domain_list, frac: float = 0.75, only_culture_collection: bool = False
+):
+    """
+    The function `_find_similar_proteins_async` is an asynchronous function that queries a Neo4j graph database to
     find similar proteins based on protein domain information.
 
     Args:
@@ -68,7 +110,7 @@ async def _find_similar_protein(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else '' }
+                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
@@ -82,8 +124,10 @@ async def _find_similar_protein(
 sema = asyncio.BoundedSemaphore(5)
 
 
-async def _find_similar_protein_multiple(
-    dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
+async def _find_similar_proteins_async_multiple(
+    dict_of_domain_lists,
+    frac: float = 0.75,
+    only_culture_collection: bool = False,
 ):
     # create task group
     # TODO: if webserver in future this could be used to control max time of search
@@ -92,7 +136,7 @@ async def _find_similar_protein_multiple(
             # create and issue tasks
             tasks = {
                 k: group.create_task(
-                    _find_similar_protein(
+                    _find_similar_proteins_async(
                         domain_list=v,
                         frac=frac,
                         only_culture_collection=only_culture_collection,
@@ -106,11 +150,47 @@ async def _find_similar_protein_multiple(
         return pd.concat([v.result().assign(query=k) for k, v in tasks.items()])
 
 
+def _find_similar_proteins_sync_multiple(
+    dict_of_domain_lists,
+    frac: float = 0.75,
+    only_culture_collection: bool = False,
+):
+    results = []
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=20,
+    ) as executor:
+        futures = {}
+        for k, v in dict_of_domain_lists.items():
+            future = executor.submit(
+                _find_similar_proteins,
+                domain_list=v,
+                frac=frac,
+                only_culture_collection=only_culture_collection,
+            )
+            futures[future] = k
+        for f in concurrent.futures.as_completed(futures):
+            result = f.result()
+            result["query"] = futures[f]
+            results.append(result)
+    return pd.concat(results)
+
+
+def run_search(
+    dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
+):
+    for k, v in dict_of_domain_lists.items():
+        _find_similar_proteins(
+            domain_list=v,
+            frac=frac,
+            only_culture_collection=only_culture_collection,
+        )
+
+
 def run_async_search(
     dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
 ):
     return asyncio.run(
-        _find_similar_protein_multiple(
+        _find_similar_proteins_async_multiple(
             dict_of_domain_lists=dict_of_domain_lists,
             frac=frac,
             only_culture_collection=only_culture_collection,
@@ -118,7 +198,17 @@ def run_async_search(
     )
 
 
-class SearchDomains(SearchBase):
+def run_sync_search(
+    dict_of_domain_lists, frac: float = 0.75, only_culture_collection: bool = False
+):
+    return _find_similar_proteins_sync_multiple(
+        dict_of_domain_lists=dict_of_domain_lists,
+        frac=frac,
+        only_culture_collection=only_culture_collection,
+    )
+
+
+class SearchDomains(SearchBase, CompareDomains):
     """
     Class search for similar BGCs in a SocialGene database, using domains
     Args:
@@ -158,7 +248,7 @@ class SearchDomains(SearchBase):
             self._set_hmm_outdegree()
         self._get_outdegree_per_hmm_per_protein()
 
-    def search(self, **kwargs):
+    def search(self, run_async=True, **kwargs):
         dict_of_domain_lists = (
             self.outdegree_df.groupby("protein_uid", observed=True)["hmm_uid"]
             .apply(list)
@@ -172,13 +262,22 @@ class SearchDomains(SearchBase):
         ) as progress:
             task = progress.add_task("Progress...", total=2)
             progress.update(task, advance=1)
-            self.raw_search_results_df = run_async_search(
-                dict_of_domain_lists, **kwargs
-            )
-            self.raw_search_results_df["query"] = self.raw_search_results_df[
-                "query"
-            ].astype("category")
-            progress.update(task, advance=1)
+            if run_async:
+                self.raw_search_results_df = run_async_search(
+                    dict_of_domain_lists, **kwargs
+                )
+                self.raw_search_results_df["query"] = self.raw_search_results_df[
+                    "query"
+                ].astype("category")
+                progress.update(task, advance=1)
+            else:
+                self.raw_search_results_df = run_sync_search(
+                    dict_of_domain_lists, **kwargs
+                )
+                self.raw_search_results_df["query"] = self.raw_search_results_df[
+                    "query"
+                ].astype("category")
+                progress.update(task, advance=1)
         log.info(
             f"Initial search returned {len(self.raw_search_results_df):,} proteins, found in {self.raw_search_results_df.assembly_uid.nunique():,} genomes"
         )
@@ -270,8 +369,8 @@ class SearchDomains(SearchBase):
         max_domains_per_protein: int = None,
         max_outdegree: int = None,
         scatter: bool = False,
-        bypass_locus: List[str] = None,
-        bypass_pid: List[str] = None,
+        locus_tag_bypass_list: List[str] = None,
+        protein_id_bypass_list: List[str] = None,
     ):
         """Rank input proteins by how many (:hmm)-[:ANNOTATES]->(:protein) relationships will have to be traversed
 
@@ -281,27 +380,27 @@ class SearchDomains(SearchBase):
             max_domains_per_protein (int): Max domains to retain for each individual protein (highest outdegree dropped first)
             max_outdegree (int): HMM model annotations with an outdegree higher than this will be dropped
             scatter (bool, optional): Choose a random subset of proteins to search that are spread across the length of the input BGC. Defaults to False.
-            bypass_locus (List[str], optional): List of locus tags that will bypass filtering. This is the ID found in a GenBank file "/locus_tag=" field.  Defaults to None.
-            bypass_eid (List[str], optional): Less preferred than `bypass`. List of external protein IDs that will bypass filtering. This is the ID found in a GenBank file "/protein_id=" field. Defaults to None.
+            locus_tag_bypass_list (List[str], optional): List of locus tags that will bypass filtering. This is the ID found in a GenBank file "/locus_tag=" field.  Defaults to None.
+            protein_id_bypass_list (List[str], optional): Less preferred than `bypass`. List of external protein IDs that will bypass filtering. This is the ID found in a GenBank file "/protein_id=" field. Defaults to None.
         Returns:
             pd.DataFrame: pd.DataFrame({"external_id":[], "hmm_uid":[], "outdegree":[]})
         """
         log.info("Prioritizing input proteins by outdegree")
         loci_protein_ids = set()
-        if bypass_locus:
+        if locus_tag_bypass_list:
             # bypass using locus tags
             loci_protein_ids = {
                 i.uid
-                for i in self.input_assembly.loci[self.input_bgc_id].features
-                if i.locus_tag in list(bypass_locus)
+                for i in self.input_bgc.features
+                if i.locus_tag in list(locus_tag_bypass_list)
             }
-        if bypass_pid:
+        if protein_id_bypass_list:
             # bypass using an external protein ids
             loci_protein_ids.update(
                 {
                     i.uid
-                    for i in self.input_assembly.loci[self.input_bgc_id].features
-                    if i.external_id in list(bypass_pid)
+                    for i in self.input_bgc.features
+                    if i.external_id in list(protein_id_bypass_list)
                 }
             )
         len_start = self.outdegree_df["outdegree"].sum()
@@ -357,6 +456,7 @@ class SearchDomains(SearchBase):
                 threshold = ceil(n_input_proteins * max_query_proteins)
             else:
                 threshold = max_query_proteins
+            m_start = self.outdegree_df["outdegree"].sum()
             if scatter:
                 temp = list(
                     self.input_assembly.loci[
@@ -372,7 +472,6 @@ class SearchDomains(SearchBase):
                     | self.outdegree_df["protein_uid"].isin(loci_protein_ids)
                 ]
             else:
-                m_start = self.outdegree_df["outdegree"].sum()
                 log.info(
                     f"'max_query_proteins' is set to {threshold}, will limit search to {threshold} of {n_input_proteins} input proteins"
                 )
@@ -449,9 +548,9 @@ class SearchDomains(SearchBase):
         d = [
             {
                 "protein_uid": i.uid,
-                "desc": f"{i.external_id} | {i.locus_tag if i.locus_tag  else 'no-locus-tag'} | {i.description}",
+                "desc": f"{i.external_id} | {i.locus_tag if i.locus_tag else 'no-locus-tag'} | {i.description}",
             }
-            for i in self.input_assembly.loci[self.input_bgc_id].features
+            for i in self.input_bgc.features
         ]
         d = pd.DataFrame(d)
         temp = pd.merge(temp, d, on="protein_uid", how="left")

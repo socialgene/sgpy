@@ -8,10 +8,9 @@ class SerializeToClustermap:
     Take a sg_object and serialize all BGC object to clustermap.js format
     """
 
-    def __init__(self, sg_object, bgc_order, link_df, group_df):
+    def __init__(self, sg_object, sorted_bgcs, link_df, group_df):
         self._sg_object = sg_object
-        self._bgc_order = bgc_order
-        self._input_assembly = self._sg_object.assemblies[bgc_order[0]]
+        self.sorted_bgcs = sorted_bgcs
         self._link_df = link_df
         self._group_df = group_df
         self._reset()
@@ -26,9 +25,12 @@ class SerializeToClustermap:
 
     def _get_uid(self, obj=None):
         # increment then return a uid as a string
-        self._uid += 1
-        self._uid_dict[str(self._uid)] = obj
-        return str(self._uid)
+        if obj in self._uid_dict:
+            return str(self._uid_dict[obj])
+        else:
+            self._uid += 1
+            self._uid_dict[str(self._uid)] = obj
+            return str(self._uid)
 
     def _build(self):
         self._reset()
@@ -39,11 +41,13 @@ class SerializeToClustermap:
         return {
             "clusters": [
                 {
-                    "uid": self._get_uid(obj=self._sg_object.assemblies[k]),
-                    "name": self._sg_object.assemblies[k].name,
-                    "loci": self._loci(self._sg_object.assemblies[k]),
+                    "uid": self._get_uid(obj=assembly),
+                    "name": assembly.uid,
+                    "loci": self._loci([i for i in assembly.gene_clusters]),
                 }
-                for k in self._bgc_order
+                for assembly in list(
+                    dict.fromkeys([i.parent.parent for i in self.sorted_bgcs])
+                )
             ]
         }
 
@@ -73,14 +77,12 @@ class SerializeToClustermap:
             "end": max((i.end for i in locus_obj.features)),
         }
 
-    def _loci(self, assembly_obj):
+    def _loci(self, loci):
         # return [
         #     self._locus(locus_name=k, locus_obj=v) for k, v in assembly_obj.loci.items()
         # ]
         return [
-            self._locus(locus_name=k, locus_obj=gc)
-            for k, v in assembly_obj.loci.items()
-            for gc in v.gene_clusters
+            self._locus(locus_name=gc.parent.external_id, locus_obj=gc) for gc in loci
         ]
 
     def _create_groups_dict(self):
@@ -92,14 +94,9 @@ class SerializeToClustermap:
             with keys "uid", "label", and "genes". e.g. {"groups": [{"uid": "1", "label": "group1", "genes": ["1", "2", "3"]}]
         """
         # Look in the clustermap uid dict (feature_to_cmap_uid_dict) for the cmap uid of each feature (query & target) in each group
-        self._group_df["query_cmap_uid"] = self._group_df["query"].apply(
-            lambda x: self.feature_to_cmap_uid_dict.get(x)
-        )
-        self._group_df["target_cmap_uid"] = self._group_df["target"].apply(
-            lambda x: self.feature_to_cmap_uid_dict.get(x)
-        )
+        log.info("Creating clustermap.js links")
         groups = (
-            self._group_df.groupby(["target_cmap_uid", "target"])["query_cmap_uid"]
+            self._group_df.groupby(["query_feature"])["target_feature"]
             .apply(list)
             .reset_index()
         )
@@ -107,10 +104,11 @@ class SerializeToClustermap:
             "groups": [
                 {
                     "uid": self._get_uid(
-                        obj=f"{i.target.external_id} {i.target.description}"
+                        obj=f"{i['query_feature'].external_id} {i['query_feature'].description}"
                     ),
-                    "label": f"{i.target.external_id} {i.target.description}",
-                    "genes": i.query_cmap_uid,
+                    "label": f"{i['query_feature'].external_id} {i['query_feature'].description}",
+                    "genes": [self.feature_to_cmap_uid_dict[i["query_feature"]]]
+                    + [self.feature_to_cmap_uid_dict[i] for i in i.target_feature],
                 }
                 for x, i in groups.iterrows()
             ]
@@ -124,18 +122,18 @@ class SerializeToClustermap:
                 {
                     "uid": self._get_uid(obj=None),
                     "target": {
-                        "uid": self.feature_to_cmap_uid_dict[i["target"]],
-                        "name": self.feature_to_cmap_uid_dict[i["target"]],
+                        "uid": self.feature_to_cmap_uid_dict[i["target_feature"]],
+                        "name": self.feature_to_cmap_uid_dict[i["target_feature"]],
                     },
                     "query": {
-                        "uid": self.feature_to_cmap_uid_dict[i["query"]],
-                        "name": self.feature_to_cmap_uid_dict[i["query"]],
+                        "uid": self.feature_to_cmap_uid_dict[i["query_feature"]],
+                        "name": self.feature_to_cmap_uid_dict[i["query_feature"]],
                     },
-                    "identity": i.score,
+                    "identity": i.pident if "pident" in i else i.score,
                 }
                 for x, i in self._link_df.iterrows()
-                if i["query"] in self.feature_to_cmap_uid_dict
-                and i["target"] in self.feature_to_cmap_uid_dict
+                if i["query_feature"] in self.feature_to_cmap_uid_dict
+                and i["target_feature"] in self.feature_to_cmap_uid_dict
             ]
         }
 
@@ -145,4 +143,5 @@ class SerializeToClustermap:
             json.dump(
                 self._build(),
                 outfile,
+                indent=4,
             )
