@@ -213,7 +213,7 @@ class SearchBase(ABC):
         # TODO: should be based off of create_links() output not bgc_df
         """Sorts assembly IDs by comparing the levenshtein distance of ordered query proteins (forward and reverse)"""
 
-        def hl(group):
+        def hl(group, q_len):
             a = levenshtein(
                 list(group.sort_values(["t_start"])["query"]),
                 list(group.sort_values(["q_start"], ascending=True)["query"]),
@@ -224,11 +224,8 @@ class SearchBase(ABC):
             ) / len(group)
             lev = a if a < b else b
             lev = 1 - lev
-            jac = jaccard(
-                list(group.sort_values(["t_start"])["query"]),
-                list(group.sort_values(["q_start"], ascending=False)["query"]),
-            )
-            return (jac * 0.5) + lev
+            jac = (len(group[group['target_feature'].notnull()])) / len(group['query_feature'].unique())
+            return (jac * 2) + lev - (abs(len(group)-q_len) / q_len)
 
         q_obj = pd.DataFrame(
             [
@@ -248,7 +245,7 @@ class SearchBase(ABC):
                     on="query_feature",
                     how="outer",
                     suffixes=("", "_delme"),
-                )
+                ),len(self.input_bgc.features)
             )
             for k, group in self.link_df.groupby(
                 ["query_cluster", "target_cluster"], sort=False
