@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 from abc import ABC, abstractmethod
 from math import ceil
@@ -71,6 +72,7 @@ class SearchBase(ABC):
         working_search_results_df (pd.DataFrame): Working search results as a pandas DataFrame.
 
     Methods:
+        input (): SocialGene object containing a single BGC to search (optional, must provide this or a gbk_path); or Path to GenBank file containing a single BGC to search (optional, must provide this or a sg_object).
         search(): Abstract method to be implemented in child classes. Searches the database for BGCs.
         _modify_input_bgc_name(): Modifies the name of the input BGC to avoid overriding existing BGCs in the database.
         _input_bgc_info(): Logs information about the input BGC.
@@ -81,6 +83,7 @@ class SearchBase(ABC):
 
     def __init__(
         self,
+        input,
         gene_clusters_must_have_x_matches: float,
         assemblies_must_have_x_matches: float,
         nucleotide_sequences_must_have_x_matches: float,
@@ -109,6 +112,14 @@ class SearchBase(ABC):
         self.outdegree_df = pd.DataFrame()
         self.bgc_df = pd.DataFrame()
         self.primary_bgc_regions = pd.DataFrame()
+        if isinstance(input, SocialGene):
+            self.read_sg_object(input)
+        elif isinstance(input, str) or isinstance(input, Path):
+            self.read_input_bgc(input)
+            self.gbk_path=input
+        else:
+            raise ValueError("Must provide either sg_object or gbk_path")
+        self.n_searched_proteins = len(self.sg_object.proteins)
 
     @abstractmethod
     def prioritize_input_proteins(

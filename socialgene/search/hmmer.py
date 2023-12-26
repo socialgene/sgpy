@@ -213,7 +213,6 @@ class SearchDomains(SearchBase, CompareDomains):
     Class search for similar BGCs in a SocialGene database, using domains
     Args:
         hmm_dir (str): Path to directory containing HMM profiles (used to annotate input BGC proteins if they aren't in the database).
-        input (): SocialGene object containing a single BGC to search (optional, must provide this or a gbk_path); or Path to GenBank file containing a single BGC to search (optional, must provide this or a sg_object).
         use_neo4j_precalc (bool): Try to pull domains from the database or annotate all input proteins with HMMER
         modscore_cutoff (float): Minimum score cutoff for a hit to be considered significant. (modified, combined Levenshtein + Jaccard)
         **kwargs: Additional keyword arguments to pass to the parent class.
