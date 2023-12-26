@@ -213,8 +213,7 @@ class SearchDomains(SearchBase, CompareDomains):
     Class search for similar BGCs in a SocialGene database, using domains
     Args:
         hmm_dir (str): Path to directory containing HMM profiles (used to annotate input BGC proteins if they aren't in the database).
-        sg_object (SocialGene): SocialGene object containing a single BGC to search (optional, must provide this or a gbk_path).
-        gbk_path (str): Path to GenBank file containing a single BGC to search (optional, must provide this or a sg_object).
+        input (): SocialGene object containing a single BGC to search (optional, must provide this or a gbk_path); or Path to GenBank file containing a single BGC to search (optional, must provide this or a sg_object).
         use_neo4j_precalc (bool): Try to pull domains from the database or annotate all input proteins with HMMER
         modscore_cutoff (float): Minimum score cutoff for a hit to be considered significant. (modified, combined Levenshtein + Jaccard)
         **kwargs: Additional keyword arguments to pass to the parent class.
@@ -225,8 +224,7 @@ class SearchDomains(SearchBase, CompareDomains):
     def __init__(
         self,
         hmm_dir: str = None,
-        sg_object: SocialGene = None,
-        gbk_path: str = None,
+        input = None,
         use_neo4j_precalc: bool = True,
         modscore_cutoff: float = 0.8,
         **kwargs,
@@ -234,12 +232,12 @@ class SearchDomains(SearchBase, CompareDomains):
         super().__init__(modscore_cutoff=modscore_cutoff, **kwargs)
         self.hmm_dir = hmm_dir
         self.outdegree_df = pd.DataFrame
-        self.gbk_path = gbk_path
         # input sg_object or gbk_path
-        if sg_object:
-            self.read_sg_object(sg_object)
-        elif gbk_path:
-            self.read_input_bgc(self.gbk_path)
+        if isinstance(input, SocialGene):
+            self.read_sg_object(input)
+        elif isinstance(input, str) or isinstance(input, Path):
+            self.read_input_bgc(input)
+            self.gbk_path=input
         else:
             raise ValueError("Must provide either sg_object or gbk_path")
         self.n_searched_proteins = len(self.sg_object.proteins)

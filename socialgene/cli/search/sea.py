@@ -10,7 +10,7 @@ from socialgene.utils.logging import log
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 def search_bgc(
-    gbk_path: str,
+    input,
     hmm_dir: str = None,
     use_neo4j_precalc: bool = True,
     assemblies_must_have_x_matches: float = 0.9,
@@ -31,7 +31,7 @@ def search_bgc(
 ):
     log.info(f"Running search with args: {locals()}")
     search_object = SearchDomains(
-        gbk_path=gbk_path,
+        input=input,
         hmm_dir=hmm_dir,
         use_neo4j_precalc=use_neo4j_precalc,
         assemblies_must_have_x_matches=assemblies_must_have_x_matches,

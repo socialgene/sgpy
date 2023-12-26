@@ -67,7 +67,7 @@ parser.add_argument(
 parser.add_argument(
     "--max_domains_per_protein",
     metavar="value",
-    type=int,
+    type=float,
     default=3,
     help="Maximum number of domains per protein used in search; 0 for all",
 )
@@ -80,7 +80,7 @@ parser.add_argument(
 parser.add_argument(
     "--max_query_proteins",
     metavar="value",
-    type=int,
+    type=float,
     default=10,
     help="Maximum number of query proteins to use in search; 0 for all",
 )
@@ -145,7 +145,7 @@ def main():
     if args.max_query_proteins == 0:
         args.max_query_proteins = None
     _ = search_bgc(
-        gbk_path=args.gbk_path,
+        input=args.gbk_path,
         hmm_dir=args.hmm_dir,
         use_neo4j_precalc=True,
         assemblies_must_have_x_matches=args.assemblies_must_have_x_matches,
