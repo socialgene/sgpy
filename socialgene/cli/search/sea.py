@@ -28,6 +28,7 @@ def search_bgc(
     frac: float = 0.75,
     run_async: bool = False,
     analyze_with: str = "hmmer",
+    outpath_clinker: str = None,
 ):
     log.info(f"Running search with args: {locals()}")
     search_object = SearchDomains(
@@ -83,6 +84,7 @@ def search_bgc(
         tool=analyze_with, argstring="--fast --max-hsps 1", cpus=1
     )
     search_object._choose_group()
+    return search_object
     search_object._rank_order_bgcs()
     assemblies = list(
         dict.fromkeys([i.parent.parent for i in search_object.sorted_bgcs])
@@ -94,4 +96,4 @@ def search_bgc(
         link_df=search_object.link_df,
         group_df=search_object.group_df,
     )
-    z.write("/Users/chase/Documents/test/cmap/clinker/clinker/plot/data.json")
+    z.write(outpath_clinker)

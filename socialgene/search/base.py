@@ -1,3 +1,4 @@
+from collections import namedtuple
 from pathlib import Path
 import time
 from abc import ABC, abstractmethod
@@ -116,10 +117,11 @@ class SearchBase(ABC):
             self.read_sg_object(input)
         elif isinstance(input, str) or isinstance(input, Path):
             self.read_input_bgc(input)
-            self.gbk_path=input
+            self.gbk_path = input
         else:
             raise ValueError("Must provide either sg_object or gbk_path")
         self.n_searched_proteins = len(self.sg_object.proteins)
+        self._compare_two_gene_clusters_score = namedtuple('bgc_comp2', 'jaccard levenshtein modscore')
 
     @abstractmethod
     def prioritize_input_proteins(
@@ -219,25 +221,29 @@ class SearchBase(ABC):
         self._create_links()
         self._choose_group()
         self._rank_order_bgcs()
-
-    def _rank_order_bgcs(self):
-        # TODO: should be based off of create_links() output not bgc_df
-        """Sorts assembly IDs by comparing the levenshtein distance of ordered query proteins (forward and reverse)"""
-
-        def hl(group, q_len):
-            a = levenshtein(
-                list(group.sort_values(["t_start"])["query"]),
-                list(group.sort_values(["q_start"], ascending=True)["query"]),
-            ) / len(group)
-            b = levenshtein(
-                list(group.sort_values(["t_start"])["query"]),
-                list(group.sort_values(["q_start"], ascending=False)["query"]),
-            ) / len(group)
-            lev = a if a < b else b
-            lev = 1 - lev
-            jac = (len(group[group['target_feature'].notnull()])) / len(group['query_feature'].unique())
-            return (jac * 2) + lev - (abs(len(group)-q_len) / q_len)
-
+    
+    def _compare_two_gene_clusters(self, group, q_len):
+        # levenshtein similarity of query proteins to target proteins
+        # compares the order of query proteins to query proteins ordered by rbh to target
+        a = levenshtein(
+            list(group.sort_values(["t_start"], ascending=True)["query"]),
+            list(group.sort_values(["q_start"], ascending=True)["query"]),
+        ) / len(group)
+        # levenshtein similarity of query proteins to target proteins in reverse order
+        b = levenshtein(
+            list(group.sort_values(["t_start"], ascending=True)["query"]),
+            list(group.sort_values(["q_start"], ascending=False)["query"]),
+        ) / len(group)
+        lev = a if a < b else b
+        lev = 1 - lev
+        jac = (len(group[group["target_feature"].notnull()])) / len(
+            group["query_feature"].unique()
+        )
+        return self._compare_two_gene_clusters_score(jac,lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len))
+        
+    
+    def _compare_all_gcs_to_input_gc(self):
+        # create a 3-column dataframe that represents the input gene cluster's features (proteins)
         q_obj = pd.DataFrame(
             [
                 {
@@ -247,21 +253,28 @@ class SearchBase(ABC):
                 }
                 for i in list(self.input_bgc.features_sorted_by_midpoint)
             ]
-        )
-        temp = {
-            k[1]: hl(
-                pd.merge(
-                    q_obj,
-                    group,
-                    on="query_feature",
-                    how="outer",
-                    suffixes=("", "_delme"),
-                ),len(self.input_bgc.features)
-            )
-            for k, group in self.link_df.groupby(
-                ["query_cluster", "target_cluster"], sort=False
-            )
-        }
+        ) 
+        for k, group in self.link_df.groupby(
+            ["query_cluster", "target_cluster"], sort=False
+        ):
+            score=self._compare_two_gene_clusters(
+                    pd.merge(
+                        q_obj,
+                        group,
+                        on="query_feature",
+                        how="outer",
+                        suffixes=("", "_delme"),
+                    ),
+                    len(self.input_bgc.features),
+                )
+            yield {
+                "query_gene_cluster":k[1],
+                "target_gene_cluster":k[0],
+                "jaccard":score.jaccard, "levenshtein":score.levenshtein, "modscore":score.modscore}
+                
+    def _rank_order_bgcs(self, compa):
+        # TODO: should be based off of create_links() output not bgc_df
+        """Sorts assembly IDs by comparing the levenshtein distance of ordered query proteins (forward and reverse)"""
         self.sorted_bgcs = sorted(temp, key=temp.get, reverse=True)
 
     def _bgc_regions_to_sg_object(self, collapsed_df):
