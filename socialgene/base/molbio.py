@@ -620,9 +620,11 @@ class Feature(Location):
         )
         self.incomplete = incomplete
         if self.feature_is_protein():
+            # Check if there is a SocialGene object in the parent chain
+            # If there is, link the feature protein attribute to the SocialGene protein object
             sg = None
             current_object = self
-            for i in range(1, 100):
+            for _ in range(1, 100):
                 if (
                     f"{current_object.__class__.__module__}.{current_object.__class__.__name__}"
                     == "socialgene.base.socialgene.SocialGene"
@@ -633,7 +635,8 @@ class Feature(Location):
                     if hasattr(current_object, "parent"):
                         current_object = current_object.parent
             if sg:
-                self.protein = Protein(uid=self.uid)
+                if self.uid in sg.proteins:
+                    self.protein = sg.proteins[self.uid]
 
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
