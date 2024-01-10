@@ -45,9 +45,7 @@ class SerializeToClustermap:
                     "name": assembly.uid,
                     "loci": self._loci([i for i in assembly.gene_clusters]),
                 }
-                for assembly in list(
-                    dict.fromkeys([i.parent.parent for i in self.sorted_bgcs])
-                )
+                for assembly in list(dict.fromkeys(self.sorted_bgcs))
             ]
         }
 
@@ -108,7 +106,11 @@ class SerializeToClustermap:
                     ),
                     "label": f"{i['query_feature'].external_id} {i['query_feature'].description}",
                     "genes": [self.feature_to_cmap_uid_dict[i["query_feature"]]]
-                    + [self.feature_to_cmap_uid_dict[i] for i in i.target_feature],
+                    + [
+                        self.feature_to_cmap_uid_dict[i]
+                        for i in i.target_feature
+                        if i in self.feature_to_cmap_uid_dict
+                    ],
                 }
                 for x, i in groups.iterrows()
             ]

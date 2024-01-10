@@ -435,7 +435,7 @@ class SearchBase(ABC):
                             self._create_link_df(
                                 query_gene_cluster=self.input_bgc,
                                 target_gene_cluster=target_gene_cluster,
-                                tool=tool,
+                                tool=tool, **kwargs
                             ),
                         ]
                     )

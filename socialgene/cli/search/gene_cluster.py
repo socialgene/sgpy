@@ -11,7 +11,7 @@ from socialgene.utils.logging import log
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 parser = argparse.ArgumentParser(
-    description="Search a SocialGene database for input gene clusters similar to an input gene cluster"
+    description="Search a SocialGene database for gene clusters similar to an input gene cluster"
 )
 
 

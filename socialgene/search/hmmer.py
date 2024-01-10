@@ -400,6 +400,7 @@ class SearchDomains(SearchBase, CompareDomains):
                     if i.external_id in list(protein_id_bypass_list)
                 }
             )
+        temppp = self.outdegree_df[self.outdegree_df["protein_uid"].isin(loci_protein_ids)]
         len_start = self.outdegree_df["outdegree"].sum()
         if self.outdegree_df["outdegree"].sum() == 0:
             raise ValueError(
@@ -412,7 +413,7 @@ class SearchDomains(SearchBase, CompareDomains):
             log.info(
                 f"Removed {prelen - len(self.outdegree_df)} domains from consideration (no connections in the DB), which reemoves {prelen_prot - len(self.outdegree_df['protein_uid'].unique())} proteins from consideration"
             )
-
+        #############################
         # The elif != Nones are to prevent an incorrect argument from just returning the the full DF, which would be unintended
         if isinstance(max_outdegree, int) or isinstance(max_outdegree, float):
             m_start = self.outdegree_df["outdegree"].sum()
@@ -427,7 +428,7 @@ class SearchDomains(SearchBase, CompareDomains):
             )
         elif max_outdegree is not None:
             raise ValueError
-
+        #############################
         if isinstance(max_domains_per_protein, int) or isinstance(
             max_domains_per_protein, float
         ):
@@ -447,6 +448,7 @@ class SearchDomains(SearchBase, CompareDomains):
             )
         elif max_domains_per_protein is not None:
             raise ValueError
+        #############################
         if isinstance(max_query_proteins, int) or isinstance(max_query_proteins, float):
             n_input_proteins = len(self.input_assembly.feature_uid_set)
             if max_query_proteins > 0 and max_query_proteins < 1:
@@ -456,9 +458,8 @@ class SearchDomains(SearchBase, CompareDomains):
             m_start = self.outdegree_df["outdegree"].sum()
             if scatter:
                 temp = list(
-                    self.input_assembly.loci[
-                        self.input_bgc_id
-                    ].features_sorted_by_midpoint
+                    
+                        self.input_bgc.features_sorted_by_midpoint
                 )
                 temp = [
                     temp[int(ceil(i * len(temp) / threshold))].uid
@@ -494,6 +495,7 @@ class SearchDomains(SearchBase, CompareDomains):
             raise ValueError
         # Add back explicitly requested input proteins/loci
 
+        self.outdegree_df = pd.merge(self.outdegree_df, temppp, how="outer")
         log.info(
             f"The total outdegree was {len_start:,}; now it's {self.outdegree_df['outdegree'].sum():,}"
         )
