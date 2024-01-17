@@ -533,7 +533,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     dbxrefs=[f"Assembly:{locus.parent.uid}"],
                 )
                 # Add annotation
-                for feature in locus.features:
+                for feature in locus.features_sorted_by_midpoint:
                     biofeat = SeqFeature(
                         FeatureLocation(
                             start=feature.start,
