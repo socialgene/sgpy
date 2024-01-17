@@ -1,10 +1,10 @@
 import argparse
 
 from socialgene.dbmodifiers.massage.massage import (
-    add_antismash_regions,
+    add_antismash_regions_as_edges,
     add_protein_descriptions,
     add_taxonomic_name_to_assembly,
-    antismash_as_separate_nodes,
+    add_antismash_regions_as_nodes,
     culture_collections_as_nodes_rels,
     fix_mibig_taxonomy,
     set_mibig_bgc,
@@ -60,13 +60,19 @@ NCBI_RANKS = [
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
 
 parser.add_argument(
-    "--antismash",
+    "--antismash_as_edges",
     help="",
     default=False,
     required=False,
     action=argparse.BooleanOptionalAction,
 )
-
+parser.add_argument(
+    "--antismash_as_nodes",
+    help="",
+    default=False,
+    required=False,
+    action=argparse.BooleanOptionalAction,
+)
 parser.add_argument(
     "--protein_descriptions",
     help="",
@@ -114,9 +120,10 @@ def main():
     if not any([i for i in args.__dict__.values()]):
         parser.print_help()
         return
-    if args.antismash:
-        add_antismash_regions()
-        antismash_as_separate_nodes()
+    if args.antismash_as_edges:
+        add_antismash_regions_as_edges()
+    if args.antismash_as_nodes:
+        add_antismash_regions_as_nodes()
     if args.protein_descriptions:
         add_protein_descriptions()
     if args.fix_mibig_taxonomy:

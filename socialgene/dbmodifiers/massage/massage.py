@@ -67,7 +67,10 @@ def add_protein_descriptions():
     log.info(f"Modified: {res} properties")
 
 
-def add_antismash_regions():
+def add_antismash_regions_as_edges():
+    log.info(
+        "Parsing 'import/antismash_results.jsonl' as (:nucleotide)-[e1:ENCODES]->(:proteins) e1.properties"
+    )
     _run_transaction_function(
         """
                 CALL apoc.load.json("import/antismash_results.jsonl")
@@ -84,6 +87,48 @@ def add_antismash_regions():
                     SET c1.antismash_products = record[nucleotide_id][cluster_index2].products
                     SET c1.antismash_region = cluster_index2
                 } IN TRANSACTIONS OF 1000 ROWS;
+            """
+    )
+
+
+def add_antismash_regions_as_nodes():
+    log.info("Adding new constraint for (:gene_cluster {nuid}), if needed")
+    _run_transaction_function(
+        """
+                CREATE CONSTRAINT gene_cluster IF NOT EXISTS
+                FOR (n:gene_cluster)
+                REQUIRE (n.uid) IS UNIQUE;
+        """
+    )
+    log.info("Parsing 'import/antismash_results.jsonl' as new antismash nodes")
+    _run_transaction_function(
+        """
+        CALL apoc.load.json("import/antismash_results.jsonl")
+        YIELD value AS jsonl
+        UNWIND jsonl.records as record
+        UNWIND keys(record) as nucleotide_id
+        WITH record, nucleotide_id, range(0, size(record[nucleotide_id])-1) as cluster_indices
+        UNWIND cluster_indices as cluster_index
+        WITH record, record[nucleotide_id][cluster_index] as cluster, nucleotide_id,  cluster_index
+        MERGE (a:antismash {uid: nucleotide_id + "_antismash_" + cluster_index})
+        SET a:gene_cluster
+        SET a += {start: cluster.start, end: cluster.end}
+        WITH a, cluster, nucleotide_id
+        MATCH (n:nucleotide {external_id: nucleotide_id})
+        MERGE (a)<-[:PREDICTED_BGC]-(n)
+        WITH a, cluster
+           CALL {
+              WITH a, cluster
+              UNWIND keys(cluster.protoclusters) AS protocluster_key
+              WITH a, cluster, cluster.protoclusters[protocluster_key] AS protocluster, protocluster_key
+              MERGE (product:product {uid: protocluster.product})
+              SET product:antismash
+              MERGE (category:category {uid: protocluster.category})
+              SET category:antismash
+              MERGE (product)-[:IS_A]->(category)
+              MERGE (a)-[r:IS_A {tool: protocluster.tool, start: protocluster.start, end: protocluster.end, core_start: protocluster.core_start, core_end: protocluster.core_end}]->(product)
+           }
+
             """
     )
 
@@ -128,7 +173,7 @@ def antismash_as_separate_nodes():
         """
                 CREATE CONSTRAINT antismash_bgc IF NOT EXISTS
                 FOR (n:antismash_bgc)
-                REQUIRE (n.nuid, n.region) IS UNIQUE;
+                REQUIRE (n.uid, n.region) IS UNIQUE;
         """
     )
     log.info("Creating new antismash nodes and linking them to proteins")
@@ -137,9 +182,9 @@ def antismash_as_separate_nodes():
                 MATCH (p1:protein)<-[e1:ENCODES]-(n1:nucleotide)
                 WHERE  e1.antismash_region is not null
                 WITH n1, e1.antismash_region as ar, min(e1.start) as minstart, max(e1.end) as maxend
-                call {
+                CALL {
                 WITH n1, ar, minstart, maxend
-                create (bgc:antismash_bgc {region:ar, start:minstart, end:maxend})
+                CREATE (bgc:antismash_bgc {uid: n1.uid, region:ar, start:minstart, end:maxend})
                 CREATE (n1)-[:PREDICTED_BGC]->(bgc)
                 } IN TRANSACTIONS OF 1000 rows;
             """
