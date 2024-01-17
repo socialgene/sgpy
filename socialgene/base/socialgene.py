@@ -14,7 +14,6 @@ from rich.progress import Progress
 
 from socialgene.base.compare_protein import CompareProtein
 from socialgene.base.molbio import Molbio
-from socialgene.clustermap.serialize import SerializeToClustermap
 from socialgene.hmm.hmmer import HMMER
 from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash

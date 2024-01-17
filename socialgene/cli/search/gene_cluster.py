@@ -1,12 +1,8 @@
 import argparse
 from pathlib import Path
-from typing import List
-from socialgene.cli.search.sea import search_bgc
 
-from socialgene.clustermap.serialize import SerializeToClustermap
+from socialgene.cli.search.sea import search_bgc
 from socialgene.config import env_vars
-from socialgene.search.hmmer import SearchDomains
-from socialgene.utils.logging import log
 
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
@@ -134,7 +130,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-
 def main():
     args = parser.parse_args()
 
@@ -162,7 +157,7 @@ def main():
         only_culture_collection=args.only_culture_collection,
         frac=args.frac,
         run_async=args.run_async,
-        analyze_with=args.analyze_with
+        analyze_with=args.analyze_with,
     )
 
 

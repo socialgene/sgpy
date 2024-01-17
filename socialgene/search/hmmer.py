@@ -400,7 +400,9 @@ class SearchDomains(SearchBase, CompareDomains):
                     if i.external_id in list(protein_id_bypass_list)
                 }
             )
-        temppp = self.outdegree_df[self.outdegree_df["protein_uid"].isin(loci_protein_ids)]
+        temppp = self.outdegree_df[
+            self.outdegree_df["protein_uid"].isin(loci_protein_ids)
+        ]
         len_start = self.outdegree_df["outdegree"].sum()
         if self.outdegree_df["outdegree"].sum() == 0:
             raise ValueError(
@@ -457,10 +459,7 @@ class SearchDomains(SearchBase, CompareDomains):
                 threshold = max_query_proteins
             m_start = self.outdegree_df["outdegree"].sum()
             if scatter:
-                temp = list(
-                    
-                        self.input_bgc.features_sorted_by_midpoint
-                )
+                temp = list(self.input_bgc.features_sorted_by_midpoint)
                 temp = [
                     temp[int(ceil(i * len(temp) / threshold))].uid
                     for i in range(threshold)

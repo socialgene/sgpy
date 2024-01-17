@@ -1,8 +1,8 @@
-from collections import namedtuple
-from pathlib import Path
 import time
 from abc import ABC, abstractmethod
+from collections import namedtuple
 from math import ceil
+from pathlib import Path
 
 import pandas as pd
 from rich.console import Console
@@ -14,7 +14,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.table import Table
-from textdistance import jaccard, levenshtein
+from textdistance import levenshtein
 
 from socialgene.base.socialgene import SocialGene
 from socialgene.clustermap.serialize import SerializeToClustermap
@@ -121,7 +121,9 @@ class SearchBase(ABC):
         else:
             raise ValueError("Must provide either sg_object or gbk_path")
         self.n_searched_proteins = len(self.sg_object.proteins)
-        self._compare_two_gene_clusters_score = namedtuple('bgc_comp2', 'jaccard levenshtein modscore')
+        self._compare_two_gene_clusters_score = namedtuple(
+            "bgc_comp2", "jaccard levenshtein modscore"
+        )
 
     @abstractmethod
     def prioritize_input_proteins(
@@ -221,7 +223,7 @@ class SearchBase(ABC):
         self._create_links()
         self._choose_group()
         self._rank_order_bgcs()
-    
+
     def _compare_two_gene_clusters(self, group, q_len):
         # levenshtein similarity of query proteins to target proteins
         # compares the order of query proteins to query proteins ordered by rbh to target
@@ -239,9 +241,10 @@ class SearchBase(ABC):
         jac = (len(group[group["target_feature"].notnull()])) / len(
             group["query_feature"].unique()
         )
-        return self._compare_two_gene_clusters_score(jac,lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len))
-        
-    
+        return self._compare_two_gene_clusters_score(
+            jac, lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len)
+        )
+
     def _compare_all_gcs_to_input_gc(self):
         # create a 3-column dataframe that represents the input gene cluster's features (proteins)
         q_obj = pd.DataFrame(
@@ -253,25 +256,28 @@ class SearchBase(ABC):
                 }
                 for i in list(self.input_bgc.features_sorted_by_midpoint)
             ]
-        ) 
+        )
         for k, group in self.link_df.groupby(
             ["query_cluster", "target_cluster"], sort=False
         ):
-            score=self._compare_two_gene_clusters(
-                    pd.merge(
-                        q_obj,
-                        group,
-                        on="query_feature",
-                        how="outer",
-                        suffixes=("", "_delme"),
-                    ),
-                    len(self.input_bgc.features),
-                )
+            score = self._compare_two_gene_clusters(
+                pd.merge(
+                    q_obj,
+                    group,
+                    on="query_feature",
+                    how="outer",
+                    suffixes=("", "_delme"),
+                ),
+                len(self.input_bgc.features),
+            )
             yield {
-                "query_gene_cluster":k[1],
-                "target_gene_cluster":k[0],
-                "jaccard":score.jaccard, "levenshtein":score.levenshtein, "modscore":score.modscore}
-                
+                "query_gene_cluster": k[1],
+                "target_gene_cluster": k[0],
+                "jaccard": score.jaccard,
+                "levenshtein": score.levenshtein,
+                "modscore": score.modscore,
+            }
+
     def _rank_order_bgcs(self, compa):
         # TODO: should be based off of create_links() output not bgc_df
         """Sorts assembly IDs by comparing the levenshtein distance of ordered query proteins (forward and reverse)"""
@@ -435,7 +441,8 @@ class SearchBase(ABC):
                             self._create_link_df(
                                 query_gene_cluster=self.input_bgc,
                                 target_gene_cluster=target_gene_cluster,
-                                tool=tool, **kwargs
+                                tool=tool,
+                                **kwargs,
                             ),
                         ]
                     )
