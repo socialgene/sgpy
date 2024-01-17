@@ -6,6 +6,7 @@ from socialgene.dbmodifiers.massage.indices import (
     nucleotide_external_id,
     nucleotide_uid,
     protein_uid,
+    taxonomy_uid,
 )
 
 parser = argparse.ArgumentParser(
@@ -54,6 +55,13 @@ parser.add_argument(
     required=False,
     action=argparse.BooleanOptionalAction,
 )
+parser.add_argument(
+    "--taxonomy_uid",
+    help="",
+    default=False,
+    required=False,
+    action=argparse.BooleanOptionalAction,
+)
 
 
 def main():
@@ -72,6 +80,8 @@ def main():
         nucleotide_uid()
     if args.nucleotide_external_id or args.all:
         nucleotide_external_id()
+    if args.taxonomy_uid or args.all:
+        taxonomy_uid()
 
 
 if __name__ == "__main__":
