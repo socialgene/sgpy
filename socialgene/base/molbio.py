@@ -38,15 +38,15 @@ class LocusAssemblyMetadata:
     # add a function that takes a dict as input and sets any attributes in the dict keys
     def update(self, d: dict):
         for k, v in d.items():
-            temp_v = None
+            temp_v = v
             if isinstance(v, list):
                 # if info is a list, collapse into a single string
                 if len(v) > 1:
                     temp_v = ";".join(v)
                 else:
                     temp_v = v[0]
-            else:
-                temp_v = v
+            if not isinstance(temp_v, str):
+                temp_v = str(temp_v)
             temp_v.replace("\t", "")
             temp_v.replace("\n", "")
             temp_v.replace("\r", "")
