@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/socialgene/sgpy/compare/v0.4.0...v0.5.0) (2024-01-17)
+
+
+### Features
+
+* repesent antismash bgcs as nodes and/or edges ([#83](https://github.com/socialgene/sgpy/issues/83)) ([8348a12](https://github.com/socialgene/sgpy/commit/8348a12ccc05fc1ba8e2dcc219833b81f00f46bd))
+
 ## [0.4.0](https://github.com/socialgene/sgpy/compare/v0.3.3...v0.4.0) (2023-12-21)
 
 
