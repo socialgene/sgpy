@@ -522,16 +522,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         self._merge_assemblies(sg_object)
         self.protein_comparison.extend(sg_object.protein_comparison)
 
-    def write_clustermap_json(
-        self,
-        outpath,
-        gene_cluster_order=None,
-    ):
-        raise NotImplementedError("write_clustermap_json needs to be updated")
-        # TODO: Add link_df to clustermap
-        cmap = SerializeToClustermap(sorted_bgcs=gene_cluster_order, sg_object=self)
-        cmap.write(outpath=outpath)
-
     def write_genbank(self, outpath):
         for assembly in self.assemblies.values():
             for locus in assembly.loci.values():
