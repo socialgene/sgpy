@@ -224,7 +224,7 @@ class SearchDomains(SearchBase, CompareDomains):
     def __init__(
         self,
         hmm_dir: str = None,
-        input = None,
+        input=None,
         use_neo4j_precalc: bool = True,
         modscore_cutoff: float = 0.8,
         **kwargs,
@@ -237,7 +237,7 @@ class SearchDomains(SearchBase, CompareDomains):
             self.read_sg_object(input)
         elif isinstance(input, str) or isinstance(input, Path):
             self.read_input_bgc(input)
-            self.gbk_path=input
+            self.gbk_path = input
         else:
             raise ValueError("Must provide either sg_object or gbk_path")
         self.n_searched_proteins = len(self.sg_object.proteins)
@@ -489,7 +489,7 @@ class SearchDomains(SearchBase, CompareDomains):
                 ]
 
             log.info(
-                f"`max_query_proteins` reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
+                f"'max_query_proteins' reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
             )
         elif max_query_proteins is not None:
             raise ValueError
