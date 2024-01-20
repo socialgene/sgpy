@@ -281,6 +281,7 @@ class HmmModel:
 
         """
         self._antismash_categories()
+        self._prism_categories()
 
     def _antismash_categories(self):
         """
@@ -320,6 +321,40 @@ class HmmModel:
             self._category = "rrefinder"
         if "antismash/modules/lassopeptides" in st_hmmpath:
             self._category = "lassopeptides"
+
+    def _prism_categories(self):
+        """
+        The function extracts and defines categories of prism models based on directory structure.
+
+        Args:
+          hmmpath: The absolute path to the hmm file.
+        """
+        # standardize cross-os path
+        st_hmmpath = PureWindowsPath(
+            normpath(PureWindowsPath(self._abs_path).as_posix())
+        ).as_posix()
+        top_dirs = {
+            i: f"hmm/{i}"
+            for i in [
+                "prerequisite",
+                "regulator",
+                "resistance",
+                "ribosomal",
+                "sugar",
+                "tailoring",
+                "thiotemplated",
+                "type_ii_polyketide",
+            ]
+        }
+        for k, v in top_dirs.items():
+            if v in st_hmmpath:
+                self._category = k
+        for k, v in {
+            i: f"hmm/thiotemplated/{i}"
+            for i in ["acyl_adenylating", "acyltransferase", "adenylation"]
+        }.items():
+            if v in st_hmmpath:
+                self._subcategory = k
 
 
 class HmmParse:
