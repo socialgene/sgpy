@@ -228,7 +228,7 @@ class SearchDomains(SearchBase, CompareDomains):
         modscore_cutoff: float = 0.8,
         **kwargs,
     ) -> None:
-        super().__init__(modscore_cutoff=modscore_cutoff, **kwargs)
+        super().__init__(input=input, modscore_cutoff=modscore_cutoff, **kwargs)
         self.hmm_dir = hmm_dir
         self.outdegree_df = pd.DataFrame
         # input sg_object or gbk_path

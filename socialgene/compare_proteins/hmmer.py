@@ -17,7 +17,7 @@ class CompareDomains(HMMDataFrame):
         self.name = "HMMER annotation comparison with SocialGene"
         self.score_column = "score"
 
-    def compare_proteins(self, queries, targets):
+    def compare_proteins(self, queries, targets, **kwargs):
         return pd.DataFrame(
             (
                 {
