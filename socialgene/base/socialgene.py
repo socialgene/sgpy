@@ -303,12 +303,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 end=end,
             )
             for feature in res:
+                _ = self.add_protein(uid=feature.value().end_node["uid"])
                 self.assemblies[assembly_uid].loci[external_id].add_feature(
                     type="protein",
                     uid=feature.value().end_node["uid"],
                     **feature.value(),
                 )
-                _ = self.add_protein(uid=feature.value().end_node["uid"])
+
         return {"assembly": assembly_uid, "locus": external_id}
 
     def _drop_all_cross_origin(self):
