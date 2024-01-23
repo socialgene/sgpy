@@ -821,11 +821,20 @@ class GeneCluster(FeatureCollection):
         super().__init__()
         self.parent = parent
         self.features = features
-        self.uid = uid
+        if uid:
+            self.uid = uid
+        else:
+            self.uid = str(uuid4())
         # self.tool; e.g.antismash, gecco, etc
         self.tool = tool
         # flexible attributes
         self.__dict__.update(kwargs)
+
+    def __hash__(self):
+        return hash((self.parent, self.uid))
+
+    def __lt__(self, other):
+        return 1
 
     def write_genbank(self, outpath, sg):
         record = SeqRecord(

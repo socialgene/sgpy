@@ -113,9 +113,12 @@ class SearchBase(ABC):
         self.outdegree_df = pd.DataFrame()
         self.bgc_df = pd.DataFrame()
         self.primary_bgc_regions = pd.DataFrame()
-        if isinstance(input, SocialGene):
-            self.read_sg_object(input)
-        elif isinstance(input, str) or isinstance(input, Path):
+
+        if (
+            isinstance(input, SocialGene)
+            or isinstance(input, str)
+            or isinstance(input, Path)
+        ):
             self.read_input_bgc(input)
             self.gbk_path = input
         else:
@@ -174,15 +177,12 @@ class SearchBase(ABC):
             f"Input BGC has {len(self.sg_object.proteins)} proteins and/or pseudogenes"
         )
 
-    def read_sg_object(self, sg_object: SocialGene):
-        self.sg_object = sg_object
-        self._modify_input_bgc_name()
-        self._input_bgc_info()
-        self.create_input_bgcs()
-
-    def read_input_bgc(self, gbk_path: str):
+    def read_input_bgc(self, input: str):
         # parse input BGC
-        self.sg_object.parse(gbk_path)
+        if isinstance(input, SocialGene):
+            self.sg_object = input
+        else:
+            self.sg_object.parse(input)
         self._modify_input_bgc_name()
         self._input_bgc_info()
         self.create_input_bgcs()
@@ -227,23 +227,29 @@ class SearchBase(ABC):
     def _compare_two_gene_clusters(self, group, q_len):
         # levenshtein similarity of query proteins to target proteins
         # compares the order of query proteins to query proteins ordered by rbh to target
+        only_matched = group.dropna(subset=["query"])
         a = levenshtein(
-            list(group.sort_values(["t_start"], ascending=True)["query"]),
-            list(group.sort_values(["q_start"], ascending=True)["query"]),
-        ) / len(group)
+            list(only_matched.sort_values(["t_start"], ascending=True)["query"]),
+            list(only_matched.sort_values(["q_start"], ascending=True)["query"]),
+        ) / len(only_matched)
         # levenshtein similarity of query proteins to target proteins in reverse order
         b = levenshtein(
-            list(group.sort_values(["t_start"], ascending=True)["query"]),
-            list(group.sort_values(["q_start"], ascending=False)["query"]),
-        ) / len(group)
+            list(only_matched.sort_values(["t_start"], ascending=True)["query"]),
+            list(only_matched.sort_values(["q_start"], ascending=False)["query"]),
+        ) / len(only_matched)
         lev = a if a < b else b
         lev = 1 - lev
         jac = (len(group[group["target_feature"].notnull()])) / len(
             group["query_feature"].unique()
         )
+
         return self._compare_two_gene_clusters_score(
             jac, lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len)
         )
+
+        # return self._compare_two_gene_clusters_score(
+        #     jac, lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len)
+        # )
 
     def _compare_all_gcs_to_input_gc(self):
         # create a 3-column dataframe that represents the input gene cluster's features (proteins)
@@ -258,7 +264,7 @@ class SearchBase(ABC):
             ]
         )
         for k, group in self.link_df.groupby(
-            ["query_cluster", "target_cluster"], sort=False
+            ["query_gene_cluster", "target_gene_cluster"], sort=False
         ):
             score = self._compare_two_gene_clusters(
                 pd.merge(
@@ -278,10 +284,48 @@ class SearchBase(ABC):
                 "modscore": score.modscore,
             }
 
-    def _rank_order_bgcs(self, compa):
+    def _compare_bgcs_by_jaccard_and_levenshtein(
+        self,
+    ):
         # TODO: should be based off of create_links() output not bgc_df
         """Sorts assembly IDs by comparing the levenshtein distance of ordered query proteins (forward and reverse)"""
-        self.sorted_bgcs = sorted(temp, key=temp.get, reverse=True)
+        return pd.DataFrame(self._compare_all_gcs_to_input_gc()).sort_values(
+            by="modscore", ascending=False
+        )
+
+    def _compare_bgcs_by_median_bitscore(
+        self,
+    ):
+        temp = self.link_df[["query_gene_cluster", "target_gene_cluster", "score"]]
+        return (
+            temp.groupby(["query_gene_cluster", "target_gene_cluster"])["score"]
+            .median()
+            .sort_values(ascending=False)
+            .reset_index()
+        )
+
+    def _rank_order_bgcs(self, threshold):
+        """Sorts assemblies by comparing the jaccard and levenshtein distance of ordered
+            query proteins (forward and reverse) and breaking ties with the median bitscore of RBH between BGCs
+
+        Args:
+            threshold (float): The minimum jaccard score required for a BGC to be considered a hit. Think of this as the number of input bgc proteins a putative bgc must have to be considered a hit. (0 < threshold < 1)
+        Returns:
+            list[Assembly]: LIst of SocialGene Assembly objects
+        """
+        temp = pd.merge(
+            self._compare_bgcs_by_jaccard_and_levenshtein(),
+            self._compare_bgcs_by_median_bitscore(),
+            left_on="query_gene_cluster",
+            right_on=["target_gene_cluster"],
+        )
+        temp = temp[temp["jaccard"] >= threshold]
+
+        temp.drop(
+            ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
+        )
+        temp.sort_values(by=["modscore", "score"], ascending=False)
+        return temp["query_gene_cluster_x"].to_list()
 
     def _bgc_regions_to_sg_object(self, collapsed_df):
         now = time.time()
@@ -366,7 +410,7 @@ class SearchBase(ABC):
         q_obj = pd.DataFrame(
             [
                 {
-                    "query_cluster": query_gene_cluster,
+                    "query_gene_cluster": query_gene_cluster,
                     "query_feature": i,
                     "query_protein": i.protein,
                     "q_start": i.start,
@@ -378,7 +422,7 @@ class SearchBase(ABC):
         t_obj = pd.DataFrame(
             [
                 {
-                    "target_cluster": target_gene_cluster,
+                    "target_gene_cluster": target_gene_cluster,
                     "target_feature": i,
                     "target_protein": i.protein,
                     "t_start": i.start,
@@ -461,9 +505,6 @@ class SearchBase(ABC):
             log.info("Finish: Assigning target BGC proteins to input BGC groups")
             log.warning("No links to group by, no groups produced")
             return
-        # df = self.link_df
-        # df["query"] = df["query"].apply(lambda x: x.uid)
-        # df["target"] = df["target"].apply(lambda x: x.uid)
         self.group_df = (
             self.link_df.sort_values(by="score", ascending=False)
             .groupby(["query"], observed=False)

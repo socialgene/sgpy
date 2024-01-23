@@ -45,7 +45,7 @@ class SerializeToClustermap:
                     "name": assembly.uid,
                     "loci": self._loci([i for i in assembly.gene_clusters]),
                 }
-                for assembly in list(dict.fromkeys(self.sorted_bgcs))
+                for assembly in self.sorted_bgcs
             ]
         }
 

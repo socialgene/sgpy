@@ -232,14 +232,6 @@ class SearchDomains(SearchBase, CompareDomains):
         self.hmm_dir = hmm_dir
         self.outdegree_df = pd.DataFrame
         # input sg_object or gbk_path
-        if isinstance(input, SocialGene):
-            self.read_sg_object(input)
-        elif isinstance(input, str) or isinstance(input, Path):
-            self.read_input_bgc(input)
-            self.gbk_path = input
-        else:
-            raise ValueError("Must provide either sg_object or gbk_path")
-        self.n_searched_proteins = len(self.sg_object.proteins)
         self._annotate(hmm_dir=self.hmm_dir, use_neo4j_precalc=use_neo4j_precalc)
         if not self._check_for_hmm_outdegree():
             self._set_hmm_outdegree()

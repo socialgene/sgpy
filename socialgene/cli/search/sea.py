@@ -12,21 +12,21 @@ def search_bgc(
     input,
     hmm_dir: str = None,
     use_neo4j_precalc: bool = True,
-    assemblies_must_have_x_matches: float = 0.9,
-    nucleotide_sequences_must_have_x_matches: float = 0.9,
-    gene_clusters_must_have_x_matches: float = 0.9,
+    assemblies_must_have_x_matches: float = 0.4,
+    nucleotide_sequences_must_have_x_matches: float = 0.4,
+    gene_clusters_must_have_x_matches: float = 0.4,
     break_bgc_on_gap_of: int = 10000,
     target_bgc_padding: int = 20000,
-    max_domains_per_protein: float = None,
-    max_outdegree: int = None,
+    max_domains_per_protein: float = 3,
+    max_outdegree: int = 100000,
     max_query_proteins: int = 5,
     scatter: bool = False,
     locus_tag_bypass_list: List[str] = None,
     protein_id_bypass_list: List[str] = None,
     only_culture_collection: bool = False,
     frac: float = 0.75,
-    run_async: bool = False,
-    analyze_with: str = "hmmer",
+    run_async: bool = True,
+    analyze_with: str = "blastp",
     outpath_clinker: str = None,
 ):
     log.info(f"Running search with args: {locals()}")
@@ -83,16 +83,20 @@ def search_bgc(
         tool=analyze_with, argstring="--fast --max-hsps 1", cpus=10
     )
     search_object._choose_group()
-    return search_object
-    search_object._rank_order_bgcs()
-    assemblies = list(
-        dict.fromkeys([i.parent.parent for i in search_object.sorted_bgcs])
+    # return search_object
+    if gene_clusters_must_have_x_matches > 1:
+        gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / 100
+    assemblies = search_object._rank_order_bgcs(
+        threshold=gene_clusters_must_have_x_matches
     )
+
+    assemblies = [i.parent.parent for i in assemblies]
     assemblies = [search_object.input_assembly] + assemblies
     z = SerializeToClustermap(
         sg_object=search_object.sg_object,
-        sorted_bgcs=[search_object.input_bgc] + search_object.sorted_bgcs,
+        sorted_bgcs=assemblies,
         link_df=search_object.link_df,
         group_df=search_object.group_df,
     )
     z.write(outpath_clinker)
+    return search_object
