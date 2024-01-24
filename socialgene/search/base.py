@@ -32,6 +32,13 @@ progress_bar = Progress(
 )
 
 
+class BgcComp2:
+    def __init__(self, jaccard, levenshtein, modscore):
+        self.jaccard = jaccard
+        self.levenshtein = levenshtein
+        self.modscore = modscore
+
+
 def truncate_string(str_input, max_length):
     str_end = ".."
     length = len(str_input)
@@ -124,9 +131,7 @@ class SearchBase(ABC):
         else:
             raise ValueError("Must provide either sg_object or gbk_path")
         self.n_searched_proteins = len(self.sg_object.proteins)
-        self._compare_two_gene_clusters_score = namedtuple(
-            "bgc_comp2", "jaccard levenshtein modscore"
-        )
+        self._compare_two_gene_clusters_score = BgcComp2
 
     @abstractmethod
     def prioritize_input_proteins(
@@ -287,7 +292,6 @@ class SearchBase(ABC):
     def _compare_bgcs_by_jaccard_and_levenshtein(
         self,
     ):
-        # TODO: should be based off of create_links() output not bgc_df
         """Sorts assembly IDs by comparing the levenshtein distance of ordered query proteins (forward and reverse)"""
         return pd.DataFrame(self._compare_all_gcs_to_input_gc()).sort_values(
             by="modscore", ascending=False
@@ -324,7 +328,7 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        temp.sort_values(by=["modscore", "score"], ascending=False)
+        temp = temp.sort_values(by=["score", "modscore"], ascending=False)
         return temp["query_gene_cluster_x"].to_list()
 
     def _bgc_regions_to_sg_object(self, collapsed_df):
@@ -468,7 +472,7 @@ class SearchBase(ABC):
         )
         with progress_bar as pg:
             task = pg.add_task(
-                description="a",
+                description="Creating links",
                 total=len(list(self.sg_object.get_all_gene_clusters())),
             )
             for target_gene_cluster in self.sg_object.get_all_gene_clusters():

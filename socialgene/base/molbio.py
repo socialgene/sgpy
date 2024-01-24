@@ -664,7 +664,8 @@ class Feature(Location):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
-            self.end == other.end
+            self.parent == other.parent
+            and self.end == other.end
             and self.start == other.start
             and self.uid == other.uid
             and self.strand == other.strand
@@ -672,7 +673,7 @@ class Feature(Location):
         )
 
     def __lt__(self, other):
-        return self.start < other.start
+        return self.start < other.start and self.parent == other.parent
 
 
 class FeatureCollection:

@@ -128,12 +128,22 @@ class MMseqsEasySearch(BlastTab):
                 logging.warning("No output from MMseqs2 search")
             else:
                 # sorted for reproducibility
-                return pd.read_csv(
-                    outpath,
-                    sep="\t",
-                    names=BlastTab_COLUMNS,
-                    dtype=BlastTab_COLUMNS,
-                ).sort_values(["score", "query"], ascending=False)
+                return (
+                    pd.read_csv(
+                        outpath,
+                        sep="\t",
+                        names=BlastTab_COLUMNS,
+                        dtype=BlastTab_COLUMNS,
+                    )
+                    .sort_values(
+                        [
+                            "query",
+                            "score",
+                        ],
+                        ascending=False,
+                    )
+                    .reset_index(drop=True)
+                )
 
     def compare_proteins(self, queries, targets, cpus=1, argstring="", index=False):
         # loop through protein list and write to temporary fasta file

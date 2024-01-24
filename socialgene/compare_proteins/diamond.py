@@ -99,19 +99,23 @@ class DiamondBlastp(BlastTab):
             )
             log.debug(mes)
             if not os.path.exists(outpath):
-                log.warning("No output from MMseqs2 search")
+                log.warning("No output from Diamond search")
             else:
                 # sorted for reproducibility
-                return pd.read_csv(
-                    outpath,
-                    sep="\t",
-                    header=None,
-                    names=BlastTab_COLUMNS,
-                    dtype=BlastTab_COLUMNS,
-                ).sort_values(["score", "query"], ascending=False)
+                return (
+                    pd.read_csv(
+                        outpath,
+                        sep="\t",
+                        header=None,
+                        names=BlastTab_COLUMNS,
+                        dtype=BlastTab_COLUMNS,
+                    )
+                    .sort_values(["query", "score"], ascending=False)
+                    .reset_index(drop=True)
+                )
 
     def compare_proteins(
-        self, queries, targets, cpus=1, argstring="--ultra-sensitive  --max-hsps 1"
+        self, queries, targets, cpus=1, argstring="--fast --no-self-hits --max-hsps 1"
     ):
         # loop through protein list and write to temporary fasta file
         if isinstance(queries, Protein):

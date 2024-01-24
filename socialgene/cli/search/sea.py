@@ -12,14 +12,14 @@ def search_bgc(
     input,
     hmm_dir: str = None,
     use_neo4j_precalc: bool = True,
-    assemblies_must_have_x_matches: float = 0.4,
-    nucleotide_sequences_must_have_x_matches: float = 0.4,
-    gene_clusters_must_have_x_matches: float = 0.4,
+    assemblies_must_have_x_matches: float = 0.6,
+    nucleotide_sequences_must_have_x_matches: float = 0.6,
+    gene_clusters_must_have_x_matches: float = 0.6,
     break_bgc_on_gap_of: int = 10000,
     target_bgc_padding: int = 20000,
     max_domains_per_protein: float = 3,
     max_outdegree: int = 100000,
-    max_query_proteins: int = 5,
+    max_query_proteins: int = 10,
     scatter: bool = False,
     locus_tag_bypass_list: List[str] = None,
     protein_id_bypass_list: List[str] = None,
@@ -79,6 +79,7 @@ def search_bgc(
         search_object.sg_object.annotate_proteins_with_neo4j(annotate_all=True)
     else:
         search_object.sg_object.add_sequences_from_neo4j()
+    # return search_object
     search_object._create_links(
         tool=analyze_with, argstring="--fast --max-hsps 1", cpus=10
     )
