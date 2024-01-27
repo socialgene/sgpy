@@ -442,7 +442,7 @@ class SearchBase(ABC):
             .rename(columns={comparator.tool.score_column: "score"}, inplace=False)
         )
 
-    def _create_links(self, tool="hmmer", cutoff=None, **kwargs) -> pd.DataFrame:
+    def _create_links(self, tool="hmmer", **kwargs) -> pd.DataFrame:
         """
         Loop through gene_cluster compare the proteins to the input BGC
 
