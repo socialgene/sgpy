@@ -77,3 +77,7 @@ sg_version              = "socialgene.utils.version:main"
 sg_neo4j_version        = "socialgene.utils.version:neo4j"
 sg_nodes                = "socialgene.neo4j.schema.nodes:printer"
 sg_relationships        = "socialgene.neo4j.schema.relationships:printer"
+
+
+# addons
+sg_gnps_import          = "socialgene.cli.external_mods.gnps:main"
