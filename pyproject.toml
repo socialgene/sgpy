@@ -43,6 +43,7 @@ repository = "https://github.com/socialgene/sgpy"
 homepage = "https://socialgene.github.io"
 
 [project.optional-dependencies]
+chem= ["rdkit"]
 ci = ["pytest-cov"]
 cd = ["twine"]
 
@@ -80,4 +81,4 @@ sg_relationships        = "socialgene.neo4j.schema.relationships:printer"
 
 
 # addons
-sg_gnps_import          = "socialgene.cli.external_mods.gnps:main"
+sg_gnps_import          = "socialgene.addons.gnps_networking:main"

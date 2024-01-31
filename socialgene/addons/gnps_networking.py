@@ -1,5 +1,8 @@
+import argparse
 from pathlib import Path
 import json
+import re
+from zipfile import ZipFile
 import numpy as np
 import pandas as pd
 from socialgene.neo4j.neo4j import GraphDriver
@@ -14,7 +17,25 @@ def extract_parameter(xml_string):
     return {root.attrib["name"]: root.text}
 
 
+def capture_assembly_id(s, regex):
+    match regex:
+        case "_":
+            pattern = r'^([__]+)'
+        case "__":
+            pattern = r'^([^_]+)__'
+        case _:
+            pattern = regex
+    match = re.search(pattern, s)
+    if match:
+        return match.group(1)
+    else:
+        return s
+
+
+
 class GNPS_SNETS:
+    """Parses GNPS molecular network results and adds them to a Neo4j database"""
+
     def __init__(
         self,
         gnps_dirpath,
@@ -38,9 +59,10 @@ class GNPS_SNETS:
         self._workflow_uuid()
         self._parse_clusterinfo()
         self._parse_dfs()
-        self._filename_to_assembly()
+
 
     def _get_gnps_paths(self):
+        """Parses the downloaded GNPS results for the necessary files, must be unzipped"""
         params_xml_path = Path(self.gnps_dirpath, "params.xml")
         specnets_path = list(self.gnps_dirpath.glob("**/result_specnets_DB/*.tsv"))
         clustersummary_path = list(
@@ -77,7 +99,7 @@ class GNPS_SNETS:
         self.clusterinfo_path = clusterinfo_path
 
     def _get_gnps_params(self):
-        # make a dict of the params ( lines look like: <parameter name="MAX_SHIFT">1999</parameter>)
+        """Makes a list of dicts of the GNPS run parameters from the params.xml file"""
         with open(self.params_xml_path, "r") as f:
             for i in f:
                 try:
@@ -86,6 +108,7 @@ class GNPS_SNETS:
                     continue
 
     def _file_mapping(self):
+        """Parses the file mapping from the GNPS run parameters and creates a dict of the original filename to the mapped filename"""
         for i in self.params:
             for k, v in i.items():
                 if k == "upload_file_mapping":
@@ -96,6 +119,7 @@ class GNPS_SNETS:
                         self.filemap[v.split("|")[0]] = v.split("|")[1].split("/")[-1]
 
     def _parse_clusterinfo(self):
+        """Parses the clusterinfo file and replaces the mapped filename with the original filename"""
         clusterinfo_df = pd.read_csv(self.clusterinfo_path, sep="\t").replace(
             np.nan, None
         )
@@ -116,12 +140,14 @@ class GNPS_SNETS:
         self.clusterinfo_df = clusterinfo_df
 
     def _workflow_uuid(self):
+        """Parses the workflow uuid from the params.xml file"""
         with open(self.params_xml_path, "r") as f:
             for i in f:
                 if 'parameter name="uuid"' in i:
                     self.workflow_uuid = i.split(">")[1].split("<")[0]
 
     def _parse_dfs(self):
+        """Parses the specnets, selfloop, and clustersummary files into pandas dataframes and sanitizes the column names with lowercase and underscores"""
         for i in ["specnets_path", "selfloop_path", "clustersummary_path"]:
             df = pd.read_csv(getattr(self, i), sep="\t").replace(np.nan, None)
             df.columns = [
@@ -149,12 +175,20 @@ class GNPS_SNETS:
             inplace=True,
         )
 
-    def _filename_to_assembly(self):
+    def _filename_to_assembly(self, regex="_"):
+        """Parses the assembly from the original MS filename and adds it to the clusterinfo dataframe (Assumes file is named like 'assembly_*.mzXML' or 'assembly_*.mzML' etc.)
+        You will need to modify this function if your files are named differently. These assembly names must be identical to the assembly names in the Neo4j database.
+        Also means all MS files must be named with a consistent pattern.
+
+        Args:
+            regex (str, optional): Pattern of MS file names. If '_' then it expects 'assembly-id_*.mzML'; if '__' then 'assembly-id__*.mzML'; can also be a custom regex pattern. Defaults to "_".
+        """
         self.clusterinfo_df["assembly"] = self.clusterinfo_df[
             "original_filename"
-        ].apply(lambda x: x.split("_")[0])
+        ].apply(lambda x: capture_assembly_id(x, regex=regex))
 
     def _check_db_for_assemblies(self):
+        """Checks the Neo4j database for assemblies that can be linked to the GNPS results"""
         assemblies = set(self.clusterinfo_df["assembly"].unique())
         with GraphDriver() as db:
             results = db.run(
@@ -175,6 +209,7 @@ class GNPS_SNETS:
             )
 
     def add_gnps_library_spectra(self):
+        """Adds GNPS library hits to the Neo4j database"""
         log.info("Adding GNPS library hits to db")
         with GraphDriver() as db:
             _ = db.run(
@@ -218,6 +253,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_gnps_library_spectrum_classifications(self):
+        """Adds GNPS library classifications to the Neo4j database"""
         log.info("Adding GNPS library classifications to db")
         with GraphDriver() as db:
             results = db.run(
@@ -239,6 +275,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_gnps_library_spectrum_ion_sources(self):
+        """Adds GNPS library ion sources to the Neo4j database"""
         log.info("Adding GNPS library ion sources to db")
         with GraphDriver() as db:
             results = db.run(
@@ -255,6 +292,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_gnps_library_spectrum_instruments(self):
+        """Adds GNPS library instruments to the Neo4j database"""
         log.info("Adding GNPS library instruments to db")
         with GraphDriver() as db:
             results = db.run(
@@ -271,6 +309,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_gnps_library_spectrum_organisms(self):
+        """Adds GNPS library organisms to the Neo4j database"""
         log.info("Adding GNPS library organisms to db")
         with GraphDriver() as db:
             results = db.run(
@@ -287,6 +326,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_gnps_clusters(self):
+        """Adds GNPS networking clusters to the Neo4j database and links them to the GNPS library hits"""
         log.info("Adding GNPS clusters to db")
         with GraphDriver() as db:
             results = db.run(
@@ -333,6 +373,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_links_between_gnps_clusters_and_assemblies(self):
+        """Adds links between GNPS clusters and genome assemblies to the Neo4j database"""
         log.info("Adding links between GNPS clusters and assemblies")
         df = (
             self.clusterinfo_df.groupby(["assembly"])["clusteridx"]
@@ -354,6 +395,7 @@ class GNPS_SNETS:
                 ).value()
 
     def add_input_spectra_to_gnps_clusters(self):
+        """Adds and links input spectra to GNPS clusters in the Neo4j database"""
         log.info("Adding and linking input spectra to GNPS clusters")
         with GraphDriver() as db:
             results = db.run(
@@ -374,6 +416,7 @@ class GNPS_SNETS:
             ).value()
 
     def add_links_between_gnps_clusters(self):
+        """Adds links between GNPS clusters in the Neo4j database (i.e. the molecular network)"""
         log.info("Adding links between GNPS clusters")
         with GraphDriver() as db:
             results = db.run(
@@ -393,3 +436,46 @@ class GNPS_SNETS:
                 df=self.selfloop_df.to_dict("records"),
                 workflow_uuid=self.workflow_uuid,
             ).value()
+
+
+def create_arg_parser():
+    """ "Creates and returns the ArgumentParser object."""
+    parser = argparse.ArgumentParser(
+        description="Integrate a GNPS molecular network into a SocialGene Neo4j Database"
+    )
+    parser.add_argument(
+        "--inputdir",
+        help="Path to unzipped directory of GNPS molecular network download",
+        default=False,
+        required=True,
+    )
+    parser.add_argument(
+        "--regex",
+        help="Pattern of MS file names. If '_' then it expects 'assembly-id_*.mzML'; if '__' then 'assembly-id__*.mzML'; can also be a custom regex pattern. Defaults to '_'.",
+        default="_",
+    )
+    return parser
+
+
+def main():
+    parser = create_arg_parser()
+    args = parser.parse_args()
+    if not Path(args.inputdir).exists():
+        raise FileNotFoundError(f"Path {args.inputdir} does not exist")
+    if not Path(args.inputdir).is_dir():
+        raise ValueError(f"Path {args.inputdir} is not a directory")
+    gnps = GNPS_SNETS(gnps_dirpath=args.inputdir)
+    gnps._filename_to_assembly(regex=args.regex)
+    gnps.add_gnps_library_spectra()
+    gnps.add_gnps_library_spectrum_classifications()
+    gnps.add_gnps_library_spectrum_ion_sources()
+    gnps.add_gnps_library_spectrum_instruments()
+    gnps.add_gnps_library_spectrum_organisms()
+    gnps.add_gnps_clusters()
+    gnps.add_links_between_gnps_clusters_and_assemblies()
+    gnps.add_input_spectra_to_gnps_clusters()
+    gnps.add_links_between_gnps_clusters()
+
+
+if __name__ == "__main__":
+    main()

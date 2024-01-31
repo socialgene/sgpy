@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from socialgene.addons.gnps import GNPS_SNETS
+from socialgene.addons.gnps_networking import GNPS_SNETS
 
 
 parser = argparse.ArgumentParser(
