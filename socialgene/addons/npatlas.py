@@ -5,10 +5,11 @@ import requests
 from rich.progress import Progress
 
 from socialgene.addons.base import ExternalBaseClass
-from socialgene.addons.gnps import GnpsLibrarySpectrum
+from socialgene.addons.gnps_library import GnpsLibrarySpectrum
 from socialgene.addons.mibig import Mibig
 from socialgene.addons.npmrd import Npmrd
 from socialgene.addons.publication import Publication
+from socialgene.base.chem import ChemicalCompound
 from socialgene.utils.logging import log
 
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
@@ -25,11 +26,6 @@ class NPPub(Publication):
         self.year = str(year)
 
 
-class ExternalDescriptors:
-    __slots__ = ["chebi", "kegg", "lipid_maps", "meta_cyc"]
-
-    def __init__(self) -> None:
-        pass
 
 
 class Npatlas(ExternalBaseClass):
@@ -109,6 +105,7 @@ class Npatlas(ExternalBaseClass):
         self._assign_to_classy()
         self._assign_external_ids()
         # self.external_ids = self.entry.get("external_ids", None)
+
 
     def _assign_to_classy(self):
         try:
@@ -251,3 +248,6 @@ class Npatlas(ExternalBaseClass):
                 uid=self.uid,
                 chemont=self.classyfire_subclass,
             )
+
+    def connect_to_chem(self):
+        ChemicalCompound()

@@ -1,10 +1,9 @@
 import argparse
 from pathlib import Path
-import json
 import re
-from zipfile import ZipFile
 import numpy as np
 import pandas as pd
+from socialgene.addons.gnps_library import GnpsLibrarySpectrum
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from uuid import uuid4
@@ -33,7 +32,7 @@ def capture_assembly_id(s, regex):
 
 
 
-class GNPS_SNETS:
+class GNPS_SNETS():
     """Parses GNPS molecular network results and adds them to a Neo4j database"""
 
     def __init__(
@@ -211,6 +210,10 @@ class GNPS_SNETS:
     def add_gnps_library_spectra(self):
         """Adds GNPS library hits to the Neo4j database"""
         log.info("Adding GNPS library hits to db")
+        # parse into GnpsLibrarySpectrum object to be more strict
+        standard_dict_list = []
+        for i in self.specnets_df.to_dict("records"):
+            standard_dict_list.append(GnpsLibrarySpectrum(**i).props)
         with GraphDriver() as db:
             _ = db.run(
                 """
@@ -249,7 +252,7 @@ class GNPS_SNETS:
                         gls.inchikey = row.inchikey,
                         gls.inchikey_planar = row.inchikey_planar
                 """,
-                df=self.specnets_df.to_dict("records"),
+                df=standard_dict_list,
             ).value()
 
     def add_gnps_library_spectrum_classifications(self):
