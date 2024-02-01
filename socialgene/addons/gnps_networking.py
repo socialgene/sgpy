@@ -210,50 +210,9 @@ class GNPS_SNETS():
     def add_gnps_library_spectra(self):
         """Adds GNPS library hits to the Neo4j database"""
         log.info("Adding GNPS library hits to db")
-        # parse into GnpsLibrarySpectrum object to be more strict
-        standard_dict_list = []
+        # This is potentially slow w/ a lot of trips to Neo4j but is more standardized so leaving it for now
         for i in self.specnets_df.to_dict("records"):
-            standard_dict_list.append(GnpsLibrarySpectrum(**i).props)
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                MERGE (gls:gnps_library_spectrum {uid: row.spectrumid})
-                    ON CREATE SET
-                        gls.compound_name = row.compound_name,
-                        gls.compound_source = row.compound_source,
-                        gls.pi = row.pi,
-                        gls.data_collector = row.data_collector,
-                        gls.adduct = row.adduct,
-                        gls.precursor_mz = row.precursor_mz,
-                        gls.exactmass = row.exactmass,
-                        gls.charge = row.charge,
-                        gls.cas_number = row.cas_number,
-                        gls.pubmed_id = row.pubmed_id,
-                        gls.smiles = row.smiles,
-                        gls.inchi = row.inchi,
-                        gls.inchi_aux = row.inchi_aux,
-                        gls.library_class = row.library_class,
-                        gls.ionmode = row.ionmode,
-                        gls.libraryqualitystring = row.libraryqualitystring,
-                        gls.mqscore = row.mqscore,
-                        gls.tic_query = row.tic_query,
-                        gls.rt_query = row.rt_query,
-                        gls.mzerrorppm = row.mzerrorppm,
-                        gls.sharedpeaks = row.sharedpeaks,
-                        gls.massdiff = row.massdiff,
-                        gls.libmz = row.libmz,
-                        gls.specmz = row.specmz,
-                        gls.speccharge = row.speccharge,
-                        gls.moleculeexplorerdatasets = row.moleculeexplorerdatasets,
-                        gls.moleculeexplorerfiles = row.moleculeexplorerfiles,
-                        gls.molecular_formula = row.molecular_formula,
-                        gls.inchikey = row.inchikey,
-                        gls.inchikey_planar = row.inchikey_planar
-                """,
-                df=standard_dict_list,
-            ).value()
+            GnpsLibrarySpectrum(**i).add_node_to_neo4j()
 
     def add_gnps_library_spectrum_classifications(self):
         """Adds GNPS library classifications to the Neo4j database"""

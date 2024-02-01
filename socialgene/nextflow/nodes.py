@@ -1,59 +1,14 @@
-import builtins
-
-from rich import print
-from rich.console import Console, ConsoleOptions, RenderResult
-from rich.table import Table
-
 from socialgene.base.molbio import LocusAssemblyMetadata
-from socialgene.config import env_vars
-from socialgene.neo4j.schema.neo4j_element import Neo4jElement
-from socialgene.utils.lists_to_markdown import markdown_table_from_list
+from socialgene.neo4j.neo4j_element import Node
 
-# use rich to print
-builtins.print = print
+# This file can only contain class objects that inherit from Node
 
 
-class Node(Neo4jElement):
-    """Represents a single Node"""
+class PARAMETERS(Node):
+    """Parameters and environmental variables used during database creation"""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:  # pragma: no cover
-        table = Table(title="Node")
-        table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
-        table.add_column(
-            "Description",
-            justify="left",
-            style="cyan",
-            no_wrap=False,
-            ratio=4,
-            max_width=50,
-        )
-        table.add_column("Nextflow results subdirectory", style="magenta", ratio=1)
-        table.add_column("Neo4j header file", style="magenta", ratio=1)
-        table.add_row(
-            self.neo4j_label,
-            self.target_subdirectory,
-            self.target_subdirectory,
-            self.header_filename,
-        )
-        yield table
-
-
-class NodesMixin:
-    """Represents multiple Nodes and is where all non-addon Nodes are defined"""
-
-    def __init__(
-        self, include_sequences=env_vars["INCLUDE_SEQUENCES"], *args, **kwargs
-    ):
-        super().__init__(*args, **kwargs)
-        self.include_sequences = include_sequences
-
-        self.nodes = {}
-        self.add_node(
+        super().__init__(
             neo4j_label="parameters",
             description="Parameters and environmental variables used during database creation",
             header_filename="parameters.header",
@@ -88,16 +43,28 @@ class NodesMixin:
                 "genome_download_command",
             ],
         )
-        self.add_node(
+
+
+class ASSEMBLY(Node):
+    """Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="assembly",
             description="Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from.",
             header_filename="assembly.header",
             target_subdirectory="genomic_info",
             target_extension="assemblies",
             header=["uid:ID(assembly)"] + sorted(LocusAssemblyMetadata.__slots__),
+            contraints_unique=["uid"],
         )
 
-        self.add_node(
+
+class NUCLEOTIDE(Node):
+    """Represents a single nucleotide sequence (e.g. a contig/scaffold/chromosome)"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="nucleotide",
             description="Represents a single nucleotide sequence (e.g. a contig/scaffold/chromosome)",
             header_filename="locus.header",
@@ -106,26 +73,42 @@ class NodesMixin:
             header=["uid:ID(nucleotide)"]
             + ["external_id"]
             + LocusAssemblyMetadata.__slots__,
+            contraints_unique=["uid"],
+            contraints=["external_id"],
         )
-        if self.include_sequences:
-            self.add_node(
+
+
+class PROTEIN(Node):
+    """Represents a non-redundant protein"""
+
+    def __init__(self, include_sequences=True, *args, **kwargs):
+        if include_sequences:
+            super().__init__(
                 neo4j_label="protein",
                 description="Represents a non-redundant protein",
                 header_filename="protein_ids.header",
                 target_subdirectory="protein_info",
                 target_extension="protein_ids",
                 header=["uid:ID(protein)", "crc64", "sequence"],
+                contraints_unique=["uid"],
             )
         else:
-            self.add_node(
+            super().__init__(
                 neo4j_label="protein",
                 description="Represents a non-redundant protein",
                 header_filename="protein_ids.header",
                 target_subdirectory="protein_info",
                 target_extension="protein_ids",
                 header=["uid:ID(protein)", "crc64"],
+                contraints_unique=["uid"],
             )
-        self.add_node(
+
+
+class GOTERM(Node):
+    """Represent a GO term"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="goterm",
             description="Represent a GO term",
             header_filename="goterms.header",
@@ -134,7 +117,12 @@ class NodesMixin:
             header=["uid:ID(goterm)", "name", "namespace", "def"],
         )
 
-        self.add_node(
+
+class TIGRFAM_ROLE(Node):
+    """Represents a TIGRFAM role"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="tigrfam_role",
             description="Represents a TIGRFAM role",
             header_filename="tigrfam_role.header",
@@ -142,7 +130,13 @@ class NodesMixin:
             target_extension="tigrfam_role",
             header=["uid:ID(tigrfam_role)"],
         )
-        self.add_node(
+
+
+class TIGRFAM_MAINROLE(Node):
+    """Represents a TIGRFAM main role"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="tigrfam_mainrole",
             description="Represents a TIGRFAM main role",
             header_filename="tigrfam_mainrole.header",
@@ -151,7 +145,12 @@ class NodesMixin:
             header=["uid:ID(tigrfam_mainrole)"],
         )
 
-        self.add_node(
+
+class TIGRFAM_SUBROLE(Node):
+    """Represents a TIGRFAM sub role"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="tigrfam_subrole",
             description="Represents a TIGRFAM sub role",
             header_filename="tigrfam_subrole.header",
@@ -160,49 +159,27 @@ class NodesMixin:
             header=["uid:ID(tigrfam_subrole)"],
         )
 
-        self.add_node(
+
+class TAXID(Node):
+    """Represents a single taxon within NCBI taxonomy"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="taxid",
             description="Represents a single taxon within NCBI taxonomy",
             header_filename="taxid.header",
             target_subdirectory="taxdump_process",
             target_extension="nodes_taxid",
             header=["uid:ID(taxid)", "name", "rank"],
+            contraints_unique=["uid"],
         )
 
-        self.add_node(
-            neo4j_label="mz_cluster_index",
-            description="Represents a single m/z cluster",
-            header_filename="mz_cluster_index_nodes.header",
-            target_subdirectory="paired_omics",
-            target_extension="mz_cluster_index_nodes",
-            header=[
-                "uid:ID(mz_cluster_index)",
-                "component_index:Long",
-                "parent_mass:Float",
-                "precursor_mass:Float",
-                "sum_precursor_intensity:Float",
-                "Smiles:String",
-                "rt_mean::Float",
-                "rt_std_err:Float",
-                "library_id:String",
-                "mq_score:Float",
-                "mz_error_ppm:Float",
-                "mass_diff:String",
-            ],
-        )
 
-        self.add_node(
-            neo4j_label="mz_source_file",
-            description="Represents the file m/z features came from",
-            header_filename="mz_source_file.header",
-            target_subdirectory="paired_omics",
-            target_extension="hash.mz_source_file",
-            header=[
-                "uid:ID(mz_source_file)",
-            ],
-        )
+class HMM_SOURCE(Node):
+    """Represents the source of an HMM model (e.g. PFAM)"""
 
-        self.add_node(
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="hmm_source",
             description="Represents the source of an HMM model (e.g. PFAM)",
             header_filename="hmm_source.header",
@@ -229,94 +206,17 @@ class NodesMixin:
             ],
         )
 
-        self.add_node(
+
+class HMM(Node):
+    """Represents a single non-redundant HMM model"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
             neo4j_label="hmm",
             description="Represents a single non-redundant HMM model",
             header_filename="sg_hmm_nodes.header",
             target_subdirectory="hmm_info",
             target_extension="sg_hmm_nodes",
             header=["uid:ID(hmm)"],
+            contraints_unique=["uid"],
         )
-
-    def add_node(self, neo4j_label, **kwargs):
-        if neo4j_label in self.nodes:
-            raise ValueError(f"Node with label {neo4j_label} already exists")
-        self.nodes[neo4j_label] = Node(neo4j_label=neo4j_label, **kwargs)
-
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:  # pragma: no cover
-        table = Table(title="Nodes", show_lines=True)
-        table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
-        table.add_column(
-            "Description",
-            justify="left",
-            style="cyan",
-            no_wrap=False,
-            ratio=4,
-            max_width=50,
-        )
-        table.add_column("NF results subdirectory", style="magenta", ratio=1)
-        table.add_column("Neo4j header file", style="magenta", ratio=1)
-        # sort by label which is the key
-        for i in (self.nodes[i] for i in sorted(self.nodes.keys())):
-            table.add_row(
-                i.neo4j_label, i.description, i.target_subdirectory, i.header_filename
-            )
-        yield table
-
-    def _markdown_table(self):
-        cols = [
-            (
-                "Label",
-                "Description",
-                "NF results subdirectory",
-                "Neo4j header file",
-            )
-        ]
-        rows = [
-            (
-                i.neo4j_label,
-                i.description,
-                i.target_subdirectory,
-                i.header_filename,
-            )
-            for i in (self.nodes[i] for i in sorted(self.nodes.keys()))
-        ]
-        cols.extend(rows)
-        print(
-            markdown_table_from_list(
-                cols,
-                align="left",
-            )
-        )
-
-
-def print_info():  # pragma: no cover
-    print(NodesMixin())
-
-
-def print_markdown():  # pragma: no cover
-    NodesMixin()._markdown_table()
-
-
-def printer():  # pragma: no cover
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Print node info")
-    parser.add_argument(
-        "--markdown",
-        help="",
-        default=False,
-        required=False,
-        action=argparse.BooleanOptionalAction,
-    )
-    args = parser.parse_args()
-    if args.markdown:
-        print_markdown()
-    else:
-        print_info()
-
-
-if __name__ == "__main__":
-    print_info()

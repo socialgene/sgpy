@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import List
 
 from socialgene.neo4j.schema.modules import ModulesMixin
-from socialgene.neo4j.schema.nodes import NodesMixin
-from socialgene.neo4j.schema.relationships import RelationshipsMixin
+from socialgene.neo4j.schema.node import NodesMixin
+from socialgene.neo4j.relationship import RelationshipsMixin
 from socialgene.utils.logging import log
 
 

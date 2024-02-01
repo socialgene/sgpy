@@ -1,7 +1,11 @@
 """https://np-mrd.org/"""
 
 
+from socialgene.neo4j.schema.relationship_mixins import ASSEMBLES_TO
+
+
 class Npmrd:
+    __slots__ = ["uid"]
     ...
     # __slots__ = ["uid"]
 

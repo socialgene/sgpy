@@ -42,6 +42,8 @@ class GnpsLibrarySpectrum(ExternalBaseClass):
     ]
 
     def __init__(self, **kwargs) -> None:
+        for i in self.__slots__:
+            setattr(self, i, None)
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -50,5 +52,17 @@ class GnpsLibrarySpectrum(ExternalBaseClass):
         return re.findall("CCMSLIB[0-9]{11}", x)
 
     @property
-    def props(self):
-        return {i: getattr(self, i) for i in self.__slots__}
+    def not_null_properties(self):
+        return {
+            i: getattr(self, i) for i in self.__slots__ if getattr(self, i) is not None
+        }
+
+    def add_node_to_neo4j(self):
+        self._add_to_neo4j(
+            """
+            with $row as row
+            MERGE (gls:gnps_library_spectrum {uid: row.uid})
+                     SET gls += row
+                        """,
+            row=self.not_null_properties,
+        )

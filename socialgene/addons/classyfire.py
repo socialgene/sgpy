@@ -14,6 +14,8 @@ OBO_URL = (
 
 
 class ClassyFire:
+    __slots__ = ["uid", "name", "definition", "chebi"]
+
     def __init__(self) -> None:
         self.uid = None
         self.name = None

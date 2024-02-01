@@ -1,6 +1,6 @@
 import pytest
 
-from socialgene.neo4j.schema.relationships import Relationship, RelationshipsMixin
+from socialgene.neo4j.relationship import Relationship, RelationshipsMixin
 
 
 def test_relationship_keys():

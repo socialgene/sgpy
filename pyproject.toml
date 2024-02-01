@@ -11,7 +11,7 @@ authors =  [
     {name = "Chase M. Clark", email = "chasingmicrobes@gmail.com"},
 ]
 keywords = []  #! TODO
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 # Pypi classifiers: https://pypi.org/classifiers/
 classifiers = [  #! Update me
   "Development Status :: 3 - Alpha",

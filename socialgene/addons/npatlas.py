@@ -33,7 +33,8 @@ class NPAtlasPublication(Publication):
         self.journal = str(journal)
         self.year = str(year)
 
-
+# class NPAtlasNode(Node):
+#     ...
 class NPAtlasEntry:
     __slots__ = [
         "entry",
