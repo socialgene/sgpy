@@ -1,5 +1,6 @@
 """https://www.npatlas.org"""
 import json
+import tempfile
 
 import requests
 from rich.progress import Progress
@@ -10,12 +11,19 @@ from socialgene.addons.mibig import Mibig
 from socialgene.addons.npmrd import Npmrd
 from socialgene.addons.publication import Publication
 from socialgene.base.chem import ChemicalCompound
+from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
-
+from itertools import batched
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
 
+def download(url=NPATALAS_URL, outpath=None):
+    if outpath:
+        downloader(url, outpath)
+    else:
+        with tempfile.NamedTemporaryFile() as tf:
+            downloader(url, tf.name)
 
-class NPPub(Publication):
+class NPAtlasPublication(Publication):
     def __init__(self, doi, pmid, authors, title, journal, year, **kwargs) -> None:
         super().__init__()
         self.doi = self._extract_doi(doi)
@@ -26,9 +34,7 @@ class NPPub(Publication):
         self.year = str(year)
 
 
-
-
-class Npatlas(ExternalBaseClass):
+class NPAtlasEntry:
     __slots__ = [
         "entry",
         "uid",
@@ -61,19 +67,6 @@ class Npatlas(ExternalBaseClass):
         self.entry = entry
         self._parse_single_entry()
 
-    @staticmethod
-    def download(url=NPATALAS_URL):
-        res = ""
-        with requests.get(url, stream=True) as response:
-            with Progress(transient=True) as pg:
-                task = pg.add_task(
-                    "Downloading npatlas...",
-                    total=int(response.headers["Content-Length"]),
-                )
-                for chunk in response.iter_content(1048576):
-                    res += chunk.decode(response.encoding)
-                    pg.update(task, advance=1048576)
-        return json.loads(res)
 
     def _parse_single_entry(self):
         self.ncbi_taxid = None
@@ -98,7 +91,7 @@ class Npatlas(ExternalBaseClass):
         self.m_plus_na = self.entry.get("m_plus_na", None)
         ######
         if self.entry.get("origin_reference", None):
-            self.origin_reference = NPPub(**self.entry.get("origin_reference"))
+            self.origin_reference = NPAtlasPublication(**self.entry.get("origin_reference"))
         # self.synonyms = ";".join(self.entry.get("synonyms", None))
         self.synonyms = None
         self._assign_to_taxon()
@@ -153,7 +146,7 @@ class Npatlas(ExternalBaseClass):
                         pass
         except Exception as e:
             log.debug(e)
-
+    @property
     def _node_prop_dict(self):
         return {
             "uid": self.uid,
@@ -182,38 +175,68 @@ class Npatlas(ExternalBaseClass):
             "classyfire_subclass": self.classyfire_subclass,
         }
 
-    def add_node_to_neo4j(self):
+
+
+
+
+class NPAtlas(ExternalBaseClass):
+
+    def __init__(self, atlas_json_path) -> None:
+        super().__init__()
+        self.path = atlas_json_path
+        self.entries = []
+
+
+    def _hydrate(self):
+        with open(self.path, "r") as f:
+            for i in json.load(f):
+                self.entries.append(NPAtlasEntry(i))
+
+    def add_nodes_to_neo4j(self):
         self._add_to_neo4j(
             """
-            MERGE (np:npatlas {uid: $uid})
-            ON CREATE SET np+= {
-                original_name: $original_name,
-                mol_formula: $mol_formula,
-                mol_weight: $mol_weight,
-                exact_mass: $exact_mass,
-                inchikey: $inchikey,
-                smiles: $smiles,
-                cluster_id: $cluster_id,
-                node_id: $node_id,
-                synonyms: $synonyms,
-                inchi: $inchi,
-                m_plus_h: $m_plus_h,
-                m_plus_na: $m_plus_na,
-                //origin_reference: $origin_reference,
-                //npclassifier: $npclassifier,
-                //external_ids: $external_ids,
-                ncbi_taxid: $ncbi_taxid,
-                genus: $genus,
-                species: $species,
-                //gnps: $gnps,
-                //npmrd: $npmrd,
-                //mibig: $mibig,
-                classyfire_class: $classyfire_class,
-                classyfire_subclass: $classyfire_subclass
-            }
-            """,
-            **self._node_prop_dict(),
+                CREATE CONSTRAINT npatlas_entry IF NOT EXISTS
+                FOR (n:npatlas)
+                REQUIRE (n.uid) IS UNIQUE;
+            """
         )
+        for i in batched((i._node_prop_dict for i in self.entries), 10000):
+            self._add_to_neo4j(
+                """
+                WITH $input as input
+                UNWIND input as row
+                MERGE (np:npatlas {uid: row.uid})
+                ON CREATE SET np+= {
+                    original_name: row.original_name,
+                    mol_formula: row.mol_formula,
+                    mol_weight: row.mol_weight,
+                    exact_mass: row.exact_mass,
+                    inchikey: row.inchikey,
+                    smiles: row.smiles,
+                    cluster_id: row.cluster_id,
+                    node_id: row.node_id,
+                    synonyms: row.synonyms,
+                    inchi: row.inchi,
+                    m_plus_h: row.m_plus_h,
+                    m_plus_na: row.m_plus_na,
+                    //origin_reference: row.origin_reference,
+                    //npclassifier: row.npclassifier,
+                    //external_ids: row.external_ids,
+                    ncbi_taxid: row.ncbi_taxid,
+                    genus: row.genus,
+                    species: row.species,
+                    //gnps: row.gnps,
+                    //npmrd: row.npmrd,
+                    //mibig: row.mibig,
+                    classyfire_class: row.classyfire_class,
+                    classyfire_subclass: row.classyfire_subclass
+                }
+                """,
+                input=i,
+            )
+
+
+
 
     def merge_with_mibig(self):
         for mibig_obj in self.mibig:
