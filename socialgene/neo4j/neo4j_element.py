@@ -62,40 +62,19 @@ class Node(Neo4jElement):
         self.__contraints = contraints
         self.__contraints_unique = contraints_unique
 
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:  # pragma: no cover
-        table = Table(title="Node")
-        table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
-        table.add_column(
-            "Description",
-            justify="left",
-            style="cyan",
-            no_wrap=False,
-            ratio=4,
-            max_width=50,
-        )
-        table.add_column("Nextflow results subdirectory", style="magenta", ratio=1)
-        table.add_column("Neo4j header file", style="magenta", ratio=1)
-        table.add_column("sdsdsd", style="magenta", ratio=1)
-        table.add_row(
-            self.neo4j_label,
-            self.target_subdirectory,
-            self.target_subdirectory,
-            self.header_filename,
-            self.header,
-        )
-        yield table
-
     def __hash__(self):
         return hash((self.neo4j_label))
 
 
 class Relationship(Neo4jElement):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, start=None, end=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.start = None
-        self.end = None
+        self.start = start
+        self.end = end
+        if not self.start and not self.end:
+            if self._Neo4jElement__header is not None:
+                self.start = self._start
+                self.end = self._end
 
     def _start_field(self):
         for i in self._Neo4jElement__header:
@@ -123,4 +102,5 @@ class Relationship(Neo4jElement):
 
     @property
     def _cypher_string(self):
-        return f"(:{self._start})-[:{self._Neo4jElement__neo4j_label}]->(:{self._end})"
+        if self.start and self.end:
+            return f"(:{self.start()._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end()._Neo4jElement__neo4j_label})"
