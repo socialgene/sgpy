@@ -17,6 +17,7 @@ class Neo4jElement(ABC):
         multilabel: bool = False,
         header: List[str] = None,
         properties: List[str] = None,
+        **kwargs,
     ):
         """This defines nodes and relationships that will be imported  into Neo4j  with the Neo4j Admin Import tool
         For more information, especially about what makes up the headers, see: https://neo4j.com/docs/operations-manual/current/tutorial/neo4j-admin-import/
@@ -40,7 +41,8 @@ class Neo4jElement(ABC):
         self.__properties = properties
         self.__multilabel = multilabel
         if self.__properties is None:
-            self.__properties = header
+            if self.__header is not None:
+                self.__properties = {i: "string" for i in header}
 
     def __hash__(self):
         return hash((self.__neo4j_label))
@@ -92,6 +94,8 @@ class Node(Neo4jElement):
 class Relationship(Neo4jElement):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.start = None
+        self.end = None
 
     def _start_field(self):
         for i in self._Neo4jElement__header:

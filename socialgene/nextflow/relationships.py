@@ -1,4 +1,6 @@
 from socialgene.neo4j.neo4j_element import Relationship
+import socialgene.nextflow.nodes as Nodes
+
 
 # This file can only contain class objects that inherit from Relationship
 
@@ -30,6 +32,8 @@ class ANNOTATES(Relationship):
                 "ali_to:Long",
                 "exponentialized:Boolean",
             ],
+            start=Nodes.HMM,
+            end=Nodes.PROTEIN,
         )
 
 
@@ -44,6 +48,8 @@ class ASSEMBLES_TO(Relationship):
             target_subdirectory="genomic_info",
             target_extension="assembly_to_locus",
             header=[":END_ID(assembly)", ":START_ID(nucleotide)"],
+            start=Nodes.NUCLEOTIDE,
+            end=Nodes.ASSEMBLY,
         )
 
 
@@ -77,6 +83,8 @@ class ENCODES(Relationship):
                 "too_short_partial_abutting_assembly_gap:Boolean",
                 "incomplete:Boolean",
             ],
+            start=Nodes.NUCLEOTIDE,
+            end=Nodes.PROTEIN,
         )
 
 
@@ -91,6 +99,8 @@ class TAXON_PARENT(Relationship):
             target_subdirectory="taxdump_process",
             target_extension="taxid_to_taxid",
             header=[":START_ID(taxid)", ":END_ID(taxid)"],
+            start=Nodes.TAXID,
+            end=Nodes.TAXID,
         )
 
 
@@ -105,6 +115,8 @@ class GO_ANN(Relationship):
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_to_go",
             header=[":START_ID(hmm_source)", ":END_ID(goterm)"],
+            start=Nodes.HMM_SOURCE,
+            end=Nodes.GOTERM,
         )
 
 
@@ -119,6 +131,8 @@ class PROTEIN_TO_GO(Relationship):
             target_subdirectory="protein_info",
             target_extension="protein_to_go",
             header=[":START_ID(protein)", ":END_ID(goterm)"],
+            start=Nodes.PROTEIN,
+            end=Nodes.GOTERM,
         )
 
 
@@ -134,6 +148,8 @@ class GOTERM_RELS(Relationship):
             target_subdirectory="goterms",
             target_extension="goterm_edgelist",
             header=[":START_ID(goterm)", ":END_ID(goterm)", ":TYPE"],
+            start=Nodes.GOTERM,
+            end=Nodes.GOTERM,
         )
 
 
@@ -148,6 +164,8 @@ class ROLE_ANN(Relationship):
             target_subdirectory="tigrfam_info",
             target_extension="tigrfam_to_role",
             header=[":START_ID(hmm_source)", ":END_ID(tigrfam_role)"],
+            start=Nodes.HMM_SOURCE,
+            end=Nodes.TIGRFAM_ROLE,
         )
 
 
@@ -162,6 +180,8 @@ class MAINROLE_ANN(Relationship):
             target_subdirectory="tigrfam_info",
             target_extension="tigrfamrole_to_mainrole",
             header=[":START_ID(tigrfam_role)", ":END_ID(tigrfam_mainrole)"],
+            start=Nodes.TIGRFAM_ROLE,
+            end=Nodes.TIGRFAM_MAINROLE,
         )
 
 
@@ -176,6 +196,8 @@ class SUBROLE_ANN(Relationship):
             target_subdirectory="tigrfam_info",
             target_extension="tigrfamrole_to_subrole",
             header=[":START_ID(tigrfam_role)", ":END_ID(tigrfam_subrole)"],
+            start=Nodes.TIGRFAM_ROLE,
+            end=Nodes.TIGRFAM_SUBROLE,
         )
 
 
@@ -190,6 +212,8 @@ class IS_TAXON(Relationship):
             target_subdirectory="genomic_info",
             target_extension="assembly_to_taxid",
             header=[":START_ID(assembly)", ":END_ID(taxid)"],
+            start=Nodes.ASSEMBLY,
+            end=Nodes.TAXID,
         )
 
 
@@ -218,6 +242,8 @@ class BLASTP(Relationship):
                 "bitscore:Float",
                 "qcovhsp:Float",
             ],
+            start=Nodes.PROTEIN,
+            end=Nodes.PROTEIN,
         )
 
 
@@ -232,6 +258,8 @@ class MMSEQS2(Relationship):
             target_subdirectory="mmseqs2_cluster",
             target_extension="mmseqs2_results_cluster.tsv",
             header=[":START_ID(protein)", ":END_ID(protein)", ":TYPE"],
+            start=Nodes.PROTEIN,
+            end=Nodes.PROTEIN,
         )
 
 
@@ -263,4 +291,6 @@ class SOURCE_DB(Relationship):
                 ":IGNORE",
                 ":IGNORE",
             ],
+            start=Nodes.HMM,
+            end=Nodes.HMM_SOURCE,
         )

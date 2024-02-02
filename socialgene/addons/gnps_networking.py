@@ -7,6 +7,7 @@ from socialgene.addons.gnps_library import GnpsLibrarySpectrum
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from uuid import uuid4
+from socialgene.neo4j.neo4j_element import Node, Relationship
 
 import xml.etree.ElementTree as ET
 
@@ -19,9 +20,9 @@ def extract_parameter(xml_string):
 def capture_assembly_id(s, regex):
     match regex:
         case "_":
-            pattern = r'^([__]+)'
+            pattern = r"^([__]+)"
         case "__":
-            pattern = r'^([^_]+)__'
+            pattern = r"^([^_]+)__"
         case _:
             pattern = regex
     match = re.search(pattern, s)
@@ -31,8 +32,101 @@ def capture_assembly_id(s, regex):
         return s
 
 
+############### Node classes
+class CLUSTER(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="cluster",
+            description="Represents a GNPS molecular networking cluster",
+            properties={
+                "uid": "string",
+                "workflow_uuid": "string",
+                "defaultgroups": "string",
+                "g1": "string",
+                "g2": "string",
+                "g3": "string",
+                "g4": "string",
+                "g5": "string",
+                "g6": "string",
+                "gnpslinkout_cluster": "string",
+                "gnpslinkout_network": "string",
+                "mqscore": "float",
+                "mzerrorppm": "float",
+                "massdiff": "float",
+                "rtmean": "float",
+                "rtmean_min": "float",
+                "rtstderr": "float",
+                "uniquefilesources": "string",
+                "uniquefilesourcescount": "int",
+                "cluster_index": "int",
+                "componentindex": "int",
+                "number_of_spectra": "int",
+                "parent_mass": "float",
+                "precursor_charge": "int",
+                "precursor_mass": "float",
+                "sumprecursor_intensity": "float",
+            },
+        )
 
-class GNPS_SNETS():
+
+class SPECTRUM(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="spectrum",
+            description="Represents a GNPS molecular networking spectrum",
+            properties={
+                "uid": "string",
+                "original_filename": "string",
+                "parentmass": "float",
+                "charge": "int",
+                "rettime": "float",
+                "assembly": "string",
+            },
+        )
+
+
+class ION_SOURCE(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="ion_source",
+            description="Represents an ion source",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class INSTRUMENT(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="instrument",
+            description="Represents an instrument",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class ORGANISM(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="organism",
+            description="Represents an organism (as defined by GNPS)",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class FROM(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="FROM",
+            description="Represents the source of a GNPS library spectrum",
+        )
+
+
+class GNPS_SNETS:
     """Parses GNPS molecular network results and adds them to a Neo4j database"""
 
     def __init__(
@@ -58,7 +152,6 @@ class GNPS_SNETS():
         self._workflow_uuid()
         self._parse_clusterinfo()
         self._parse_dfs()
-
 
     def _get_gnps_paths(self):
         """Parses the downloaded GNPS results for the necessary files, must be unzipped"""

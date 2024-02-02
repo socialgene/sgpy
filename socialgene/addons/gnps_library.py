@@ -3,7 +3,49 @@ from typing import List
 
 from socialgene.addons.base import ExternalBaseClass
 from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.neo4j.neo4j_element import Node
 from socialgene.utils.logging import log
+
+
+class GNPS_LIBRARY_SPECTRUM(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="gnps_library_spectrum",
+            description="Represents a GNPS library spectrum",
+            properties={
+                "uid": "string",
+                "compound_name": "string",
+                "compound_source": "string",
+                "pi": "string",
+                "data_collector": "string",
+                "adduct": "string",
+                "precursor_mz": "float",
+                "exactmass": "float",
+                "charge": "int",
+                "cas_number": "string",
+                "pubmed_id": "string",
+                "smiles": "string",
+                "inchi": "string",
+                "inchi_aux": "string",
+                "library_class": "string",
+                "ionmode": "string",
+                "libraryqualitystring": "string",
+                "mqscore": "float",
+                "tic_query": "float",
+                "rt_query": "float",
+                "mzerrorppm": "float",
+                "sharedpeaks": "int",
+                "massdiff": "float",
+                "libmz": "float",
+                "specmz": "float",
+                "speccharge": "int",
+                "moleculeexplorerdatasets": "string",
+                "moleculeexplorerfiles": "string",
+                "molecular_formula": "string",
+                "inchikey": "string",
+                "inchikey_planar": "string",
+            },
+        )
 
 
 class GnpsLibrarySpectrum(ExternalBaseClass):

@@ -1,4 +1,15 @@
 from textwrap import wrap
+import socialgene.addons.chebi
+import socialgene.addons.chembl
+import socialgene.addons.classyfire
+import socialgene.addons.gnps_library
+import socialgene.addons.gnps_networking
+import socialgene.addons.mibig
+import socialgene.addons.npatlas
+import socialgene.addons.npclassifier
+import socialgene.addons.npmrd
+import socialgene.addons.publication
+import socialgene.addons.ttd
 import socialgene.nextflow.nodes
 import socialgene.nextflow.relationships
 
@@ -35,6 +46,7 @@ class GraphSchema:
         node_dict = dict(sorted(node_dict.items()))
         table = Table(title="Nodes", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
+        table.add_column("From", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column(
             "Description",
             justify="left",
@@ -48,8 +60,9 @@ class GraphSchema:
         for i in node_dict.values():
             table.add_row(
                 i()._Neo4jElement__neo4j_label,
+                i.__module__,
                 i()._Neo4jElement__description,
-                "\n".join(wrap(", ".join(i()._Neo4jElement__header))),
+                "\n".join(wrap(", ".join(i()._Neo4jElement__properties))),
             )
         yield table
 
@@ -58,12 +71,14 @@ class GraphSchema:
         rel_dict = dict(sorted(rel_dict.items()))
         table = Table(title="Relationships", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
+        table.add_column("From", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column("Relationship", style="magenta", ratio=1)
         table.add_column("NF results subdirectory", style="magenta", ratio=1)
         table.add_column("Neo4j header file", style="magenta", ratio=1)
         for i in rel_dict.values():
             table.add_row(
                 i()._Neo4jElement__neo4j_label,
+                i.__module__,
                 i()._cypher_string,
                 i()._Neo4jElement__target_subdirectory,
                 i()._Neo4jElement__header_filename,
@@ -127,9 +142,6 @@ class GraphSchema:
                 align="left",
             )
         )
-
-
-builtins.print = print
 
 
 def main():  # pragma: no cover
