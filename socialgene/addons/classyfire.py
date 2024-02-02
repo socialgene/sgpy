@@ -1,16 +1,60 @@
 """http://classyfire.wishartlab.com"""
+
 import re
 from io import BytesIO
 from zipfile import ZipFile
 
 import requests
+from socialgene.addons.chebi import ChebiNode
 
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 
+from socialgene.neo4j.neo4j_element import Node, Relationship
+
 OBO_URL = (
     "http://classyfire.wishartlab.com/system/downloads/1_0/chemont/ChemOnt_2_1.obo.zip"
 )
+
+
+class ClassyFireNode(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="classyfire",
+            description="Represents a CHEMBL term",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class ClassyChemontNode(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="chemont",
+            description="Represents a classyfire chemical ontology term",
+            properties={"uid": "string", "name": "string", "definition": "string"},
+        )
+
+
+class ClassyFireSynonym(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="SYNONYM",
+            description="Represents a synonym relationship between chemont chebi",
+            start=ClassyChemontNode,
+            end=ChebiNode,
+        )
+
+
+class ClassyFireIsA(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="IS_A",
+            description="Represents a relationship between chemont nodes",
+            start=ClassyChemontNode,
+            end=ClassyChemontNode,
+        )
 
 
 class ClassyFire:
