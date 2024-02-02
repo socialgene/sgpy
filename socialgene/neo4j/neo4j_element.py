@@ -42,6 +42,9 @@ class Neo4jElement(ABC):
         if self.__properties is None:
             self.__properties = header
 
+    def __hash__(self):
+        return hash((self.__neo4j_label))
+
 
 class Node(Neo4jElement):
     """Represents a single Node"""
@@ -81,6 +84,9 @@ class Node(Neo4jElement):
             self.header,
         )
         yield table
+
+    def __hash__(self):
+        return hash((self.neo4j_label))
 
 
 class Relationship(Neo4jElement):
