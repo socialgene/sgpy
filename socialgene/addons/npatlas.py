@@ -1,4 +1,5 @@
 """https://www.npatlas.org"""
+
 import json
 import tempfile
 
@@ -14,7 +15,9 @@ from socialgene.base.chem import ChemicalCompound
 from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
 from itertools import batched
+
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
+
 
 def download(url=NPATALAS_URL, outpath=None):
     if outpath:
@@ -22,6 +25,7 @@ def download(url=NPATALAS_URL, outpath=None):
     else:
         with tempfile.NamedTemporaryFile() as tf:
             downloader(url, tf.name)
+
 
 class NPAtlasPublication(Publication):
     def __init__(self, doi, pmid, authors, title, journal, year, **kwargs) -> None:
@@ -32,6 +36,7 @@ class NPAtlasPublication(Publication):
         self.title = str(title)
         self.journal = str(journal)
         self.year = str(year)
+
 
 # class NPAtlasNode(Node):
 #     ...
@@ -68,7 +73,6 @@ class NPAtlasEntry:
         self.entry = entry
         self._parse_single_entry()
 
-
     def _parse_single_entry(self):
         self.ncbi_taxid = None
         self.genus = None
@@ -92,14 +96,15 @@ class NPAtlasEntry:
         self.m_plus_na = self.entry.get("m_plus_na", None)
         ######
         if self.entry.get("origin_reference", None):
-            self.origin_reference = NPAtlasPublication(**self.entry.get("origin_reference"))
+            self.origin_reference = NPAtlasPublication(
+                **self.entry.get("origin_reference")
+            )
         # self.synonyms = ";".join(self.entry.get("synonyms", None))
         self.synonyms = None
         self._assign_to_taxon()
         self._assign_to_classy()
         self._assign_external_ids()
         # self.external_ids = self.entry.get("external_ids", None)
-
 
     def _assign_to_classy(self):
         try:
@@ -147,6 +152,7 @@ class NPAtlasEntry:
                         pass
         except Exception as e:
             log.debug(e)
+
     @property
     def _node_prop_dict(self):
         return {
@@ -177,16 +183,12 @@ class NPAtlasEntry:
         }
 
 
-
-
-
 class NPAtlas(ExternalBaseClass):
 
     def __init__(self, atlas_json_path) -> None:
         super().__init__()
         self.path = atlas_json_path
         self.entries = []
-
 
     def _hydrate(self):
         with open(self.path, "r") as f:
@@ -235,9 +237,6 @@ class NPAtlas(ExternalBaseClass):
                 """,
                 input=i,
             )
-
-
-
 
     def merge_with_mibig(self):
         for mibig_obj in self.mibig:

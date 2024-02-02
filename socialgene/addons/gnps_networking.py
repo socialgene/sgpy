@@ -3,7 +3,13 @@ from pathlib import Path
 import re
 import numpy as np
 import pandas as pd
-from socialgene.addons.gnps_library import GnpsLibrarySpectrum
+from socialgene.addons.gnps_library import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
+from socialgene.addons.npclassifier import (
+    NPClassifierClass,
+    NPClassifierPathway,
+    NPClassifierSuperclass,
+    NPClassifierIsA,
+)  # noqa: F401
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from uuid import uuid4
@@ -33,7 +39,9 @@ def capture_assembly_id(s, regex):
 
 
 ############### Node classes
-class CLUSTER(Node):
+
+
+class ClusterNode(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(
             neo4j_label="cluster",
@@ -69,7 +77,7 @@ class CLUSTER(Node):
         )
 
 
-class SPECTRUM(Node):
+class SpectrumNode(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(
             neo4j_label="spectrum",
@@ -85,44 +93,13 @@ class SPECTRUM(Node):
         )
 
 
-class ION_SOURCE(Node):
+class LibraryHitRel(Relationship):
     def __init__(self, *args, **kwargs):
         super().__init__(
-            neo4j_label="ion_source",
-            description="Represents an ion source",
-            properties={
-                "uid": "string",
-            },
-        )
-
-
-class INSTRUMENT(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="instrument",
-            description="Represents an instrument",
-            properties={
-                "uid": "string",
-            },
-        )
-
-
-class ORGANISM(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="organism",
-            description="Represents an organism (as defined by GNPS)",
-            properties={
-                "uid": "string",
-            },
-        )
-
-
-class FROM(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="FROM",
-            description="Represents the source of a GNPS library spectrum",
+            neo4j_label="LIBRARY_HIT",
+            description="Connects a GNPS cluster to a GNPS library hit",
+            start=ClusterNode,
+            end=GnpsLibrarySpectrumNode,
         )
 
 

@@ -2,12 +2,14 @@ import re
 from typing import List
 
 from socialgene.addons.base import ExternalBaseClass
+
+from socialgene.addons.npclassifier import NPClassifierClass
 from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.neo4j.neo4j_element import Node
+from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log
 
 
-class GNPS_LIBRARY_SPECTRUM(Node):
+class GnpsLibrarySpectrumNode(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(
             neo4j_label="gnps_library_spectrum",
@@ -45,6 +47,79 @@ class GNPS_LIBRARY_SPECTRUM(Node):
                 "inchikey": "string",
                 "inchikey_planar": "string",
             },
+        )
+
+
+class IonSourceNode(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="ion_source",
+            description="Represents an ion source",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class InstrumentNode(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="instrument",
+            description="Represents an instrument",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class OrganismNode(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="organism",
+            description="Represents an organism (as defined by GNPS)",
+            properties={
+                "uid": "string",
+            },
+        )
+
+
+class FromIonRel(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="FROM",
+            description="Connects a GNPS spectrum to an ion source",
+            start=GnpsLibrarySpectrumNode,
+            end=IonSourceNode,
+        )
+
+
+class FromInstrumentRel(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="FROM",
+            description="Connects a GNPS spectrum to an instrument source",
+            start=GnpsLibrarySpectrumNode,
+            end=InstrumentNode,
+        )
+
+
+class FromOrganismRel(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="FROM",
+            description="Connects a GNPS spectrum to an organism (as defined by GNPS)",
+            start=GnpsLibrarySpectrumNode,
+            end=OrganismNode,
+        )
+
+
+class GnpsLibrarySpectrumIsA(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="IS_A",
+            description="Represents a relationship between gnps_library_spectrum nodes",
+            start=GnpsLibrarySpectrumNode,
+            end=NPClassifierClass,
         )
 
 

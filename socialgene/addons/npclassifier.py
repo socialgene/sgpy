@@ -1,23 +1,7 @@
-from socialgene.neo4j.neo4j_element import Node
+from socialgene.neo4j.neo4j_element import Node, Relationship
 
 
-class SPECTRUM(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="spectrum",
-            description="Represents a GNPS molecular networking spectrum",
-            properties={
-                "uid": "string",
-                "original_filename": "string",
-                "parentmass": "float",
-                "charge": "int",
-                "rettime": "float",
-                "assembly": "string",
-            },
-        )
-
-
-class NPCLASSIFIER_CLASS(Node):
+class NPClassifierClass(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(
             neo4j_label="npclassifier_class",
@@ -28,7 +12,7 @@ class NPCLASSIFIER_CLASS(Node):
         )
 
 
-class NPCLASSIFIER_PATHWAY(Node):
+class NPClassifierPathway(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(
             neo4j_label="npclassifier_pathway",
@@ -39,7 +23,7 @@ class NPCLASSIFIER_PATHWAY(Node):
         )
 
 
-class NPCLASSIFIER_SUPERCLASS(Node):
+class NPClassifierSuperclass(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(
             neo4j_label="npclassifier_superclass",
@@ -47,4 +31,14 @@ class NPCLASSIFIER_SUPERCLASS(Node):
             properties={
                 "uid": "string",
             },
+        )
+
+
+class NPClassifierIsA(Relationship):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            neo4j_label="IS_A",
+            description="Represents a relationship between npclassifier nodes",
+            start=NPClassifierClass,
+            end=NPClassifierClass,
         )
