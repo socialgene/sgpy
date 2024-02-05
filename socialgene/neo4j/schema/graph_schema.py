@@ -37,6 +37,9 @@ class GraphSchema:
         x for x in ALL_RELATIONSHIPS if x.__module__.startswith("socialgene.nextflow")
     ]
     ADDON_NODES = [x for x in ALL_NODES if x.__module__.startswith("socialgene.addons")]
+    ADDON_RELATIONSHIPS = [
+        x for x in ALL_RELATIONSHIPS if x.__module__.startswith("socialgene.addons")
+    ]
 
     def __init__(self):
         pass

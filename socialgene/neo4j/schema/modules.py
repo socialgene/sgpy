@@ -41,12 +41,15 @@ class Modules:
         )
         self._add_module(
             module_id="parameters",
-            nodes=nodes.PARAMETERS,
+            nodes=[nodes.PARAMETERS],
             relationships=[],
         )
         self._add_module(
             module_id="base_hmm",
-            nodes=["hmm", "hmm_source"],
+            nodes=[
+                nodes.HMM,
+                nodes.HMM_SOURCE,
+            ],
             relationships=[rels.ANNOTATES, rels.SOURCE_DB],
         )
         self._add_module(
