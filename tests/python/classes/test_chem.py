@@ -20,6 +20,7 @@ aspirin_hash_dict = {
     "SmallWorldIndexBR": "B13R1",
     "SmallWorldIndexBRL": "B13R1L5",
     "ArthorSubstructureOrder": "000d000d0100090004000056000000",
+    "HetAtomTautomerv2": "[C]:[C](:[O]):[O]:[C]1:[C]:[C]:[C]:[C]:[C]:1:[C](:[O]):[O]_8_0",
 }
 
 aspirin_base_properties = {
@@ -193,6 +194,7 @@ def test_ChemicalCompound_smiles2():
         "SmallWorldIndexBR": "B118R4",
         "SmallWorldIndexBRL": "B118R4L45",
         "ArthorSubstructureOrder": "00730076010048002b0002f7000000",
+        "HetAtomTautomerv2": "[CH3]-[CH2]-[CH2]-[CH2]-[CH2]-[CH2]-[CH2]-[CH2]-[C]:[C](:[O]):[N]:[C](-[CH2]-[C]1:[C]:[N]:[C]2:[C]:[C]:[C]:[C]:[C]:1:2):[C](:[O]):[N]:[C](-[C]:[C](:[N]):[O]):[C](:[O]):[N]:[C](-[C]:[C](:[O]):[O]):[C](:[O]):[N]:[C]1:[C](:[O]):[N]:[C]:[C](:[O]):[N]:[C](-[CH2]-[CH2]-[CH2]-[NH2]):[C](:[O]):[N]:[C](-[C]:[C](:[O]):[O]):[C](:[O]):[N]:[C](-[CH3]):[C](:[O]):[N]:[C](-[C]:[C](:[O]):[O]):[C](:[O]):[N]:[C]:[C](:[O]):[N]:[C](-[CH2]-[OH]):[C](:[O]):[N]:[C](-[CH](-[CH3])-[C]:[C](:[O]):[O]):[C](:[O]):[N]:[C](-[C]:[C](:[O]):[C]2:[C]:[C]:[C]:[C]:[C]:2:[N]):[C](:[O]):[O]-[CH]-1-[CH3]_60_0",
     }
     assert compound.base_properties == pytest.approx(
         {
