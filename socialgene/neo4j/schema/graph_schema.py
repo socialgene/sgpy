@@ -1,6 +1,7 @@
 from textwrap import wrap
 import socialgene.addons.chebi
 import socialgene.addons.chembl
+from socialgene.addons.chemistry import ChemicalFragment, ContainsRel
 import socialgene.addons.classyfire
 import socialgene.addons.gnps_library
 import socialgene.addons.gnps_networking

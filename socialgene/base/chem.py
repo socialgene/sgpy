@@ -1,17 +1,45 @@
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolHash
-from rdkit import Chem
 from rdkit.Chem import rdBase
+from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from rdkit.Chem import Descriptors
+from socialgene.neo4j.neo4j_element import Node, Relationship
+from rdkit import DataStructs
 
 
-class ChemicalCompound:
+class ChemicalFragments:
+    def __init__(self, **kwargs):
+        for i, j in Descriptors._descList:
+            if i.startswith("fr_"):
+                setattr(self, i, None)
+
+    def add_mol(self, mol):
+        for i, j in Descriptors._descList:
+            if i.startswith("fr_"):
+                setattr(self, i, j(mol))
+
+    def to_dict(self):
+        temp = {k: v for k, v in self.__dict__.items() if k.startswith("fr_") and v > 0}
+        temp = {i.removeprefix("fr_"): j for i, j in temp.items()}
+        return temp
+
+
+def morgan_fingerprint(rdkitmol, radius=2, nBits=1024):
+    return AllChem.GetMorganFingerprintAsBitVect(
+        rdkitmol, useChirality=True, radius=radius, nBits=nBits, bitInfo={}
+    )
+
+
+class ChemicalCompound(Node):
+
     def __init__(self, compound):
         self.mol = None
         self.parse_compound(compound)
-        # self.uid = AllChem.GetMorganFingerprintAsBitVect(self.mol, 2)
+        self.morgan = AllChem.GetMorganFingerprintAsBitVect(
+            self.mol, nBits=2048, radius=2
+        )
 
     def parse_compound(self, input):
         if isinstance(input, Chem.rdchem.Mol):
@@ -19,12 +47,14 @@ class ChemicalCompound:
         elif isinstance(input, str):
             method_list = [Chem.MolFromSmiles, Chem.MolFromInchi, Chem.MolFromMolFile]
             for method in method_list:
-                log.info(f"Trying to parse compound with {method.__name__}")
+                log.debug(f"Trying to parse compound with {method.__name__}")
                 try:
-                    temp = method(input)
+                    temp = method(input, sanitize=True)
                     if isinstance(temp, Chem.rdchem.Mol):
                         self.mol = temp
-                        log.info(f"Successfully parsed compound with {method.__name__}")
+                        log.debug(
+                            f"Successfully parsed compound with {method.__name__}"
+                        )
                         break
                 except:
                     continue
@@ -33,10 +63,12 @@ class ChemicalCompound:
 
     @property
     def hash_dict(self):
-        return {
+        temp = {
             k: rdMolHash.MolHash(self.mol, v)
             for k, v in rdMolHash.HashFunction.names.items()
         }
+        temp["inchi"] = Chem.MolToInchi(self.mol)
+        return temp
 
     @property
     def base_properties(self):
@@ -73,10 +105,26 @@ class ChemicalCompound:
 
     @property
     def fragments(self):
-        out_dict = {}
-        for i in (i for i, j in Descriptors._descList if i.startswith("fr_")):
-            try:
-                out_dict[i] = getattr(Descriptors, i)(self.mol)
-            except:
-                out_dict[i] = None
-        return out_dict
+        fr = ChemicalFragments()
+        fr.add_mol(self.mol)
+        return fr.to_dict()
+
+    def add_to_neo4j(self):
+        with GraphDriver() as db:
+            results = db.run(
+                """
+                WITH $props as props
+                UNWIND props as prop
+                MERGE (c:chemical_compound {inchi: prop.inchi, CanonicalSmiles: prop.CanonicalSmiles})
+                ON CREATE SET c = prop
+                """,
+                props=self.hash_dict | self.base_properties,
+            ).value()
+
+
+class ChemicalCollection:
+    def __init__(self) -> None:
+        pass
+
+    def compare_morgan(self, a, b):
+        return DataStructs.TanimotoSimilarity(self.morgan, self.morgan)

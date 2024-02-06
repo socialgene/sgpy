@@ -56,7 +56,7 @@ class ASSEMBLY(Node):
             target_subdirectory="genomic_info",
             target_extension="assemblies",
             header=["uid:ID(assembly)"] + sorted(LocusAssemblyMetadata.__slots__),
-            contraints_unique=["uid"],
+            unique_constraints=["uid"],
         )
 
 
@@ -73,8 +73,8 @@ class NUCLEOTIDE(Node):
             header=["uid:ID(nucleotide)"]
             + ["external_id"]
             + LocusAssemblyMetadata.__slots__,
-            contraints_unique=["uid"],
-            contraints=["external_id"],
+            unique_constraints=["uid"],
+            nonunique_index=["external_id"],
         )
 
 
@@ -90,7 +90,7 @@ class PROTEIN(Node):
                 target_subdirectory="protein_info",
                 target_extension="protein_ids",
                 header=["uid:ID(protein)", "crc64", "sequence"],
-                contraints_unique=["uid"],
+                unique_constraints=["uid"],
             )
         else:
             super().__init__(
@@ -100,7 +100,7 @@ class PROTEIN(Node):
                 target_subdirectory="protein_info",
                 target_extension="protein_ids",
                 header=["uid:ID(protein)", "crc64"],
-                contraints_unique=["uid"],
+                unique_constraints=["uid"],
             )
 
 
@@ -171,7 +171,7 @@ class TAXID(Node):
             target_subdirectory="taxdump_process",
             target_extension="nodes_taxid",
             header=["uid:ID(taxid)", "name", "rank"],
-            contraints_unique=["uid"],
+            unique_constraints=["uid"],
         )
 
 
@@ -218,5 +218,5 @@ class HMM(Node):
             target_subdirectory="hmm_info",
             target_extension="sg_hmm_nodes",
             header=["uid:ID(hmm)"],
-            contraints_unique=["uid"],
+            unique_constraints=["uid"],
         )

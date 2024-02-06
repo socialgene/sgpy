@@ -4,9 +4,11 @@ from typing import List
 from socialgene.addons.base import ExternalBaseClass
 
 from socialgene.addons.npclassifier import NPClassifierClass
+from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log
+from rdkit import Chem
 
 
 class GnpsLibrarySpectrumNode(Node):
@@ -15,37 +17,37 @@ class GnpsLibrarySpectrumNode(Node):
             neo4j_label="gnps_library_spectrum",
             description="Represents a GNPS library spectrum",
             properties={
-                "uid": "string",
-                "compound_name": "string",
-                "compound_source": "string",
-                "pi": "string",
-                "data_collector": "string",
-                "adduct": "string",
-                "precursor_mz": "float",
-                "exactmass": "float",
-                "charge": "int",
-                "cas_number": "string",
-                "pubmed_id": "string",
-                "smiles": "string",
-                "inchi": "string",
-                "inchi_aux": "string",
-                "library_class": "string",
-                "ionmode": "string",
-                "libraryqualitystring": "string",
-                "mqscore": "float",
-                "tic_query": "float",
-                "rt_query": "float",
-                "mzerrorppm": "float",
-                "sharedpeaks": "int",
-                "massdiff": "float",
-                "libmz": "float",
-                "specmz": "float",
-                "speccharge": "int",
-                "moleculeexplorerdatasets": "string",
-                "moleculeexplorerfiles": "string",
-                "molecular_formula": "string",
-                "inchikey": "string",
-                "inchikey_planar": "string",
+                "uid": str,
+                "compound_name": str,
+                "compound_source": str,
+                "pi": str,
+                "data_collector": str,
+                "adduct": str,
+                "precursor_mz": float,
+                "exactmass": float,
+                "charge": int,
+                "cas_number": str,
+                "pubmed_id": str,
+                "smiles": str,
+                "inchi": str,
+                "inchi_aux": str,
+                "library_class": str,
+                "ionmode": str,
+                "libraryqualitystring": str,
+                "mqscore": float,
+                "tic_query": float,
+                "rt_query": float,
+                "mzerrorppm": float,
+                "sharedpeaks": int,
+                "massdiff": float,
+                "libmz": float,
+                "specmz": float,
+                "speccharge": int,
+                "moleculeexplorerdatasets": str,
+                "moleculeexplorerfiles": str,
+                "molecular_formula": str,
+                "inchikey": str,
+                "inchikey_planar": str,
             },
         )
 
@@ -158,6 +160,32 @@ class GnpsLibrarySpectrum(ExternalBaseClass):
         "inchikey_planar",
     ]
 
+    def add_cmpd(self):
+        temp = None
+        try:
+            inchi = self.inchi
+            inchi = inchi.removeprefix('"').removesuffix('"')
+            temp = ChemicalCompound(self.inchi)
+        except Exception:
+            pass
+        if not temp:
+            try:
+                temp = ChemicalCompound(self.smiles)
+            except Exception:
+                pass
+        if temp:
+            temp.add_to_neo4j()
+            self._add_to_neo4j(
+                """
+                    with $uid as row and $temp as temp
+                    MATCH (gls:gnps_library_spectrum {uid: row.uid})
+                    MATCH (cc:chemical_compound {uid: temp.uid})
+                    MERGE (gls)-[:IS_A]->(cc)
+                        """,
+                uid=self.uid,
+                temp=(Chem.MolToInchi(temp.mol), Chem.MolToSmiles(temp.mol)),
+            )
+
     def __init__(self, **kwargs) -> None:
         for i in self.__slots__:
             setattr(self, i, None)
@@ -175,6 +203,30 @@ class GnpsLibrarySpectrum(ExternalBaseClass):
         }
 
     def add_node_to_neo4j(self):
+        self._add_to_neo4j(
+            """
+            with $row as row
+            MERGE (gls:gnps_library_spectrum {uid: row.uid})
+                     SET gls += row
+                        """,
+            row=self.not_null_properties,
+        )
+
+    def link_to_chemical_node(self):
+        cmpd = None
+        try:
+            cmpd = ChemicalCompound(self.inchikey)
+        except Exception:
+            pass
+        if not cmpd:
+            try:
+                cmpd = ChemicalCompound(self.smiles)
+            except Exception:
+                pass
+        if cmpd:
+            log.warning(f"Could not parse a chemical compound for {self.uid}")
+            return
+
         self._add_to_neo4j(
             """
             with $row as row

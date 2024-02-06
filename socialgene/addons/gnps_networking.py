@@ -46,33 +46,34 @@ class ClusterNode(Node):
         super().__init__(
             neo4j_label="cluster",
             description="Represents a GNPS molecular networking cluster",
+            required_properties=["uid", "workflow_uuid"],
             properties={
-                "uid": "string",
-                "workflow_uuid": "string",
-                "defaultgroups": "string",
-                "g1": "string",
-                "g2": "string",
-                "g3": "string",
-                "g4": "string",
-                "g5": "string",
-                "g6": "string",
-                "gnpslinkout_cluster": "string",
-                "gnpslinkout_network": "string",
-                "mqscore": "float",
-                "mzerrorppm": "float",
-                "massdiff": "float",
-                "rtmean": "float",
-                "rtmean_min": "float",
-                "rtstderr": "float",
-                "uniquefilesources": "string",
-                "uniquefilesourcescount": "int",
-                "cluster_index": "int",
-                "componentindex": "int",
-                "number_of_spectra": "int",
-                "parent_mass": "float",
-                "precursor_charge": "int",
-                "precursor_mass": "float",
-                "sumprecursor_intensity": "float",
+                "uid": str,
+                "workflow_uuid": str,
+                "defaultgroups": str,
+                "g1": str,
+                "g2": str,
+                "g3": str,
+                "g4": str,
+                "g5": str,
+                "g6": str,
+                "gnpslinkout_cluster": str,
+                "gnpslinkout_network": str,
+                "mqscore": float,
+                "mzerrorppm": float,
+                "massdiff": float,
+                "rtmean": float,
+                "rtmean_min": float,
+                "rtstderr": float,
+                "uniquefilesources": str,
+                "uniquefilesourcescount": int,
+                "cluster_index": int,
+                "componentindex": int,
+                "number_of_spectra": int,
+                "parent_mass": float,
+                "precursor_charge": int,
+                "precursor_mass": float,
+                "sumprecursor_intensity": float,
             },
         )
 
@@ -282,7 +283,9 @@ class GNPS_SNETS:
         log.info("Adding GNPS library hits to db")
         # This is potentially slow w/ a lot of trips to Neo4j but is more standardized so leaving it for now
         for i in self.specnets_df.to_dict("records"):
-            GnpsLibrarySpectrum(**i).add_node_to_neo4j()
+            a = GnpsLibrarySpectrum(**i)
+            a.add_cmpd()
+            # a.add_node_to_neo4j()
 
     def add_gnps_library_spectrum_classifications(self):
         """Adds GNPS library classifications to the Neo4j database"""
