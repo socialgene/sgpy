@@ -9,6 +9,6 @@ class CHEMBL(Node):
             neo4j_label="chembl",
             description="Represents a CHEMBL term",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )

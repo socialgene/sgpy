@@ -7,7 +7,7 @@ class NPClassifierClass(Node):
             neo4j_label="npclassifier_class",
             description="Represents a NPClassifier class",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 
@@ -18,7 +18,7 @@ class NPClassifierPathway(Node):
             neo4j_label="npclassifier_pathway",
             description="Represents a NPClassifier pathway",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 
@@ -29,7 +29,7 @@ class NPClassifierSuperclass(Node):
             neo4j_label="npclassifier_superclass",
             description="Represents a NPClassifier superclass",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 

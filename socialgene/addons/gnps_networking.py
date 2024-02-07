@@ -84,12 +84,12 @@ class SpectrumNode(Node):
             neo4j_label="spectrum",
             description="Represents a GNPS molecular networking spectrum",
             properties={
-                "uid": "string",
-                "original_filename": "string",
-                "parentmass": "float",
-                "charge": "int",
-                "rettime": "float",
-                "assembly": "string",
+                "uid": str,
+                "original_filename": str,
+                "parentmass": float,
+                "charge": int,
+                "rettime": float,
+                "assembly": str,
             },
         )
 

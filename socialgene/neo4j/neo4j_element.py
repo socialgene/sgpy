@@ -17,8 +17,9 @@ class Neo4jElement(ABC):
         target_extension: str = None,
         multilabel: bool = False,
         header: List[str] = None,
-        properties: dict = None,
+        property_specification: dict = None,
         required_properties: List[str] = None,
+        properties: dict = None,
         **kwargs,
     ):
         """This defines nodes and relationships that will be imported  into Neo4j  with the Neo4j Admin Import tool
@@ -40,7 +41,7 @@ class Neo4jElement(ABC):
         self.__target_subdirectory = target_subdirectory
         self.__target_extension = target_extension
         self.__header = header
-        self.__property_specification = properties
+        self.__property_specification = property_specification
         if self.__property_specification is None:
             if self.__header is not None:
                 self.__property_specification = {i: "string" for i in header}
@@ -51,33 +52,42 @@ class Neo4jElement(ABC):
         if self.__required_properties is None:
             self.__required_properties = list(self.__property_specification.keys())
         self.__multilabel = multilabel
+        if properties is None:
+            self.__properties = {}
+        if properties is not None:
+            self.__properties = properties
+            self._clean_properties()
 
     def __hash__(self):
         return hash((self.__neo4j_label))
 
-    def _check_required_properties(self, properties: dict):
-        missing = [i for i in self.__required_properties if i not in properties]
+    def _check_required_properties(
+        self,
+    ):
+        missing = [i for i in self.__required_properties if i not in self.__properties]
         if missing:
             raise ValueError(f"{self.__class__} missing properties: {missing}")
         return missing
 
-    def _check_property_types(self, properties: dict):
+    def _check_property_types(self):
         bad = {
             k: f"expected {self.__property_specification.get(k).__name__} but got {type(v).__name__}"
-            for k, v in properties.items()
+            for k, v in self.__properties.items()
             if not isinstance(v, self.__property_specification.get(k))
         }
         if bad:
             raise ValueError(f"{self.__class__} bad properties:\n\t\t{bad}")
-        return {
+        self.__properties = {
             k: v
-            for k, v in properties.items()
+            for k, v in self.__properties.items()
             if isinstance(v, self.__property_specification.get(k))
         }
 
-    def get_clean_properties(self, properties: dict):
-        self._check_required_properties(properties)
-        return self._check_property_types(properties)
+    def _clean_properties(
+        self,
+    ):
+        self._check_required_properties()
+        self._check_property_types()
 
 
 class Node(Neo4jElement):
@@ -104,23 +114,20 @@ class Node(Neo4jElement):
 
     def _neo4j_repr(
         self,
-        properties,
         var="n",
     ):
         """Create a string of the form (var:LABEL {uid: 'uid', ...})"""
-        properties = self.get_clean_properties(properties)
-        uids = {i: properties.get(i) for i in self.__uid}
+        uids = {i: self._Neo4jElement__properties.get(i) for i in self.__uid}
         uids_as_str = ", ".join(
             f"{k}: '{v}'" if isinstance(v, str) else f"{k}: {v}"
             for k, v in uids.items()
         )
         return f"({var}: {self._Neo4jElement__neo4j_label} {{{uids_as_str}}})"
 
-    def add_to_neo4j(self, properties: dict):
-        properties = self.get_clean_properties(properties)
-        uids = {i: properties.get(i) for i in self.__uid}
-        non_uids = {i: properties.get(i) for i in properties if i not in self.__uid}
-        merge_str = f"MERGE {self._neo4j_repr(properties)}"
+    def add_to_neo4j(self,):
+        uids = {i: self._Neo4jElement__properties.get(i) for i in self.__uid}
+        non_uids = {i: self._Neo4jElement__properties.get(i) for i in self._Neo4jElement__properties if i not in self.__uid}
+        merge_str = f"MERGE {self._neo4j_repr(var="n")}"
         with GraphDriver() as db:
             results = db.run(
                 f"""
@@ -132,8 +139,10 @@ class Node(Neo4jElement):
             ).value()
 
 
+
+
 class Relationship(Neo4jElement):
-    def __init__(self, start=None, end=None, properties=None, **kwargs):
+    def __init__(self, start=None, end=None,  **kwargs):
         super().__init__(**kwargs)
         self.start = start
         self.end = end

@@ -23,7 +23,7 @@ class ClassyFireNode(Node):
             neo4j_label="classyfire",
             description="Represents a CHEMBL term",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 
@@ -33,7 +33,7 @@ class ClassyChemontNode(Node):
         super().__init__(
             neo4j_label="chemont",
             description="Represents a classyfire chemical ontology term",
-            properties={"uid": "string", "name": "string", "definition": "string"},
+            properties={"uid": str, "name": str, "definition": str},
         )
 
 
