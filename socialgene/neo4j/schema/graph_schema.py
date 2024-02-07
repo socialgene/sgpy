@@ -66,7 +66,7 @@ class GraphSchema:
                 i()._Neo4jElement__neo4j_label,
                 i.__module__,
                 i()._Neo4jElement__description,
-                "\n".join(wrap(", ".join(i()._Neo4jElement__properties))),
+                "\n".join(wrap(", ".join(i()._Neo4jElement__property_specification))),
             )
         yield table
 
@@ -107,7 +107,7 @@ class GraphSchema:
                 i()._Neo4jElement__description,
                 i()._Neo4jElement__target_subdirectory,
                 i()._Neo4jElement__header_filename,
-                i()._Neo4jElement__properties,
+                i()._Neo4jElement__property_specification,
             )
             for i in node_dict.values()
         ]

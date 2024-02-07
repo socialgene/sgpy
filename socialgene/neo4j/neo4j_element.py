@@ -40,44 +40,44 @@ class Neo4jElement(ABC):
         self.__target_subdirectory = target_subdirectory
         self.__target_extension = target_extension
         self.__header = header
-        self.__properties = properties
-        if self.__properties is None:
+        self.__property_specification = properties
+        if self.__property_specification is None:
             if self.__header is not None:
-                self.__properties = {i: "string" for i in header}
-        if self.__properties is None:
-            self.__properties = {}
+                self.__property_specification = {i: "string" for i in header}
+        if self.__property_specification is None:
+            self.__property_specification = {}
         # if not provided then all properties are required
         self.__required_properties = required_properties
         if self.__required_properties is None:
-            self.__required_properties = list(self.__properties.keys())
+            self.__required_properties = list(self.__property_specification.keys())
         self.__multilabel = multilabel
 
     def __hash__(self):
         return hash((self.__neo4j_label))
 
-    def __check_required_properties(self, properties: dict):
+    def _check_required_properties(self, properties: dict):
         missing = [i for i in self.__required_properties if i not in properties]
         if missing:
             raise ValueError(f"{self.__class__} missing properties: {missing}")
         return missing
 
-    def __check_property_types(self, properties: dict):
+    def _check_property_types(self, properties: dict):
         bad = {
-            k: f"expected {self.__properties.get(k).__name__} but got {type(v).__name__}"
+            k: f"expected {self.__property_specification.get(k).__name__} but got {type(v).__name__}"
             for k, v in properties.items()
-            if not isinstance(v, self.__properties.get(k))
+            if not isinstance(v, self.__property_specification.get(k))
         }
         if bad:
             raise ValueError(f"{self.__class__} bad properties:\n\t\t{bad}")
         return {
             k: v
             for k, v in properties.items()
-            if isinstance(v, self.__properties.get(k))
+            if isinstance(v, self.__property_specification.get(k))
         }
 
     def get_clean_properties(self, properties: dict):
-        self.__check_required_properties(properties)
-        return self.__check_property_types(properties)
+        self._check_required_properties(properties)
+        return self._check_property_types(properties)
 
 
 class Node(Neo4jElement):
@@ -92,7 +92,7 @@ class Node(Neo4jElement):
         *args,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__()
         self.__uid = uid
         if self.__uid is None:
             self.__uid = ["uid"]
@@ -176,9 +176,13 @@ class Relationship(Neo4jElement):
         if self.start and self.end:
             return f"(:{self.start()._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end()._Neo4jElement__neo4j_label})"
 
-    def add_to_neo4j(self, properties: dict):
-        properties = self.get_clean_properties(properties)
+    def add_to_neo4j(self, start_node, end_node, properties=None):
 
+        if isinstance(start_node, self.start()):
+            log.error(f"start_node is not of type {self.start()}")
+        else:
+            log.error(f"start_node is not of type {self.start()}")
+        raise
         match_start = self.start()._neo4j_repr(
             properties={"uid": "test", "workflow_uuid": "test"}, var="s"
         )

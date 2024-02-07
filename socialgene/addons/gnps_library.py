@@ -16,6 +16,8 @@ class GnpsLibrarySpectrumNode(Node):
         super().__init__(
             neo4j_label="gnps_library_spectrum",
             description="Represents a GNPS library spectrum",
+            uid=["uid"],
+            required_properties=["uid"],
             properties={
                 "uid": str,
                 "compound_name": str,
@@ -58,7 +60,7 @@ class IonSourceNode(Node):
             neo4j_label="ion_source",
             description="Represents an ion source",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 
@@ -69,7 +71,7 @@ class InstrumentNode(Node):
             neo4j_label="instrument",
             description="Represents an instrument",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 
@@ -80,7 +82,7 @@ class OrganismNode(Node):
             neo4j_label="organism",
             description="Represents an organism (as defined by GNPS)",
             properties={
-                "uid": "string",
+                "uid": str,
             },
         )
 
