@@ -89,10 +89,9 @@ class Node(Neo4jElement):
         contraints: List[str] = None,
         unique_constraints: List[str] = None,
         nonunique_index: List[str] = None,
-        *args,
         **kwargs,
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.__uid = uid
         if self.__uid is None:
             self.__uid = ["uid"]
@@ -134,8 +133,8 @@ class Node(Neo4jElement):
 
 
 class Relationship(Neo4jElement):
-    def __init__(self, start=None, end=None, properties=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, start=None, end=None, properties=None, **kwargs):
+        super().__init__(**kwargs)
         self.start = start
         self.end = end
         if not self.start and not self.end:
