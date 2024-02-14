@@ -1,7 +1,12 @@
+# flake8: noqa F401
+import builtins
 from textwrap import wrap
+
+from rich.console import Console, ConsoleOptions, RenderResult
+from rich.table import Table
+
 import socialgene.addons.chebi
 import socialgene.addons.chembl
-from socialgene.addons.chemistry import ChemicalFragment, ContainsRel
 import socialgene.addons.classyfire
 import socialgene.addons.gnps_library
 import socialgene.addons.gnps_networking
@@ -13,15 +18,10 @@ import socialgene.addons.publication
 import socialgene.addons.ttd
 import socialgene.nextflow.nodes
 import socialgene.nextflow.relationships
-
+from socialgene.addons.chemistry import ChemicalFragment, ContainsRel
+from socialgene.config import env_vars
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.lists_to_markdown import markdown_table_from_list
-from rich.console import Console, ConsoleOptions, RenderResult
-from rich.table import Table
-import builtins
-from rich.console import Console
-
-from socialgene.config import env_vars
 from socialgene.utils.logging import log
 
 console = Console()

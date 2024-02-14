@@ -3,20 +3,19 @@ from socialgene.neo4j.neo4j_element import Node, Relationship
 
 
 class ChemicalFragment(Node):
-    neo4j_label="chemical_fragment"
-    description="Represents a chemical fragment as defined by rdkit.Chem.Descriptors"
-    required_properties=["uid"],
-    properties={
+    neo4j_label = "chemical_fragment"
+    description = "Represents a chemical fragment as defined by rdkit.Chem.Descriptors"
+    required_properties = (["uid"],)
+    properties = {
         "uid": str,
     }
 
 
-
 class ChemicalCompoundNode(Node):
-    neo4j_label="chemical_compound"
-    description="Represents a chemical compound"
-    required_properties=["inchi", "CanonicalSmiles"]
-    property_specification={
+    neo4j_label = "chemical_compound"
+    description = "Represents a chemical compound"
+    required_properties = ["inchi", "CanonicalSmiles"]
+    property_specification = {
         "uid": str,
         "MolWt": float,
         "HeavyAtomMolWt": float,
@@ -63,9 +62,8 @@ class ChemicalCompoundNode(Node):
     }
 
 
-
 class ContainsRel(Relationship):
-    neo4j_label="CONTAINS"
-    description="Connects a chemical compound to a chemical fragment"
-    start=ChemicalCompound
-    end=ChemicalFragment
+    neo4j_label = "CONTAINS"
+    description = "Connects a chemical compound to a chemical fragment"
+    start = ChemicalCompound
+    end = ChemicalFragment

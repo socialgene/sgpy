@@ -1,6 +1,5 @@
 import time
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from math import ceil
 from pathlib import Path
 
@@ -164,12 +163,12 @@ class SearchBase(ABC):
         # modify input BGC assembly name so if it also exists in the DB it won't be overridden
         self.input_bgc_id = list(self.sg_object.assemblies.keys())[0]
         self.modified_input_bgc_name = f"socialgene_query_{self.input_bgc_id}"
-        self.sg_object.assemblies[
+        self.sg_object.assemblies[self.modified_input_bgc_name] = (
+            self.sg_object.assemblies.pop(self.input_bgc_id)
+        )
+        self.sg_object.assemblies[self.modified_input_bgc_name].uid = (
             self.modified_input_bgc_name
-        ] = self.sg_object.assemblies.pop(self.input_bgc_id)
-        self.sg_object.assemblies[
-            self.modified_input_bgc_name
-        ].uid = self.modified_input_bgc_name
+        )
         self.input_assembly = self.sg_object.assemblies[self.modified_input_bgc_name]
 
     def create_input_bgcs(self):

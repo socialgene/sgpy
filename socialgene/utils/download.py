@@ -1,10 +1,8 @@
 import requests
-
 from rich.progress import (
     BarColumn,
     DownloadColumn,
     Progress,
-    TaskID,
     TextColumn,
     TimeRemainingColumn,
     TransferSpeedColumn,

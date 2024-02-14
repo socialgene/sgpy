@@ -1,21 +1,16 @@
 import argparse
-from pathlib import Path
 import re
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from uuid import uuid4
+
 import numpy as np
 import pandas as pd
-from socialgene.addons.gnps_library import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
-from socialgene.addons.npclassifier import (
-    NPClassifierClass,
-    NPClassifierPathway,
-    NPClassifierSuperclass,
-    NPClassifierIsA,
-)  # noqa: F401
-from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.utils.logging import log
-from uuid import uuid4
-from socialgene.neo4j.neo4j_element import Node, Relationship
 
-import xml.etree.ElementTree as ET
+from socialgene.addons.gnps_library import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
+from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.utils.logging import log
 
 
 def extract_parameter(xml_string):
@@ -38,14 +33,14 @@ def capture_assembly_id(s, regex):
         return s
 
 
-############### Node classes
+# Node classes
 
 
 class ClusterNode(Node):
-    neo4j_label="cluster"
-    description="Represents a GNPS molecular networking cluster"
-    required_properties=["uid", "workflow_uuid"]
-    property_specification={
+    neo4j_label = "cluster"
+    description = "Represents a GNPS molecular networking cluster"
+    required_properties = ["uid", "workflow_uuid"]
+    property_specification = {
         "uid": str,
         "workflow_uuid": str,
         "defaultgroups": str,
@@ -75,11 +70,10 @@ class ClusterNode(Node):
     }
 
 
-
 class SpectrumNode(Node):
-    neo4j_label="spectrum",
-    description="Represents a GNPS molecular networking spectrum",
-    property_specification={
+    neo4j_label = ("spectrum",)
+    description = ("Represents a GNPS molecular networking spectrum",)
+    property_specification = {
         "uid": str,
         "original_filename": str,
         "parentmass": float,
@@ -90,11 +84,10 @@ class SpectrumNode(Node):
 
 
 class LibraryHitRel(Relationship):
-    neo4j_label="LIBRARY_HIT"
-    description="Connects a GNPS cluster to a GNPS library hit"
-    start_class=ClusterNode
-    end_class=GnpsLibrarySpectrumNode,
-
+    neo4j_label = "LIBRARY_HIT"
+    description = "Connects a GNPS cluster to a GNPS library hit"
+    start_class = ClusterNode
+    end_class = (GnpsLibrarySpectrumNode,)
 
 
 class GNPS_SNETS:
@@ -167,7 +160,7 @@ class GNPS_SNETS:
             for i in f:
                 try:
                     self.params.append(extract_parameter(i))
-                except:
+                except Exception:
                     continue
 
     def _file_mapping(self):
@@ -284,7 +277,7 @@ class GNPS_SNETS:
         """Adds GNPS library classifications to the Neo4j database"""
         log.info("Adding GNPS library classifications to db")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                 WITH $df as df
                 UNWIND df as row
@@ -306,7 +299,7 @@ class GNPS_SNETS:
         """Adds GNPS library ion sources to the Neo4j database"""
         log.info("Adding GNPS library ion sources to db")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                 WITH $df as df
                 UNWIND df as row
@@ -323,7 +316,7 @@ class GNPS_SNETS:
         """Adds GNPS library instruments to the Neo4j database"""
         log.info("Adding GNPS library instruments to db")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                 WITH $df as df
                 UNWIND df as row
@@ -340,7 +333,7 @@ class GNPS_SNETS:
         """Adds GNPS library organisms to the Neo4j database"""
         log.info("Adding GNPS library organisms to db")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                 WITH $df as df
                 UNWIND df as row
@@ -357,7 +350,7 @@ class GNPS_SNETS:
         """Adds GNPS networking clusters to the Neo4j database and links them to the GNPS library hits"""
         log.info("Adding GNPS clusters to db")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                     WITH $df as df
                     UNWIND df as row
@@ -410,7 +403,7 @@ class GNPS_SNETS:
         )
         for i in df.reset_index().itertuples(index=False):
             with GraphDriver() as db:
-                results = db.run(
+                _ = db.run(
                     """
                     WITH $row as row
                     MATCH (a1:assembly {uid: row.assembly})
@@ -426,7 +419,7 @@ class GNPS_SNETS:
         """Adds and links input spectra to GNPS clusters in the Neo4j database"""
         log.info("Adding and linking input spectra to GNPS clusters")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                 WITH $df as df
                 UNWIND df as row
@@ -447,7 +440,7 @@ class GNPS_SNETS:
         """Adds links between GNPS clusters in the Neo4j database (i.e. the molecular network)"""
         log.info("Adding links between GNPS clusters")
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 """
                 WITH $df as df
                 UNWIND df as row

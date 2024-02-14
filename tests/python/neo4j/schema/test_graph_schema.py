@@ -1,8 +1,6 @@
 import collections
-import pytest
-from socialgene.neo4j.schema.graph_schema import GraphSchema
 
-from socialgene.utils.logging import log
+from socialgene.neo4j.schema.graph_schema import GraphSchema
 
 a = GraphSchema()
 

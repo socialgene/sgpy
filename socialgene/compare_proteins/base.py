@@ -25,8 +25,7 @@ BlastTab_COLUMNS = {
 
 class ProteinComparison(ABC):
     @abstractmethod
-    def compare_proteins(self, p1: List[Protein], p2: List[Protein]):
-        ...
+    def compare_proteins(self, p1: List[Protein], p2: List[Protein]): ...
 
     def reciprocal_hits(
         self,

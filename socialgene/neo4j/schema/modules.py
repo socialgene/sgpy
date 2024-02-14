@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List
+
 import socialgene.nextflow.nodes as nodes
 import socialgene.nextflow.relationships as rels
 

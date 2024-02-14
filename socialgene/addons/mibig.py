@@ -1,4 +1,5 @@
 """https://mibig.secondarymetabolites.org/"""
+
 import re
 
 from socialgene.addons.base import ExternalBaseClass

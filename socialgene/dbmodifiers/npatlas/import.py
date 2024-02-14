@@ -1,5 +1,4 @@
 from socialgene.addons.npatlas import NPAtlas
-from socialgene.dbmodifiers.classyfire.importer import main as get_classyfire
 
 # get_classyfire()
 

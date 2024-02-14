@@ -18,7 +18,6 @@ from rich.progress import (
 )
 from rich.table import Table
 
-from socialgene.base.socialgene import SocialGene
 from socialgene.compare_proteins.hmmer import CompareDomains
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver

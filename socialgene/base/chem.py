@@ -1,10 +1,7 @@
-from rdkit import Chem
-from rdkit.Chem import AllChem
-from rdkit.Chem import rdMolHash
-from socialgene.neo4j.neo4j import GraphDriver
+from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem, Descriptors, rdMolHash
+
 from socialgene.utils.logging import log
-from rdkit.Chem import Descriptors
-from rdkit import DataStructs
 
 
 class ChemicalFragments:
@@ -54,7 +51,7 @@ class ChemicalCompound:
                             f"Successfully parsed compound with {method.__name__}"
                         )
                         break
-                except:
+                except Exception:
                     continue
         if not isinstance(self.mol, Chem.rdchem.Mol):
             raise ValueError("Wasn't able to parse the compound")
@@ -97,7 +94,7 @@ class ChemicalCompound:
         ):
             try:
                 out_dict[i] = getattr(Descriptors, i)(self.mol)
-            except:
+            except Exception:
                 out_dict[i] = None
         return out_dict
 

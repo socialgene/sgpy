@@ -1,15 +1,10 @@
 import multiprocessing
-from socialgene.cli.search.sea import search_bgc
-from socialgene.compare_proteins.diamond import DiamondBlastp
-from typing import List
-
-from socialgene.clustermap.serialize import SerializeToClustermap
-from socialgene.config import env_vars
-from socialgene.search.hmmer import SearchDomains
-from socialgene.utils.logging import log
-from pathlib import Path
 import pickle
 from multiprocessing import Pool
+from pathlib import Path
+
+from socialgene.cli.search.sea import search_bgc
+from socialgene.config import env_vars
 
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 

@@ -1,18 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import List
 import re
-from rich.console import Console, ConsoleOptions, RenderResult
-from rich.table import Table
-from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.utils.logging import log
+from abc import ABC
 from itertools import batched
+from typing import List
+
+from socialgene.neo4j.neo4j import GraphDriver
 
 
 class Neo4jElement(ABC):
 
-    neo4j_label=None
-    description=None
-    property_specification={}
+    neo4j_label = None
+    description = None
+    property_specification = {}
 
     def __init__(
         self,
@@ -55,7 +53,6 @@ class Neo4jElement(ABC):
         if properties is not None:
             self.properties = properties
             self._clean_properties()
-
 
     @property
     def __required_properties_dict(self):
@@ -163,7 +160,7 @@ class Node(Neo4jElement):
             "required_props": self._Neo4jElement__required_properties_dict,
         }
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 f"""
                 WITH $paramsdict as paramsdict
                 WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
@@ -195,7 +192,7 @@ class Node(Neo4jElement):
             batch_size,
         ):
             with GraphDriver() as db:
-                results = db.run(
+                _ = db.run(
                     f"""
                     WITH $paramsdictlist as paramsdictlist
                     UNWIND paramsdictlist as paramsdict
@@ -261,7 +258,7 @@ class Relationship(Neo4jElement):
             "properties": self.properties,
         }
         with GraphDriver() as db:
-            results = db.run(
+            _ = db.run(
                 f"""
                 WITH $properties as properties
                 WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
@@ -276,28 +273,28 @@ class Relationship(Neo4jElement):
     @staticmethod
     def add_multiple_to_neo4j(list_of_rels, batch_size=1000):
         """Add multiple relationships to Neo4j at a time in transactions of batch_size nodes at a time"""
-        if not all(
-            isinstance(sub, type(list_of_rels[0])) for sub in list_of_rels[1:]
-        ):
+        if not all(isinstance(sub, type(list_of_rels[0])) for sub in list_of_rels[1:]):
             raise ValueError(
                 f"All relationships in list_of_rels must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_rels])}"
             )
         single = list_of_rels[0]
-        match_start = single.start._neo4j_repr_params(var="m1", map_key="required_props1")
+        match_start = single.start._neo4j_repr_params(
+            var="m1", map_key="required_props1"
+        )
         match_end = single.end._neo4j_repr_params(var="m2", map_key="required_props2")
         for paramsdictlist in batched(
             (
                 {
-            "required_props1": i.start._Neo4jElement__required_properties_dict,
-            "required_props2": i.end._Neo4jElement__required_properties_dict,
-            "properties": i.properties,
-        }
+                    "required_props1": i.start._Neo4jElement__required_properties_dict,
+                    "required_props2": i.end._Neo4jElement__required_properties_dict,
+                    "properties": i.properties,
+                }
                 for i in list_of_rels
             ),
             batch_size,
         ):
             with GraphDriver() as db:
-                results = db.run(
+                _ = db.run(
                     f"""
                     WITH $paramsdictlist as paramsdictlist
                     UNWIND paramsdictlist as properties

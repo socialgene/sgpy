@@ -2,9 +2,7 @@
 
 import json
 import tempfile
-
-import requests
-from rich.progress import Progress
+from itertools import batched
 
 from socialgene.addons.base import ExternalBaseClass
 from socialgene.addons.gnps_library import GnpsLibrarySpectrum
@@ -14,7 +12,6 @@ from socialgene.addons.publication import Publication
 from socialgene.base.chem import ChemicalCompound
 from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
-from itertools import batched
 
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
 

@@ -1,6 +1,5 @@
-from socialgene.neo4j.neo4j_element import Relationship
 import socialgene.nextflow.nodes as Nodes
-
+from socialgene.neo4j.neo4j_element import Relationship
 
 # This file can only contain class objects that inherit from Relationship
 
@@ -30,8 +29,8 @@ class ANNOTATES(Relationship):
         "ali_to:Long",
         "exponentialized:Boolean",
     ]
-    start_class =Nodes.HMM
-    end_class =Nodes.PROTEIN
+    start_class = Nodes.HMM
+    end_class = Nodes.PROTEIN
 
 
 class ASSEMBLES_TO(Relationship):
@@ -43,8 +42,8 @@ class ASSEMBLES_TO(Relationship):
     target_subdirectory = "genomic_info"
     target_extension = "assembly_to_locus"
     header = [":END_ID(assembly)", ":START_ID(nucleotide)"]
-    start_class =Nodes.NUCLEOTIDE
-    end_class =Nodes.ASSEMBLY
+    start_class = Nodes.NUCLEOTIDE
+    end_class = Nodes.ASSEMBLY
 
 
 class ENCODES(Relationship):
@@ -77,8 +76,8 @@ class ENCODES(Relationship):
         "too_short_partial_abutting_assembly_gap:Boolean",
         "incomplete:Boolean",
     ]
-    start_class =Nodes.NUCLEOTIDE
-    end_class =Nodes.PROTEIN
+    start_class = Nodes.NUCLEOTIDE
+    end_class = Nodes.PROTEIN
 
 
 class TAXON_PARENT(Relationship):
@@ -90,8 +89,8 @@ class TAXON_PARENT(Relationship):
     target_subdirectory = "taxdump_process"
     target_extension = "taxid_to_taxid"
     header = [":START_ID(taxid)", ":END_ID(taxid)"]
-    start_class =Nodes.TAXID
-    end_class =Nodes.TAXID
+    start_class = Nodes.TAXID
+    end_class = Nodes.TAXID
 
 
 class GO_ANN(Relationship):
@@ -103,8 +102,8 @@ class GO_ANN(Relationship):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfam_to_go"
     header = [":START_ID(hmm_source)", ":END_ID(goterm)"]
-    start_class =Nodes.HMM_SOURCE
-    end_class =Nodes.GOTERM
+    start_class = Nodes.HMM_SOURCE
+    end_class = Nodes.GOTERM
 
 
 class PROTEIN_TO_GO(Relationship):
@@ -116,8 +115,8 @@ class PROTEIN_TO_GO(Relationship):
     target_subdirectory = "protein_info"
     target_extension = "protein_to_go"
     header = [":START_ID(protein)", ":END_ID(goterm)"]
-    start_class =Nodes.PROTEIN
-    end_class =Nodes.GOTERM
+    start_class = Nodes.PROTEIN
+    end_class = Nodes.GOTERM
 
 
 class GOTERM_RELS(Relationship):
@@ -130,8 +129,8 @@ class GOTERM_RELS(Relationship):
     target_subdirectory = "goterms"
     target_extension = "goterm_edgelist"
     header = [":START_ID(goterm)", ":END_ID(goterm)", ":TYPE"]
-    start_class =Nodes.GOTERM
-    end_class =Nodes.GOTERM
+    start_class = Nodes.GOTERM
+    end_class = Nodes.GOTERM
 
 
 class ROLE_ANN(Relationship):
@@ -143,8 +142,8 @@ class ROLE_ANN(Relationship):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfam_to_role"
     header = [":START_ID(hmm_source)", ":END_ID(tigrfam_role)"]
-    start_class =Nodes.HMM_SOURCE
-    end_class =Nodes.TIGRFAM_ROLE
+    start_class = Nodes.HMM_SOURCE
+    end_class = Nodes.TIGRFAM_ROLE
 
 
 class MAINROLE_ANN(Relationship):
@@ -156,8 +155,8 @@ class MAINROLE_ANN(Relationship):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfamrole_to_mainrole"
     header = [":START_ID(tigrfam_role)", ":END_ID(tigrfam_mainrole)"]
-    start_class =Nodes.TIGRFAM_ROLE
-    end_class =Nodes.TIGRFAM_MAINROLE
+    start_class = Nodes.TIGRFAM_ROLE
+    end_class = Nodes.TIGRFAM_MAINROLE
 
 
 class SUBROLE_ANN(Relationship):
@@ -169,8 +168,8 @@ class SUBROLE_ANN(Relationship):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfamrole_to_subrole"
     header = [":START_ID(tigrfam_role)", ":END_ID(tigrfam_subrole)"]
-    start_class =Nodes.TIGRFAM_ROLE
-    end_class =Nodes.TIGRFAM_SUBROLE
+    start_class = Nodes.TIGRFAM_ROLE
+    end_class = Nodes.TIGRFAM_SUBROLE
 
 
 class IS_TAXON(Relationship):
@@ -182,8 +181,8 @@ class IS_TAXON(Relationship):
     target_subdirectory = "genomic_info"
     target_extension = "assembly_to_taxid"
     header = [":START_ID(assembly)", ":END_ID(taxid)"]
-    start_class =Nodes.ASSEMBLY
-    end_class =Nodes.TAXID
+    start_class = Nodes.ASSEMBLY
+    end_class = Nodes.TAXID
 
 
 class BLASTP(Relationship):
@@ -209,8 +208,8 @@ class BLASTP(Relationship):
         "bitscore:Float",
         "qcovhsp:Float",
     ]
-    start_class =Nodes.PROTEIN
-    end_class =Nodes.PROTEIN
+    start_class = Nodes.PROTEIN
+    end_class = Nodes.PROTEIN
 
 
 class MMSEQS2(Relationship):
@@ -224,8 +223,8 @@ class MMSEQS2(Relationship):
     target_subdirectory = "mmseqs2_cluster"
     target_extension = "mmseqs2_results_cluster.tsv"
     header = [":START_ID(protein)", ":END_ID(protein)", ":TYPE"]
-    start_class =Nodes.PROTEIN
-    end_class =Nodes.PROTEIN
+    start_class = Nodes.PROTEIN
+    end_class = Nodes.PROTEIN
 
 
 class SOURCE_DB(Relationship):
@@ -254,5 +253,5 @@ class SOURCE_DB(Relationship):
         ":IGNORE",
         ":IGNORE",
     ]
-    start_class =Nodes.HMM
-    end_class =Nodes.HMM_SOURCE
+    start_class = Nodes.HMM
+    end_class = Nodes.HMM_SOURCE

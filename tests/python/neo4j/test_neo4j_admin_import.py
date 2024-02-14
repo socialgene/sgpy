@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from socialgene.neo4j.utils.admin_import import Neo4jAdminImport
 from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
+from socialgene.neo4j.utils.admin_import import Neo4jAdminImport
 
 
 def read_in(fpath):
