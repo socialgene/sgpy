@@ -39,17 +39,7 @@ class Neo4jElement(ABC):
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
             multilabel(bool): are LABELS specified within the tsv?
         """
-        # self.neo4j_label = neo4j_label
-        # self.description = description
-        # self.header_filename = header_filename
-        # self.target_subdirectory = target_subdirectory
-        # self.target_extension = target_extension
-        # self.header = header
-        # self.property_specification = property_specification
-        # if self.property_specification is None:
-        #     if self.header is not None:
-        #         self.property_specification = {i: "string" for i in header}
-        # properties aren't actually required
+        # properties aren't required for relationships
         if self.property_specification is None:
             self.property_specification = {}
         # if not provided then all properties are required
@@ -128,6 +118,10 @@ class Node(Neo4jElement):
         self.constraints = constraints
         self.constraints_unique = unique_constraints
         self.nonunique_index = nonunique_index
+        if self.property_specification is None:
+            raise ValueError(
+                f"property_specification must be defined for class {self.__class__.__name__}"
+            )
 
     def __hash__(self):
         return hash((self.neo4j_label))
