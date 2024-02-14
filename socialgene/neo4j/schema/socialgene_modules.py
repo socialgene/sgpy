@@ -50,12 +50,12 @@ class SocialgeneModules(Modules):
         for node in self.selected_nodes:
             self._writer(
                 outdir,
-                header=node()._Neo4jElement__header,
-                header_filename=node()._Neo4jElement__header_filename,
+                header=node().header,
+                header_filename=node().header_filename,
             )
         for rel in self.selected_relationships:
             self._writer(
                 outdir,
-                header=rel._Neo4jElement__header,
-                header_filename=rel._Neo4jElement__header_filename,
+                header=rel.header,
+                header_filename=rel.header_filename,
             )

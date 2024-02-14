@@ -81,11 +81,11 @@ class GraphSchema:
         table.add_column("Neo4j header file", style="magenta", ratio=1)
         for i in rel_dict.values():
             table.add_row(
-                i()._Neo4jElement__neo4j_label,
+                i.neo4j_label,
                 i.__module__,
-                i()._cypher_string,
-                i()._Neo4jElement__target_subdirectory,
-                i()._Neo4jElement__header_filename,
+                i._cypher_string,
+                i.target_subdirectory,
+                i.header_filename,
             )
         yield table
 
@@ -103,11 +103,11 @@ class GraphSchema:
         ]
         rows = [
             (
-                i()._Neo4jElement__neo4j_label,
-                i()._Neo4jElement__description,
-                i()._Neo4jElement__target_subdirectory,
-                i()._Neo4jElement__header_filename,
-                i()._Neo4jElement__property_specification,
+                i.neo4j_label,
+                i.description,
+                i.target_subdirectory,
+                i.header_filename,
+                i.property_specification,
             )
             for i in node_dict.values()
         ]
@@ -132,10 +132,10 @@ class GraphSchema:
         ]
         rows = [
             (
-                i()._Neo4jElement__neo4j_label,
-                i()._cypher_string,
-                i()._Neo4jElement__target_subdirectory,
-                i()._Neo4jElement__header_filename,
+                i.neo4j_label,
+                i._cypher_string,
+                i.target_subdirectory,
+                i.header_filename,
             )
             for i in rel_dict.values()
         ]
