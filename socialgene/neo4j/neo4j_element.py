@@ -9,8 +9,7 @@ from itertools import batched
 
 
 class Neo4jElement(ABC):
-    bro=1
-    bro2=2
+
     def __init__(
         self,
         neo4j_label: str = None,
@@ -63,9 +62,6 @@ class Neo4jElement(ABC):
             self.__properties = properties
             self._clean_properties()
 
-    @property
-    def broseph(self):
-        return self.bro + self.bro2
 
     @property
     def __required_properties_dict(self):
@@ -117,7 +113,7 @@ class Node(Neo4jElement):
     def __init__(
         self,
         uid: List[str] = None,
-        contraints: List[str] = None,
+        constraints: List[str] = None,
         unique_constraints: List[str] = None,
         nonunique_index: List[str] = None,
         **kwargs,
@@ -126,8 +122,8 @@ class Node(Neo4jElement):
         self.__uid = uid
         if self.__uid is None:
             self.__uid = ["uid"]
-        self.__contraints = contraints
-        self.__contraints_unique = unique_constraints
+        self.__constraints = constraints
+        self.__constraints_unique = unique_constraints
         self.__nonunique_index = nonunique_index
 
     def __hash__(self):
@@ -138,7 +134,7 @@ class Node(Neo4jElement):
         var="n",
     ):
         """Create a string of the form (var:LABEL {uid: 'uid', ...})"""
-        uids = {i: self._Neo4jElement__properties.get(i) for i in self.__uid}
+        uids = {i: self._Neo4jElement__properties.get(i) for i in self._Node__uid}
         uids_as_str = ", ".join(
             f"{k}: '{v}'" if isinstance(v, str) else f"{k}: {v}"
             for k, v in uids.items()
@@ -148,12 +144,13 @@ class Node(Neo4jElement):
     def _neo4j_repr_params(
         self,
         var="n",
+        map_key="required_props",
     ):
         """Return a string of the form (var:LABEL {uid: $uid, ...})
         Ensure that the required properties are included in the string
         """
         req_props = self._Neo4jElement__required_properties_dict.keys()
-        req_props = [f"{i}: required_props.{i}" for i in req_props]
+        req_props = [f"{i}: {map_key}.{i}" for i in req_props]
         req_props = ", ".join(req_props)
         return f"({var}: {self._Neo4jElement__neo4j_label} {{{req_props}}})"
 
@@ -162,7 +159,7 @@ class Node(Neo4jElement):
     ):
         """Add a single node to Neo4j"""
 
-        merge_str = self._neo4j_repr_params(var="n")
+        merge_str = self._neo4j_repr_params(var="n", map_key="required_props")
         paramsdict = {
             "optional_props": self._Neo4jElement__optional_properties_dict,
             "required_props": self._Neo4jElement__required_properties_dict,
@@ -188,7 +185,7 @@ class Node(Neo4jElement):
                 f"All nodes in list_of_nodes must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_nodes])}"
             )
         single = list_of_nodes[0]
-        merge_str = single._neo4j_repr_params(var="n")
+        merge_str = single._neo4j_repr_params(var="n", map_key="required_props")
         for paramsdictlist in batched(
             (
                 {
@@ -246,35 +243,34 @@ class Relationship(Neo4jElement):
         except Exception as e:
             raise e
 
+
+
     @property
     def _cypher_string(self):
         if self.start and self.end:
             return f"(:{self.start._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end._Neo4jElement__neo4j_label})"
 
     def add_to_neo4j(self):
-        match_start = self.start._neo4j_repr_params(var="m1")
-        match_end = self.end._neo4j_repr_params(var="m2")
+        match_start = self.start._neo4j_repr_params(var="m1", map_key="required_props1")
+        match_end = self.end._neo4j_repr_params(var="m2", map_key="required_props2")
+        self.start.add_to_neo4j()
+        self.end.add_to_neo4j()
+        the_json = {
+            "required_props1": self.start._Neo4jElement__required_properties_dict,
+            "required_props2": self.end._Neo4jElement__required_properties_dict,
+            "properties": self._Neo4jElement__properties,
+        }
         with GraphDriver() as db:
             results = db.run(
                 f"""
+                WITH $properties as properties
+                WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                 MATCH {match_start}
                 MATCH {match_end}
                 MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
-                ON CREATE SET r += $properties
+                ON CREATE SET r += props
                 """,
-                properties=self._Neo4jElement__properties,
+                properties=the_json,
             ).value()
 
-    def add_many_to_neo4j(self):
-        match_start = self.start._neo4j_repr_params(var="m1")
-        match_end = self.end._neo4j_repr_params(var="m2")
-        with GraphDriver() as db:
-            results = db.run(
-                f"""
-                MATCH {match_start}
-                MATCH {match_end}
-                MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
-                ON CREATE SET r += $properties
-                """,
-                properties=self._Neo4jElement__properties,
-            ).value()
+
