@@ -18,43 +18,32 @@ OBO_URL = (
 
 
 class ClassyFireNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="classyfire",
-            description="Represents a CHEMBL term",
-            properties={
-                "uid": str,
-            },
-        )
+    neo4j_label="classyfire"
+    description="Represents a CHEMBL term"
+    property_specification={
+        "uid": str,
+    }
 
 
 class ClassyChemontNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="chemont",
-            description="Represents a classyfire chemical ontology term",
-            properties={"uid": str, "name": str, "definition": str},
-        )
+    neo4j_label="chemont"
+    description="Represents a classyfire chemical ontology term"
+    property_specification={"uid": str, "name": str, "definition": str}
+
 
 
 class ClassyFireSynonym(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="SYNONYM",
-            description="Represents a synonym relationship between chemont chebi",
-            start=ClassyChemontNode,
-            end=ChebiNode,
-        )
+    neo4j_label="SYNONYM"
+    description="Represents a synonym relationship between chemont chebi"
+    start_class=ClassyChemontNode
+    end_class=ChebiNode
 
 
 class ClassyFireIsA(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="IS_A",
-            description="Represents a relationship between chemont nodes",
-            start=ClassyChemontNode,
-            end=ClassyChemontNode,
-        )
+    neo4j_label="IS_A"
+    description="Represents a relationship between chemont nodes"
+    start_class=ClassyChemontNode
+    end_class=ClassyChemontNode
 
 
 class ClassyFire:

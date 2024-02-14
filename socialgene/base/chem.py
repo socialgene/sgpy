@@ -4,7 +4,6 @@ from rdkit.Chem import rdMolHash
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from rdkit.Chem import Descriptors
-from socialgene.neo4j.neo4j_element import Node
 from rdkit import DataStructs
 
 
@@ -31,7 +30,7 @@ def morgan_fingerprint(rdkitmol, radius=2, nBits=1024):
     )
 
 
-class ChemicalCompound(Node):
+class ChemicalCompound:
 
     def __init__(self, compound):
         self.mol = None
@@ -108,17 +107,17 @@ class ChemicalCompound(Node):
         fr.add_mol(self.mol)
         return fr.to_dict()
 
-    def add_to_neo4j(self):
-        with GraphDriver() as db:
-            results = db.run(
-                """
-                WITH $props as props
-                UNWIND props as prop
-                MERGE (c:chemical_compound {inchi: prop.inchi, CanonicalSmiles: prop.CanonicalSmiles})
-                ON CREATE SET c = prop
-                """,
-                props=self.hash_dict | self.base_properties,
-            ).value()
+    # def add_to_neo4j(self):
+    #     with GraphDriver() as db:
+    #         results = db.run(
+    #             """
+    #             WITH $props as props
+    #             UNWIND props as prop
+    #             MERGE (c:chemical_compound {inchi: prop.inchi, CanonicalSmiles: prop.CanonicalSmiles})
+    #             ON CREATE SET c = prop
+    #             """,
+    #             props=self.hash_dict | self.base_properties,
+    #         ).value()
 
 
 class ChemicalCollection:

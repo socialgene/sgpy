@@ -12,119 +12,100 @@ from rdkit import Chem
 
 
 class GnpsLibrarySpectrumNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="gnps_library_spectrum",
-            description="Represents a GNPS library spectrum",
-            uid=["uid"],
-            required_properties=["uid"],
-            properties={
-                "uid": str,
-                "compound_name": str,
-                "compound_source": str,
-                "pi": str,
-                "data_collector": str,
-                "adduct": str,
-                "precursor_mz": float,
-                "exactmass": float,
-                "charge": int,
-                "cas_number": str,
-                "pubmed_id": str,
-                "smiles": str,
-                "inchi": str,
-                "inchi_aux": str,
-                "library_class": str,
-                "ionmode": str,
-                "libraryqualitystring": str,
-                "mqscore": float,
-                "tic_query": float,
-                "rt_query": float,
-                "mzerrorppm": float,
-                "sharedpeaks": int,
-                "massdiff": float,
-                "libmz": float,
-                "specmz": float,
-                "speccharge": int,
-                "moleculeexplorerdatasets": str,
-                "moleculeexplorerfiles": str,
-                "molecular_formula": str,
-                "inchikey": str,
-                "inchikey_planar": str,
-            },
-        )
+    neo4j_label="gnps_library_spectrum"
+    description="Represents a GNPS library spectrum"
+    uid=["uid"]
+    required_properties=["uid"]
+    property_specification={
+        "uid": str,
+        "compound_name": str,
+        "compound_source": str,
+        "pi": str,
+        "data_collector": str,
+        "adduct": str,
+        "precursor_mz": float,
+        "exactmass": float,
+        "charge": int,
+        "cas_number": str,
+        "pubmed_id": str,
+        "smiles": str,
+        "inchi": str,
+        "inchi_aux": str,
+        "library_class": str,
+        "ionmode": str,
+        "libraryqualitystring": str,
+        "mqscore": float,
+        "tic_query": float,
+        "rt_query": float,
+        "mzerrorppm": float,
+        "sharedpeaks": int,
+        "massdiff": float,
+        "libmz": float,
+        "specmz": float,
+        "speccharge": int,
+        "moleculeexplorerdatasets": str,
+        "moleculeexplorerfiles": str,
+        "molecular_formula": str,
+        "inchikey": str,
+        "inchikey_planar": str,
+    }
+
 
 
 class IonSourceNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="ion_source",
-            description="Represents an ion source",
-            properties={
-                "uid": str,
-            },
-        )
+    neo4j_label="ion_source"
+    description="Represents an ion source"
+    property_specification={
+        "uid": str,
+    }
 
 
 class InstrumentNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="instrument",
-            description="Represents an instrument",
-            properties={
-                "uid": str,
-            },
-        )
+    neo4j_label="instrument"
+    description="Represents an instrument"
+    property_specification={
+        "uid": str,
+    }
+
 
 
 class OrganismNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="organism",
-            description="Represents an organism (as defined by GNPS)",
-            properties={
-                "uid": str,
-            },
-        )
+    neo4j_label="organism"
+    description="Represents an organism (as defined by GNPS)"
+    property_specification={
+        "uid": str,
+    }
+
 
 
 class FromIonRel(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="FROM",
-            description="Connects a GNPS spectrum to an ion source",
-            start=GnpsLibrarySpectrumNode,
-            end=IonSourceNode,
-        )
+    neo4j_label="FROM"
+    description="Connects a GNPS spectrum to an ion source"
+    start_class=GnpsLibrarySpectrumNode
+    end_class=IonSourceNode
+
 
 
 class FromInstrumentRel(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="FROM",
-            description="Connects a GNPS spectrum to an instrument source",
-            start=GnpsLibrarySpectrumNode,
-            end=InstrumentNode,
-        )
+    neo4j_label="FROM"
+    description="Connects a GNPS spectrum to an instrument source"
+    start_class=GnpsLibrarySpectrumNode
+    end_class=InstrumentNode
 
 
 class FromOrganismRel(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="FROM",
-            description="Connects a GNPS spectrum to an organism (as defined by GNPS)",
-            start=GnpsLibrarySpectrumNode,
-            end=OrganismNode,
-        )
+    neo4j_label="FROM"
+    description="Connects a GNPS spectrum to an organism (as defined by GNPS)"
+    start_class=GnpsLibrarySpectrumNode
+    end_class=OrganismNode
 
 
 class GnpsLibrarySpectrumIsA(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="IS_A",
-            description="Represents a relationship between gnps_library_spectrum nodes",
-            start=GnpsLibrarySpectrumNode,
-            end=NPClassifierClass,
-        )
+    neo4j_label="IS_A"
+    description="Represents a relationship between gnps_library_spectrum nodes"
+    start_class=GnpsLibrarySpectrumNode
+    end_class=NPClassifierClass
+
 
 
 class GnpsLibrarySpectrum(ExternalBaseClass):

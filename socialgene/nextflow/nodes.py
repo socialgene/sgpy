@@ -6,7 +6,6 @@ from socialgene.neo4j.neo4j_element import Node
 
 class PARAMETERS(Node):
     """Parameters and environmental variables used during database creation"""
-
     neo4j_label="parameters"
     description="Parameters and environmental variables used during database creation"
     header_filename="parameters.header"

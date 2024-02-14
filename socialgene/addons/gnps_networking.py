@@ -42,66 +42,59 @@ def capture_assembly_id(s, regex):
 
 
 class ClusterNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="cluster",
-            description="Represents a GNPS molecular networking cluster",
-            required_properties=["uid", "workflow_uuid"],
-            properties={
-                "uid": str,
-                "workflow_uuid": str,
-                "defaultgroups": str,
-                "g1": str,
-                "g2": str,
-                "g3": str,
-                "g4": str,
-                "g5": str,
-                "g6": str,
-                "gnpslinkout_cluster": str,
-                "gnpslinkout_network": str,
-                "mqscore": float,
-                "mzerrorppm": float,
-                "massdiff": float,
-                "rtmean": float,
-                "rtmean_min": float,
-                "rtstderr": float,
-                "uniquefilesources": str,
-                "uniquefilesourcescount": int,
-                "cluster_index": int,
-                "componentindex": int,
-                "number_of_spectra": int,
-                "parent_mass": float,
-                "precursor_charge": int,
-                "precursor_mass": float,
-                "sumprecursor_intensity": float,
-            },
-        )
+    neo4j_label="cluster"
+    description="Represents a GNPS molecular networking cluster"
+    required_properties=["uid", "workflow_uuid"]
+    property_specification={
+        "uid": str,
+        "workflow_uuid": str,
+        "defaultgroups": str,
+        "g1": str,
+        "g2": str,
+        "g3": str,
+        "g4": str,
+        "g5": str,
+        "g6": str,
+        "gnpslinkout_cluster": str,
+        "gnpslinkout_network": str,
+        "mqscore": float,
+        "mzerrorppm": float,
+        "massdiff": float,
+        "rtmean": float,
+        "rtmean_min": float,
+        "rtstderr": float,
+        "uniquefilesources": str,
+        "uniquefilesourcescount": int,
+        "cluster_index": int,
+        "componentindex": int,
+        "number_of_spectra": int,
+        "parent_mass": float,
+        "precursor_charge": int,
+        "precursor_mass": float,
+        "sumprecursor_intensity": float,
+    }
+
 
 
 class SpectrumNode(Node):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="spectrum",
-            description="Represents a GNPS molecular networking spectrum",
-            properties={
-                "uid": str,
-                "original_filename": str,
-                "parentmass": float,
-                "charge": int,
-                "rettime": float,
-                "assembly": str,
-            },
-        )
+    neo4j_label="spectrum",
+    description="Represents a GNPS molecular networking spectrum",
+    property_specification={
+        "uid": str,
+        "original_filename": str,
+        "parentmass": float,
+        "charge": int,
+        "rettime": float,
+        "assembly": str,
+    }
 
 
 class LibraryHitRel(Relationship):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            neo4j_label="LIBRARY_HIT",
-            description="Connects a GNPS cluster to a GNPS library hit",
-            start=ClusterNode,
-            end=GnpsLibrarySpectrumNode,
-        )
+    neo4j_label="LIBRARY_HIT"
+    description="Connects a GNPS cluster to a GNPS library hit"
+    start_class=ClusterNode
+    end_class=GnpsLibrarySpectrumNode,
+
 
 
 class GNPS_SNETS:
