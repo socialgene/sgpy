@@ -5,6 +5,7 @@ from rich.console import Console, ConsoleOptions, RenderResult
 from rich.table import Table
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
+from itertools import batched
 
 
 class Neo4jElement(ABC):
@@ -45,18 +46,33 @@ class Neo4jElement(ABC):
         if self.__property_specification is None:
             if self.__header is not None:
                 self.__property_specification = {i: "string" for i in header}
+        # properties aren't actually required
         if self.__property_specification is None:
             self.__property_specification = {}
         # if not provided then all properties are required
         self.__required_properties = required_properties
         if self.__required_properties is None:
             self.__required_properties = list(self.__property_specification.keys())
+        if self.__required_properties is None:
+            self.__required_properties = []
         self.__multilabel = multilabel
         if properties is None:
             self.__properties = {}
         if properties is not None:
             self.__properties = properties
             self._clean_properties()
+
+    @property
+    def __required_properties_dict(self):
+        return {i: self.__properties.get(i) for i in self.__required_properties}
+
+    @property
+    def __optional_properties_dict(self):
+        return {
+            i: self.__properties.get(i)
+            for i in self.__properties
+            if i not in self.__required_properties
+        }
 
     def __hash__(self):
         return hash((self.__neo4j_label))
@@ -124,32 +140,80 @@ class Node(Neo4jElement):
         )
         return f"({var}: {self._Neo4jElement__neo4j_label} {{{uids_as_str}}})"
 
-    def add_to_neo4j(self,):
-        uids = {i: self._Neo4jElement__properties.get(i) for i in self.__uid}
-        non_uids = {i: self._Neo4jElement__properties.get(i) for i in self._Neo4jElement__properties if i not in self.__uid}
-        merge_str = f"MERGE {self._neo4j_repr(var="n")}"
+    def _neo4j_repr_params(
+        self,
+        var="n",
+    ):
+        """Return a string of the form (var:LABEL {uid: $uid, ...})"""
+        req_props = self._Neo4jElement__required_properties_dict.keys()
+        req_props = [f"{i}: required_props.{i}" for i in req_props]
+        req_props = ", ".join(req_props)
+        return f"({var}: {self._Neo4jElement__neo4j_label} {{{req_props}  }})"
+
+    def add_to_neo4j(
+        self,
+    ):
+        """Add a single node to Neo4j"""
+
+        merge_str = self._neo4j_repr_params(var="n")
+        paramsdict = {
+            "optional_props": self._Neo4jElement__optional_properties_dict,
+            "required_props": self._Neo4jElement__required_properties_dict,
+        }
         with GraphDriver() as db:
             results = db.run(
                 f"""
-                {merge_str}
-                ON CREATE SET n += $non_uids
+                WITH $paramsdict as paramsdict
+                WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
+                MERGE {merge_str}
+                ON CREATE SET n += optional_props
                 """,
-                uids=uids,
-                non_uids=non_uids,
+                paramsdict=paramsdict,
             ).value()
 
-
+    @staticmethod
+    def add_multiple_to_neo4j(list_of_nodes, batch_size=1000):
+        """Add multiple nodes to Neo4j at a time in transactions of batch_size nodes at a time"""
+        if not all(
+            isinstance(sub, type(list_of_nodes[0])) for sub in list_of_nodes[1:]
+        ):
+            raise ValueError(
+                f"All nodes in list_of_nodes must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_nodes])}"
+            )
+        single = list_of_nodes[0]
+        merge_str = single._neo4j_repr_params(var="n")
+        for paramsdictlist in batched(
+            (
+                {
+                    "optional_props": i._Neo4jElement__optional_properties_dict,
+                    "required_props": i._Neo4jElement__required_properties_dict,
+                }
+                for i in list_of_nodes
+            ),
+            batch_size,
+        ):
+            with GraphDriver() as db:
+                results = db.run(
+                    f"""
+                    WITH $paramsdictlist as paramsdictlist
+                    UNWIND paramsdictlist as paramsdict
+                    WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
+                    MERGE {merge_str}
+                    ON CREATE SET n += optional_props
+                    """,
+                    paramsdictlist=paramsdictlist,
+                ).value()
 
 
 class Relationship(Neo4jElement):
-    def __init__(self, start=None, end=None,  **kwargs):
+    def __init__(self, start_class, end_class, start=None, end=None, **kwargs):
         super().__init__(**kwargs)
         self.start = start
         self.end = end
         if not self.start and not self.end:
             if self._Neo4jElement__header is not None:
-                self.start = self._start
-                self.end = self._end
+                self.start = self._extract_start_from_admin_header
+                self.end = self._extract_end_from_admin_header
 
     def _start_field(self):
         for i in self._Neo4jElement__header:
@@ -162,50 +226,51 @@ class Relationship(Neo4jElement):
                 return i
 
     @property
-    def _start(self):
+    def _extract_start_from_admin_header(self):
         try:
             return re.findall(r"\((.*?)\)", self._start_field())[0]
         except Exception as e:
-            log.debug(e)
+            raise e
 
     @property
-    def _end(self):
+    def _extract_end_from_admin_header(self):
         try:
             return re.findall(r"\((.*?)\)", self._end_field())[0]
         except Exception as e:
-            log.debug(e)
-
-            return re.findall(r"\((.*?)\)", self._end_field())[0]
-        except Exception as e:
-            log.debug(e)
+            raise e
 
     @property
     def _cypher_string(self):
         if self.start and self.end:
-            return f"(:{self.start()._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end()._Neo4jElement__neo4j_label})"
+            return f"(:{self.start._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end._Neo4jElement__neo4j_label})"
 
-    def add_to_neo4j(self, start_node, end_node, properties=None):
-
-        if isinstance(start_node, self.start()):
-            log.error(f"start_node is not of type {self.start()}")
-        else:
-            log.error(f"start_node is not of type {self.start()}")
-        raise
-        match_start = self.start()._neo4j_repr(
-            properties={"uid": "test", "workflow_uuid": "test"}, var="s"
-        )
-        match_start = f"MATCH {match_start}"
-
-        match_end = self.end()._neo4j_repr(
-            properties={"uid": "test", "workflow_uuid": "test"}, var="e"
-        )
-        match_end = f"MATCH {match_end}"
-
+    def add_to_neo4j(self):
+        match_start = self.start._neo4j_repr(var="m1")
+        match_end = self.end._neo4j_repr(var="m2")
         with GraphDriver() as db:
             results = db.run(
                 f"""
-                {match_start}
-                {match_end}
-                MERGE (s)-[:{self._Neo4jElement__neo4j_label}]->(e)
+                MATCH {match_start}
+                MATCH {match_end}
+                MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
+                ON CREATE SET r += $properties
                 """,
+                properties=self.properties,
+            ).value()
+
+    def add_many_to_neo4j(self):
+        props_to_match_m1 = self.start._Neo4jElement__required_properties_dict
+        props_to_match_m2 = self.end._Neo4jElement__required_properties_dict
+
+        match_start = self.start._neo4j_repr(var="m1")
+        match_end = self.end._neo4j_repr(var="m2")
+        with GraphDriver() as db:
+            results = db.run(
+                f"""
+                MATCH {match_start}
+                MATCH {match_end}
+                MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
+                ON CREATE SET r += $properties
+                """,
+                properties=self.properties,
             ).value()
