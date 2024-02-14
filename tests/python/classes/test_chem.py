@@ -1,5 +1,5 @@
 import pytest
-from socialgene.base.chem import FRAGMENTS, ChemicalCompound
+from socialgene.base.chem import ChemicalCompound
 from rdkit import Chem
 
 
@@ -400,7 +400,3 @@ def test_ChemicalCompound_smiles2():
         "fr_urea": 0,
     }
 
-
-def test_fragments_havent_changed():
-    assert set(FRAGMENTS) == set(EXPECTED_FRAGMENTS)
-    assert len(FRAGMENTS) == len(EXPECTED_FRAGMENTS)

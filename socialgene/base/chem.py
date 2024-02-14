@@ -1,11 +1,10 @@
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolHash
-from rdkit.Chem import rdBase
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 from rdkit.Chem import Descriptors
-from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.neo4j.neo4j_element import Node
 from rdkit import DataStructs
 
 

@@ -9,6 +9,8 @@ from itertools import batched
 
 
 class Neo4jElement(ABC):
+    bro=1
+    bro2=2
     def __init__(
         self,
         neo4j_label: str = None,
@@ -60,6 +62,10 @@ class Neo4jElement(ABC):
         if properties is not None:
             self.__properties = properties
             self._clean_properties()
+
+    @property
+    def broseph(self):
+        return self.bro + self.bro2
 
     @property
     def __required_properties_dict(self):
@@ -207,7 +213,7 @@ class Node(Neo4jElement):
 
 
 class Relationship(Neo4jElement):
-    def __init__(self, start_class, end_class, start=None, end=None, **kwargs):
+    def __init__(self, start=None, end=None, **kwargs):
         super().__init__(**kwargs)
         self.start = start
         self.end = end

@@ -56,6 +56,6 @@ class SocialgeneModules(Modules):
         for rel in self.selected_relationships:
             self._writer(
                 outdir,
-                header=rel()._Neo4jElement__header,
-                header_filename=rel()._Neo4jElement__header_filename,
+                header=rel._Neo4jElement__header,
+                header_filename=rel._Neo4jElement__header_filename,
             )
