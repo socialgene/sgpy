@@ -9,6 +9,9 @@ from itertools import batched
 
 
 class Neo4jElement(ABC):
+    neo4j_label=1
+    description=1
+    property_specification={}
 
     def __init__(
         self,
@@ -36,68 +39,68 @@ class Neo4jElement(ABC):
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
             multilabel(bool): are LABELS specified within the tsv?
         """
-        self.__neo4j_label = neo4j_label
-        self.__description = description
-        self.__header_filename = header_filename
-        self.__target_subdirectory = target_subdirectory
-        self.__target_extension = target_extension
-        self.__header = header
-        self.__property_specification = property_specification
-        if self.__property_specification is None:
-            if self.__header is not None:
-                self.__property_specification = {i: "string" for i in header}
+        # self.neo4j_label = neo4j_label
+        # self.description = description
+        # self.header_filename = header_filename
+        # self.target_subdirectory = target_subdirectory
+        # self.target_extension = target_extension
+        # self.header = header
+        # self.property_specification = property_specification
+        # if self.property_specification is None:
+        #     if self.header is not None:
+        #         self.property_specification = {i: "string" for i in header}
         # properties aren't actually required
-        if self.__property_specification is None:
-            self.__property_specification = {}
+        if self.property_specification is None:
+            self.property_specification = {}
         # if not provided then all properties are required
-        self.__required_properties = required_properties
-        if self.__required_properties is None:
-            self.__required_properties = list(self.__property_specification.keys())
-        if self.__required_properties is None:
-            self.__required_properties = []
-        self.__multilabel = multilabel
+        self.required_properties = required_properties
+        if self.required_properties is None:
+            self.required_properties = list(self.property_specification.keys())
+        if self.required_properties is None:
+            self.required_properties = []
+        self.multilabel = multilabel
         if properties is None:
-            self.__properties = {}
+            self.properties = {}
         if properties is not None:
-            self.__properties = properties
+            self.properties = properties
             self._clean_properties()
 
 
     @property
     def __required_properties_dict(self):
-        return {i: self.__properties.get(i) for i in self.__required_properties}
+        return {i: self.properties.get(i) for i in self.required_properties}
 
     @property
     def __optional_properties_dict(self):
         return {
-            i: self.__properties.get(i)
-            for i in self.__properties
-            if i not in self.__required_properties
+            i: self.properties.get(i)
+            for i in self.properties
+            if i not in self.required_properties
         }
 
     def __hash__(self):
-        return hash((self.__neo4j_label))
+        return hash((self.neo4j_label))
 
     def _check_required_properties(
         self,
     ):
-        missing = [i for i in self.__required_properties if i not in self.__properties]
+        missing = [i for i in self.required_properties if i not in self.properties]
         if missing:
-            raise ValueError(f"{self.__class__} missing properties: {missing}")
+            raise ValueError(f"{self.class__} missing properties: {missing}")
         return missing
 
     def _check_property_types(self):
         bad = {
-            k: f"expected {self.__property_specification.get(k).__name__} but got {type(v).__name__}"
-            for k, v in self.__properties.items()
-            if not isinstance(v, self.__property_specification.get(k))
+            k: f"expected {self.property_specification.get(k).__name__} but got {type(v).__name__}"
+            for k, v in self.properties.items()
+            if not isinstance(v, self.property_specification.get(k))
         }
         if bad:
-            raise ValueError(f"{self.__class__} bad properties:\n\t\t{bad}")
-        self.__properties = {
+            raise ValueError(f"{self.class__} bad properties:\n\t\t{bad}")
+        self.properties = {
             k: v
-            for k, v in self.__properties.items()
-            if isinstance(v, self.__property_specification.get(k))
+            for k, v in self.properties.items()
+            if isinstance(v, self.property_specification.get(k))
         }
 
     def _clean_properties(
@@ -119,12 +122,12 @@ class Node(Neo4jElement):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.__uid = uid
-        if self.__uid is None:
-            self.__uid = ["uid"]
-        self.__constraints = constraints
-        self.__constraints_unique = unique_constraints
-        self.__nonunique_index = nonunique_index
+        self.uid = uid
+        if self.uid is None:
+            self.uid = ["uid"]
+        self.constraints = constraints
+        self.constraints_unique = unique_constraints
+        self.nonunique_index = nonunique_index
 
     def __hash__(self):
         return hash((self.neo4j_label))
@@ -134,12 +137,12 @@ class Node(Neo4jElement):
         var="n",
     ):
         """Create a string of the form (var:LABEL {uid: 'uid', ...})"""
-        uids = {i: self._Neo4jElement__properties.get(i) for i in self._Node__uid}
+        uids = {i: self.properties.get(i) for i in self._Node__uid}
         uids_as_str = ", ".join(
             f"{k}: '{v}'" if isinstance(v, str) else f"{k}: {v}"
             for k, v in uids.items()
         )
-        return f"({var}: {self._Neo4jElement__neo4j_label} {{{uids_as_str}}})"
+        return f"({var}: {self.neo4j_label} {{{uids_as_str}}})"
 
     def _neo4j_repr_params(
         self,
@@ -152,7 +155,7 @@ class Node(Neo4jElement):
         req_props = self._Neo4jElement__required_properties_dict.keys()
         req_props = [f"{i}: {map_key}.{i}" for i in req_props]
         req_props = ", ".join(req_props)
-        return f"({var}: {self._Neo4jElement__neo4j_label} {{{req_props}}})"
+        return f"({var}: {self.neo4j_label} {{{req_props}}})"
 
     def add_to_neo4j(
         self,
@@ -214,18 +217,22 @@ class Relationship(Neo4jElement):
         super().__init__(**kwargs)
         self.start = start
         self.end = end
-        if not self.start and not self.end:
-            if self._Neo4jElement__header is not None:
-                self.start = self._extract_start_from_admin_header
-                self.end = self._extract_end_from_admin_header
+        if not isinstance(self.start, self.start_class):
+            raise ValueError(
+                f"Relationship class '{self.__class__.__name__}' start node must be of type {self.start_class.__name__}, found {self.start.__class__.__name__}"
+            )
+        if not isinstance(self.end, self.end_class):
+            raise ValueError(
+                f"Relationship class '{self.__class__.__name__}' end node must be of type {self.end_class.__name__}, found {self.end.__class__.__name__}"
+            )
 
     def _start_field(self):
-        for i in self._Neo4jElement__header:
+        for i in self.header:
             if "START_ID" in i:
                 return i
 
     def _end_field(self):
-        for i in self._Neo4jElement__header:
+        for i in self.header:
             if "END_ID" in i:
                 return i
 
@@ -243,12 +250,10 @@ class Relationship(Neo4jElement):
         except Exception as e:
             raise e
 
-
-
     @property
     def _cypher_string(self):
         if self.start and self.end:
-            return f"(:{self.start._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end._Neo4jElement__neo4j_label})"
+            return f"(:{self.start.neo4j_label})-[:{self.neo4j_label}]->(:{self.end.neo4j_label})"
 
     def add_to_neo4j(self):
         match_start = self.start._neo4j_repr_params(var="m1", map_key="required_props1")
@@ -258,7 +263,7 @@ class Relationship(Neo4jElement):
         the_json = {
             "required_props1": self.start._Neo4jElement__required_properties_dict,
             "required_props2": self.end._Neo4jElement__required_properties_dict,
-            "properties": self._Neo4jElement__properties,
+            "properties": self.properties,
         }
         with GraphDriver() as db:
             results = db.run(
@@ -267,14 +272,11 @@ class Relationship(Neo4jElement):
                 WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                 MATCH {match_start}
                 MATCH {match_end}
-                MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
+                MERGE (m1)-[r:{self.neo4j_label}]->(m2)
                 ON CREATE SET r += props
                 """,
                 properties=the_json,
             ).value()
-
-
-
 
     @staticmethod
     def add_multiple_to_neo4j(list_of_rels, batch_size=1000):
@@ -293,7 +295,7 @@ class Relationship(Neo4jElement):
                 {
             "required_props1": i.start._Neo4jElement__required_properties_dict,
             "required_props2": i.end._Neo4jElement__required_properties_dict,
-            "properties": i._Neo4jElement__properties,
+            "properties": i.properties,
         }
                 for i in list_of_rels
             ),
@@ -307,7 +309,7 @@ class Relationship(Neo4jElement):
                     WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                     MATCH {match_start}
                     MATCH {match_end}
-                    MERGE (m1)-[r:{single._Neo4jElement__neo4j_label}]->(m2)
+                    MERGE (m1)-[r:{single.neo4j_label}]->(m2)
                     ON CREATE SET r += props
                     """,
                     paramsdictlist=paramsdictlist,
