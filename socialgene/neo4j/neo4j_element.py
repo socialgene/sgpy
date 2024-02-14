@@ -35,7 +35,6 @@ class Neo4jElement(ABC):
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
             multilabel(bool): are LABELS specified within the tsv?
         """
-        # TODO: multi-label
         self.__neo4j_label = neo4j_label
         self.__description = description
         self.__header_filename = header_filename
@@ -144,11 +143,13 @@ class Node(Neo4jElement):
         self,
         var="n",
     ):
-        """Return a string of the form (var:LABEL {uid: $uid, ...})"""
+        """Return a string of the form (var:LABEL {uid: $uid, ...})
+        Ensure that the required properties are included in the string
+        """
         req_props = self._Neo4jElement__required_properties_dict.keys()
         req_props = [f"{i}: required_props.{i}" for i in req_props]
         req_props = ", ".join(req_props)
-        return f"({var}: {self._Neo4jElement__neo4j_label} {{{req_props}  }})"
+        return f"({var}: {self._Neo4jElement__neo4j_label} {{{req_props}}})"
 
     def add_to_neo4j(
         self,
@@ -245,8 +246,8 @@ class Relationship(Neo4jElement):
             return f"(:{self.start._Neo4jElement__neo4j_label})-[:{self._Neo4jElement__neo4j_label}]->(:{self.end._Neo4jElement__neo4j_label})"
 
     def add_to_neo4j(self):
-        match_start = self.start._neo4j_repr(var="m1")
-        match_end = self.end._neo4j_repr(var="m2")
+        match_start = self.start._neo4j_repr_params(var="m1")
+        match_end = self.end._neo4j_repr_params(var="m2")
         with GraphDriver() as db:
             results = db.run(
                 f"""
@@ -259,11 +260,8 @@ class Relationship(Neo4jElement):
             ).value()
 
     def add_many_to_neo4j(self):
-        props_to_match_m1 = self.start._Neo4jElement__required_properties_dict
-        props_to_match_m2 = self.end._Neo4jElement__required_properties_dict
-
-        match_start = self.start._neo4j_repr(var="m1")
-        match_end = self.end._neo4j_repr(var="m2")
+        match_start = self.start._neo4j_repr_params(var="m1")
+        match_end = self.end._neo4j_repr_params(var="m2")
         with GraphDriver() as db:
             results = db.run(
                 f"""
