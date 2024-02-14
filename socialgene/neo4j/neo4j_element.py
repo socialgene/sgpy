@@ -255,7 +255,7 @@ class Relationship(Neo4jElement):
                 MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
                 ON CREATE SET r += $properties
                 """,
-                properties=self.properties,
+                properties=self._Neo4jElement__properties,
             ).value()
 
     def add_many_to_neo4j(self):
@@ -272,5 +272,5 @@ class Relationship(Neo4jElement):
                 MERGE (m1)-[r:{self._Neo4jElement__neo4j_label}]->(m2)
                 ON CREATE SET r += $properties
                 """,
-                properties=self.properties,
+                properties=self._Neo4jElement__properties,
             ).value()
