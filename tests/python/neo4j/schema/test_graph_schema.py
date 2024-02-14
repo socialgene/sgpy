@@ -8,14 +8,15 @@ a = GraphSchema()
 
 
 def test_for_node_duplicates():
-    node_labels = [i()._Neo4jElement__neo4j_label for i in a.ALL_NODES]
+    """Test for duplicate Neo4j node labels in the schema."""
+    node_labels = [i.neo4j_label for i in a.ALL_NODES]
     duplicated = [
         item for item, count in collections.Counter(node_labels).items() if count > 1
     ]
     def_dict = collections.defaultdict(list)
     for i in a.ALL_NODES:
-        if i()._Neo4jElement__neo4j_label in duplicated:
-            def_dict[i()._Neo4jElement__neo4j_label].append(i.__module__)
+        if i.neo4j_label in duplicated:
+            def_dict[i.neo4j_label].append(i.__module__)
 
     if len(node_labels) != len(set(node_labels)):
         raise ValueError(f"Duplicate node label definitions: {dict(def_dict)}")

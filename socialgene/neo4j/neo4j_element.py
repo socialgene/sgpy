@@ -9,8 +9,9 @@ from itertools import batched
 
 
 class Neo4jElement(ABC):
-    neo4j_label=1
-    description=1
+
+    neo4j_label=None
+    description=None
     property_specification={}
 
     def __init__(
