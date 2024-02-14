@@ -274,3 +274,41 @@ class Relationship(Neo4jElement):
             ).value()
 
 
+
+
+    @staticmethod
+    def add_multiple_to_neo4j(list_of_rels, batch_size=1000):
+        """Add multiple relationships to Neo4j at a time in transactions of batch_size nodes at a time"""
+        if not all(
+            isinstance(sub, type(list_of_rels[0])) for sub in list_of_rels[1:]
+        ):
+            raise ValueError(
+                f"All relationships in list_of_rels must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_rels])}"
+            )
+        single = list_of_rels[0]
+        match_start = single.start._neo4j_repr_params(var="m1", map_key="required_props1")
+        match_end = single.end._neo4j_repr_params(var="m2", map_key="required_props2")
+        for paramsdictlist in batched(
+            (
+                {
+            "required_props1": i.start._Neo4jElement__required_properties_dict,
+            "required_props2": i.end._Neo4jElement__required_properties_dict,
+            "properties": i._Neo4jElement__properties,
+        }
+                for i in list_of_rels
+            ),
+            batch_size,
+        ):
+            with GraphDriver() as db:
+                results = db.run(
+                    f"""
+                    WITH $paramsdictlist as paramsdictlist
+                    UNWIND paramsdictlist as properties
+                    WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
+                    MATCH {match_start}
+                    MATCH {match_end}
+                    MERGE (m1)-[r:{single._Neo4jElement__neo4j_label}]->(m2)
+                    ON CREATE SET r += props
+                    """,
+                    paramsdictlist=paramsdictlist,
+                ).value()
