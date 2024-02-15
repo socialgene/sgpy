@@ -1,10 +1,13 @@
-from socialgene.addons.npatlas import NPAtlas, NPAtlasParser, NPAtlasNode
+from socialgene.addons.npatlas import NPAtlas, NPAtlasParser, NPAtlasNode, NPAtlastoMibig
 import json
 import concurrent.futures
 
 
 def bro(i):
+    return NPAtlasParser(i)
     a = NPAtlasParser(i)
+
+def bro2(a):
     return NPAtlasNode(properties={
             "uid": a.uid,
             "original_name": a.original_name,
@@ -40,7 +43,7 @@ def process_json(json_path):
 json_path = "/home/chase/Downloads/ttt/2.json"
 list_of_nodes = process_json(json_path)
 
-NPAtlasNode.add_multiple_to_neo4j(list_of_nodes, batch_size=1000, create=True)
+NPAtlasNode.add_multiple_to_neo4j([bro2(i) for i in list_of_nodes], batch_size=1000, create=True)
 
 np_to_mibig = []
 for i in list_of_nodes:
@@ -49,25 +52,11 @@ for i in list_of_nodes:
             for mibig_uid in i.mibig:
                 np_to_mibig.append(
                     NPAtlastoMibig(
-                        start = ASSEMBLY(properties={"uid": mibig_uid}),
-                        end=i)
+                        start = mibig_uid,
+                        end=bro2(i))
                 )
 
+NPAtlastoMibig.add_multiple_to_neo4j(np_to_mibig, batch_size=1000, create=True)
 
 
-                np_to_mibig.append(NPAtlastoMibig(start=i, end=Mibig(i)))
-
-
-
-
-        np_to_mibig.append(NPAtlastoMibig(start=i, end=Mibig(i.uid)))
-
-d=ASSEMBLY(properties={"uid": "BGC0000019"})
-w=NPAtlastoMibig(start=d, end=z)
-w.add_to_neo4j()
-
-
-
-
-
-mibig
+np_to_mibig[0].add_to_neo4j()

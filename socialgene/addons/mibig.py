@@ -2,14 +2,22 @@
 
 import re
 
-from socialgene.addons.base import ExternalBaseClass
+from socialgene.neo4j.neo4j_element import Node
+from socialgene.nextflow.nodes import ASSEMBLY
 
 
-class Mibig(ExternalBaseClass):
-    __slots__ = ["uid"]
+class Mibig(ASSEMBLY):
+    # TODO: multiple labels
+    neo4j_label = "assembly"
+    description = "Represents a single Mibig entry"
+    property_specification = {
+        "uid": str,
+    }
+    required_properties = ["uid"]
 
-    def __init__(self, uid) -> None:
-        self.uid = self.attempt_to_fix_uid(uid)
+    def __init__(self, properties) -> None:
+        super().__init__()
+        self.properties["uid"] = self.attempt_to_fix_uid(properties["uid"])
 
     @staticmethod
     def attempt_to_fix_uid(uid):
@@ -25,6 +33,3 @@ class Mibig(ExternalBaseClass):
         else:
             raise ValueError(f"Unexpected mibig ID {uid}")
 
-    def add_node_to_neo4j(self):
-        # empty because this should connect to mibig assembly nodes
-        pass

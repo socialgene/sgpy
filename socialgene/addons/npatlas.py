@@ -12,7 +12,6 @@ from socialgene.addons.npmrd import Npmrd
 from socialgene.addons.publication import Publication
 from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
-from socialgene.nextflow.nodes import ASSEMBLY
 from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
 
@@ -54,7 +53,7 @@ class NPAtlasNode(Node):
 class NPAtlastoMibig(Relationship):
         neo4j_label = "PRODUCES"
         description = "Connects an NPAtlas entry to a Mibig entry"
-        start_class = ASSEMBLY
+        start_class = Mibig
         end_class = NPAtlasNode
 
 
@@ -176,7 +175,7 @@ class NPAtlasParser:
                     case "npmrd":
                         self.npmrd.add(Npmrd(uid=external_id["external_db_code"]))
                     case "mibig":
-                        self.mibig.add(Mibig(uid=external_id["external_db_code"]))
+                        self.mibig.add(Mibig(properties={"uid":external_id["external_db_code"]}))
                     case _:
                         pass
         except Exception as e:
