@@ -1,4 +1,4 @@
-from socialgene.addons.npatlas import NPAtlas, NPAtlasParser, NPAtlasNode, NPAtlastoMibig
+from socialgene.addons.npatlas import NPAtlas, NPAtlasParser, NPAtlasNode, NPAtlasToMibig, NPAtlasToNpmrd,NPAtlasToGnps
 import json
 import concurrent.futures
 
@@ -46,17 +46,40 @@ list_of_nodes = process_json(json_path)
 NPAtlasNode.add_multiple_to_neo4j([bro2(i) for i in list_of_nodes], batch_size=1000, create=True)
 
 np_to_mibig = []
+np_to_npmrd = []
+np_to_gnps = []
 for i in list_of_nodes:
+    node=bro2(i)
     if hasattr(i, "mibig"):
         if isinstance(i.mibig, set):
-            for mibig_uid in i.mibig:
+            for x in i.mibig:
                 np_to_mibig.append(
-                    NPAtlastoMibig(
-                        start = mibig_uid,
-                        end=bro2(i))
+                    NPAtlasToMibig(
+                        start = x,
+                        end=node)
+                )
+    if hasattr(i, "npmrd"):
+        if isinstance(i.npmrd, set):
+            for x in i.npmrd:
+                np_to_npmrd.append(
+                    NPAtlasToNpmrd(
+                        start = node,
+                        end=x)
+                )
+    if hasattr(i, "gnps"):
+        if isinstance(i.gnps, set):
+            for x in i.gnps:
+                np_to_gnps.append(
+                    NPAtlasToGnps(
+                        start = node,
+                        end=x)
                 )
 
-NPAtlastoMibig.add_multiple_to_neo4j(np_to_mibig, batch_size=1000, create=True)
 
 
-np_to_mibig[0].add_to_neo4j()
+NPAtlasToMibig.add_multiple_to_neo4j(np_to_mibig, batch_size=1000, create=True)
+
+NPAtlasToNpmrd.add_multiple_to_neo4j(np_to_npmrd, batch_size=1000, create=True)
+
+NPAtlasToGnps.add_multiple_to_neo4j(np_to_gnps, batch_size=1000, create=True)
+

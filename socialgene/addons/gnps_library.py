@@ -48,7 +48,9 @@ class GnpsLibrarySpectrumNode(Node):
         "inchikey": str,
         "inchikey_planar": str,
     }
-
+    @staticmethod
+    def _extract_CCMSLIB(x) -> List:
+        return re.findall("CCMSLIB[0-9]{11}", x)
 
 class IonSourceNode(Node):
     neo4j_label = "ion_source"
@@ -137,37 +139,7 @@ class GnpsLibrarySpectrum(ExternalBaseClass):
         "inchikey_planar",
     ]
 
-    def add_cmpd(self):
-        temp = None
-        try:
-            inchi = self.inchi
-            inchi = inchi.removeprefix('"').removesuffix('"')
-            temp = ChemicalCompound(self.inchi)
-        except Exception:
-            pass
-        if not temp:
-            try:
-                temp = ChemicalCompound(self.smiles)
-            except Exception:
-                pass
-        if temp:
-            temp.add_to_neo4j()
-            self._add_to_neo4j(
-                """
-                    with $uid as row and $temp as temp
-                    MATCH (gls:gnps_library_spectrum {uid: row.uid})
-                    MATCH (cc:chemical_compound {uid: temp.uid})
-                    MERGE (gls)-[:IS_A]->(cc)
-                        """,
-                uid=self.uid,
-                temp=(Chem.MolToInchi(temp.mol), Chem.MolToSmiles(temp.mol)),
-            )
 
-    def __init__(self, **kwargs) -> None:
-        for i in self.__slots__:
-            setattr(self, i, None)
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
     @staticmethod
     def _extract_CCMSLIB(x) -> List:

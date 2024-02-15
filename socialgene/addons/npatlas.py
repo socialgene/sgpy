@@ -6,7 +6,7 @@ import tempfile
 from itertools import batched
 
 from socialgene.addons.base import ExternalBaseClass
-from socialgene.addons.gnps_library import GnpsLibrarySpectrum
+from socialgene.addons.gnps_library import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig import Mibig
 from socialgene.addons.npmrd import Npmrd
 from socialgene.addons.publication import Publication
@@ -50,16 +50,24 @@ class NPAtlasNode(Node):
         required_properties = ["uid"]
 
 
-class NPAtlastoMibig(Relationship):
+class NPAtlasToMibig(Relationship):
         neo4j_label = "PRODUCES"
         description = "Connects an NPAtlas entry to a Mibig entry"
         start_class = Mibig
         end_class = NPAtlasNode
 
 
+class NPAtlasToNpmrd(Relationship):
+        neo4j_label = "HAS"
+        description = "Connects an NPAtlas entry to an Npmrd entry"
+        start_class = NPAtlasNode
+        end_class = Npmrd
 
-
-
+class NPAtlasToGnps(Relationship):
+        neo4j_label = "HAS"
+        description = "Connects an NPAtlas entry to a GNPS entry"
+        start_class = NPAtlasNode
+        end_class = GnpsLibrarySpectrumNode
 
 
 
@@ -167,13 +175,13 @@ class NPAtlasParser:
             for external_id in self.entry["external_ids"]:
                 match external_id["external_db_name"]:
                     case "gnps":
-                        gnps_ids = GnpsLibrarySpectrum._extract_CCMSLIB(
+                        gnps_ids = GnpsLibrarySpectrumNode._extract_CCMSLIB(
                             external_id["external_db_code"]
                         )
                         for uid in gnps_ids:
-                            self.gnps.add(GnpsLibrarySpectrum(uid=uid))
+                            self.gnps.add(GnpsLibrarySpectrumNode(properties={"uid":uid}))
                     case "npmrd":
-                        self.npmrd.add(Npmrd(uid=external_id["external_db_code"]))
+                        self.npmrd.add(Npmrd(properties={"uid":external_id["external_db_code"]}))
                     case "mibig":
                         self.mibig.add(Mibig(properties={"uid":external_id["external_db_code"]}))
                     case _:
@@ -198,65 +206,9 @@ class NPAtlas(ExternalBaseClass):
         else:
             downloader(url, outpath)
 
-    def _hydrate(self):
-        with open(self.path, "r") as f:
-            for i in json.load(f):
-                self.entries.append(NPAtlasEntry(i))
 
-    def add_nodes_to_neo4j(self):
-        self._add_to_neo4j(
-            """
-                CREATE CONSTRAINT npatlas_entry IF NOT EXISTS
-                FOR (n:npatlas)
-                REQUIRE (n.uid) IS UNIQUE;
-            """
-        )
-        for i in batched((i._node_prop_dict for i in self.entries), 10000):
-            self._add_to_neo4j(
-                """
-                WITH $input as input
-                UNWIND input as row
-                MERGE (np:npatlas {uid: row.uid})
-                ON CREATE SET np+= {
-                    original_name: row.original_name,
-                    mol_formula: row.mol_formula,
-                    mol_weight: row.mol_weight,
-                    exact_mass: row.exact_mass,
-                    inchikey: row.inchikey,
-                    smiles: row.smiles,
-                    cluster_id: row.cluster_id,
-                    node_id: row.node_id,
-                    synonyms: row.synonyms,
-                    inchi: row.inchi,
-                    m_plus_h: row.m_plus_h,
-                    m_plus_na: row.m_plus_na,
-                    //origin_reference: row.origin_reference,
-                    //npclassifier: row.npclassifier,
-                    //external_ids: row.external_ids,
-                    ncbi_taxid: row.ncbi_taxid,
-                    genus: row.genus,
-                    species: row.species,
-                    //gnps: row.gnps,
-                    //npmrd: row.npmrd,
-                    //mibig: row.mibig,
-                    classyfire_class: row.classyfire_class,
-                    classyfire_subclass: row.classyfire_subclass
-                }
-                """,
-                input=i,
-            )
 
-    def merge_with_mibig(self):
-        for mibig_obj in self.mibig:
-            self._add_to_neo4j(
-                """
-                MERGE (np:npatlas {uid: $uid})
-                MERGE (bgc:assembly {uid: $mibig})
-                MERGE (bgc)-[:PRODUCES]->(np)
-                """,
-                uid=self.uid,
-                mibig=mibig_obj.uid,
-            )
+
 
     def merge_with_classyfire(self):
         if self.classyfire_class:
