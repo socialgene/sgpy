@@ -6,10 +6,10 @@ import tempfile
 from itertools import batched
 
 from socialgene.addons.base import ExternalBaseClass
-from socialgene.addons.gnps_library import GnpsLibrarySpectrumNode
-from socialgene.addons.mibig import Mibig
-from socialgene.addons.npmrd import Npmrd
-from socialgene.addons.publication import Publication
+from socialgene.addons.gnps_library.gnps_library import GnpsLibrarySpectrumNode
+from socialgene.addons.mibig.mibig import Mibig
+from socialgene.addons.npmrd.npmrd import Npmrd
+from socialgene.addons.publication.publication import Publication
 from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.download import download as downloader

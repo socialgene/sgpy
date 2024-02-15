@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from socialgene.addons.gnps_networking import GNPS_SNETS
+from socialgene.addons.gnps_networking.gnps_networking import GNPS_SNETS
 
 parser = argparse.ArgumentParser(
     description="Integrate a GNPS molecular network into a SocialGene Neo4j Database"

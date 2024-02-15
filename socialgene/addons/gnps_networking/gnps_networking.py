@@ -7,7 +7,7 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 
-from socialgene.addons.gnps_library import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
+from socialgene.addons.gnps_library.gnps_library import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log

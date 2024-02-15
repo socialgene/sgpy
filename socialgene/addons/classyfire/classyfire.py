@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 import requests
 
-from socialgene.addons.chebi import ChebiNode
+from socialgene.addons.chebi.chebi import ChebiNode
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log

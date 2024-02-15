@@ -1,4 +1,4 @@
-from socialgene.addons.npatlas import NPAtlas, NPAtlasParser, NPAtlasNode, NPAtlasToMibig, NPAtlasToNpmrd,NPAtlasToGnps
+from socialgene.addons.npatlas.npatlas import NPAtlas, NPAtlasParser, NPAtlasNode, NPAtlasToMibig, NPAtlasToNpmrd,NPAtlasToGnps
 import json
 import concurrent.futures
 

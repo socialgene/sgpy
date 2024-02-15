@@ -4,7 +4,7 @@ from typing import List
 from rdkit import Chem
 
 from socialgene.addons.base import ExternalBaseClass
-from socialgene.addons.npclassifier import NPClassifierClass
+from socialgene.addons.npclassifier.npclassifier import NPClassifierClass
 from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log

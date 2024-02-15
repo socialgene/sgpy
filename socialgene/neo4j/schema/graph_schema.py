@@ -5,20 +5,20 @@ from textwrap import wrap
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.table import Table
 
-import socialgene.addons.chebi
-import socialgene.addons.chembl
-import socialgene.addons.classyfire
-import socialgene.addons.gnps_library
-import socialgene.addons.gnps_networking
-import socialgene.addons.mibig
-import socialgene.addons.npatlas
-import socialgene.addons.npclassifier
-import socialgene.addons.npmrd
-import socialgene.addons.publication
-import socialgene.addons.ttd
+import socialgene.addons.chebi.chebi
+import socialgene.addons.chembl.chembl
+import socialgene.addons.classyfire.classyfire
+import socialgene.addons.gnps_library.gnps_library
+import socialgene.addons.gnps_networking.gnps_networking
+import socialgene.addons.mibig.mibig
+import socialgene.addons.npatlas.npatlas
+import socialgene.addons.npclassifier.npclassifier
+import socialgene.addons.npmrd.npmrd
+import socialgene.addons.publication.publication
+import socialgene.addons.ttd.ttd
 import socialgene.nextflow.nodes
 import socialgene.nextflow.relationships
-from socialgene.addons.chemistry import ChemicalFragment, ContainsRel
+from socialgene.addons.chemistry.chemistry import ChemicalFragment, ContainsRel
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.lists_to_markdown import markdown_table_from_list
