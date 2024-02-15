@@ -70,10 +70,20 @@ class NPAtlasToGnps(Relationship):
         end_class = GnpsLibrarySpectrumNode
 
 
-
-
 class NPAtlasPublication(Publication):
     pass
+
+class NPAtlasToChemont(Relationship):
+    neo4j_label = "IS_CLASS"
+    description = "Connects an NPAtlas entry to a Chemont entry"
+    start_class = NPAtlasNode
+    end_class = ChemicalCompound
+
+class NPAtlasToSubclass(Relationship):
+    neo4j_label = "IS_SUBCLASS"
+    description = "Connects an NPAtlas entry to a Chemont entry"
+    start_class = NPAtlasNode
+    end_class = ChemicalCompound
 
 
 class NPAtlasParser:
@@ -232,5 +242,3 @@ class NPAtlas(ExternalBaseClass):
                 chemont=self.classyfire_subclass,
             )
 
-    def connect_to_chem(self):
-        ChemicalCompound()
