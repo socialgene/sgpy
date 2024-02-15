@@ -63,10 +63,10 @@ class GraphSchema:
         # sort by label which is the key
         for i in node_dict.values():
             table.add_row(
-                i()._Neo4jElement__neo4j_label,
+                i.neo4j_label,
                 i.__module__,
-                i()._Neo4jElement__description,
-                "\n".join(wrap(", ".join(i()._Neo4jElement__property_specification))),
+                i.description,
+                "\n".join(wrap(", ".join(i().property_specification))),
             )
         yield table
 
@@ -75,7 +75,7 @@ class GraphSchema:
         rel_dict = dict(sorted(rel_dict.items()))
         table = Table(title="Relationships", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
-        table.add_column("From", justify="left", style="cyan", no_wrap=True, ratio=1)
+        table.add_column("Defined in", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column("Relationship", style="magenta", ratio=1)
         table.add_column("NF results subdirectory", style="magenta", ratio=1)
         table.add_column("Neo4j header file", style="magenta", ratio=1)
@@ -83,7 +83,7 @@ class GraphSchema:
             table.add_row(
                 i.neo4j_label,
                 i.__module__,
-                i._cypher_string,
+                f"({i.start_class.neo4j_label})-[:{i.neo4j_label}]->({i.end_class.neo4j_label})",
                 i.target_subdirectory,
                 i.header_filename,
             )

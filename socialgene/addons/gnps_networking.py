@@ -37,7 +37,7 @@ def capture_assembly_id(s, regex):
 
 
 class ClusterNode(Node):
-    neo4j_label = "cluster"
+    neo4j_label = "gnps_cluster"
     description = "Represents a GNPS molecular networking cluster"
     required_properties = ["uid", "workflow_uuid"]
     property_specification = {
@@ -71,8 +71,8 @@ class ClusterNode(Node):
 
 
 class SpectrumNode(Node):
-    neo4j_label = ("spectrum",)
-    description = ("Represents a GNPS molecular networking spectrum",)
+    neo4j_label = "spectrum"
+    description = "Represents a GNPS molecular networking spectrum"
     property_specification = {
         "uid": str,
         "original_filename": str,
@@ -87,7 +87,7 @@ class LibraryHitRel(Relationship):
     neo4j_label = "LIBRARY_HIT"
     description = "Connects a GNPS cluster to a GNPS library hit"
     start_class = ClusterNode
-    end_class = (GnpsLibrarySpectrumNode,)
+    end_class = GnpsLibrarySpectrumNode
 
 
 class GNPS_SNETS:

@@ -11,6 +11,10 @@ class Neo4jElement(ABC):
     neo4j_label = None
     description = None
     property_specification = {}
+    header=None
+    header_filename=None
+    target_subdirectory=None
+    target_extension=None
 
     def __init__(
         self,
@@ -244,8 +248,7 @@ class Relationship(Neo4jElement):
 
     @property
     def _cypher_string(self):
-        if self.start and self.end:
-            return f"(:{self.start.neo4j_label})-[:{self.neo4j_label}]->(:{self.end.neo4j_label})"
+        return f"(:{self.start_class.neo4j_label})-[:{self.neo4j_label}]->(:{self.end_class.neo4j_label})"
 
     def add_to_neo4j(self):
         match_start = self.start._neo4j_repr_params(var="m1", map_key="required_props1")

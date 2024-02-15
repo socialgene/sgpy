@@ -40,6 +40,34 @@ class PARAMETERS(Node):
         "py_version",
         "genome_download_command",
     ]
+    property_specification={
+                "uid": str,
+                "SG_LOC_NEO4J": str,
+                "SG_LOC_HMMS": str,
+                "NEO4J_dbms_memory_pagecache_size": str,
+                "NEO4J_dbms_memory_heap_initial__size": str,
+                "NEO4J_dbms_memory_heap_max__size": str,
+                "HMMSEARCH_IEVALUE": str,
+                "HMMSEARCH_BACKGROUND": str,
+                "HMMSEARCH_BIASFILTER": str,
+                "HMMSEARCH_NULL2": str,
+                "HMMSEARCH_SEED": int,
+                "HMMSEARCH_Z": int,
+                "HMMSEARCH_DOMZ": int,
+                "HMMSEARCH_F1": float,
+                "HMMSEARCH_F2": float,
+                "HMMSEARCH_F3": float,
+                "HMMSEARCH_E": float,
+                "HMMSEARCH_DOME": float,
+                "HMMSEARCH_INCE": float,
+                "HMMSEARCH_INCDOME": float,
+                "HMMSEARCH_BITCUTOFFS": str,
+                "platform": str,
+                "architecture": str,
+                "py_executable": str,
+                "py_version": str,
+                "genome_download_command": str,
+            }
 
 
 class ASSEMBLY(Node):
@@ -52,6 +80,9 @@ class ASSEMBLY(Node):
     target_extension = "assemblies"
     header = ["uid:ID(assembly)"] + sorted(LocusAssemblyMetadata.__slots__)
     unique_constraints = ["uid"]
+    property_specification = {"uid": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
+
+
 
 
 class NUCLEOTIDE(Node):
@@ -67,6 +98,7 @@ class NUCLEOTIDE(Node):
     header = ["uid:ID(nucleotide)"] + ["external_id"] + LocusAssemblyMetadata.__slots__
     unique_constraints = ["uid"]
     nonunique_index = ["external_id"]
+    property_specification = {"uid": str, "external_id": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
 
 
 class PROTEIN(Node):
@@ -88,6 +120,7 @@ class PROTEIN(Node):
         else:
             self.header = ["uid:ID(protein)", "crc64"]
 
+    property_specification = {"uid": str, "crc64": str, "sequence": str}
 
 class GOTERM(Node):
     """Represent a GO term"""
@@ -98,7 +131,7 @@ class GOTERM(Node):
     target_subdirectory = "goterms"
     target_extension = "goterms"
     header = ["uid:ID(goterm)", "name", "namespace", "def"]
-
+    property_specification = {"uid": str, "name": str, "namespace": str}
 
 class TIGRFAM_ROLE(Node):
     """Represents a TIGRFAM role"""
@@ -109,7 +142,7 @@ class TIGRFAM_ROLE(Node):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfam_role"
     header = ["uid:ID(tigrfam_role)"]
-
+    property_specification = {"uid": str}
 
 class TIGRFAM_MAINROLE(Node):
     """Represents a TIGRFAM main role"""
@@ -120,7 +153,7 @@ class TIGRFAM_MAINROLE(Node):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfam_mainrole"
     header = ["uid:ID(tigrfam_mainrole)"]
-
+    property_specification = {"uid": str}
 
 class TIGRFAM_SUBROLE(Node):
     """Represents a TIGRFAM sub role"""
@@ -131,7 +164,7 @@ class TIGRFAM_SUBROLE(Node):
     target_subdirectory = "tigrfam_info"
     target_extension = "tigrfam_subrole"
     header = ["uid:ID(tigrfam_subrole)"]
-
+    property_specification = {"uid": str}
 
 class TAXID(Node):
     """Represents a single taxon within NCBI taxonomy"""
@@ -143,7 +176,7 @@ class TAXID(Node):
     target_extension = "nodes_taxid"
     header = ["uid:ID(taxid)", "name", "rank"]
     unique_constraints = ["uid"]
-
+    property_specification = {"uid": str, "name": str, "rank": str}
 
 class HMM_SOURCE(Node):
     """Represents the source of an HMM model (e.g. PFAM)"""
@@ -172,6 +205,25 @@ class HMM_SOURCE(Node):
         "tc:String",
         "nc:String",
     ]
+    property_specification = {
+        "uid": str,
+        ":LABEL": str,
+        "rel_path": str,
+        "name": str,
+        "acc": str,
+        "notes": str,
+        "description": str,
+        "date": str,
+        "hash": str,
+        "hash_used": str,
+        "model_length": str,
+        "super_category": str,
+        "category": str,
+        "subcategory": str,
+        "ga": str,
+        "tc": str,
+        "nc": str,
+    }
 
 
 class HMM(Node):
@@ -184,3 +236,4 @@ class HMM(Node):
     target_extension = "sg_hmm_nodes"
     header = ["uid:ID(hmm)"]
     unique_constraints = ["uid"]
+    property_specification = {"uid": str}

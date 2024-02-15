@@ -65,5 +65,5 @@ class ChemicalCompoundNode(Node):
 class ContainsRel(Relationship):
     neo4j_label = "CONTAINS"
     description = "Connects a chemical compound to a chemical fragment"
-    start = ChemicalCompound
-    end = ChemicalFragment
+    start_class = ChemicalCompoundNode
+    end_class = ChemicalFragment

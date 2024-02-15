@@ -67,7 +67,7 @@ class InstrumentNode(Node):
 
 
 class OrganismNode(Node):
-    neo4j_label = "organism"
+    neo4j_label = "gnps_organism"
     description = "Represents an organism (as defined by GNPS)"
     property_specification = {
         "uid": str,
