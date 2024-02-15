@@ -1,6 +1,7 @@
 """https://www.npatlas.org"""
 
 import json
+from pathlib import Path
 import tempfile
 from itertools import batched
 
@@ -10,34 +11,65 @@ from socialgene.addons.mibig import Mibig
 from socialgene.addons.npmrd import Npmrd
 from socialgene.addons.publication import Publication
 from socialgene.base.chem import ChemicalCompound
+from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.nextflow.nodes import ASSEMBLY
 from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
 
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
 
 
-def download(url=NPATALAS_URL, outpath=None):
-    if outpath:
-        downloader(url, outpath)
-    else:
-        with tempfile.NamedTemporaryFile() as tf:
-            downloader(url, tf.name)
+class NPAtlasNode(Node):
+        neo4j_label = "npatlas"
+        description = "Represents a single NPAtlas entry"
+        property_specification = {
+            "uid": str,
+            "original_name": str,
+            "mol_formula": str,
+            "mol_weight": float,
+            "exact_mass": float,
+            "inchikey": str,
+            "smiles": str,
+            "cluster_id": int,
+            "node_id": int,
+            "synonyms": str,
+            "inchi": str,
+            "m_plus_h": float,
+            "m_plus_na": float,
+            # "origin_reference": Publication,
+            "npclassifier": str,
+            "external_ids": str,
+            # "ncbi_taxid": str,
+            "genus": str,
+            "species": str,
+            # "gnps": GnpsLibrarySpectrum,
+            # "npmrd": Npmrd,
+            # "mibig": Mibig,
+            "classyfire_class": str,
+            "classyfire_subclass": str,
+        }
+        required_properties = ["uid"]
+
+
+class NPAtlastoMibig(Relationship):
+        neo4j_label = "PRODUCES"
+        description = "Connects an NPAtlas entry to a Mibig entry"
+        start_class = ASSEMBLY
+        end_class = NPAtlasNode
+
+
+
+
+
+
+
 
 
 class NPAtlasPublication(Publication):
-    def __init__(self, doi, pmid, authors, title, journal, year, **kwargs) -> None:
-        super().__init__()
-        self.doi = self._extract_doi(doi)
-        self.pmid = str(pmid)
-        self.authors = str(authors)
-        self.title = str(title)
-        self.journal = str(journal)
-        self.year = str(year)
+    pass
 
 
-# class NPAtlasNode(Node):
-#     ...
-class NPAtlasEntry:
+class NPAtlasParser:
     __slots__ = [
         "entry",
         "uid",
@@ -150,42 +182,22 @@ class NPAtlasEntry:
         except Exception as e:
             log.debug(e)
 
-    @property
-    def _node_prop_dict(self):
-        return {
-            "uid": self.uid,
-            "original_name": self.original_name,
-            "mol_formula": self.mol_formula,
-            "mol_weight": self.mol_weight,
-            "exact_mass": self.exact_mass,
-            "inchikey": self.inchikey,
-            "smiles": self.smiles,
-            "cluster_id": self.cluster_id,
-            "node_id": self.node_id,
-            "synonyms": self.synonyms,
-            "inchi": self.inchi,
-            "m_plus_h": self.m_plus_h,
-            "m_plus_na": self.m_plus_na,
-            # "origin_reference": self.origin_reference,
-            # "npclassifier": self.npclassifier,
-            # "external_ids": self.external_ids,
-            "ncbi_taxid": self.ncbi_taxid,
-            "genus": self.genus,
-            "species": self.species,
-            # "gnps": self.gnps,
-            # "npmrd": self.npmrd,
-            # "mibig": self.mibig,
-            "classyfire_class": self.classyfire_class,
-            "classyfire_subclass": self.classyfire_subclass,
-        }
+
 
 
 class NPAtlas(ExternalBaseClass):
-
-    def __init__(self, atlas_json_path) -> None:
+    def __init__(self, url=NPATALAS_URL, atlas_json_path=None) -> None:
         super().__init__()
-        self.path = atlas_json_path
         self.entries = []
+        self.path = atlas_json_path
+        if not Path(atlas_json_path).exists():
+            self.path=self._download_npatlas(url=url, outpath=atlas_json_path)
+
+    def _download_npatlas(self, outpath, url=NPATALAS_URL):
+        if Path(outpath).exists():
+            log.debug(f"File already exists at {outpath}")
+        else:
+            downloader(url, outpath)
 
     def _hydrate(self):
         with open(self.path, "r") as f:

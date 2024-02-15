@@ -81,6 +81,7 @@ class ASSEMBLY(Node):
     header = ["uid:ID(assembly)"] + sorted(LocusAssemblyMetadata.__slots__)
     unique_constraints = ["uid"]
     property_specification = {"uid": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
+    required_properties = ["uid"]
 
 
 

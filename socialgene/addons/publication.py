@@ -1,32 +1,18 @@
 import re
+from socialgene.neo4j.neo4j_element import Node
 
 
-class Publication:
-    __slots__ = [
-        "doi",
-        "pmid",
-        "authors",
-        "title",
-        "journal",
-        "year",
-    ]
-
-    def __init__(
-        self,
-        doi: str = None,
-        pmid: str = None,
-        authors: str = None,
-        title: str = None,
-        journal: str = None,
-        year: str = None,
-        **kwargs,
-    ) -> None:
-        self.doi = doi
-        self.pmid = pmid
-        self.authors = authors
-        self.title = title
-        self.journal = journal
-        self.year = year
+class Publication(Node):
+    neo4j_label = "publication"
+    description = "Represents a publication"
+    property_specification = {
+        "doi": str,
+        "pmid": int,
+        "authors": str,
+        "title": str,
+        "journal": str,
+        "year": int,
+    }
 
     @staticmethod
     def _extract_doi(input):

@@ -9,3 +9,5 @@ class ChebiNode(Node):
     property_specification = {
         "uid": str,
     }
+
+
