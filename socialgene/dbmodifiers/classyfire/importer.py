@@ -2,7 +2,7 @@ import argparse
 
 from rich.progress import Progress, SpinnerColumn
 
-from socialgene.addons.classyfire.classyfire import ClassyFire
+from socialgene.addons.classyfire.nr import ClassyFire
 from socialgene.utils.logging import log
 
 parser = argparse.ArgumentParser(

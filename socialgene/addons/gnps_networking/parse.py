@@ -1,4 +1,3 @@
-import argparse
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -7,9 +6,8 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 
-from socialgene.addons.gnps_library.gnps_library import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
+from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrum
 from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log
 
 
@@ -33,61 +31,6 @@ def capture_assembly_id(s, regex):
         return s
 
 
-# Node classes
-
-
-class ClusterNode(Node):
-    neo4j_label = "gnps_cluster"
-    description = "Represents a GNPS molecular networking cluster"
-    required_properties = ["uid", "workflow_uuid"]
-    property_specification = {
-        "uid": str,
-        "workflow_uuid": str,
-        "defaultgroups": str,
-        "g1": str,
-        "g2": str,
-        "g3": str,
-        "g4": str,
-        "g5": str,
-        "g6": str,
-        "gnpslinkout_cluster": str,
-        "gnpslinkout_network": str,
-        "mqscore": float,
-        "mzerrorppm": float,
-        "massdiff": float,
-        "rtmean": float,
-        "rtmean_min": float,
-        "rtstderr": float,
-        "uniquefilesources": str,
-        "uniquefilesourcescount": int,
-        "cluster_index": int,
-        "componentindex": int,
-        "number_of_spectra": int,
-        "parent_mass": float,
-        "precursor_charge": int,
-        "precursor_mass": float,
-        "sumprecursor_intensity": float,
-    }
-
-
-class SpectrumNode(Node):
-    neo4j_label = "spectrum"
-    description = "Represents a GNPS molecular networking spectrum"
-    property_specification = {
-        "uid": str,
-        "original_filename": str,
-        "parentmass": float,
-        "charge": int,
-        "rettime": float,
-        "assembly": str,
-    }
-
-
-class LibraryHitRel(Relationship):
-    neo4j_label = "LIBRARY_HIT"
-    description = "Connects a GNPS cluster to a GNPS library hit"
-    start_class = ClusterNode
-    end_class = GnpsLibrarySpectrumNode
 
 
 class GNPS_SNETS:
@@ -457,46 +400,3 @@ class GNPS_SNETS:
                 df=self.selfloop_df.to_dict("records"),
                 workflow_uuid=self.workflow_uuid,
             ).value()
-
-
-def create_arg_parser():
-    """ "Creates and returns the ArgumentParser object."""
-    parser = argparse.ArgumentParser(
-        description="Integrate a GNPS molecular network into a SocialGene Neo4j Database"
-    )
-    parser.add_argument(
-        "--inputdir",
-        help="Path to unzipped directory of GNPS molecular network download",
-        default=False,
-        required=True,
-    )
-    parser.add_argument(
-        "--regex",
-        help="Pattern of MS file names. If '_' then it expects 'assembly-id_*.mzML'; if '__' then 'assembly-id__*.mzML'; can also be a custom regex pattern. Defaults to '_'.",
-        default="_",
-    )
-    return parser
-
-
-def main():
-    parser = create_arg_parser()
-    args = parser.parse_args()
-    if not Path(args.inputdir).exists():
-        raise FileNotFoundError(f"Path {args.inputdir} does not exist")
-    if not Path(args.inputdir).is_dir():
-        raise ValueError(f"Path {args.inputdir} is not a directory")
-    gnps = GNPS_SNETS(gnps_dirpath=args.inputdir)
-    gnps._filename_to_assembly(regex=args.regex)
-    gnps.add_gnps_library_spectra()
-    gnps.add_gnps_library_spectrum_classifications()
-    gnps.add_gnps_library_spectrum_ion_sources()
-    gnps.add_gnps_library_spectrum_instruments()
-    gnps.add_gnps_library_spectrum_organisms()
-    gnps.add_gnps_clusters()
-    gnps.add_links_between_gnps_clusters_and_assemblies()
-    gnps.add_input_spectra_to_gnps_clusters()
-    gnps.add_links_between_gnps_clusters()
-
-
-if __name__ == "__main__":
-    main()
