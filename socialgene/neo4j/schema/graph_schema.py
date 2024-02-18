@@ -15,7 +15,6 @@ import socialgene.addons.npatlas.nr
 import socialgene.addons.npclassifier.nr
 import socialgene.addons.npmrd.nr
 import socialgene.addons.publication.nr
-import socialgene.addons.ttd.nr
 import socialgene.nextflow.nodes
 import socialgene.nextflow.relationships
 from socialgene.addons.chemistry.nr import ChemicalFragment, ContainsRel

@@ -1,4 +1,3 @@
-from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
 
 

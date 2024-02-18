@@ -7,7 +7,7 @@ class ChebiNode(Node):
     neo4j_label = "chebi"
     description = "Represents a ChEBI term"
     property_specification = {
-        "uid": str,
+        "uid": int,
     }
 
 
