@@ -1,14 +1,7 @@
-import argparse
-import re
-import xml.etree.ElementTree as ET
-from pathlib import Path
 from uuid import uuid4
+from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 
-import numpy as np
-import pandas as pd
 
-from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrum, GnpsLibrarySpectrumNode
-from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log
 

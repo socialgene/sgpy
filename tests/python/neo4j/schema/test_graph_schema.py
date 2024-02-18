@@ -20,6 +20,7 @@ def test_for_node_duplicates():
         raise ValueError(f"Duplicate node label definitions: {dict(def_dict)}")
 
 
+
 # relationship label duplicates are fine
 # def test_for_relationship_duplicates():
 #     relationship_labels = [i()._Neo4jElement__neo4j_label for i in a.ALL_RELATIONSHIPS]

@@ -100,7 +100,7 @@ class NUCLEOTIDE(Node):
     unique_constraints = ["uid"]
     nonunique_index = ["external_id"]
     property_specification = {"uid": str, "external_id": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
-
+    required_properties = ["uid", "external_id"]
 
 class PROTEIN(Node):
     """Represents a non-redundant protein"""
