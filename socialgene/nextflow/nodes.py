@@ -178,7 +178,7 @@ class TAXID(Node):
     header = ["uid:ID(taxid)", "name", "rank"]
     unique_constraints = ["uid"]
     property_specification = {"uid": str, "name": str, "rank": str}
-
+    required_properties = ["uid"]
 class HMM_SOURCE(Node):
     """Represents the source of an HMM model (e.g. PFAM)"""
 

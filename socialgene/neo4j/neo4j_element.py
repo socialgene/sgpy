@@ -4,6 +4,7 @@ from itertools import batched
 from typing import List
 
 from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.utils.logging import log
 
 
 class Neo4jElement(ABC):
@@ -39,7 +40,7 @@ class Neo4jElement(ABC):
             self.property_specification = {}
         # if not provided then all properties are required
 
-        if not self.required_properties:
+        if self.required_properties is None:
             self.required_properties = list(self.property_specification.keys())
         if self.required_properties is None:
             self.required_properties = []
@@ -62,7 +63,14 @@ class Neo4jElement(ABC):
         }
 
     def __hash__(self):
-        return hash((self.neo4j_label))
+        return hash((self.neo4j_label, frozenset(self.properties.items())))
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.neo4j_label == other.neo4j_label:
+                if self.properties == other.properties:
+                    return True
+        return False
 
     def _check_required_properties(
         self,
@@ -126,8 +134,16 @@ class Node(Neo4jElement):
                 f"property_specification must be defined for class {self.__class__.__name__}"
             )
 
+
     def __hash__(self):
-        return hash((self.neo4j_label))
+        return hash((self.neo4j_label, frozenset(self.properties.items())))
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.neo4j_label == other.neo4j_label:
+                if self.properties == other.properties:
+                    return True
+        return False
 
     def _neo4j_repr(
         self,
@@ -247,6 +263,27 @@ class Relationship(Neo4jElement):
             raise ValueError(
                 f"Relationship class '{self.__class__.__name__}' end node must be of type {self.end_class.__name__}, found {self.end.__class__.__name__}"
             )
+    def __repr__(self):
+        return f"(:{self.start.neo4j_label})-[:{self.neo4j_label}]->(:{self.end.neo4j_label})"
+
+    def __hash__(self):
+        return hash(
+            (
+                self.neo4j_label,
+                frozenset(self.properties.items()),
+                self.start,
+                self.end,
+            )
+        )
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            if self.neo4j_label == other.neo4j_label:
+                if self.properties == other.properties:
+                    if self.start == other.start:
+                        if self.end == other.end:
+                            return True
+        return False
 
     def _start_field(self):
         for i in self.header:
@@ -288,30 +325,34 @@ class Relationship(Neo4jElement):
         }
         if create:
             with GraphDriver() as db:
-                _ = db.run(
+                x = db.run(
                     f"""
                     WITH $properties as properties
                     WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                     MATCH {match_start}
                     MATCH {match_end}
                     CREATE (m1)-[r:{self.neo4j_label}]->(m2)
-                    SET r += props
+                    CALL apoc.create.relationship(m1, '{self.neo4j_label}', props, m2)
+                    YIELD rel
+                    RETURN count(rel) as relationships_created
                     """,
                     properties=the_json,
                 ).value()
         else:
             with GraphDriver() as db:
-                _ = db.run(
+                x = db.run(
                     f"""
                     WITH $properties as properties
                     WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                     MATCH {match_start}
                     MATCH {match_end}
-                    MERGE (m1)-[r:{self.neo4j_label}]->(m2)
-                    ON CREATE SET r += props
+                    CALL apoc.merge.relationship(m1, '{self.neo4j_label}', props, {{}}, m2, {{}})
+                    YIELD rel
+                    RETURN count(rel) as relationships_created
                     """,
                     properties=the_json,
                 ).value()
+        log.info(f"{x[0]} relationships created {self.__repr__()}")
 
     @staticmethod
     def add_multiple_to_neo4j(list_of_rels, batch_size=1000, create=False):
@@ -325,6 +366,7 @@ class Relationship(Neo4jElement):
             var="m1", map_key="required_props1"
         )
         match_end = single.end._neo4j_repr_params(var="m2", map_key="required_props2")
+        n_rels_created = 0
         for paramsdictlist in batched(
             (
                 {
@@ -338,29 +380,32 @@ class Relationship(Neo4jElement):
         ):
             if create:
                 with GraphDriver() as db:
-                    _ = db.run(
+                    x = db.run(
                         f"""
                         WITH $paramsdictlist as paramsdictlist
                         UNWIND paramsdictlist as properties
                         WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                         MATCH {match_start}
                         MATCH {match_end}
-                        CREATE (m1)-[r:{single.neo4j_label}]->(m2)
-                        SET r += props
+                        CALL apoc.create.relationship(m1, '{single.neo4j_label}', props, m2 )
+                        YIELD rel
+                        RETURN count(rel) as relationships_created
                         """,
                         paramsdictlist=paramsdictlist,
                     ).value()
+                n_rels_created += x[0]
             else:
                 with GraphDriver() as db:
-                    _ = db.run(
+                    x = db.run(
                         f"""
                         WITH $paramsdictlist as paramsdictlist
                         UNWIND paramsdictlist as properties
                         WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                         MATCH {match_start}
                         MATCH {match_end}
-                        MERGE (m1)-[r:{single.neo4j_label}]->(m2)
-                        ON CREATE SET r += props
+                        CALL apoc.merge.relationship(m1, {single.neo4j_label}, props, {{}}, m2, {{}})
                         """,
                         paramsdictlist=paramsdictlist,
                     ).value()
+                n_rels_created += x[0]
+        log.info(f"{n_rels_created} relationships created {single.__repr__()}")

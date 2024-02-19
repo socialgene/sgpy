@@ -1,12 +1,16 @@
 """https://www.npatlas.org"""
 
+from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
+from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway
 from socialgene.addons.npmrd.nr import Npmrd
 from socialgene.addons.publication.nr import Publication
 from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.nextflow.nodes import TAXID
 from socialgene.utils.download import download as downloader
+from socialgene.utils.logging import log
 
 
 class NPAtlasNode(Node):
@@ -26,22 +30,14 @@ class NPAtlasNode(Node):
             "inchi": str,
             "m_plus_h": float,
             "m_plus_na": float,
-            # "origin_reference": Publication,
-            "npclassifier": str,
-            "external_ids": str,
-            # "ncbi_taxid": str,
             "genus": str,
             "species": str,
-            # "gnps": GnpsLibrarySpectrum,
-            # "npmrd": Npmrd,
-            # "mibig": Mibig,
-            "classyfire_class": str,
-            "classyfire_subclass": str,
+
         }
         required_properties = ["uid"]
 
 
-class NPAtlasToMibig(Relationship):
+class MibigToNPAtlas(Relationship):
         neo4j_label = "PRODUCES"
         description = "Connects an NPAtlas entry to a Mibig entry"
         start_class = Mibig
@@ -62,7 +58,39 @@ class NPAtlasToGnps(Relationship):
 
 
 class NPAtlasPublication(Publication):
-    pass
+    def __init__(self, origin_reference) -> None:
+        super().__init__()
+        try:
+            self.properties["doi"] = self._extract_doi(origin_reference.get("doi", None))
+        except Exception as e:
+            log.debug(f"Failed to extract doi: {e}")
+        try:
+            self.properties["pmid"] = int(origin_reference.get("pmid", None))
+        except Exception as e:
+            log.debug(f"Failed to convert pmid to int: {e}")
+        try:
+            self.properties["authors"] = origin_reference.get("authors", None)
+        except Exception as e:
+            log.debug(f"Failed to extract authors: {e}")
+        try:
+            self.properties["title"] = origin_reference.get("title", None)
+        except Exception as e:
+            log.debug(f"Failed to extract title: {e}")
+        try:
+            self.properties["journal"] = origin_reference.get("journal", None)
+        except Exception as e:
+            log.debug(f"Failed to extract journal: {e}")
+        try:
+            self.properties["year"] = int(origin_reference.get("year", None))
+        except Exception as e:
+            log.debug(f"Failed to convert year to int: {e}")
+
+class NPAtlasToPublication(Relationship):
+    neo4j_label = "HAS"
+    description = "Connects an NPAtlas entry to a publication"
+    start_class = NPAtlasNode
+    end_class = NPAtlasPublication
+
 
 class NPAtlasToChemont(Relationship):
     neo4j_label = "IS_CLASS"
@@ -76,3 +104,70 @@ class NPAtlasToSubclass(Relationship):
     start_class = NPAtlasNode
     end_class = ChemicalCompound
 
+class NPAtlasToSuperclass(Relationship):
+    neo4j_label = "IS_SUPERCLASS"
+    description = "Connects an NPAtlas entry to a Chemont entry"
+    start_class = NPAtlasNode
+    end_class = ChemicalCompound
+
+class NPAtlasToTaxID(Relationship):
+    neo4j_label = "PRODUCED_BY"
+    description = "Connects an NPAtlas entry to a TaxID entry"
+    start_class = NPAtlasNode
+    end_class = TAXID
+
+
+class NPAtlasToClassyFireDirectParent(Relationship):
+    neo4j_label = "DIRECT_PARENT"
+    description = "Connects an NPAtlas entry to a ClassyFire entry"
+    start_class = NPAtlasNode
+    end_class = ClassyFireNode
+
+
+class NPAtlasToClassyFireLowestClass(Relationship):
+    neo4j_label = "LOWEST_CLASS"
+    description = "Connects an NPAtlas entry to a ClassyFire entry"
+    start_class = NPAtlasNode
+    end_class = ClassyFireNode
+
+class NPAtlasToClassyFireIntermediateNodes(Relationship):
+    neo4j_label = "INTERMEDIATE_NODES"
+    description = "Connects an NPAtlas entry to a ClassyFire entry"
+    start_class = NPAtlasNode
+    end_class = ClassyFireNode
+
+class NPAtlasToClassyFireAlternativeParents(Relationship):
+    neo4j_label = "ALTERNATIVE_PARENTS"
+    description = "Connects an NPAtlas entry to a ClassyFire entry"
+    start_class = NPAtlasNode
+    end_class = ClassyFireNode
+
+
+
+
+
+
+
+
+
+
+
+
+class NPAtlasToNpclassifierClass(Relationship):
+    neo4j_label = "IS_A"
+    description = "Connects an NPAtlas entry to a NPClassifierClass entry"
+    start_class = NPAtlasNode
+    end_class = NPClassifierClass
+
+
+class NPAtlasToNpclassifierPathway(Relationship):
+    neo4j_label = "IS_A"
+    description = "Connects an NPAtlas entry to a NPClassifierPathway entry"
+    start_class = NPAtlasNode
+    end_class = NPClassifierPathway
+
+class NPAtlasToNpclassifierSuperclass(Relationship):
+    neo4j_label = "IS_A"
+    description = "Connects an NPAtlas entry to a NPClassifierSuperclass entry"
+    start_class = NPAtlasNode
+    end_class = NPClassifierClass

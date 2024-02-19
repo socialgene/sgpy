@@ -48,8 +48,9 @@ class GnpsLibrarySpectrumNode(Node):
         "inchikey": str,
         "inchikey_planar": str,
     }
+
     @staticmethod
-    def _extract_CCMSLIB(x) -> List:
+    def _extract_all_CCMSLIB(x) -> List:
         return re.findall("CCMSLIB[0-9]{11}", x)
 
 class IonSourceNode(Node):

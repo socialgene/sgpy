@@ -13,6 +13,7 @@ class Publication(Node):
         "journal": str,
         "year": int,
     }
+    required_properties=["doi"]
 
     @staticmethod
     def _extract_doi(input):

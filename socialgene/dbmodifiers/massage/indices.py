@@ -101,3 +101,23 @@ def taxonomy_uid():
             ON (n.uid);
             """
     )
+
+@mess
+def gnps_library_uid():
+    _add_to_neo4j(
+        """
+            CREATE INDEX gnps_library_uid
+            FOR (n:gnps_library_spectrum)
+            ON (n.uid);
+            """
+    )
+
+@mess
+def npatlas_uid():
+    _add_to_neo4j(
+        """
+            CREATE INDEX npatlas_uid
+            FOR (n:npatlas)
+            ON (n.uid);
+            """
+    )
