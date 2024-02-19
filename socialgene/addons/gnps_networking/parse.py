@@ -5,9 +5,13 @@ from uuid import uuid4
 
 import numpy as np
 import pandas as pd
+from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode, GnpsLibrarySpectrumToNPClassifierClass, GnpsLibrarySpectrumToNPClassifierPathway, GnpsLibrarySpectrumToNPClassifierSuperclass
+from socialgene.addons.gnps_library.parse import GNPSLibrarySpectrum
+from socialgene.addons.gnps_networking.nr import ClusterNode, ClusterToAssembly, LibraryHitRel, MolecularNetwork
+from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
 
-from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrum
 from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.nextflow.nodes import ASSEMBLY
 from socialgene.utils.logging import log
 
 
@@ -19,14 +23,14 @@ def extract_parameter(xml_string):
 def capture_assembly_id(s, regex):
     match regex:
         case "_":
-            pattern = r"^([__]+)"
+            pattern = r"^[^_]*"
         case "__":
             pattern = r"^([^_]+)__"
         case _:
             pattern = regex
     match = re.search(pattern, s)
     if match:
-        return match.group(1)
+        return match.group(0)
     else:
         return s
 
@@ -53,6 +57,7 @@ class GNPS_SNETS:
         self.selfloop_df = pd.DataFrame()
         self.clustersummary_df = pd.DataFrame()
         self.workflow_uuid = str(uuid4())
+        self.library_nodes=set()
         self._get_gnps_paths()
         self._get_gnps_params()
         self._file_mapping()
@@ -207,134 +212,114 @@ class GNPS_SNETS:
                 f"Assemblies from GNPS results not found in db: {assemblies - set(results)}"
             )
 
-    def add_gnps_library_spectra(self):
-        """Adds GNPS library hits to the Neo4j database"""
-        log.info("Adding GNPS library hits to db")
-        # This is potentially slow w/ a lot of trips to Neo4j but is more standardized so leaving it for now
+    @property
+    def library_hit_nodes(self):
+        """Creates GNPS library hit nodes"""
         for i in self.specnets_df.to_dict("records"):
-            a = GnpsLibrarySpectrum(**i)
-            a.add_cmpd()
-            # a.add_node_to_neo4j()
+            try:
+                self.library_nodes.add(GNPSLibrarySpectrum(properties=self._library_hit_nodes_parse_specnet_row(i)).node)
+            except Exception as e:
+                log.debug(f"Error creating library hit node for {i['spectrumid']}: {e}")
 
-    def add_gnps_library_spectrum_classifications(self):
-        """Adds GNPS library classifications to the Neo4j database"""
-        log.info("Adding GNPS library classifications to db")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                WITH row
-                WHERE row.npclassifier_class IS NOT NULL
-                MATCH (gls:gnps_library_spectrum {uid: row.spectrumid})
+    def link_npclassifiers(self):
+        """Classifies GNPS library hits by linking them to NPClassifier nodes"""
+        to_loop = [("npclassifier_superclass", NPClassifierSuperclass, GnpsLibrarySpectrumToNPClassifierSuperclass),
+        ("npclassifier_class", NPClassifierClass, GnpsLibrarySpectrumToNPClassifierClass),
+        ("npclassifier_pathway", NPClassifierPathway, GnpsLibrarySpectrumToNPClassifierPathway)]
+        for name,nodeclass,relclass in to_loop:
+            df = self.specnets_df[~self.specnets_df[name].isnull()]
+            df = df[['spectrumid', name]]
+            npc_set=set()
+            gnp_set=set()
+            rel_set=set()
+            for i in df.to_dict("records"):
+                npc = nodeclass(properties={'uid': i[name]})
+                gnp = GnpsLibrarySpectrumNode(properties={'uid': i['spectrumid']})
+                rel = relclass(start=gnp, end=npc)
+                # accumulate unique nodes and relationships to bulk add
+                npc_set.add(npc)
+                gnp_set.add(gnp)
+                rel_set.add(rel)
+            npc_set = list(npc_set)
+            gnp_set = list(gnp_set)
+            rel_set = list(rel_set)
+            for i in [npc_set, gnp_set, rel_set]:
+                i[0].add_multiple_to_neo4j(i, create=False)
 
-                MERGE (npclassifier_class:npclassifier_class {uid: row.npclassifier_class})
-                MERGE (npclassifier_superclass:npclassifier_superclass {uid: row.npclassifier_superclass})
-                MERGE (npclassifier_pathway:npclassifier_pathway {uid: row.npclassifier_pathway})
-                MERGE (npclassifier_class)-[:IS_A]->(npclassifier_superclass)
-                MERGE (npclassifier_superclass)-[:IS_A]->(npclassifier_pathway)
-                MERGE (gls)-[:IS_A]->(npclassifier_class)
-                """,
-                df=self.specnets_df.to_dict("records"),
-            ).value()
+    def create_cluster_nodes(self, create=False):
+        clusternodes=set()
+        for i in self.clustersummary_df.to_dict("records"):
+            a=ClusterNode()
+            d=i | {"workflow_uuid": self.workflow_uuid}
+            a.fill_from_dict(d)
+            clusternodes.add(a)
+        clusternodes = list(clusternodes)
+        clusternodes[0].add_multiple_to_neo4j(clusternodes, create=create)
 
-    def add_gnps_library_spectrum_ion_sources(self):
-        """Adds GNPS library ion sources to the Neo4j database"""
-        log.info("Adding GNPS library ion sources to db")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                WITH row
-                WHERE row.ion_source IS NOT NULL
-                MATCH (gls:gnps_library_spectrum {uid: row.spectrumid})
-                MERGE (ion_source:ion_source {uid: row.ion_source})
-                MERGE (gls)-[:FROM]->(ion_source)
-                """,
-                df=self.specnets_df.to_dict("records"),
-            ).value()
+    def link_cluster_to_library(self):
+        df = self.clustersummary_df[['spectrumid','cluster_index']]
+        df = df[~df['spectrumid'].isnull()]
+        s_set=set()
+        e_set=set()
+        r_set=set()
+        for i in df.to_dict("records"):
+            s = ClusterNode(properties={'cluster_index': i['cluster_index'], 'workflow_uuid': self.workflow_uuid})
+            e = GnpsLibrarySpectrumNode(properties={'uid': i['spectrumid']})
+            r = LibraryHitRel(start=s, end=e)
+            s_set.add(s)
+            e_set.add(e)
+            r_set.add(r)
+        s_set = list(s_set)
+        e_set = list(e_set)
+        r_set = list(r_set)
+        for i in [s_set, e_set, r_set]:
+            i[0].add_multiple_to_neo4j(i, create=False)
 
-    def add_gnps_library_spectrum_instruments(self):
-        """Adds GNPS library instruments to the Neo4j database"""
-        log.info("Adding GNPS library instruments to db")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                WITH row
-                WHERE row.instrument IS NOT NULL
-                MATCH (gls:gnps_library_spectrum {uid: row.spectrumid})
-                MERGE (instrument:instrument {uid: row.instrument})
-                MERGE (gls)-[:FROM]->(instrument)
-                """,
-                df=self.specnets_df.to_dict("records"),
-            ).value()
 
-    def add_gnps_library_spectrum_organisms(self):
-        """Adds GNPS library organisms to the Neo4j database"""
-        log.info("Adding GNPS library organisms to db")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                WITH row
-                WHERE row.organism IS NOT NULL
-                MATCH (gls:gnps_library_spectrum {uid: row.spectrumid})
-                MERGE (organism:organism {uid: row.organism})
-                MERGE (gls)-[:FROM]->(organism)
-                """,
-                df=self.specnets_df.to_dict("records"),
-            ).value()
+    def link_network(self, create=False):
+        s_set=set()
+        e_set=set()
+        r_set=set()
+        for i in self.selfloop_df.to_dict("records"):
+            s = ClusterNode(properties={'cluster_index': i['clusterid1'], 'workflow_uuid': self.workflow_uuid})
+            e = ClusterNode(properties={'cluster_index': i['clusterid2'], 'workflow_uuid': self.workflow_uuid})
+            r = MolecularNetwork(start=s, end=e)
+            if i['edgeannotation'] == " ":
+                i['edgeannotation'] = None
+            r.fill_from_dict(i)
+            s_set.add(s)
+            e_set.add(e)
+            r_set.add(r)
+        s_set = list(s_set)
+        e_set = list(e_set)
+        r_set = list(r_set)
+        for i in [s_set, e_set]:
+            # create=False because nodes should already exist so we want to merge not create
+            i[0].add_multiple_to_neo4j(i, create=False)
+        r_set[0].add_multiple_to_neo4j(r_set, create=create)
 
-    def add_gnps_clusters(self):
-        """Adds GNPS networking clusters to the Neo4j database and links them to the GNPS library hits"""
-        log.info("Adding GNPS clusters to db")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                    WITH $df as df
-                    UNWIND df as row
-                    MERGE (c:cluster {uid: row.cluster_index, workflow_uuid: $workflow_uuid})
-                        ON CREATE SET   c.defaultgroups = row.defaultgroups,
-                                        c.g1 = row.g1,
-                                        c.g2 = row.g2,
-                                        c.g3 = row.g3,
-                                        c.g4 = row.g4,
-                                        c.g5 = row.g5,
-                                        c.g6 = row.g6,
-                                        c.gnpslinkout_cluster = row.gnpslinkout_cluster,
-                                        c.gnpslinkout_network = row.gnpslinkout_network,
-                                        c.mqscore = row.mqscore,
-                                        c.mzerrorppm = row.mzerrorppm,
-                                        c.massdiff = row.massdiff,
-                                        c.rtmean = row.rtmean,
-                                        c.rtmean_min = row.rtmean_min,
-                                        c.rtstderr = row.rtstderr,
-                                        c.uniquefilesources = row.uniquefilesources,
-                                        c.uniquefilesourcescount = row.uniquefilesourcescount,
-                                        c.cluster_index = row.cluster_index,
-                                        c.componentindex = row.componentindex,
-                                        c.number_of_spectra = row.number_of_spectra,
-                                        c.parent_mass = row.parent_mass,
-                                        c.precursor_charge = row.precursor_charge,
-                                        c.precursor_mass = row.precursor_mass,
-                                        c.sumprecursor_intensity = row.sumprecursor_intensity
-                    WITH c, row
-                    WHERE row.spectrumid STARTS WITH "CCMSLIB"
-                    MERGE (gls:gnps_library_spectrum {uid: row.spectrumid})
-                        ON CREATE SET gls.smiles = row.smiles,
-                                        gls.libraryid = row.libraryid
-                    WITH row, c, gls
-                    MATCH (gls:gnps_library_spectrum {uid: row.spectrumid})
-                    MERGE (c)-[lh:LIBRARY_HIT]->(gls)
-                    SET c:gnps_library_hit
-                    """,
-                df=self.clustersummary_df.to_dict("records"),
-                workflow_uuid=self.workflow_uuid,
-            ).value()
+
+    def link_assembly_to_cluster(self, create=False):
+        df = self.clusterinfo_df[['assembly','clusteridx']]
+        df = df[~df['assembly'].isnull()]
+        s_set=set()
+        e_set=set()
+        r_set=set()
+        for i in df.to_dict("records"):
+            s = ClusterNode(properties={'cluster_index': i['clusteridx'], 'workflow_uuid': self.workflow_uuid})
+            e = ASSEMBLY(properties={'uid': i['assembly']})
+            r = ClusterToAssembly(start=s, end=e)
+            s_set.add(s)
+            e_set.add(e)
+            r_set.add(r)
+        s_set = list(s_set)
+        e_set = list(e_set)
+        r_set = list(r_set)
+        for i in [s_set, e_set]:
+            # create=False because nodes should already exist so we want to merge not create
+            i[0].add_multiple_to_neo4j(i, create=False)
+        r_set[0].add_multiple_to_neo4j(r_set, create=create)
+
 
     def add_links_between_gnps_clusters_and_assemblies(self):
         """Adds links between GNPS clusters and genome assemblies to the Neo4j database"""

@@ -92,29 +92,11 @@ class NPAtlasToPublication(Relationship):
     end_class = NPAtlasPublication
 
 
-class NPAtlasToChemont(Relationship):
-    neo4j_label = "IS_CLASS"
-    description = "Connects an NPAtlas entry to a Chemont entry"
-    start_class = NPAtlasNode
-    end_class = ChemicalCompound
-
-class NPAtlasToSubclass(Relationship):
-    neo4j_label = "IS_SUBCLASS"
-    description = "Connects an NPAtlas entry to a Chemont entry"
-    start_class = NPAtlasNode
-    end_class = ChemicalCompound
-
-class NPAtlasToSuperclass(Relationship):
-    neo4j_label = "IS_SUPERCLASS"
-    description = "Connects an NPAtlas entry to a Chemont entry"
-    start_class = NPAtlasNode
-    end_class = ChemicalCompound
-
 class NPAtlasToTaxID(Relationship):
-    neo4j_label = "PRODUCED_BY"
+    neo4j_label = "PRODUCES"
     description = "Connects an NPAtlas entry to a TaxID entry"
-    start_class = NPAtlasNode
-    end_class = TAXID
+    start_class = TAXID
+    end_class = NPAtlasNode
 
 
 class NPAtlasToClassyFireDirectParent(Relationship):
@@ -141,16 +123,6 @@ class NPAtlasToClassyFireAlternativeParents(Relationship):
     description = "Connects an NPAtlas entry to a ClassyFire entry"
     start_class = NPAtlasNode
     end_class = ClassyFireNode
-
-
-
-
-
-
-
-
-
-
 
 
 class NPAtlasToNpclassifierClass(Relationship):

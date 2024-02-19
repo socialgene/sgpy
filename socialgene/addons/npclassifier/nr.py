@@ -25,8 +25,3 @@ class NPClassifierSuperclass(Node):
     }
 
 
-class NPClassifierIsA(Relationship):
-    neo4j_label = "IS_A"
-    description = "Represents a relationship between npclassifier nodes"
-    start_class = NPClassifierClass
-    end_class = NPClassifierClass

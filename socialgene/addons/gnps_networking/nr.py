@@ -3,23 +3,23 @@ from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 
 
 from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.nextflow.nodes import ASSEMBLY
 from socialgene.utils.logging import log
 
 
 class ClusterNode(Node):
     neo4j_label = "gnps_cluster"
     description = "Represents a GNPS molecular networking cluster"
-    required_properties = ["uid", "workflow_uuid"]
+    required_properties = ["cluster_index", "workflow_uuid"]
     property_specification = {
-        "uid": str,
         "workflow_uuid": str,
         "defaultgroups": str,
-        "g1": str,
-        "g2": str,
-        "g3": str,
-        "g4": str,
-        "g5": str,
-        "g6": str,
+        "g1": int,
+        "g2": int,
+        "g3": int,
+        "g4": int,
+        "g5": int,
+        "g6": int,
         "gnpslinkout_cluster": str,
         "gnpslinkout_network": str,
         "mqscore": float,
@@ -38,6 +38,9 @@ class ClusterNode(Node):
         "precursor_mass": float,
         "sumprecursor_intensity": float,
     }
+
+
+
 
 
 class SpectrumNode(Node):
@@ -59,3 +62,30 @@ class LibraryHitRel(Relationship):
     start_class = ClusterNode
     end_class = GnpsLibrarySpectrumNode
 
+
+
+
+class MolecularNetwork(Relationship):
+    neo4j_label = "MOLECULAR_NETWORK"
+    description = "Connects the GNPS molecular networks"
+    start_class = ClusterNode
+    end_class = ClusterNode
+    property_specification = {
+        "delta_mz": float,
+        "meh": float,
+        "cosine": float,
+        "otherscore": float,
+        "componentindex": int,
+        "edgeannotation": str,
+    }
+    required_properties=[]
+
+
+class ClusterToAssembly(Relationship):
+    neo4j_label = "FROM"
+    description = "Connects a GNPS cluster to a GNPS assembly"
+    start_class = ClusterNode
+    end_class = ASSEMBLY
+    property_specification = {
+    }
+    required_properties = []

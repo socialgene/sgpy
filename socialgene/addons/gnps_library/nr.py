@@ -3,8 +3,7 @@ from typing import List
 
 from rdkit import Chem
 
-from socialgene.addons.base import ExternalBaseClass
-from socialgene.addons.npclassifier.nr import NPClassifierClass
+from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
 from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log
@@ -98,8 +97,21 @@ class FromOrganismRel(Relationship):
     end_class = OrganismNode
 
 
-class GnpsLibrarySpectrumIsA(Relationship):
+class GnpsLibrarySpectrumToNPClassifierClass(Relationship):
     neo4j_label = "IS_A"
     description = "Represents a relationship between gnps_library_spectrum nodes"
     start_class = GnpsLibrarySpectrumNode
     end_class = NPClassifierClass
+
+
+class GnpsLibrarySpectrumToNPClassifierSuperclass(Relationship):
+    neo4j_label = "IS_A"
+    description = "Represents a relationship between gnps_library_spectrum nodes"
+    start_class = GnpsLibrarySpectrumNode
+    end_class = NPClassifierSuperclass
+
+class GnpsLibrarySpectrumToNPClassifierPathway(Relationship):
+    neo4j_label = "IS_A"
+    description = "Represents a relationship between gnps_library_spectrum nodes"
+    start_class = GnpsLibrarySpectrumNode
+    end_class = NPClassifierPathway

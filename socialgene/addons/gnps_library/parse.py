@@ -2,91 +2,51 @@ import re
 from typing import List
 
 from rdkit import Chem
+from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 
-from socialgene.addons.base import ExternalBaseClass
 from socialgene.base.chem import ChemicalCompound
 from socialgene.utils.logging import log
 
 
 
+class GNPSLibrarySpectrum:
+    def __init__(self, specnet: dict):
+        self.properties = {}
 
-class GnpsLibrarySpectrum(ExternalBaseClass):
-    __slots__ = [
-        "uid",
-        "compound_name",
-        "compound_source",
-        "pi",
-        "data_collector",
-        "adduct",
-        "precursor_mz",
-        "exactmass",
-        "charge",
-        "cas_number",
-        "pubmed_id",
-        "smiles",
-        "inchi",
-        "inchi_aux",
-        "library_class",
-        "ionmode",
-        "libraryqualitystring",
-        "mqscore",
-        "tic_query",
-        "rt_query",
-        "mzerrorppm",
-        "sharedpeaks",
-        "massdiff",
-        "libmz",
-        "specmz",
-        "speccharge",
-        "moleculeexplorerdatasets",
-        "moleculeexplorerfiles",
-        "molecular_formula",
-        "inchikey",
-        "inchikey_planar",
-    ]
-
-
-
-    @staticmethod
-    def _extract_CCMSLIB(x) -> List:
-        return re.findall("CCMSLIB[0-9]{11}", x)
+    def from_specnet(self, specnet: dict):
+        self.properties["uid"] = str(specnet["spectrumid"])
+        self.properties["compound_name"] = str(specnet["compound_name"])
+        self.properties["compound_source"] = str(specnet["compound_source"])
+        self.properties["pi"] = str(specnet["pi"])
+        self.properties["data_collector"] = str(specnet["data_collector"])
+        self.properties["adduct"] = str(specnet["adduct"])
+        self.properties["precursor_mz"] = float(specnet["precursor_mz"])
+        self.properties["exactmass"] = float(specnet["exactmass"])
+        self.properties["charge"] = int(specnet["charge"])
+        self.properties["cas_number"] = str(specnet["cas_number"])
+        self.properties["pubmed_id"] = str(specnet["pubmed_id"])
+        self.properties["smiles"] = str(specnet["smiles"])
+        self.properties["inchi"] = str(specnet["inchi"])
+        self.properties["inchi_aux"] = str(specnet["inchi_aux"])
+        self.properties["library_class"] = str(specnet["library_class"])
+        self.properties["ionmode"] = str(specnet["ionmode"])
+        self.properties["libraryqualitystring"] = str(specnet["libraryqualitystring"])
+        self.properties["mqscore"] = float(specnet["mqscore"])
+        self.properties["tic_query"] = float(specnet["tic_query"])
+        self.properties["rt_query"] = float(specnet["rt_query"])
+        self.properties["mzerrorppm"] = float(specnet["mzerrorppm"])
+        self.properties["sharedpeaks"] = int(specnet["sharedpeaks"])
+        self.properties["massdiff"] = float(specnet["massdiff"])
+        self.properties["libmz"] = float(specnet["libmz"])
+        self.properties["specmz"] = float(specnet["specmz"])
+        self.properties["speccharge"] = int(specnet["speccharge"])
+        self.properties["moleculeexplorerdatasets"] = str(specnet["moleculeexplorerdatasets"])
+        self.properties["moleculeexplorerfiles"] = str(specnet["moleculeexplorerfiles"])
+        self.properties["molecular_formula"] = str(specnet["molecular_formula"])
+        self.properties["inchikey"] = str(specnet["inchikey"])
+        self.properties["inchikey_planar"] = str(specnet["inchikey_planar"])
 
     @property
-    def not_null_properties(self):
-        return {
-            i: getattr(self, i) for i in self.__slots__ if getattr(self, i) is not None
-        }
-
-    def add_node_to_neo4j(self):
-        self._add_to_neo4j(
-            """
-            with $row as row
-            MERGE (gls:gnps_library_spectrum {uid: row.uid})
-                     SET gls += row
-                        """,
-            row=self.not_null_properties,
-        )
-
-    def link_to_chemical_node(self):
-        cmpd = None
-        try:
-            cmpd = ChemicalCompound(self.inchikey)
-        except Exception:
-            pass
-        if not cmpd:
-            try:
-                cmpd = ChemicalCompound(self.smiles)
-            except Exception:
-                pass
-        if cmpd:
-            log.warning(f"Could not parse a chemical compound for {self.uid}")
-            return
-
-        self._add_to_neo4j(
-            """
-            with $row as row
-            MERGE (gls:gnps_library_spectrum {uid: row.uid})
-                     SET gls += row
-                        """,
-            row=self.not_null_properties,
-        )
+    def node(self):
+        if self.properties:
+            return GnpsLibrarySpectrumNode(properties=self.properties)

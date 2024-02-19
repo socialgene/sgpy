@@ -262,7 +262,7 @@ class NPAtlasEntry:
             )}
         if self.ncbi_taxid:
             rels["ncbi_taxid"] = {NPAtlasToTaxID(
-                start=self.node, end=TAXID(properties={"uid": str(self.ncbi_taxid)})
+                start=TAXID(properties={"uid": str(self.ncbi_taxid)}), end=self.node
             )}
         if self.gnps_ids:
             rels["gnps"] = {NPAtlasToGnps(start=self.node, end=x) for x in self.gnps_ids}

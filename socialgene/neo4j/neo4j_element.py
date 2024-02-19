@@ -110,6 +110,20 @@ class Neo4jElement(ABC):
         self._check_no_extra_properties()
         self._check_property_types()
 
+    def fill_from_dict(self, d: dict):
+        """Fill the properties of the object from a dictionary"""
+        for k,v in self.property_specification.items():
+            try:
+                if k not in d:
+                    log.debug(f"Failed to fill add property {k} from dictionary: not found for {self.__class__}")
+                    continue
+                if d.get(k) is None:
+                    log.debug(f"Failed to fill add property {k} from dictionary: None for {self.__class__}")
+                    continue
+
+                self.properties[k] = v(d.get(k))
+            except Exception as e:
+                log.debug(f"Failed to fill add property {k} from dictionary: {e} for {self.__class__}")
 
 class Node(Neo4jElement):
     """Represents a single Node"""
@@ -134,7 +148,6 @@ class Node(Neo4jElement):
                 f"property_specification must be defined for class {self.__class__.__name__}"
             )
 
-
     def __hash__(self):
         return hash((self.neo4j_label, frozenset(self.properties.items())))
 
@@ -144,6 +157,8 @@ class Node(Neo4jElement):
                 if self.properties == other.properties:
                     return True
         return False
+
+
 
     def _neo4j_repr(
         self,
@@ -403,7 +418,9 @@ class Relationship(Neo4jElement):
                         WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                         MATCH {match_start}
                         MATCH {match_end}
-                        CALL apoc.merge.relationship(m1, {single.neo4j_label}, props, {{}}, m2, {{}})
+                        CALL apoc.merge.relationship(m1, '{single.neo4j_label}', props, {{}}, m2, {{}})
+                        YIELD rel
+                        RETURN count(rel) as relationships_created
                         """,
                         paramsdictlist=paramsdictlist,
                     ).value()
