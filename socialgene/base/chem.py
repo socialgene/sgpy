@@ -1,6 +1,8 @@
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem, Descriptors, rdMolHash
 from rdkit import RDLogger
+from rdkit import DataStructs
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 
 from socialgene.utils.logging import log
 
@@ -108,19 +110,11 @@ class ChemicalCompound:
         fr = ChemicalFragments()
         fr.add_mol(self.mol)
         return fr.to_dict()
-
-    # def add_to_neo4j(self):
-    #     with GraphDriver() as db:
-    #         results = db.run(
-    #             """
-    #             WITH $props as props
-    #             UNWIND props as prop
-    #             MERGE (c:chemical_compound {inchi: prop.inchi, CanonicalSmiles: prop.CanonicalSmiles})
-    #             ON CREATE SET c = prop
-    #             """,
-    #             props=self.hash_dict | self.base_properties,
-    #         ).value()
-
+    @property
+    def node(self):
+        temp = ChemicalCompoundNode()
+        temp.fill_from_dict(self.base_properties | self.hash_dict)
+        return temp
 
 class ChemicalCollection:
     def __init__(self) -> None:

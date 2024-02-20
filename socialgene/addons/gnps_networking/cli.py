@@ -1,14 +1,8 @@
 
 import argparse
-from pathlib import Path
-from socialgene.addons.gnps_networking.nr import ClusterNode
 
 from socialgene.addons.gnps_networking.parse import GNPS_SNETS
 from socialgene.utils.logging import log
-
-
-
-
 
 
 def create_arg_parser():

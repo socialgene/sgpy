@@ -1,10 +1,12 @@
 from pathlib import Path
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
-from socialgene.addons.npatlas.nr import MibigToNPAtlas, NPAtlasNode, NPAtlasPublication,  NPAtlasToClassyFireAlternativeParents, NPAtlasToClassyFireDirectParent, NPAtlasToClassyFireIntermediateNodes, NPAtlasToClassyFireLowestClass, NPAtlasToGnps, NPAtlasToNpclassifierClass, NPAtlasToNpclassifierPathway, NPAtlasToNpclassifierSuperclass, NPAtlasToPublication, NPAtlasToTaxID
+from socialgene.addons.npatlas.nr import MibigToNPAtlas, NPAtlasNode, NPAtlasPublication, NPAtlasToChem,  NPAtlasToClassyFireAlternativeParents, NPAtlasToClassyFireDirectParent, NPAtlasToClassyFireIntermediateNodes, NPAtlasToClassyFireLowestClass, NPAtlasToGnps, NPAtlasToNpclassifierClass, NPAtlasToNpclassifierPathway, NPAtlasToNpclassifierSuperclass, NPAtlasToPublication, NPAtlasToTaxID
 from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
 from socialgene.addons.npmrd.nr import Npmrd
+from socialgene.base.chem import ChemicalCompound
 from socialgene.nextflow.nodes import TAXID
 from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
@@ -293,6 +295,20 @@ class NPAtlasEntry:
             return set()
         return {NPAtlasToNpclassifierSuperclass(start=self.node, end=NPClassifierSuperclass(properties={"uid": x})) for x in self.npclassifier_superclasses}
 
+    def link_chem(self) -> set:
+        try:
+            chem=None
+            if self.inchi:
+                chem=ChemicalCompound(self.inchi)
+            elif self.smiles:
+                chem=ChemicalCompound(self.smiles)
+            if chem:
+                a=ChemicalCompoundNode()
+                a.fill_from_dict(chem.base_properties | chem.hash_dict)
+                return {NPAtlasToChem(self.node, a)}
+        except:
+            return set()
+
     def get_links(self):
         return {
             NPAtlasToPublication: self.link_publication(),
@@ -306,7 +322,9 @@ class NPAtlasEntry:
             NPAtlasToNpclassifierClass: self.link_npclassifier_classes(),
             NPAtlasToNpclassifierPathway: self.link_npclassifier_pathways(),
             NPAtlasToNpclassifierSuperclass: self.link_npclassifier_superclasses(),
+            NPAtlasToChem: self.link_chem(),
         }
+
 
 
 

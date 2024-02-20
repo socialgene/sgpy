@@ -74,3 +74,6 @@ class ChemicalSimilarity(Relationship):
     description = "Connects two chemical compounds that are similar"
     start_class = ChemicalCompoundNode
     end_class = ChemicalCompoundNode
+    property_specification = {
+        "similarity": int,
+    }
