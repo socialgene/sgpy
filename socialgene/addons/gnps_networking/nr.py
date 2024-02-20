@@ -89,3 +89,5 @@ class ClusterToAssembly(Relationship):
     property_specification = {
     }
     required_properties = []
+
+

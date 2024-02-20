@@ -158,7 +158,8 @@ class Node(Neo4jElement):
                     return True
         return False
 
-
+    def __str__(self) -> str:
+        return f"(:{self.neo4j_label})"
 
     def _neo4j_repr(
         self,
@@ -197,7 +198,7 @@ class Node(Neo4jElement):
         }
         if create:
             with GraphDriver() as db:
-                _ = db.run(
+                res = db.run(
                     f"""
                     WITH $paramsdict as paramsdict
                     WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
@@ -205,10 +206,14 @@ class Node(Neo4jElement):
                     SET n += optional_props
                     """,
                     paramsdict=paramsdict,
-                ).value()
+                ).consume()
+                try:
+                    log.info(f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties")
+                except Exception as e:
+                    pass
         else:
             with GraphDriver() as db:
-                _ = db.run(
+                res = db.run(
                     f"""
                     WITH $paramsdict as paramsdict
                     WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
@@ -216,7 +221,11 @@ class Node(Neo4jElement):
                     ON CREATE SET n += optional_props
                     """,
                     paramsdict=paramsdict,
-                ).value()
+                ).consume()
+                try:
+                    log.info(f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties")
+                except Exception as e:
+                    pass
 
     @staticmethod
     def add_multiple_to_neo4j(list_of_nodes, batch_size=1000, create=False):
@@ -228,6 +237,7 @@ class Node(Neo4jElement):
                 f"All nodes in list_of_nodes must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_nodes])}"
             )
         single = list_of_nodes[0]
+        count_res ={'nodes_created': 0, 'properties_set': 0}
         merge_str = single._neo4j_repr_params(var="n", map_key="required_props")
         for paramsdictlist in batched(
             (
@@ -241,7 +251,7 @@ class Node(Neo4jElement):
         ):
             if create:
                 with GraphDriver() as db:
-                    _ = db.run(
+                    res = db.run(
                         f"""
                         WITH $paramsdictlist as paramsdictlist
                         UNWIND paramsdictlist as paramsdict
@@ -250,7 +260,12 @@ class Node(Neo4jElement):
                         SET n += optional_props
                         """,
                         paramsdictlist=paramsdictlist,
-                    ).value()
+                    ).consume()
+                try:
+                    count_res["nodes_created"] += res.counters.nodes_created
+                    count_res["properties_set"] += res.counters.properties_set
+                except Exception as e:
+                    pass
             else:
                 with GraphDriver() as db:
                     _ = db.run(
@@ -262,7 +277,13 @@ class Node(Neo4jElement):
                         ON CREATE SET n += optional_props
                         """,
                         paramsdictlist=paramsdictlist,
-                    ).value()
+                    ).consume()
+                try:
+                    count_res["nodes_created"] += res.counters.nodes_created
+                    count_res["properties_set"] += res.counters.properties_set
+                except Exception as e:
+                    pass
+        log.info(f"Created {count_res['nodes_created']} {single.__str__()} nodes, set {count_res['properties_set']} properties")
 
 
 class Relationship(Neo4jElement):
@@ -278,7 +299,7 @@ class Relationship(Neo4jElement):
             raise ValueError(
                 f"Relationship class '{self.__class__.__name__}' end node must be of type {self.end_class.__name__}, found {self.end.__class__.__name__}"
             )
-    def __repr__(self):
+    def __str__(self):
         return f"(:{self.start.neo4j_label})-[:{self.neo4j_label}]->(:{self.end.neo4j_label})"
 
     def __hash__(self):
@@ -367,7 +388,7 @@ class Relationship(Neo4jElement):
                     """,
                     properties=the_json,
                 ).value()
-        log.info(f"{x[0]} relationships created {self.__repr__()}")
+        log.info(f"{x[0]} relationships created {self.__str__()}")
 
     @staticmethod
     def add_multiple_to_neo4j(list_of_rels, batch_size=1000, create=False):
@@ -425,4 +446,4 @@ class Relationship(Neo4jElement):
                         paramsdictlist=paramsdictlist,
                     ).value()
                 n_rels_created += x[0]
-        log.info(f"{n_rels_created} relationships created {single.__repr__()}")
+        log.info(f"{n_rels_created} relationships created {single.__str__()}")
