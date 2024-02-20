@@ -187,7 +187,7 @@ class GNPS_SNETS:
         Also means all MS files must be named with a consistent pattern.
 
         Args:
-            regex (str, optional): Pattern of MS file names. If '_' then it expects 'assembly-id_*.mzML'; if '__' then 'assembly-id__*.mzML'; can also be a custom regex pattern. Defaults to "_".
+            regex (str, optional): Pattern of MS file names. If '_' then it expects 'assembly-id_*.mzML'; if '__' then 'assembly-id__*.mzML'; can also be a custom regex pattern.\nDefaults to "_".
         """
         self.clusterinfo_df["assembly"] = self.clusterinfo_df[
             "original_filename"
@@ -207,15 +207,19 @@ class GNPS_SNETS:
                 assemblies=list(assemblies),
             ).value()
         if results:
-            log.warning(
+            log.info(
                 f"Assemblies from GNPS results found in db: {len(results)} of {len(assemblies)}"
             )
-            log.warning(
+            log.info(
                 f"Assemblies from GNPS results not found in db: {assemblies - set(results)}"
             )
+        else:
+            log.warning(
+                f"No assemblies from GNPS results matched to assemblies in the db (possibly a pattern issue? Default is assembly name first, followed by an underscore)"            )
+        if len(assemblies) != len(set(results)):
+            return False
 
-    @property
-    def library_hit_nodes(self):
+    def _library_hit_nodes(self):
         """Creates GNPS library hit nodes"""
         for i in self.specnets_df.to_dict("records"):
             try:

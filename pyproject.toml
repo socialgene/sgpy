@@ -80,5 +80,5 @@ sg_schema               = "socialgene.neo4j.schema.graph_schema:main"
 
 
 # addons
-sg_gnps_import          = "socialgene.addons.gnps_networking:main"
+sg_gnps_import          = "socialgene.addons.gnps_networking.cli:main"
 sg_npatlas_import       = "socialgene.addons.npatlas.cli:main"

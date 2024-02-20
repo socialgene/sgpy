@@ -13,11 +13,11 @@ from socialgene.utils.logging import log
 def create_arg_parser():
     """ "Creates and returns the ArgumentParser object."""
     parser = argparse.ArgumentParser(
-        description="Integrate a NPAtlas molecular network into a SocialGene Neo4j Database"
+        description="Integrate NPAtlas into a SocialGene Neo4j Database"
     )
     parser.add_argument(
         "--input",
-        help="Local path to NPAtlas JSON file. If blank, downloads from NPAtlas website.",
+        help="Local path to NPAtlas JSON file. If None, downloads from NPAtlas website.",
         default=None,
         required=False,
     )

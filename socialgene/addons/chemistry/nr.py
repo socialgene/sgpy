@@ -66,3 +66,11 @@ class ContainsRel(Relationship):
     description = "Connects a chemical compound to a chemical fragment"
     start_class = ChemicalCompoundNode
     end_class = ChemicalFragment
+
+
+
+class ChemicalSimilarity(Relationship):
+    neo4j_label = "SIMILAR"
+    description = "Connects two chemical compounds that are similar"
+    start_class = ChemicalCompoundNode
+    end_class = ChemicalCompoundNode

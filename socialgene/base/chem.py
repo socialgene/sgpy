@@ -1,7 +1,12 @@
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem, Descriptors, rdMolHash
+from rdkit import RDLogger
 
 from socialgene.utils.logging import log
+
+# Turn off C++ warnings when in info mode
+if log.level != 20:
+    RDLogger.DisableLog('rdApp.*')
 
 
 class ChemicalFragments:
