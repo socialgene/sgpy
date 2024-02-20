@@ -1,12 +1,12 @@
 """https://www.npatlas.org"""
 
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
 from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway
 from socialgene.addons.npmrd.nr import Npmrd
 from socialgene.addons.publication.nr import Publication
-from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.nextflow.nodes import TAXID
 from socialgene.utils.download import download as downloader
@@ -143,3 +143,9 @@ class NPAtlasToNpclassifierSuperclass(Relationship):
     description = "Connects an NPAtlas entry to a NPClassifierSuperclass entry"
     start_class = NPAtlasNode
     end_class = NPClassifierClass
+
+class NPAtlasToChem(Relationship):
+    neo4j_label = "IS_A"
+    description = "Connects an NPAtlas entry to a ChemicalCompound entry"
+    start_class = NPAtlasNode
+    end_class = ChemicalCompoundNode

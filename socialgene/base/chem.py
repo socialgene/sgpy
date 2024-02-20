@@ -40,7 +40,7 @@ class ChemicalCompound:
         if isinstance(input, Chem.rdchem.Mol):
             self.mol = input
         elif isinstance(input, str):
-            method_list = [Chem.MolFromSmiles, Chem.MolFromInchi, Chem.MolFromMolFile]
+            method_list = [Chem.MolFromInchi,Chem.MolFromSmiles, Chem.MolFromMolFile]
             for method in method_list:
                 log.debug(f"Trying to parse compound with {method.__name__}")
                 try:

@@ -1,5 +1,4 @@
 from pathlib import Path
-from socialgene.addons.base import ExternalBaseClass
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
@@ -250,6 +249,7 @@ class NPAtlasEntry:
             nodes["npclassifier_pathways"] = {NPClassifierPathway(properties={"uid": x}) for x in self.npclassifier_pathways}
         if self.npclassifier_superclasses:
             nodes["npclassifier_superclasses"] = {NPClassifierSuperclass(properties={"uid": x}) for x in self.npclassifier_superclasses}
+
         return nodes
 
     @property
@@ -285,7 +285,7 @@ class NPAtlasEntry:
         return rels
 
 
-class NPAtlas(ExternalBaseClass):
+class NPAtlas():
     def __init__(self, url=NPATALAS_URL, atlas_json_path=None) -> None:
         super().__init__()
         self.entries = []
