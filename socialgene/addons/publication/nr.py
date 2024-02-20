@@ -1,4 +1,5 @@
 import re
+
 from socialgene.neo4j.neo4j_element import Node
 
 
@@ -13,7 +14,7 @@ class Publication(Node):
         "journal": str,
         "year": int,
     }
-    required_properties=["doi"]
+    required_properties = ["doi"]
     constraints_unique = ["doi"]
 
     @staticmethod

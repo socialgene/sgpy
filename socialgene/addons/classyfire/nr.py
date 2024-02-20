@@ -2,9 +2,6 @@
 
 from socialgene.addons.chebi.nr import ChebiNode
 from socialgene.neo4j.neo4j_element import Node, Relationship
-from socialgene.utils.logging import log
-
-
 
 
 class ClassyFireNode(Node):
@@ -14,6 +11,7 @@ class ClassyFireNode(Node):
     required_properties = ["uid"]
     constraints_unique = ["uid"]
 
+
 class ClassyFireIsA(Relationship):
     neo4j_label = "IS_A"
     description = "Represents a relationship between chemont nodes"
@@ -21,11 +19,8 @@ class ClassyFireIsA(Relationship):
     end_class = ClassyFireNode
 
 
-
 class ClassyFireSynonym(Relationship):
     neo4j_label = "SYNONYM"
     description = "Represents a synonym relationship between chemont chebi"
     start_class = ClassyFireNode
     end_class = ChebiNode
-
-

@@ -2,10 +2,12 @@ import re
 from typing import List
 
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode
-
-from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
+from socialgene.addons.npclassifier.nr import (
+    NPClassifierClass,
+    NPClassifierPathway,
+    NPClassifierSuperclass,
+)
 from socialgene.neo4j.neo4j_element import Node, Relationship
-from socialgene.utils.logging import log
 
 
 class GnpsLibrarySpectrumNode(Node):
@@ -48,10 +50,10 @@ class GnpsLibrarySpectrumNode(Node):
         "inchikey_planar": str,
     }
 
-
     @staticmethod
     def _extract_all_CCMSLIB(x) -> List:
         return re.findall("CCMSLIB[0-9]{11}", x)
+
 
 class IonSourceNode(Node):
     neo4j_label = "ion_source"
@@ -114,13 +116,12 @@ class GnpsLibrarySpectrumToNPClassifierSuperclass(Relationship):
     start_class = GnpsLibrarySpectrumNode
     end_class = NPClassifierSuperclass
 
+
 class GnpsLibrarySpectrumToNPClassifierPathway(Relationship):
     neo4j_label = "IS_A"
     description = "Represents a relationship between gnps_library_spectrum nodes"
     start_class = GnpsLibrarySpectrumNode
     end_class = NPClassifierPathway
-
-
 
 
 class GnpsLibraryToChem(Relationship):

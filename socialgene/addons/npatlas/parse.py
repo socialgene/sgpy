@@ -1,10 +1,30 @@
 from pathlib import Path
+
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
-from socialgene.addons.npatlas.nr import MibigToNPAtlas, NPAtlasNode, NPAtlasPublication, NPAtlasToChem,  NPAtlasToClassyFireAlternativeParents, NPAtlasToClassyFireDirectParent, NPAtlasToClassyFireIntermediateNodes, NPAtlasToClassyFireLowestClass, NPAtlasToGnps, NPAtlasToNpclassifierClass, NPAtlasToNpclassifierPathway, NPAtlasToNpclassifierSuperclass, NPAtlasToPublication, NPAtlasToTaxID
-from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
+from socialgene.addons.npatlas.nr import (
+    MibigToNPAtlas,
+    NPAtlasNode,
+    NPAtlasPublication,
+    NPAtlasToChem,
+    NPAtlasToClassyFireAlternativeParents,
+    NPAtlasToClassyFireDirectParent,
+    NPAtlasToClassyFireIntermediateNodes,
+    NPAtlasToClassyFireLowestClass,
+    NPAtlasToGnps,
+    NPAtlasToNpclassifierClass,
+    NPAtlasToNpclassifierPathway,
+    NPAtlasToNpclassifierSuperclass,
+    NPAtlasToPublication,
+    NPAtlasToTaxID,
+)
+from socialgene.addons.npclassifier.nr import (
+    NPClassifierClass,
+    NPClassifierPathway,
+    NPClassifierSuperclass,
+)
 from socialgene.addons.npmrd.nr import Npmrd
 from socialgene.base.chem import ChemicalCompound
 from socialgene.nextflow.nodes import TAXID
@@ -14,15 +34,12 @@ from socialgene.utils.logging import log
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
 
 
-
 def _download_npatlas(outpath, url=NPATALAS_URL):
     # check if exist and not empty
     if Path(outpath).exists() and Path(outpath).stat().st_size > 0:
         log.debug(f"File already exists at {outpath}")
     else:
         downloader(url, outpath)
-
-
 
 
 class NPAtlasEntry:
@@ -101,7 +118,6 @@ class NPAtlasEntry:
         self._assign_classyfire_alternative_parents()
         self._assign_npclassifier()
 
-
     def _parse_single_entry(self):
         self.uid = self.entry.get("npaid", None)
         self.original_name = self.entry.get("original_name", None)
@@ -115,7 +131,7 @@ class NPAtlasEntry:
         self.inchi = self.entry.get("inchi", None)
         self.m_plus_h = self.entry.get("m_plus_h", None)
         self.m_plus_na = self.entry.get("m_plus_na", None)
-        if self.entry["origin_reference"]['doi']:
+        if self.entry["origin_reference"]["doi"]:
             self.origin_reference = NPAtlasPublication(
                 self.entry.get("origin_reference")
             )
@@ -145,7 +161,7 @@ class NPAtlasEntry:
     def _assign_classyfire_intermediate_nodes(self):
         try:
             self.classyfire_intermediate_nodes = [
-                int(x['chemont_id'].removeprefix("CHEMONTID:"))
+                int(x["chemont_id"].removeprefix("CHEMONTID:"))
                 for x in self.entry["classyfire"]["intermediate_nodes"]
             ]
         except Exception as e:
@@ -154,7 +170,7 @@ class NPAtlasEntry:
     def _assign_classyfire_alternative_parents(self):
         try:
             self.classyfire_alternative_parents = [
-                int(x['chemont_id'].removeprefix("CHEMONTID:"))
+                int(x["chemont_id"].removeprefix("CHEMONTID:"))
                 for x in self.entry["classyfire"]["alternative_parents"]
             ]
         except Exception as e:
@@ -170,7 +186,9 @@ class NPAtlasEntry:
         except Exception as e:
             log.debug(e)
         try:
-            self.npclassifier_superclasses = self.entry["npclassifier"]["superclass_results"]
+            self.npclassifier_superclasses = self.entry["npclassifier"][
+                "superclass_results"
+            ]
         except Exception as e:
             log.debug(e)
         try:
@@ -200,10 +218,12 @@ class NPAtlasEntry:
                     case "gnps":
                         # get first becasue some npaid have multiple gnps ids, eg:
                         # "CCMSLIB00005722620%NCGC00179860-02!6-[(3R,4S,5S,7R)-7-[(2S,3S,5S)-5-ethyl-5-[(2R,5R,6S)-5-ethyl-5-hydroxy-6-methyloxan-2-yl]-3-methyloxolan-2-yl]-4-hydroxy-3,5-dimethyl-6-oxononyl]-2-hydroxy-3-methylbenzoic acid [IIN-based on: CCMSLIB00000848016]%3""
-                        uid= GnpsLibrarySpectrumNode._extract_all_CCMSLIB(
-                                    external_id["external_db_code"]
-                                )[0]
-                        self.gnps_ids.add(GnpsLibrarySpectrumNode(properties={"uid": uid}))
+                        uid = GnpsLibrarySpectrumNode._extract_all_CCMSLIB(
+                            external_id["external_db_code"]
+                        )[0]
+                        self.gnps_ids.add(
+                            GnpsLibrarySpectrumNode(properties={"uid": uid})
+                        )
                     case "npmrd":
                         self.npmrd.add(
                             Npmrd(properties={"uid": external_id["external_db_code"]})
@@ -216,41 +236,42 @@ class NPAtlasEntry:
                         pass
             except Exception as e:
                 log.debug(e)
+
     @property
     def node(self):
-        return NPAtlasNode(properties={
-            "uid": self.uid,
-            "original_name": self.original_name,
-            "mol_formula": self.mol_formula,
-            "mol_weight": self.mol_weight,
-            "exact_mass": self.exact_mass,
-            "inchikey": self.inchikey,
-            "smiles": self.smiles,
-            "cluster_id": self.cluster_id,
-            "node_id": self.node_id,
-            "synonyms": self.synonyms,
-            "inchi": self.inchi,
-            "m_plus_h": self.m_plus_h,
-            "m_plus_na": self.m_plus_na,
-            "genus": self.genus,
-            "species": self.species,
-        }
+        return NPAtlasNode(
+            properties={
+                "uid": self.uid,
+                "original_name": self.original_name,
+                "mol_formula": self.mol_formula,
+                "mol_weight": self.mol_weight,
+                "exact_mass": self.exact_mass,
+                "inchikey": self.inchikey,
+                "smiles": self.smiles,
+                "cluster_id": self.cluster_id,
+                "node_id": self.node_id,
+                "synonyms": self.synonyms,
+                "inchi": self.inchi,
+                "m_plus_h": self.m_plus_h,
+                "m_plus_na": self.m_plus_na,
+                "genus": self.genus,
+                "species": self.species,
+            }
         )
-
 
     def link_publication(self) -> set:
         if self.origin_reference is None:
             return set()
-        return {NPAtlasToPublication(
-            start=self.node, end=self.origin_reference
-        )}
+        return {NPAtlasToPublication(start=self.node, end=self.origin_reference)}
 
     def link_ncbi_taxid(self) -> set:
         if self.ncbi_taxid is None:
             return set()
-        return {NPAtlasToTaxID(
+        return {
+            NPAtlasToTaxID(
                 start=TAXID(properties={"uid": str(self.ncbi_taxid)}), end=self.node
-            )}
+            )
+        }
 
     def link_gnps(self) -> set:
         if len(self.gnps_ids) == 0:
@@ -265,50 +286,87 @@ class NPAtlasEntry:
     def link_classyfire(self) -> set:
         if self.lowest_classyfire is None:
             return set()
-        return {NPAtlasToClassyFireLowestClass(start=self.node, end=ClassyFireNode(properties={"uid": int(self.lowest_classyfire)}))}
+        return {
+            NPAtlasToClassyFireLowestClass(
+                start=self.node,
+                end=ClassyFireNode(properties={"uid": int(self.lowest_classyfire)}),
+            )
+        }
 
     def link_classyfire_direct_parent(self) -> set:
         if self.classyfire_direct_parent is None:
             return set()
-        return {NPAtlasToClassyFireDirectParent(start=self.node, end=ClassyFireNode(properties={"uid": int(self.classyfire_direct_parent)}))}
+        return {
+            NPAtlasToClassyFireDirectParent(
+                start=self.node,
+                end=ClassyFireNode(
+                    properties={"uid": int(self.classyfire_direct_parent)}
+                ),
+            )
+        }
 
     def link_classyfire_intermediate_nodes(self) -> set:
         if self.classyfire_intermediate_nodes is None:
             return set()
-        return {NPAtlasToClassyFireIntermediateNodes(start=self.node, end=ClassyFireNode(properties={"uid": int(x)})) for x in self.classyfire_intermediate_nodes}
+        return {
+            NPAtlasToClassyFireIntermediateNodes(
+                start=self.node, end=ClassyFireNode(properties={"uid": int(x)})
+            )
+            for x in self.classyfire_intermediate_nodes
+        }
 
     def link_classyfire_alternative_parents(self) -> set:
         if self.classyfire_alternative_parents is None:
             return set()
-        return {NPAtlasToClassyFireAlternativeParents(start=self.node, end=ClassyFireNode(properties={"uid": int(x)})) for x in self.classyfire_alternative_parents}
+        return {
+            NPAtlasToClassyFireAlternativeParents(
+                start=self.node, end=ClassyFireNode(properties={"uid": int(x)})
+            )
+            for x in self.classyfire_alternative_parents
+        }
 
     def link_npclassifier_classes(self) -> set:
         if self.npclassifier_classes is None:
             return set()
-        return {NPAtlasToNpclassifierClass(start=self.node, end=NPClassifierClass(properties={"uid": x})) for x in self.npclassifier_classes}
+        return {
+            NPAtlasToNpclassifierClass(
+                start=self.node, end=NPClassifierClass(properties={"uid": x})
+            )
+            for x in self.npclassifier_classes
+        }
 
     def link_npclassifier_pathways(self) -> set:
         if self.npclassifier_pathways is None:
             return set()
-        return {NPAtlasToNpclassifierPathway(start=self.node, end=NPClassifierPathway(properties={"uid": x})) for x in self.npclassifier_pathways}
+        return {
+            NPAtlasToNpclassifierPathway(
+                start=self.node, end=NPClassifierPathway(properties={"uid": x})
+            )
+            for x in self.npclassifier_pathways
+        }
 
     def link_npclassifier_superclasses(self) -> set:
         if self.npclassifier_superclasses is None:
             return set()
-        return {NPAtlasToNpclassifierSuperclass(start=self.node, end=NPClassifierSuperclass(properties={"uid": x})) for x in self.npclassifier_superclasses}
+        return {
+            NPAtlasToNpclassifierSuperclass(
+                start=self.node, end=NPClassifierSuperclass(properties={"uid": x})
+            )
+            for x in self.npclassifier_superclasses
+        }
 
     def link_chem(self) -> set:
         try:
-            chem=None
+            chem = None
             if self.inchi:
-                chem=ChemicalCompound(self.inchi)
+                chem = ChemicalCompound(self.inchi)
             elif self.smiles:
-                chem=ChemicalCompound(self.smiles)
+                chem = ChemicalCompound(self.smiles)
             if chem:
-                a=ChemicalCompoundNode()
+                a = ChemicalCompoundNode()
                 a.fill_from_dict(chem.base_properties | chem.hash_dict)
                 return {NPAtlasToChem(self.node, a)}
-        except:
+        except Exception:
             return set()
 
     def get_links(self):
@@ -326,7 +384,3 @@ class NPAtlasEntry:
             NPAtlasToNpclassifierSuperclass: self.link_npclassifier_superclasses(),
             NPAtlasToChem: self.link_chem(),
         }
-
-
-
-

@@ -1,14 +1,12 @@
-from rdkit import Chem, DataStructs
+from rdkit import Chem, DataStructs, RDLogger
 from rdkit.Chem import AllChem, Descriptors, rdMolHash
-from rdkit import RDLogger
-from rdkit import DataStructs
-from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.utils.logging import log
 
 # Turn off C++ warnings when in info mode
 if log.level != 20:
-    RDLogger.DisableLog('rdApp.*')
+    RDLogger.DisableLog("rdApp.*")
 
 
 class ChemicalFragments:
@@ -47,7 +45,7 @@ class ChemicalCompound:
         if isinstance(input, Chem.rdchem.Mol):
             self.mol = input
         elif isinstance(input, str):
-            method_list = [Chem.MolFromInchi,Chem.MolFromSmiles, Chem.MolFromMolFile]
+            method_list = [Chem.MolFromInchi, Chem.MolFromSmiles, Chem.MolFromMolFile]
             for method in method_list:
                 log.debug(f"Trying to parse compound with {method.__name__}")
                 try:
@@ -110,11 +108,13 @@ class ChemicalCompound:
         fr = ChemicalFragments()
         fr.add_mol(self.mol)
         return fr.to_dict()
+
     @property
     def node(self):
         temp = ChemicalCompoundNode()
         temp.fill_from_dict(self.base_properties | self.hash_dict)
         return temp
+
 
 class ChemicalCollection:
     def __init__(self) -> None:

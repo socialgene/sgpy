@@ -102,6 +102,7 @@ def taxonomy_uid():
             """
     )
 
+
 @mess
 def gnps_library_uid():
     _add_to_neo4j(
@@ -111,6 +112,7 @@ def gnps_library_uid():
             ON (n.uid);
             """
     )
+
 
 @mess
 def npatlas_uid():

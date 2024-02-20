@@ -12,11 +12,11 @@ class Neo4jElement(ABC):
     neo4j_label = None
     description = None
     property_specification = {}
-    header=None
-    header_filename=None
-    target_subdirectory=None
-    target_extension=None
-    required_properties=None
+    header = None
+    header_filename = None
+    target_subdirectory = None
+    target_extension = None
+    required_properties = None
 
     def __init__(
         self,
@@ -75,14 +75,18 @@ class Neo4jElement(ABC):
     def _check_required_properties(
         self,
     ):
-        missing = [i for i in self.required_properties if not i in self.properties]
+        missing = [i for i in self.required_properties if i not in self.properties]
         if missing:
-            raise ValueError(f"{self.__class__} was missing required properties: {missing}")
+            raise ValueError(
+                f"{self.__class__} was missing required properties: {missing}"
+            )
 
     def _check_no_extra_properties(self):
-        extra = [i for i in self.properties if not i in self.property_specification]
+        extra = [i for i in self.properties if i not in self.property_specification]
         if extra:
-            raise ValueError(f"{self.__class__} contained unsupported extra properties: {extra}")
+            raise ValueError(
+                f"{self.__class__} contained unsupported extra properties: {extra}"
+            )
 
     def _check_property_types(self):
         bad = {
@@ -91,7 +95,9 @@ class Neo4jElement(ABC):
             if not isinstance(v, self.property_specification.get(k))
         }
         if bad:
-            raise ValueError(f"{self.__class__} contained properties with incorrect types: {bad}")
+            raise ValueError(
+                f"{self.__class__} contained properties with incorrect types: {bad}"
+            )
         self.properties = {
             k: v
             for k, v in self.properties.items()
@@ -104,7 +110,8 @@ class Neo4jElement(ABC):
         # only keep properties that are in the property specification and remove nulls
         self.properties = {
             k: v
-            for k, v in self.properties.items() if k in self.property_specification and v is not None
+            for k, v in self.properties.items()
+            if k in self.property_specification and v is not None
         }
         self._check_required_properties()
         self._check_no_extra_properties()
@@ -112,18 +119,25 @@ class Neo4jElement(ABC):
 
     def fill_from_dict(self, d: dict):
         """Fill the properties of the object from a dictionary"""
-        for k,v in self.property_specification.items():
+        for k, v in self.property_specification.items():
             try:
                 if k not in d:
-                    log.debug(f"Failed to fill add property {k} from dictionary: not found for {self.__class__}")
+                    log.debug(
+                        f"Failed to fill add property {k} from dictionary: not found for {self.__class__}"
+                    )
                     continue
                 if d.get(k) is None:
-                    log.debug(f"Failed to fill add property {k} from dictionary: None for {self.__class__}")
+                    log.debug(
+                        f"Failed to fill add property {k} from dictionary: None for {self.__class__}"
+                    )
                     continue
 
                 self.properties[k] = v(d.get(k))
             except Exception as e:
-                log.debug(f"Failed to fill add property {k} from dictionary: {e} for {self.__class__}")
+                log.debug(
+                    f"Failed to fill add property {k} from dictionary: {e} for {self.__class__}"
+                )
+
 
 class Node(Neo4jElement):
     """Represents a single Node"""
@@ -182,11 +196,12 @@ class Node(Neo4jElement):
 
     def add_constraints_to_neo4j(self):
         """Add constraints to Neo4j"""
-        if not hasattr(self, 'constraints_unique') or not self.constraints_unique:
+        if not hasattr(self, "constraints_unique") or not self.constraints_unique:
             log.info(f"No unique constraints to add for {self.__str__()} nodes")
             return
         with GraphDriver() as db:
-            res=db.run(f"""
+            res = db.run(
+                f"""
                 CREATE CONSTRAINT python_added_index_{self.neo4j_label} IF NOT EXISTS
                 FOR (n:{self.neo4j_label})
                 REQUIRE ({", ".join([f"n.{i}" for i in self.constraints_unique])}) IS UNIQUE
@@ -196,14 +211,13 @@ class Node(Neo4jElement):
                 # The code is checking if the variable `res` has a property called `counters` and if
                 # it does, it will execute the code block inside the `if` statement.
                 if res.counters:
-                    log.info(f"Created {res.counters.constraints_added} constraints for {self.__str__()} nodes")
-            except Exception as e:
+                    log.info(
+                        f"Created {res.counters.constraints_added} constraints for {self.__str__()} nodes"
+                    )
+            except Exception:
                 pass
 
-
-    def add_to_neo4j(
-        self,create=False
-    ):
+    def add_to_neo4j(self, create=False):
         """Add a single node to Neo4j"""
 
         merge_str = self._neo4j_repr_params(var="n", map_key="required_props")
@@ -223,8 +237,10 @@ class Node(Neo4jElement):
                     paramsdict=paramsdict,
                 ).consume()
                 try:
-                    log.info(f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties")
-                except Exception as e:
+                    log.info(
+                        f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties"
+                    )
+                except Exception:
                     pass
         else:
             with GraphDriver() as db:
@@ -238,8 +254,10 @@ class Node(Neo4jElement):
                     paramsdict=paramsdict,
                 ).consume()
                 try:
-                    log.info(f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties")
-                except Exception as e:
+                    log.info(
+                        f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties"
+                    )
+                except Exception:
                     pass
 
     @staticmethod
@@ -252,7 +270,7 @@ class Node(Neo4jElement):
                 f"All nodes in list_of_nodes must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_nodes])}"
             )
         single = list_of_nodes[0]
-        count_res ={'nodes_created': 0, 'properties_set': 0}
+        count_res = {"nodes_created": 0, "properties_set": 0}
         merge_str = single._neo4j_repr_params(var="n", map_key="required_props")
         for paramsdictlist in batched(
             (
@@ -279,7 +297,7 @@ class Node(Neo4jElement):
                 try:
                     count_res["nodes_created"] += res.counters.nodes_created
                     count_res["properties_set"] += res.counters.properties_set
-                except Exception as e:
+                except Exception:
                     pass
             else:
                 with GraphDriver() as db:
@@ -296,9 +314,11 @@ class Node(Neo4jElement):
                 try:
                     count_res["nodes_created"] += res.counters.nodes_created
                     count_res["properties_set"] += res.counters.properties_set
-                except Exception as e:
+                except Exception:
                     pass
-        log.info(f"Created {count_res['nodes_created']} {single.__str__()} nodes, set {count_res['properties_set']} properties")
+        log.info(
+            f"Created {count_res['nodes_created']} {single.__str__()} nodes, set {count_res['properties_set']} properties"
+        )
 
 
 class Relationship(Neo4jElement):
@@ -314,6 +334,7 @@ class Relationship(Neo4jElement):
             raise ValueError(
                 f"Relationship class '{self.__class__.__name__}' end node must be of type {self.end_class.__name__}, found {self.end.__class__.__name__}"
             )
+
     def __str__(self):
         return f"(:{self.start.neo4j_label})-[:{self.neo4j_label}]->(:{self.end.neo4j_label})"
 

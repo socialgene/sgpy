@@ -1,12 +1,4 @@
-import re
-from typing import List
-
-from rdkit import Chem
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
-
-from socialgene.base.chem import ChemicalCompound
-from socialgene.utils.logging import log
-
 
 
 class GNPSLibrarySpectrum:
@@ -40,7 +32,9 @@ class GNPSLibrarySpectrum:
         self.properties["libmz"] = float(specnet["libmz"])
         self.properties["specmz"] = float(specnet["specmz"])
         self.properties["speccharge"] = int(specnet["speccharge"])
-        self.properties["moleculeexplorerdatasets"] = str(specnet["moleculeexplorerdatasets"])
+        self.properties["moleculeexplorerdatasets"] = str(
+            specnet["moleculeexplorerdatasets"]
+        )
         self.properties["moleculeexplorerfiles"] = str(specnet["moleculeexplorerfiles"])
         self.properties["molecular_formula"] = str(specnet["molecular_formula"])
         self.properties["inchikey"] = str(specnet["inchikey"])

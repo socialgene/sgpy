@@ -1,4 +1,4 @@
-from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.neo4j.neo4j_element import Node
 
 
 class NPClassifierClass(Node):
@@ -26,5 +26,3 @@ class NPClassifierSuperclass(Node):
         "uid": str,
     }
     constraints_unique = ["uid"]
-
-

@@ -1,10 +1,6 @@
-from uuid import uuid4
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
-
-
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.nextflow.nodes import ASSEMBLY
-from socialgene.utils.logging import log
 
 
 class ClusterNode(Node):
@@ -41,7 +37,6 @@ class ClusterNode(Node):
     constraints_unique = ["cluster_index", "workflow_uuid"]
 
 
-
 class SpectrumNode(Node):
     neo4j_label = "spectrum"
     description = "Represents a GNPS molecular networking spectrum"
@@ -63,8 +58,6 @@ class LibraryHitRel(Relationship):
     end_class = GnpsLibrarySpectrumNode
 
 
-
-
 class MolecularNetwork(Relationship):
     neo4j_label = "MOLECULAR_NETWORK"
     description = "Connects the GNPS molecular networks"
@@ -78,7 +71,7 @@ class MolecularNetwork(Relationship):
         "componentindex": int,
         "edgeannotation": str,
     }
-    required_properties=[]
+    required_properties = []
 
 
 class ClusterToAssembly(Relationship):
@@ -86,8 +79,5 @@ class ClusterToAssembly(Relationship):
     description = "Connects a GNPS cluster to a GNPS assembly"
     start_class = ClusterNode
     end_class = ASSEMBLY
-    property_specification = {
-    }
+    property_specification = {}
     required_properties = []
-
-

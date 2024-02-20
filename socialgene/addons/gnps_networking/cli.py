@@ -1,4 +1,3 @@
-
 import argparse
 
 from socialgene.addons.gnps_networking.parse import GNPS_SNETS
@@ -40,7 +39,9 @@ def main():
     assembly_check = gnps._check_db_for_assemblies()
     if not assembly_check:
         if not args.force:
-            log.warning("Not all assemblies in the GNPS network were found in the database or vice-versa.\nTo continue anyways, use the --force flag.")
+            log.warning(
+                "Not all assemblies in the GNPS network were found in the database or vice-versa.\nTo continue anyways, use the --force flag."
+            )
             return
     gnps._library_hit_nodes()
     gnps.add_library_hit_nodes_to_neo4j()
@@ -52,4 +53,6 @@ def main():
     gnps.link_assembly_to_cluster(create=False)
     # gnps.add_input_spectra_to_gnps_clusters()
     # gnps.add_links_between_gnps_clusters()
-    log.info("GNPS molecular network has been integrated into the SocialGene Neo4j database")
+    log.info(
+        "GNPS molecular network has been integrated into the SocialGene Neo4j database"
+    )

@@ -74,7 +74,9 @@ class GraphSchema:
         rel_dict = dict(sorted(rel_dict.items()))
         table = Table(title="Relationships", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
-        table.add_column("Defined in", justify="left", style="cyan", no_wrap=True, ratio=1)
+        table.add_column(
+            "Defined in", justify="left", style="cyan", no_wrap=True, ratio=1
+        )
         table.add_column("Relationship", style="magenta", ratio=1)
         table.add_column("NF results subdirectory", style="magenta", ratio=1)
         table.add_column("Neo4j header file", style="magenta", ratio=1)

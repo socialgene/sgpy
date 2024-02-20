@@ -40,34 +40,34 @@ class PARAMETERS(Node):
         "py_version",
         "genome_download_command",
     ]
-    property_specification={
-                "uid": str,
-                "SG_LOC_NEO4J": str,
-                "SG_LOC_HMMS": str,
-                "NEO4J_dbms_memory_pagecache_size": str,
-                "NEO4J_dbms_memory_heap_initial__size": str,
-                "NEO4J_dbms_memory_heap_max__size": str,
-                "HMMSEARCH_IEVALUE": str,
-                "HMMSEARCH_BACKGROUND": str,
-                "HMMSEARCH_BIASFILTER": str,
-                "HMMSEARCH_NULL2": str,
-                "HMMSEARCH_SEED": int,
-                "HMMSEARCH_Z": int,
-                "HMMSEARCH_DOMZ": int,
-                "HMMSEARCH_F1": float,
-                "HMMSEARCH_F2": float,
-                "HMMSEARCH_F3": float,
-                "HMMSEARCH_E": float,
-                "HMMSEARCH_DOME": float,
-                "HMMSEARCH_INCE": float,
-                "HMMSEARCH_INCDOME": float,
-                "HMMSEARCH_BITCUTOFFS": str,
-                "platform": str,
-                "architecture": str,
-                "py_executable": str,
-                "py_version": str,
-                "genome_download_command": str,
-            }
+    property_specification = {
+        "uid": str,
+        "SG_LOC_NEO4J": str,
+        "SG_LOC_HMMS": str,
+        "NEO4J_dbms_memory_pagecache_size": str,
+        "NEO4J_dbms_memory_heap_initial__size": str,
+        "NEO4J_dbms_memory_heap_max__size": str,
+        "HMMSEARCH_IEVALUE": str,
+        "HMMSEARCH_BACKGROUND": str,
+        "HMMSEARCH_BIASFILTER": str,
+        "HMMSEARCH_NULL2": str,
+        "HMMSEARCH_SEED": int,
+        "HMMSEARCH_Z": int,
+        "HMMSEARCH_DOMZ": int,
+        "HMMSEARCH_F1": float,
+        "HMMSEARCH_F2": float,
+        "HMMSEARCH_F3": float,
+        "HMMSEARCH_E": float,
+        "HMMSEARCH_DOME": float,
+        "HMMSEARCH_INCE": float,
+        "HMMSEARCH_INCDOME": float,
+        "HMMSEARCH_BITCUTOFFS": str,
+        "platform": str,
+        "architecture": str,
+        "py_executable": str,
+        "py_version": str,
+        "genome_download_command": str,
+    }
 
 
 class ASSEMBLY(Node):
@@ -80,10 +80,10 @@ class ASSEMBLY(Node):
     target_extension = "assemblies"
     header = ["uid:ID(assembly)"] + sorted(LocusAssemblyMetadata.__slots__)
     constraints_unique = ["uid"]
-    property_specification = {"uid": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
+    property_specification = {"uid": str} | {
+        k: str for k in LocusAssemblyMetadata.__slots__
+    }
     required_properties = ["uid"]
-
-
 
 
 class NUCLEOTIDE(Node):
@@ -99,8 +99,11 @@ class NUCLEOTIDE(Node):
     header = ["uid:ID(nucleotide)"] + ["external_id"] + LocusAssemblyMetadata.__slots__
     constraints_unique = ["uid"]
     nonunique_index = ["external_id"]
-    property_specification = {"uid": str, "external_id": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
+    property_specification = {"uid": str, "external_id": str} | {
+        k: str for k in LocusAssemblyMetadata.__slots__
+    }
     required_properties = ["uid", "external_id"]
+
 
 class PROTEIN(Node):
     """Represents a non-redundant protein"""
@@ -123,6 +126,7 @@ class PROTEIN(Node):
 
     property_specification = {"uid": str, "crc64": str, "sequence": str}
 
+
 class GOTERM(Node):
     """Represent a GO term"""
 
@@ -134,6 +138,8 @@ class GOTERM(Node):
     header = ["uid:ID(goterm)", "name", "namespace", "def"]
     property_specification = {"uid": str, "name": str, "namespace": str}
     constraints_unique = ["uid"]
+
+
 class TIGRFAM_ROLE(Node):
     """Represents a TIGRFAM role"""
 
@@ -145,6 +151,8 @@ class TIGRFAM_ROLE(Node):
     header = ["uid:ID(tigrfam_role)"]
     property_specification = {"uid": str}
     constraints_unique = ["uid"]
+
+
 class TIGRFAM_MAINROLE(Node):
     """Represents a TIGRFAM main role"""
 
@@ -156,6 +164,7 @@ class TIGRFAM_MAINROLE(Node):
     header = ["uid:ID(tigrfam_mainrole)"]
     property_specification = {"uid": str}
     constraints_unique = ["uid"]
+
 
 class TIGRFAM_SUBROLE(Node):
     """Represents a TIGRFAM sub role"""
@@ -169,6 +178,7 @@ class TIGRFAM_SUBROLE(Node):
     property_specification = {"uid": str}
     constraints_unique = ["uid"]
 
+
 class TAXID(Node):
     """Represents a single taxon within NCBI taxonomy"""
 
@@ -181,6 +191,7 @@ class TAXID(Node):
     constraints_unique = ["uid"]
     property_specification = {"uid": str, "name": str, "rank": str}
     required_properties = ["uid"]
+
 
 class HMM_SOURCE(Node):
     """Represents the source of an HMM model (e.g. PFAM)"""
@@ -229,6 +240,7 @@ class HMM_SOURCE(Node):
         "nc": str,
     }
     constraints_unique = ["uid"]
+
 
 class HMM(Node):
     """Represents a single non-redundant HMM model"""

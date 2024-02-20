@@ -1,12 +1,13 @@
 import argparse
+import concurrent.futures
+import json
+import tempfile
 from collections import defaultdict
 from pathlib import Path
-import tempfile
-from socialgene.addons.npatlas.parse import NPAtlasEntry,NPATALAS_URL, _download_npatlas
-import json
-from rich.progress import Progress
-from rich.progress import Progress, BarColumn, TimeElapsedColumn,TextColumn
-import concurrent.futures
+
+from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+
+from socialgene.addons.npatlas.parse import NPAtlasEntry, _download_npatlas
 from socialgene.utils.logging import log
 
 
@@ -38,7 +39,7 @@ def main():
         jpath = Path(input)
         if jpath.exists():
             with open(jpath) as f:
-                    entries = json.load(f)
+                entries = json.load(f)
         else:
             raise FileNotFoundError(f"Path {input} does not exist")
 
@@ -51,26 +52,28 @@ def main():
         return z
 
     with Progress(
-            TextColumn("{task.completed}"),
-            "[progress.description]{task.description}",
-            BarColumn(),
-            "[progress.percentage]{task.percentage:>3.0f}%",
-            TimeElapsedColumn(),
-            ) as pg:
+        TextColumn("{task.completed}"),
+        "[progress.description]{task.description}",
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.0f}%",
+        TimeElapsedColumn(),
+    ) as pg:
         task = pg.add_task("[cyan]Processing NPAtlas entries...", total=33372)
         # This was multithreaded whcih worked well on the first write but after chem data calculation
         # was added, it may be just as slow as single
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            for entry in concurrent.futures.as_completed([executor.submit(process_entry, entry) for entry in entries]):
+            for entry in concurrent.futures.as_completed(
+                [executor.submit(process_entry, entry) for entry in entries]
+            ):
                 z = entry.result()
                 nodes.add(z.node)
-                for k,v in z.get_links().items():
+                for k, v in z.get_links().items():
                     rels[k].update(v)
                 pg.update(task, advance=1)
     log.info("Creating/Merging npatlas nodes in neo4")
     list(nodes)[0].add_multiple_to_neo4j(list(nodes), create=False)
     relnodes = defaultdict(set)
-    for k,v in rels.items():
+    for k, v in rels.items():
         for i in v:
             if i.start.__class__.__name__ != "NPAtlasNode":
                 relnodes[i.start.__class__].add(i.start)
@@ -79,14 +82,13 @@ def main():
 
     log.info("Creating/Merging nodes linked to npatlas entries in neo4j")
     # make sure nodes that npatlas entries are linked to exist in the database
-    for k,v in relnodes.items():
+    for k, v in relnodes.items():
         list(v)[0].add_multiple_to_neo4j(list(v), create=False)
     log.info("Linking npatlas entries and related nodes in neo4j")
-    for k,v in rels.items():
+    for k, v in rels.items():
         k.add_multiple_to_neo4j(list(v), create=False)
 
 
 if __name__ == "__main__":
 
     main()
-

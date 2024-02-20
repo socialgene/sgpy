@@ -5,13 +5,27 @@ from uuid import uuid4
 
 import numpy as np
 import pandas as pd
-from socialgene.addons.chemistry.nr import ChemicalCompoundNode
-from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode, GnpsLibrarySpectrumToNPClassifierClass, GnpsLibrarySpectrumToNPClassifierPathway, GnpsLibrarySpectrumToNPClassifierSuperclass, GnpsLibraryToChem
-from socialgene.addons.gnps_library.parse import GNPSLibrarySpectrum
-from socialgene.addons.gnps_networking.nr import ClusterNode, ClusterToAssembly, LibraryHitRel, MolecularNetwork
-from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
-from socialgene.base.chem import ChemicalCompound
 
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
+from socialgene.addons.gnps_library.nr import (
+    GnpsLibrarySpectrumNode,
+    GnpsLibrarySpectrumToNPClassifierClass,
+    GnpsLibrarySpectrumToNPClassifierPathway,
+    GnpsLibrarySpectrumToNPClassifierSuperclass,
+    GnpsLibraryToChem,
+)
+from socialgene.addons.gnps_networking.nr import (
+    ClusterNode,
+    ClusterToAssembly,
+    LibraryHitRel,
+    MolecularNetwork,
+)
+from socialgene.addons.npclassifier.nr import (
+    NPClassifierClass,
+    NPClassifierPathway,
+    NPClassifierSuperclass,
+)
+from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.nextflow.nodes import ASSEMBLY
 from socialgene.utils.logging import log
@@ -37,8 +51,6 @@ def capture_assembly_id(s, regex):
         return s
 
 
-
-
 class GNPS_SNETS:
     """Parses GNPS molecular network results and adds them to a Neo4j database"""
 
@@ -59,7 +71,7 @@ class GNPS_SNETS:
         self.selfloop_df = pd.DataFrame()
         self.clustersummary_df = pd.DataFrame()
         self.workflow_uuid = str(uuid4())
-        self.library_nodes=set()
+        self.library_nodes = set()
         self._get_gnps_paths()
         self._get_gnps_params()
         self._file_mapping()
@@ -215,7 +227,8 @@ class GNPS_SNETS:
             )
         else:
             log.warning(
-                f"No assemblies from GNPS results matched to assemblies in the db (possibly a pattern issue? Default is assembly name first, followed by an underscore)"            )
+                "No assemblies from GNPS results matched to assemblies in the db (possibly a pattern issue? Default is assembly name first, followed by an underscore)"
+            )
         if len(assemblies) != len(set(results)):
             return False
 
@@ -225,30 +238,45 @@ class GNPS_SNETS:
             try:
                 a = GnpsLibrarySpectrumNode()
                 a.fill_from_dict(i)
-                a.properties['uid'] = str(i["spectrumid"])
+                a.properties["uid"] = str(i["spectrumid"])
                 self.library_nodes.add(a)
             except Exception as e:
                 log.debug(f"Error creating library hit node for {i['spectrumid']}: {e}")
 
     def add_library_hit_nodes_to_neo4j(self, create=False):
         """Adds GNPS library hit nodes to the Neo4j database"""
-        list(self.library_nodes)[0].add_multiple_to_neo4j(list(self.library_nodes), create=create)
-
+        list(self.library_nodes)[0].add_multiple_to_neo4j(
+            list(self.library_nodes), create=create
+        )
 
     def link_npclassifiers(self):
         """Classifies GNPS library hits by linking them to NPClassifier nodes"""
-        to_loop = [("npclassifier_superclass", NPClassifierSuperclass, GnpsLibrarySpectrumToNPClassifierSuperclass),
-        ("npclassifier_class", NPClassifierClass, GnpsLibrarySpectrumToNPClassifierClass),
-        ("npclassifier_pathway", NPClassifierPathway, GnpsLibrarySpectrumToNPClassifierPathway)]
-        for name,nodeclass,relclass in to_loop:
+        to_loop = [
+            (
+                "npclassifier_superclass",
+                NPClassifierSuperclass,
+                GnpsLibrarySpectrumToNPClassifierSuperclass,
+            ),
+            (
+                "npclassifier_class",
+                NPClassifierClass,
+                GnpsLibrarySpectrumToNPClassifierClass,
+            ),
+            (
+                "npclassifier_pathway",
+                NPClassifierPathway,
+                GnpsLibrarySpectrumToNPClassifierPathway,
+            ),
+        ]
+        for name, nodeclass, relclass in to_loop:
             df = self.specnets_df[~self.specnets_df[name].isnull()]
-            df = df[['spectrumid', name]]
-            npc_set=set()
-            gnp_set=set()
-            rel_set=set()
+            df = df[["spectrumid", name]]
+            npc_set = set()
+            gnp_set = set()
+            rel_set = set()
             for i in df.to_dict("records"):
-                npc = nodeclass(properties={'uid': i[name]})
-                gnp = GnpsLibrarySpectrumNode(properties={'uid': i['spectrumid']})
+                npc = nodeclass(properties={"uid": i[name]})
+                gnp = GnpsLibrarySpectrumNode(properties={"uid": i["spectrumid"]})
                 rel = relclass(start=gnp, end=npc)
                 # accumulate unique nodes and relationships to bulk add
                 npc_set.add(npc)
@@ -261,24 +289,29 @@ class GNPS_SNETS:
                 i[0].add_multiple_to_neo4j(i, create=False)
 
     def create_cluster_nodes(self, create=False):
-        clusternodes=set()
+        clusternodes = set()
         for i in self.clustersummary_df.to_dict("records"):
-            a=ClusterNode()
-            d=i | {"workflow_uuid": self.workflow_uuid}
+            a = ClusterNode()
+            d = i | {"workflow_uuid": self.workflow_uuid}
             a.fill_from_dict(d)
             clusternodes.add(a)
         clusternodes = list(clusternodes)
         clusternodes[0].add_multiple_to_neo4j(clusternodes, create=create)
 
     def link_cluster_to_library(self):
-        df = self.clustersummary_df[['spectrumid','cluster_index']]
-        df = df[~df['spectrumid'].isnull()]
-        s_set=set()
-        e_set=set()
-        r_set=set()
+        df = self.clustersummary_df[["spectrumid", "cluster_index"]]
+        df = df[~df["spectrumid"].isnull()]
+        s_set = set()
+        e_set = set()
+        r_set = set()
         for i in df.to_dict("records"):
-            s = ClusterNode(properties={'cluster_index': i['cluster_index'], 'workflow_uuid': self.workflow_uuid})
-            e = GnpsLibrarySpectrumNode(properties={'uid': i['spectrumid']})
+            s = ClusterNode(
+                properties={
+                    "cluster_index": i["cluster_index"],
+                    "workflow_uuid": self.workflow_uuid,
+                }
+            )
+            e = GnpsLibrarySpectrumNode(properties={"uid": i["spectrumid"]})
             r = LibraryHitRel(start=s, end=e)
             s_set.add(s)
             e_set.add(e)
@@ -289,17 +322,26 @@ class GNPS_SNETS:
         for i in [s_set, e_set, r_set]:
             i[0].add_multiple_to_neo4j(i, create=False)
 
-
     def link_network(self, create=False):
-        s_set=set()
-        e_set=set()
-        r_set=set()
+        s_set = set()
+        e_set = set()
+        r_set = set()
         for i in self.selfloop_df.to_dict("records"):
-            s = ClusterNode(properties={'cluster_index': i['clusterid1'], 'workflow_uuid': self.workflow_uuid})
-            e = ClusterNode(properties={'cluster_index': i['clusterid2'], 'workflow_uuid': self.workflow_uuid})
+            s = ClusterNode(
+                properties={
+                    "cluster_index": i["clusterid1"],
+                    "workflow_uuid": self.workflow_uuid,
+                }
+            )
+            e = ClusterNode(
+                properties={
+                    "cluster_index": i["clusterid2"],
+                    "workflow_uuid": self.workflow_uuid,
+                }
+            )
             r = MolecularNetwork(start=s, end=e)
-            if i['edgeannotation'] == " ":
-                i['edgeannotation'] = None
+            if i["edgeannotation"] == " ":
+                i["edgeannotation"] = None
             r.fill_from_dict(i)
             s_set.add(s)
             e_set.add(e)
@@ -312,16 +354,20 @@ class GNPS_SNETS:
             i[0].add_multiple_to_neo4j(i, create=False)
         r_set[0].add_multiple_to_neo4j(r_set, create=create)
 
-
     def link_assembly_to_cluster(self, create=False):
-        df = self.clusterinfo_df[['assembly','clusteridx']]
-        df = df[~df['assembly'].isnull()]
-        s_set=set()
-        e_set=set()
-        r_set=set()
+        df = self.clusterinfo_df[["assembly", "clusteridx"]]
+        df = df[~df["assembly"].isnull()]
+        s_set = set()
+        e_set = set()
+        r_set = set()
         for i in df.to_dict("records"):
-            s = ClusterNode(properties={'cluster_index': i['clusteridx'], 'workflow_uuid': self.workflow_uuid})
-            e = ASSEMBLY(properties={'uid': i['assembly']})
+            s = ClusterNode(
+                properties={
+                    "cluster_index": i["clusteridx"],
+                    "workflow_uuid": self.workflow_uuid,
+                }
+            )
+            e = ASSEMBLY(properties={"uid": i["assembly"]})
             r = ClusterToAssembly(start=s, end=e)
             s_set.add(s)
             e_set.add(e)
@@ -334,28 +380,27 @@ class GNPS_SNETS:
             i[0].add_multiple_to_neo4j(i, create=False)
         r_set[0].add_multiple_to_neo4j(r_set, create=create)
 
-
     def link_library_to_chem(self):
         all_chem_nodes = set()
         all_rels = set()
         for i in self.library_nodes:
-            chemstring=None
-            if "inchi" in i.properties and i.properties['inchi']:
-                chemstring = i.properties['inchi']
-            elif "smiles" in i.properties and i.properties['smiles']:
-                chemstring = i.properties['smiles']
+            chemstring = None
+            if "inchi" in i.properties and i.properties["inchi"]:
+                chemstring = i.properties["inchi"]
+            elif "smiles" in i.properties and i.properties["smiles"]:
+                chemstring = i.properties["smiles"]
             if chemstring:
                 try:
-                    cmpd=ChemicalCompound(chemstring)
-                    a=ChemicalCompoundNode()
+                    cmpd = ChemicalCompound(chemstring)
+                    a = ChemicalCompoundNode()
                     a.fill_from_dict(cmpd.base_properties | cmpd.hash_dict)
                     all_chem_nodes.add(a)
                     all_rels.add(GnpsLibraryToChem(start=i, end=a))
                 except Exception as e:
-                    log.debug(f"Error creating chemical compound node for {i.properties['uid']}: {e}")
+                    log.debug(
+                        f"Error creating chemical compound node for {i.properties['uid']}: {e}"
+                    )
         all_chem_nodes = list(all_chem_nodes)
         all_rels = list(all_rels)
         all_chem_nodes[0].add_multiple_to_neo4j(all_chem_nodes, create=False)
         all_rels[0].add_multiple_to_neo4j(all_rels, create=False)
-
-

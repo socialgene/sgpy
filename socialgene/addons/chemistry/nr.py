@@ -10,6 +10,7 @@ class ChemicalFragment(Node):
     }
     constraints_unique = ["uid"]
 
+
 class ChemicalCompoundNode(Node):
     neo4j_label = "chemical_compound"
     description = "Represents a chemical compound"
@@ -67,7 +68,6 @@ class ContainsRel(Relationship):
     description = "Connects a chemical compound to a chemical fragment"
     start_class = ChemicalCompoundNode
     end_class = ChemicalFragment
-
 
 
 class ChemicalSimilarity(Relationship):

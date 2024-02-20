@@ -3,15 +3,20 @@
 import re
 from io import BytesIO
 from zipfile import ZipFile
+
 import requests
+
 from socialgene.addons.chebi.nr import ChebiNode
-from socialgene.addons.classyfire.nr import ClassyFireIsA, ClassyFireNode, ClassyFireSynonym
+from socialgene.addons.classyfire.nr import (
+    ClassyFireIsA,
+    ClassyFireNode,
+    ClassyFireSynonym,
+)
 from socialgene.utils.logging import log
 
 OBO_URL = (
     "http://classyfire.wishartlab.com/system/downloads/1_0/chemont/ChemOnt_2_1.obo.zip"
 )
-
 
 
 class ClassyFireEntry:
@@ -58,7 +63,6 @@ class ClassyFireEntry:
             self.is_a = int(self.is_a)
 
 
-
 class ClassyFire:
     def __init__(self) -> None:
         self.entries = self.download()
@@ -84,19 +88,40 @@ class ClassyFire:
         return obs
 
     def add_classyfire_nodes(self, create=False):
-        b=[ClassyFireNode(properties={"uid":i.uid, "name":i.name, "definition":i.definition}) for i in self.entries]
+        b = [
+            ClassyFireNode(
+                properties={"uid": i.uid, "name": i.name, "definition": i.definition}
+            )
+            for i in self.entries
+        ]
         ClassyFireNode.add_multiple_to_neo4j(b, create=create)
 
     def add_classyfire_isa_relationships(self, create=False):
-        b=[ClassyFireIsA(start=ClassyFireNode(properties={"uid":i.uid}),end=ClassyFireNode(properties={"uid":i.is_a}), create=create) for i in self.entries if i.is_a]
+        b = [
+            ClassyFireIsA(
+                start=ClassyFireNode(properties={"uid": i.uid}),
+                end=ClassyFireNode(properties={"uid": i.is_a}),
+                create=create,
+            )
+            for i in self.entries
+            if i.is_a
+        ]
         ClassyFireIsA.add_multiple_to_neo4j(b, create=create)
 
     def add_classyfire_synonym_relationships(self, create=False):
-        zz=[]
-        chebi_ids=set()
+        zz = []
+        chebi_ids = set()
         for i in self.entries:
             for ii in i.chebi:
                 chebi_ids.add(ii)
-                zz.append(ClassyFireSynonym(start=ClassyFireNode(properties={"uid":i.uid}),end=ChebiNode(properties={"uid":int(ii)}), create=create))
-        ChebiNode.add_multiple_to_neo4j([ChebiNode(properties={"uid":int(i)}) for i in chebi_ids], create=create)
+                zz.append(
+                    ClassyFireSynonym(
+                        start=ClassyFireNode(properties={"uid": i.uid}),
+                        end=ChebiNode(properties={"uid": int(ii)}),
+                        create=create,
+                    )
+                )
+        ChebiNode.add_multiple_to_neo4j(
+            [ChebiNode(properties={"uid": int(i)}) for i in chebi_ids], create=create
+        )
         ClassyFireSynonym.add_multiple_to_neo4j(zz, create=create)

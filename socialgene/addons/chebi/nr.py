@@ -10,4 +10,3 @@ class ChebiNode(Node):
         "uid": int,
     }
     constraints_unique = ["uid"]
-

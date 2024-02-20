@@ -2,7 +2,6 @@
 
 import re
 
-from socialgene.neo4j.neo4j_element import Node
 from socialgene.nextflow.nodes import ASSEMBLY
 
 
@@ -32,4 +31,3 @@ class Mibig(ASSEMBLY):
             return temp
         else:
             raise ValueError(f"Unexpected mibig ID {uid}")
-
