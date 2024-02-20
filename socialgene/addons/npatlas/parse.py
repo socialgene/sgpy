@@ -2,15 +2,24 @@ from pathlib import Path
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
-from socialgene.addons.npatlas.nr import MibigToNPAtlas, NPAtlasNode, NPAtlasPublication,  NPAtlasToClassyFireAlternativeParents, NPAtlasToClassyFireDirectParent, NPAtlasToClassyFireIntermediateNodes, NPAtlasToClassyFireLowestClass, NPAtlasToGnps, NPAtlasToNpclassifierClass, NPAtlasToNpclassifierPathway, NPAtlasToPublication, NPAtlasToTaxID
+from socialgene.addons.npatlas.nr import MibigToNPAtlas, NPAtlasNode, NPAtlasPublication,  NPAtlasToClassyFireAlternativeParents, NPAtlasToClassyFireDirectParent, NPAtlasToClassyFireIntermediateNodes, NPAtlasToClassyFireLowestClass, NPAtlasToGnps, NPAtlasToNpclassifierClass, NPAtlasToNpclassifierPathway, NPAtlasToNpclassifierSuperclass, NPAtlasToPublication, NPAtlasToTaxID
 from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
 from socialgene.addons.npmrd.nr import Npmrd
 from socialgene.nextflow.nodes import TAXID
-from socialgene.parsers import ncbi_taxonomy
 from socialgene.utils.download import download as downloader
 from socialgene.utils.logging import log
 
 NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
+
+
+
+def _download_npatlas(self, outpath, url=NPATALAS_URL):
+    if Path(outpath).exists():
+        log.debug(f"File already exists at {outpath}")
+    else:
+        downloader(url, outpath)
+
+
 
 
 class NPAtlasEntry:
@@ -133,7 +142,7 @@ class NPAtlasEntry:
     def _assign_classyfire_intermediate_nodes(self):
         try:
             self.classyfire_intermediate_nodes = [
-                int(x.removeprefix("CHEMONTID:"))
+                int(x['chemont_id'].removeprefix("CHEMONTID:"))
                 for x in self.entry["classyfire"]["intermediate_nodes"]
             ]
         except Exception as e:
@@ -142,7 +151,7 @@ class NPAtlasEntry:
     def _assign_classyfire_alternative_parents(self):
         try:
             self.classyfire_alternative_parents = [
-                int(x.removeprefix("CHEMONTID:"))
+                int(x['chemont_id'].removeprefix("CHEMONTID:"))
                 for x in self.entry["classyfire"]["alternative_parents"]
             ]
         except Exception as e:
@@ -223,80 +232,81 @@ class NPAtlasEntry:
             "species": self.species,
         }
         )
-    @property
-    def rel_nodes(self):
-        # instead of making 8 billion calls to the db, gather first then bulk insert
-        nodes={}
-        if self.origin_reference:
-            nodes["publication"] = {self.origin_reference}
-        if self.ncbi_taxid:
-            nodes["ncbi_taxid"] = {TAXID(properties={"uid": str(self.ncbi_taxid)})}
-        if self.gnps_ids:
-            nodes["gnps"] = set(self.gnps_ids)
-        if self.mibig_ids:
-            nodes["mibig"] = set(self.mibig_ids)
-        if self.lowest_classyfire:
-            nodes["classyfire"] = {ClassyFireNode(properties={"uid": int(self.lowest_classyfire)})}
-        if self.classyfire_direct_parent:
-            nodes["classyfire_direct_parent"] = {ClassyFireNode(properties={"uid": int(self.classyfire_direct_parent)})}
-        if self.classyfire_intermediate_nodes:
-            nodes["classyfire_intermediate_nodes"] = {ClassyFireNode(properties={"uid": int(x)}) for x in self.classyfire_intermediate_nodes}
-        if self.classyfire_alternative_parents:
-            nodes["classyfire_alternative_parents"] = {ClassyFireNode(properties={"uid": int(x)}) for x in self.classyfire_alternative_parents}
-        if self.npclassifier_classes:
-            nodes["npclassifier_classes"] = {NPClassifierClass(properties={"uid": x}) for x in self.npclassifier_classes}
-        if self.npclassifier_pathways:
-            nodes["npclassifier_pathways"] = {NPClassifierPathway(properties={"uid": x}) for x in self.npclassifier_pathways}
-        if self.npclassifier_superclasses:
-            nodes["npclassifier_superclasses"] = {NPClassifierSuperclass(properties={"uid": x}) for x in self.npclassifier_superclasses}
 
-        return nodes
 
-    @property
-    def rel_rels(self):
-        # instead of making 8 billion calls to the db, gather first then bulk insert
-        rels={}
-        if self.origin_reference:
-            rels["publication"] = {NPAtlasToPublication(
-                start=self.node, end=self.origin_reference
-            )}
-        if self.ncbi_taxid:
-            rels["ncbi_taxid"] = {NPAtlasToTaxID(
+    def link_publication(self) -> set:
+        if self.origin_reference is None:
+            return set()
+        return {NPAtlasToPublication(
+            start=self.node, end=self.origin_reference
+        )}
+
+    def link_ncbi_taxid(self) -> set:
+        if self.ncbi_taxid is None:
+            return set()
+        return {NPAtlasToTaxID(
                 start=TAXID(properties={"uid": str(self.ncbi_taxid)}), end=self.node
             )}
-        if self.gnps_ids:
-            rels["gnps"] = {NPAtlasToGnps(start=self.node, end=x) for x in self.gnps_ids}
-        if self.mibig_ids:
-            rels["mibig"] = {MibigToNPAtlas(start=x, end=self.node) for x in self.mibig_ids}
-        if self.lowest_classyfire:
-            rels["classyfire"] = {NPAtlasToClassyFireLowestClass(start=self.node, end=ClassyFireNode(properties={"uid": int(self.lowest_classyfire)}))}
-        if self.classyfire_direct_parent:
-            rels["classyfire_direct_parent"] = {NPAtlasToClassyFireDirectParent(start=self.node, end=ClassyFireNode(properties={"uid": int(self.classyfire_direct_parent)}))}
-        if self.classyfire_intermediate_nodes:
-            rels["classyfire_intermediate_nodes"] = {NPAtlasToClassyFireIntermediateNodes(start=self.node, end=ClassyFireNode(properties={"uid": int(x)})) for x in self.classyfire_intermediate_nodes}
-        if self.classyfire_alternative_parents:
-            rels["classyfire_alternative_parents"] = {NPAtlasToClassyFireAlternativeParents(start=self.node, end=ClassyFireNode(properties={"uid": int(x)})) for x in self.classyfire_alternative_parents}
-        if self.npclassifier_classes:
-            rels["npclassifier_classes"] = {NPAtlasToNpclassifierClass(start=self.node, end=NPClassifierClass(properties={"uid": x})) for x in self.npclassifier_classes}
-        if self.npclassifier_pathways:
-            rels["npclassifier_pathways"] ={NPAtlasToNpclassifierPathway(start=self.node, end=NPClassifierPathway(properties={"uid": x})) for x in self.npclassifier_pathways}
-        if self.npclassifier_superclasses:
-            rels["npclassifier_superclasses"] = {NPAtlasToNpclassifierClass(start=self.node, end=NPClassifierClass(properties={"uid": x})) for x in self.npclassifier_superclasses}
-        return rels
 
+    def link_gnps(self) -> set:
+        if len(self.gnps_ids) == 0:
+            return set()
+        return {NPAtlasToGnps(start=self.node, end=x) for x in self.gnps_ids}
 
-class NPAtlas():
-    def __init__(self, url=NPATALAS_URL, atlas_json_path=None) -> None:
-        super().__init__()
-        self.entries = []
-        self.path = atlas_json_path
-        if not Path(atlas_json_path).exists():
-            self.path = self._download_npatlas(url=url, outpath=atlas_json_path)
+    def link_mibig(self) -> set:
+        if len(self.mibig_ids) == 0:
+            return set()
+        return {MibigToNPAtlas(start=x, end=self.node) for x in self.mibig_ids}
 
-    def _download_npatlas(self, outpath, url=NPATALAS_URL):
-        if Path(outpath).exists():
-            log.debug(f"File already exists at {outpath}")
-        else:
-            downloader(url, outpath)
+    def link_classyfire(self) -> set:
+        if self.lowest_classyfire is None:
+            return set()
+        return {NPAtlasToClassyFireLowestClass(start=self.node, end=ClassyFireNode(properties={"uid": int(self.lowest_classyfire)}))}
+
+    def link_classyfire_direct_parent(self) -> set:
+        if self.classyfire_direct_parent is None:
+            return set()
+        return {NPAtlasToClassyFireDirectParent(start=self.node, end=ClassyFireNode(properties={"uid": int(self.classyfire_direct_parent)}))}
+
+    def link_classyfire_intermediate_nodes(self) -> set:
+        if self.classyfire_intermediate_nodes is None:
+            return set()
+        return {NPAtlasToClassyFireIntermediateNodes(start=self.node, end=ClassyFireNode(properties={"uid": int(x)})) for x in self.classyfire_intermediate_nodes}
+
+    def link_classyfire_alternative_parents(self) -> set:
+        if self.classyfire_alternative_parents is None:
+            return set()
+        return {NPAtlasToClassyFireAlternativeParents(start=self.node, end=ClassyFireNode(properties={"uid": int(x)})) for x in self.classyfire_alternative_parents}
+
+    def link_npclassifier_classes(self) -> set:
+        if self.npclassifier_classes is None:
+            return set()
+        return {NPAtlasToNpclassifierClass(start=self.node, end=NPClassifierClass(properties={"uid": x})) for x in self.npclassifier_classes}
+
+    def link_npclassifier_pathways(self) -> set:
+        if self.npclassifier_pathways is None:
+            return set()
+        return {NPAtlasToNpclassifierPathway(start=self.node, end=NPClassifierPathway(properties={"uid": x})) for x in self.npclassifier_pathways}
+
+    def link_npclassifier_superclasses(self) -> set:
+        if self.npclassifier_superclasses is None:
+            return set()
+        return {NPAtlasToNpclassifierSuperclass(start=self.node, end=NPClassifierSuperclass(properties={"uid": x})) for x in self.npclassifier_superclasses}
+
+    def get_links(self):
+        return {
+            NPAtlasToPublication: self.link_publication(),
+            NPAtlasToTaxID: self.link_ncbi_taxid(),
+            NPAtlasToGnps: self.link_gnps(),
+            MibigToNPAtlas: self.link_mibig(),
+            NPAtlasToClassyFireLowestClass: self.link_classyfire(),
+            NPAtlasToClassyFireDirectParent: self.link_classyfire_direct_parent(),
+            NPAtlasToClassyFireIntermediateNodes: self.link_classyfire_intermediate_nodes(),
+            NPAtlasToClassyFireAlternativeParents: self.link_classyfire_alternative_parents(),
+            NPAtlasToNpclassifierClass: self.link_npclassifier_classes(),
+            NPAtlasToNpclassifierPathway: self.link_npclassifier_pathways(),
+            NPAtlasToNpclassifierSuperclass: self.link_npclassifier_superclasses(),
+        }
+
 
 

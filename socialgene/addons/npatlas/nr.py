@@ -4,7 +4,7 @@ from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
 from socialgene.addons.mibig.nr import Mibig
-from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway
+from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
 from socialgene.addons.npmrd.nr import Npmrd
 from socialgene.addons.publication.nr import Publication
 from socialgene.neo4j.neo4j_element import Node, Relationship
@@ -142,7 +142,7 @@ class NPAtlasToNpclassifierSuperclass(Relationship):
     neo4j_label = "IS_A"
     description = "Connects an NPAtlas entry to a NPClassifierSuperclass entry"
     start_class = NPAtlasNode
-    end_class = NPClassifierClass
+    end_class = NPClassifierSuperclass
 
 class NPAtlasToChem(Relationship):
     neo4j_label = "IS_A"

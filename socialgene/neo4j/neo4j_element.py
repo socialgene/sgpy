@@ -268,7 +268,7 @@ class Node(Neo4jElement):
                     pass
             else:
                 with GraphDriver() as db:
-                    _ = db.run(
+                    res = db.run(
                         f"""
                         WITH $paramsdictlist as paramsdictlist
                         UNWIND paramsdictlist as paramsdict

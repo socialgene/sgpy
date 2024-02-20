@@ -75,9 +75,10 @@ sg_massage              = "socialgene.cli.neo4j.massage:main"
 
 # info
 sg_version              = "socialgene.utils.version:main"
-sg_neo4j_version        = "socialgene.utils.version:neo4j"
+sg_neo4j_version        = "socialgene.utils.version:main"
 sg_schema               = "socialgene.neo4j.schema.graph_schema:main"
 
 
 # addons
 sg_gnps_import          = "socialgene.addons.gnps_networking:main"
+sg_npatlas_import       = "socialgene.addons.npatlas.cli:main"
