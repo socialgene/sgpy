@@ -11,8 +11,6 @@ class GeneCluster(Node):
         "end":int,
         }
     required_properties = ["uid", "start", "end"]
-    unique_constraints=["uid"]
-
 
 class GeneClusterToNucleotide(Relationship):
     neo4j_label = "ENCODES"

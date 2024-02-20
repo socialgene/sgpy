@@ -9,3 +9,4 @@ class CHEMBL(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]

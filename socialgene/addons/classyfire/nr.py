@@ -12,6 +12,7 @@ class ClassyFireNode(Node):
     description = "Represents a classyfire chemical ontology term"
     property_specification = {"uid": int, "name": str, "definition": str}
     required_properties = ["uid"]
+    constraints_unique = ["uid"]
 
 class ClassyFireIsA(Relationship):
     neo4j_label = "IS_A"

@@ -58,6 +58,8 @@ def main():
             TimeElapsedColumn(),
             ) as pg:
         task = pg.add_task("[cyan]Processing NPAtlas entries...", total=33372)
+        # This was multithreaded whcih worked well on the first write but after chem data calculation
+        # was added, it may be just as slow as single
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for entry in concurrent.futures.as_completed([executor.submit(process_entry, entry) for entry in entries]):
                 z = entry.result()

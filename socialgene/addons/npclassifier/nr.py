@@ -7,6 +7,7 @@ class NPClassifierClass(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]
 
 
 class NPClassifierPathway(Node):
@@ -15,6 +16,7 @@ class NPClassifierPathway(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]
 
 
 class NPClassifierSuperclass(Node):
@@ -23,5 +25,6 @@ class NPClassifierSuperclass(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]
 
 

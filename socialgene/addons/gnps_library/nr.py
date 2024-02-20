@@ -12,6 +12,7 @@ class GnpsLibrarySpectrumNode(Node):
     neo4j_label = "gnps_library_spectrum"
     description = "Represents a GNPS library spectrum"
     uid = ["uid"]
+    constraints_unique = ["uid"]
     required_properties = ["uid"]
     property_specification = {
         "uid": str,
@@ -47,6 +48,7 @@ class GnpsLibrarySpectrumNode(Node):
         "inchikey_planar": str,
     }
 
+
     @staticmethod
     def _extract_all_CCMSLIB(x) -> List:
         return re.findall("CCMSLIB[0-9]{11}", x)
@@ -57,6 +59,7 @@ class IonSourceNode(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]
 
 
 class InstrumentNode(Node):
@@ -65,6 +68,7 @@ class InstrumentNode(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]
 
 
 class OrganismNode(Node):
@@ -73,6 +77,7 @@ class OrganismNode(Node):
     property_specification = {
         "uid": str,
     }
+    constraints_unique = ["uid"]
 
 
 class FromIonRel(Relationship):

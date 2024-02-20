@@ -38,8 +38,7 @@ class ClusterNode(Node):
         "precursor_mass": float,
         "sumprecursor_intensity": float,
     }
-
-
+    constraints_unique = ["cluster_index", "workflow_uuid"]
 
 
 
@@ -54,6 +53,7 @@ class SpectrumNode(Node):
         "rettime": float,
         "assembly": str,
     }
+    constraints_unique = ["uid"]
 
 
 class LibraryHitRel(Relationship):

@@ -35,7 +35,7 @@ class NPAtlasNode(Node):
 
         }
         required_properties = ["uid"]
-
+        constraints_unique = ["uid"]
 
 class MibigToNPAtlas(Relationship):
         neo4j_label = "PRODUCES"

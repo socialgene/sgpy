@@ -9,5 +9,5 @@ class ChebiNode(Node):
     property_specification = {
         "uid": int,
     }
-
+    constraints_unique = ["uid"]
 

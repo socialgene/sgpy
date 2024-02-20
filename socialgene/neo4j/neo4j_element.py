@@ -131,18 +131,12 @@ class Node(Neo4jElement):
     def __init__(
         self,
         uid: List[str] = None,
-        constraints: List[str] = None,
-        unique_constraints: List[str] = None,
-        nonunique_index: List[str] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.uid = uid
         if self.uid is None:
             self.uid = ["uid"]
-        self.constraints = constraints
-        self.constraints_unique = unique_constraints
-        self.nonunique_index = nonunique_index
         if self.property_specification is None:
             raise ValueError(
                 f"property_specification must be defined for class {self.__class__.__name__}"
@@ -185,6 +179,27 @@ class Node(Neo4jElement):
         req_props = [f"{i}: {map_key}.{i}" for i in req_props]
         req_props = ", ".join(req_props)
         return f"({var}: {self.neo4j_label} {{{req_props}}})"
+
+    def add_constraints_to_neo4j(self):
+        """Add constraints to Neo4j"""
+        if not hasattr(self, 'constraints_unique') or not self.constraints_unique:
+            log.info(f"No unique constraints to add for {self.__str__()} nodes")
+            return
+        with GraphDriver() as db:
+            res=db.run(f"""
+                CREATE CONSTRAINT python_added_index_{self.neo4j_label} IF NOT EXISTS
+                FOR (n:{self.neo4j_label})
+                REQUIRE ({", ".join([f"n.{i}" for i in self.constraints_unique])}) IS UNIQUE
+                """
+            ).consume()
+            try:
+                # The code is checking if the variable `res` has a property called `counters` and if
+                # it does, it will execute the code block inside the `if` statement.
+                if res.counters:
+                    log.info(f"Created {res.counters.constraints_added} constraints for {self.__str__()} nodes")
+            except Exception as e:
+                pass
+
 
     def add_to_neo4j(
         self,create=False

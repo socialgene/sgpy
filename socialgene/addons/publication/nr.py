@@ -14,6 +14,7 @@ class Publication(Node):
         "year": int,
     }
     required_properties=["doi"]
+    constraints_unique = ["doi"]
 
     @staticmethod
     def _extract_doi(input):

@@ -8,7 +8,7 @@ class ChemicalFragment(Node):
     properties = {
         "uid": str,
     }
-
+    constraints_unique = ["uid"]
 
 class ChemicalCompoundNode(Node):
     neo4j_label = "chemical_compound"
@@ -59,6 +59,7 @@ class ChemicalCompoundNode(Node):
         "inchi": str,
         "CanonicalSmiles": str,
     }
+    constraints_unique = ["inchi", "CanonicalSmiles"]
 
 
 class ContainsRel(Relationship):

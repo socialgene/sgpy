@@ -79,7 +79,7 @@ class ASSEMBLY(Node):
     target_subdirectory = "genomic_info"
     target_extension = "assemblies"
     header = ["uid:ID(assembly)"] + sorted(LocusAssemblyMetadata.__slots__)
-    unique_constraints = ["uid"]
+    constraints_unique = ["uid"]
     property_specification = {"uid": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
     required_properties = ["uid"]
 
@@ -97,7 +97,7 @@ class NUCLEOTIDE(Node):
     target_subdirectory = "genomic_info"
     target_extension = "loci"
     header = ["uid:ID(nucleotide)"] + ["external_id"] + LocusAssemblyMetadata.__slots__
-    unique_constraints = ["uid"]
+    constraints_unique = ["uid"]
     nonunique_index = ["external_id"]
     property_specification = {"uid": str, "external_id": str} | {k: str for k in LocusAssemblyMetadata.__slots__}
     required_properties = ["uid", "external_id"]
@@ -110,7 +110,7 @@ class PROTEIN(Node):
     header_filename = "protein_ids.header"
     target_subdirectory = "protein_info"
     target_extension = "protein_ids"
-    unique_constraints = ["uid"]
+    constraints_unique = ["uid"]
 
     def __init__(
         self,
@@ -133,7 +133,7 @@ class GOTERM(Node):
     target_extension = "goterms"
     header = ["uid:ID(goterm)", "name", "namespace", "def"]
     property_specification = {"uid": str, "name": str, "namespace": str}
-
+    constraints_unique = ["uid"]
 class TIGRFAM_ROLE(Node):
     """Represents a TIGRFAM role"""
 
@@ -144,7 +144,7 @@ class TIGRFAM_ROLE(Node):
     target_extension = "tigrfam_role"
     header = ["uid:ID(tigrfam_role)"]
     property_specification = {"uid": str}
-
+    constraints_unique = ["uid"]
 class TIGRFAM_MAINROLE(Node):
     """Represents a TIGRFAM main role"""
 
@@ -155,6 +155,7 @@ class TIGRFAM_MAINROLE(Node):
     target_extension = "tigrfam_mainrole"
     header = ["uid:ID(tigrfam_mainrole)"]
     property_specification = {"uid": str}
+    constraints_unique = ["uid"]
 
 class TIGRFAM_SUBROLE(Node):
     """Represents a TIGRFAM sub role"""
@@ -166,6 +167,7 @@ class TIGRFAM_SUBROLE(Node):
     target_extension = "tigrfam_subrole"
     header = ["uid:ID(tigrfam_subrole)"]
     property_specification = {"uid": str}
+    constraints_unique = ["uid"]
 
 class TAXID(Node):
     """Represents a single taxon within NCBI taxonomy"""
@@ -176,9 +178,10 @@ class TAXID(Node):
     target_subdirectory = "taxdump_process"
     target_extension = "nodes_taxid"
     header = ["uid:ID(taxid)", "name", "rank"]
-    unique_constraints = ["uid"]
+    constraints_unique = ["uid"]
     property_specification = {"uid": str, "name": str, "rank": str}
     required_properties = ["uid"]
+
 class HMM_SOURCE(Node):
     """Represents the source of an HMM model (e.g. PFAM)"""
 
@@ -225,7 +228,7 @@ class HMM_SOURCE(Node):
         "tc": str,
         "nc": str,
     }
-
+    constraints_unique = ["uid"]
 
 class HMM(Node):
     """Represents a single non-redundant HMM model"""
@@ -236,5 +239,6 @@ class HMM(Node):
     target_subdirectory = "hmm_info"
     target_extension = "sg_hmm_nodes"
     header = ["uid:ID(hmm)"]
-    unique_constraints = ["uid"]
+    constraints_unique = ["uid"]
     property_specification = {"uid": str}
+    constraints_unique = ["uid"]
