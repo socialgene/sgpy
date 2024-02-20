@@ -1,4 +1,6 @@
 import argparse
+from socialgene.neo4j.schema.graph_schema import GraphSchema
+from socialgene.utils.logging import log
 
 from socialgene.dbmodifiers.massage.indices import (
     assembly_uid,
@@ -17,72 +19,33 @@ parser.add_argument(
     help="",
     default=False,
     required=False,
-    action=argparse.BooleanOptionalAction,
+    action="store_true",
 )
 parser.add_argument(
-    "--assembly_uid",
-    help="",
+    "--labels",
+    help="Node labels to try and add indices to",
     default=False,
     required=False,
-    action=argparse.BooleanOptionalAction,
+    nargs="+",
 )
-parser.add_argument(
-    "--protein_uid",
-    help="",
-    default=False,
-    required=False,
-    action=argparse.BooleanOptionalAction,
-)
-
-parser.add_argument(
-    "--hmm_uid",
-    help="",
-    default=False,
-    required=False,
-    action=argparse.BooleanOptionalAction,
-)
-parser.add_argument(
-    "--nucleotide_uid",
-    help="",
-    default=False,
-    required=False,
-    action=argparse.BooleanOptionalAction,
-)
-parser.add_argument(
-    "--nucleotide_external_id",
-    help="",
-    default=False,
-    required=False,
-    action=argparse.BooleanOptionalAction,
-)
-parser.add_argument(
-    "--taxonomy_uid",
-    help="",
-    default=False,
-    required=False,
-    action=argparse.BooleanOptionalAction,
-)
-
 
 def main():
     args = parser.parse_args()
-    # defaults are all negative, print help if nothing is provided
+    as_dict={i.neo4j_label:i for i in GraphSchema.ALL_NODES}
     if not any([i for i in args.__dict__.values()]):
         parser.print_help()
+        print(f"Available labels: {sorted(list(as_dict.keys()))}")
         return
-    if args.assembly_uid or args.all:
-        assembly_uid()
-    if args.protein_uid or args.all:
-        protein_uid()
-    if args.hmm_uid or args.all:
-        hmm_uid()
-    if args.nucleotide_uid or args.all:
-        nucleotide_uid()
-    if args.nucleotide_external_id or args.all:
-        nucleotide_external_id()
-    if args.taxonomy_uid or args.all:
-        taxonomy_uid()
-
+    if args.all:
+        for i in GraphSchema.ALL_NODES:
+            i().add_constraints_to_neo4j()
+    elif args.labels:
+        for i in args.labels:
+            if i in as_dict:
+                as_dict[i]().add_constraints_to_neo4j()
+            else:
+                log.warning(f"Label {i} not found in GraphSchema.ALL_NODES")
+                log.warning(f"Available labels: {as_dict.keys()}")
 
 if __name__ == "__main__":
     main()

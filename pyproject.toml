@@ -70,7 +70,7 @@ sg_search_gc            = "socialgene.cli.search.gene_cluster:main"
 sgdb_import_classyfire = "socialgene.dbmodifiers.classyfire.import:main"
 
 # neo4j
-sg_indices              = "socialgene.cli.neo4j.indices:main"
+sg_index              = "socialgene.cli.neo4j.indices:main"
 sg_massage              = "socialgene.cli.neo4j.massage:main"
 
 # info
@@ -80,5 +80,5 @@ sg_schema               = "socialgene.neo4j.schema.graph_schema:main"
 
 
 # addons
-sg_gnps_import          = "socialgene.addons.gnps_networking.cli:main"
-sg_npatlas_import       = "socialgene.addons.npatlas.cli:main"
+sg_import_gnps          = "socialgene.addons.gnps_networking.cli:main"
+sg_import_npatlas       = "socialgene.addons.npatlas.cli:main"

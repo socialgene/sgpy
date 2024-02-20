@@ -198,11 +198,12 @@ class NPAtlasEntry:
             try:
                 match external_id["external_db_name"]:
                     case "gnps":
-                        ids= GnpsLibrarySpectrumNode._extract_all_CCMSLIB(
+                        # get first becasue some npaid have multiple gnps ids, eg:
+                        # "CCMSLIB00005722620%NCGC00179860-02!6-[(3R,4S,5S,7R)-7-[(2S,3S,5S)-5-ethyl-5-[(2R,5R,6S)-5-ethyl-5-hydroxy-6-methyloxan-2-yl]-3-methyloxolan-2-yl]-4-hydroxy-3,5-dimethyl-6-oxononyl]-2-hydroxy-3-methylbenzoic acid [IIN-based on: CCMSLIB00000848016]%3""
+                        uid= GnpsLibrarySpectrumNode._extract_all_CCMSLIB(
                                     external_id["external_db_code"]
-                                )
-                        for uid in ids:
-                            self.gnps_ids.add(GnpsLibrarySpectrumNode(properties={"uid": uid}))
+                                )[0]
+                        self.gnps_ids.add(GnpsLibrarySpectrumNode(properties={"uid": uid}))
                     case "npmrd":
                         self.npmrd.add(
                             Npmrd(properties={"uid": external_id["external_db_code"]})
