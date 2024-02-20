@@ -15,8 +15,9 @@ NPATALAS_URL = "https://www.npatlas.org/static/downloads/NPAtlas_download.json"
 
 
 
-def _download_npatlas(self, outpath, url=NPATALAS_URL):
-    if Path(outpath).exists():
+def _download_npatlas(outpath, url=NPATALAS_URL):
+    # check if exist and not empty
+    if Path(outpath).exists() and Path(outpath).stat().st_size > 0:
         log.debug(f"File already exists at {outpath}")
     else:
         downloader(url, outpath)

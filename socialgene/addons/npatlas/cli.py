@@ -30,7 +30,8 @@ def main():
     input = args.input
     if input is None:
         with tempfile.NamedTemporaryFile() as temp:
-            _download_npatlas(temp.name)
+            Path(temp.name).exists()
+            _download_npatlas(outpath=temp.name)
             with open(temp.name) as f:
                 entries = json.load(f)
     else:
@@ -65,7 +66,7 @@ def main():
                     rels[k].update(v)
                 pg.update(task, advance=1)
     log.info("Creating/Merging npatlas nodes in neo4")
-    list(nodes)[0].add_multiple_to_neo4j(list(nodes), create=True)
+    list(nodes)[0].add_multiple_to_neo4j(list(nodes), create=False)
     relnodes = defaultdict(set)
     for k,v in rels.items():
         for i in v:
