@@ -5,10 +5,12 @@ from uuid import uuid4
 
 import numpy as np
 import pandas as pd
-from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode, GnpsLibrarySpectrumToNPClassifierClass, GnpsLibrarySpectrumToNPClassifierPathway, GnpsLibrarySpectrumToNPClassifierSuperclass
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
+from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode, GnpsLibrarySpectrumToNPClassifierClass, GnpsLibrarySpectrumToNPClassifierPathway, GnpsLibrarySpectrumToNPClassifierSuperclass, GnpsLibraryToChem
 from socialgene.addons.gnps_library.parse import GNPSLibrarySpectrum
 from socialgene.addons.gnps_networking.nr import ClusterNode, ClusterToAssembly, LibraryHitRel, MolecularNetwork
 from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
+from socialgene.base.chem import ChemicalCompound
 
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.nextflow.nodes import ASSEMBLY
@@ -217,9 +219,17 @@ class GNPS_SNETS:
         """Creates GNPS library hit nodes"""
         for i in self.specnets_df.to_dict("records"):
             try:
-                self.library_nodes.add(GNPSLibrarySpectrum(properties=self._library_hit_nodes_parse_specnet_row(i)).node)
+                a = GnpsLibrarySpectrumNode()
+                a.fill_from_dict(i)
+                a.properties['uid'] = str(i["spectrumid"])
+                self.library_nodes.add(a)
             except Exception as e:
                 log.debug(f"Error creating library hit node for {i['spectrumid']}: {e}")
+
+    def add_library_hit_nodes_to_neo4j(self, create=False):
+        """Adds GNPS library hit nodes to the Neo4j database"""
+        list(self.library_nodes)[0].add_multiple_to_neo4j(list(self.library_nodes), create=create)
+
 
     def link_npclassifiers(self):
         """Classifies GNPS library hits by linking them to NPClassifier nodes"""
@@ -321,67 +331,27 @@ class GNPS_SNETS:
         r_set[0].add_multiple_to_neo4j(r_set, create=create)
 
 
-    def add_links_between_gnps_clusters_and_assemblies(self):
-        """Adds links between GNPS clusters and genome assemblies to the Neo4j database"""
-        log.info("Adding links between GNPS clusters and assemblies")
-        df = (
-            self.clusterinfo_df.groupby(["assembly"])["clusteridx"]
-            .apply(set)
-            .apply(list)
-        )
-        for i in df.reset_index().itertuples(index=False):
-            with GraphDriver() as db:
-                _ = db.run(
-                    """
-                    WITH $row as row
-                    MATCH (a1:assembly {uid: row.assembly})
-                    UNWIND row.clusteridx as clusteridx
-                    MATCH (c:cluster {uid: clusteridx, workflow_uuid: $workflow_uuid})
-                    MERGE (c)<-[:PRODUCES]-(a1)
-                    """,
-                    row={"assembly": i.assembly, "clusteridx": i.clusteridx},
-                    workflow_uuid=self.workflow_uuid,
-                ).value()
+    def link_library_to_chem(self):
+        all_chem_nodes = set()
+        all_rels = set()
+        for i in self.library_nodes:
+            chemstring=None
+            if "inchi" in i.properties and i.properties['inchi']:
+                chemstring = i.properties['inchi']
+            elif "smiles" in i.properties and i.properties['smiles']:
+                chemstring = i.properties['smiles']
+            if chemstring:
+                try:
+                    cmpd=ChemicalCompound(chemstring)
+                    a=ChemicalCompoundNode()
+                    a.fill_from_dict(cmpd.base_properties | cmpd.hash_dict)
+                    all_chem_nodes.add(a)
+                    all_rels.add(GnpsLibraryToChem(start=i, end=a))
+                except Exception as e:
+                    log.debug(f"Error creating chemical compound node for {i.properties['uid']}: {e}")
+        all_chem_nodes = list(all_chem_nodes)
+        all_rels = list(all_rels)
+        all_chem_nodes[0].add_multiple_to_neo4j(all_chem_nodes, create=False)
+        all_rels[0].add_multiple_to_neo4j(all_rels, create=False)
 
-    def add_input_spectra_to_gnps_clusters(self):
-        """Adds and links input spectra to GNPS clusters in the Neo4j database"""
-        log.info("Adding and linking input spectra to GNPS clusters")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                MATCH (c:cluster {uid: row.clusteridx, workflow_uuid: $workflow_uuid})
-                MERGE (s:spectrum {uid: row.scan, original_filename: row.original_filename})
-                    ON CREATE SET
-                    s.parentmass = row.parentmass,
-                    s.charge = row.charge,
-                    s.rettime = row.rettime
-                    s.assembly = row.assembly
-                MERGE (c)-[:CONTAINS]->(s)
-                """,
-                df=self.clusterinfo_df.to_dict("records"),
-                workflow_uuid=self.workflow_uuid,
-            ).value()
 
-    def add_links_between_gnps_clusters(self):
-        """Adds links between GNPS clusters in the Neo4j database (i.e. the molecular network)"""
-        log.info("Adding links between GNPS clusters")
-        with GraphDriver() as db:
-            _ = db.run(
-                """
-                WITH $df as df
-                UNWIND df as row
-                MATCH (c1:cluster {uid: row.clusterid1, workflow_uuid: $workflow_uuid})
-                MATCH (c2:cluster {uid: row.clusterid2, workflow_uuid: $workflow_uuid})
-                MERGE (c1)-[s:LINK]->(c2)
-                    ON CREATE SET s.deltamz = row.deltamz,
-                                  s.meh = row.meh,
-                                  s.cosine = row.cosine,
-                                  s.otherscore = row.otherscore,
-                                  s.componentindex = row.componentindex,
-                                  s.edgeannotation = row.edgeannotation
-                """,
-                df=self.selfloop_df.to_dict("records"),
-                workflow_uuid=self.workflow_uuid,
-            ).value()

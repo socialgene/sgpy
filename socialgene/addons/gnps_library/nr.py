@@ -1,10 +1,9 @@
 import re
 from typing import List
 
-from rdkit import Chem
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 
 from socialgene.addons.npclassifier.nr import NPClassifierClass, NPClassifierPathway, NPClassifierSuperclass
-from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.logging import log
 
@@ -115,3 +114,12 @@ class GnpsLibrarySpectrumToNPClassifierPathway(Relationship):
     description = "Represents a relationship between gnps_library_spectrum nodes"
     start_class = GnpsLibrarySpectrumNode
     end_class = NPClassifierPathway
+
+
+
+
+class GnpsLibraryToChem(Relationship):
+    neo4j_label = "IS_A"
+    description = "Connects a GNPS library spectrum to a chemical compound"
+    start_class = GnpsLibrarySpectrumNode
+    end_class = ChemicalCompoundNode
