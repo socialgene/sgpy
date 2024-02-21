@@ -130,11 +130,8 @@ class GNPS_SNETS:
         for i in self.params:
             for k, v in i.items():
                 if k == "upload_file_mapping":
-                    if (
-                        v.split("|")[1].split("/")[0]
-                        == [i["user"] for i in self.params if "user" in i][0]
-                    ):
-                        self.filemap[v.split("|")[0]] = v.split("|")[1].split("/")[-1]
+                    if v.startswith("spec-"):
+                        self.filemap[v.split("|")[0]] = v.split("/")[-1]
 
     def _parse_clusterinfo(self):
         """Parses the clusterinfo file and replaces the mapped filename with the original filename"""
@@ -269,6 +266,9 @@ class GNPS_SNETS:
             ),
         ]
         for name, nodeclass, relclass in to_loop:
+            if name not in self.specnets_df.columns:
+                # not all GNPS results will have npclassifier results
+                continue
             df = self.specnets_df[~self.specnets_df[name].isnull()]
             df = df[["spectrumid", name]]
             npc_set = set()

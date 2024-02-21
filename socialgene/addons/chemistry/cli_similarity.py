@@ -103,14 +103,11 @@ df = df.reset_index(level=0)
 df['relationship'] = df.apply(lambda x: ChemicalSimilarity(start=x.start_node, end=x.end_node, properties={"similarity": x.similarity}), axis=1)
 
 
-zz={i:z[id_list[i]].node for i,x in enumerate(id_list)}
-
-df['relationship'] = df.apply(lambda x: ChemicalSimilarity(start=x.start_node.node, end=x.end_node.node, properties={"similarity": x.similarity}), axis=1)
-
-
-a=[ChemicalSimilarity(start=z[id_list[i[0]]].node,end=z[id_list[i[1]]].node,properties={"similarity": i[2]},) for i in chemsim]
-ChemicalSimilarity(start=z[id_list[i[0]]].node,end=z[id_list[i[1]]].node,properties={"similarity": i[2]},)
+# remove rows where start and end are the same
+df = df[df.start != df.end]
 
 
+z=df['relationship'].tolist()
 
 
+z[0].add_multiple_to_neo4j(z, create=True)
