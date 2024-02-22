@@ -30,5 +30,12 @@ jobs:
         run: sudo apt-get install hmmer
       - name: Run tests
         run: pytest tests -v --cov=./socialgene --cov-report=xml:./coverage.xml --cov-report term-missing
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true # optional (default = false)
+          files: ./coverage.xml
+          flags: unittests # optional
+          name: codecov-umbrella # optional
+          verbose: true # optional (default = false)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
