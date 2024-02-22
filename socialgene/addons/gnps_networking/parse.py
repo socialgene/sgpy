@@ -90,9 +90,7 @@ class GNPS_SNETS:
                 "**/clusterinfosummarygroup_attributes_withIDs_withcomponentID/*.clustersummary"
             )
         )
-        selfloop_path = list(
-            self.gnps_dirpath.glob("**/networkedges_selfloop/*")
-        )
+        selfloop_path = list(self.gnps_dirpath.glob("**/networkedges_selfloop/*"))
         clusterinfo_path = list(self.gnps_dirpath.glob("**/clusterinfo/*.clusterinfo"))
         for i in [specnets_path, clustersummary_path, selfloop_path, clusterinfo_path]:
             if len(i) > 1:
