@@ -57,6 +57,7 @@ class GNPS_SNETS:
     def __init__(
         self,
         gnps_dirpath,
+        map_path,
     ):
         self.gnps_dirpath = Path(gnps_dirpath)
         self.params_xml_path = None
@@ -64,8 +65,9 @@ class GNPS_SNETS:
         self.selfloop_path = None
         self.clustersummary_path = None
         self.clusterinfo_path = None
+        self.map_path = None
         self.params = []
-        self.filemap = {}
+        self.filemap = pd.DataFrame()
         self.clusterinfo_df = pd.DataFrame()
         self.specnets_df = pd.DataFrame()
         self.selfloop_df = pd.DataFrame()
@@ -89,7 +91,7 @@ class GNPS_SNETS:
             )
         )
         selfloop_path = list(
-            self.gnps_dirpath.glob("**/networkedges_selfloop/*.selfloop")
+            self.gnps_dirpath.glob("**/networkedges_selfloop/*")
         )
         clusterinfo_path = list(self.gnps_dirpath.glob("**/clusterinfo/*.clusterinfo"))
         for i in [specnets_path, clustersummary_path, selfloop_path, clusterinfo_path]:
