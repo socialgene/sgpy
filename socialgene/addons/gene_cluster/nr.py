@@ -3,7 +3,7 @@ from socialgene.nextflow.nodes import NUCLEOTIDE
 
 
 class GeneCluster(Node):
-    neo4j_label = "genecluster"
+    neo4j_label = ["genecluster"]
     description = "A gene cluster"
     property_specifications = {
         "uid": str,

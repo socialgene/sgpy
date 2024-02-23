@@ -7,7 +7,7 @@ from socialgene.neo4j.neo4j_element import Node
 class PARAMETERS(Node):
     """Parameters and environmental variables used during database creation"""
 
-    neo4j_label = "parameters"
+    neo4j_label = ["parameters"]
     description = "Parameters and environmental variables used during database creation"
     header_filename = "parameters.header"
     target_subdirectory = "parameters"
@@ -68,12 +68,12 @@ class PARAMETERS(Node):
         "py_version": str,
         "genome_download_command": str,
     }
-
+    constraints_unique = ["uid"]
 
 class ASSEMBLY(Node):
     """Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from."""
 
-    neo4j_label = "assembly"
+    neo4j_label = ["assembly"]
     description = "Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from."
     header_filename = "assembly.header"
     target_subdirectory = "genomic_info"
@@ -89,7 +89,7 @@ class ASSEMBLY(Node):
 class NUCLEOTIDE(Node):
     """Represents a single nucleotide sequence (e.g. a contig/scaffold/chromosome)"""
 
-    neo4j_label = "nucleotide"
+    neo4j_label = ["nucleotide"]
     description = (
         "Represents a single nucleotide sequence (e.g. a contig/scaffold/chromosome)"
     )
@@ -108,7 +108,7 @@ class NUCLEOTIDE(Node):
 class PROTEIN(Node):
     """Represents a non-redundant protein"""
 
-    neo4j_label = "protein"
+    neo4j_label = ["protein"]
     description = "Represents a non-redundant protein"
     header_filename = "protein_ids.header"
     target_subdirectory = "protein_info"
@@ -130,7 +130,7 @@ class PROTEIN(Node):
 class GOTERM(Node):
     """Represent a GO term"""
 
-    neo4j_label = "goterm"
+    neo4j_label = ["goterm"]
     description = "Represent a GO term"
     header_filename = "goterms.header"
     target_subdirectory = "goterms"
@@ -143,7 +143,7 @@ class GOTERM(Node):
 class TIGRFAM_ROLE(Node):
     """Represents a TIGRFAM role"""
 
-    neo4j_label = "tigrfam_role"
+    neo4j_label = ["tigrfam_role"]
     description = "Represents a TIGRFAM role"
     header_filename = "tigrfam_role.header"
     target_subdirectory = "tigrfam_info"
@@ -156,7 +156,7 @@ class TIGRFAM_ROLE(Node):
 class TIGRFAM_MAINROLE(Node):
     """Represents a TIGRFAM main role"""
 
-    neo4j_label = "tigrfam_mainrole"
+    neo4j_label = ["tigrfam_mainrole"]
     description = "Represents a TIGRFAM main role"
     header_filename = "tigrfam_mainrole.header"
     target_subdirectory = "tigrfam_info"
@@ -169,7 +169,7 @@ class TIGRFAM_MAINROLE(Node):
 class TIGRFAM_SUBROLE(Node):
     """Represents a TIGRFAM sub role"""
 
-    neo4j_label = "tigrfam_subrole"
+    neo4j_label = ["tigrfam_subrole"]
     description = "Represents a TIGRFAM sub role"
     header_filename = "tigrfam_subrole.header"
     target_subdirectory = "tigrfam_info"
@@ -182,7 +182,7 @@ class TIGRFAM_SUBROLE(Node):
 class TAXID(Node):
     """Represents a single taxon within NCBI taxonomy"""
 
-    neo4j_label = "taxid"
+    neo4j_label = ["taxid"]
     description = "Represents a single taxon within NCBI taxonomy"
     header_filename = "taxid.header"
     target_subdirectory = "taxdump_process"
@@ -196,7 +196,7 @@ class TAXID(Node):
 class HMM_SOURCE(Node):
     """Represents the source of an HMM model (e.g. PFAM)"""
 
-    neo4j_label = "hmm_source"
+    neo4j_label = ["hmm_source"]
     description = "Represents the source of an HMM model (e.g. PFAM)"
     header_filename = "hmm_source.header"
     target_subdirectory = "hmm_info"
@@ -245,7 +245,7 @@ class HMM_SOURCE(Node):
 class HMM(Node):
     """Represents a single non-redundant HMM model"""
 
-    neo4j_label = "hmm"
+    neo4j_label = ["hmm"]
     description = "Represents a single non-redundant HMM model"
     header_filename = "sg_hmm_nodes.header"
     target_subdirectory = "hmm_info"

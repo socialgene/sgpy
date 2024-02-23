@@ -5,7 +5,7 @@ from socialgene.neo4j.neo4j_element import Node, Relationship
 
 
 class ClassyFireNode(Node):
-    neo4j_label = "classyfire"
+    neo4j_label = ["classyfire"]
     description = "Represents a classyfire chemical ontology term"
     property_specification = {"uid": int, "name": str, "definition": str}
     required_properties = ["uid"]

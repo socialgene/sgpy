@@ -4,7 +4,7 @@ from socialgene.neo4j.neo4j_element import Node
 
 
 class Publication(Node):
-    neo4j_label = "publication"
+    neo4j_label = ["publication"]
     description = "Represents a publication"
     property_specification = {
         "doi": str,

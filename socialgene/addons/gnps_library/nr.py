@@ -11,7 +11,7 @@ from socialgene.neo4j.neo4j_element import Node, Relationship
 
 
 class GnpsLibrarySpectrumNode(Node):
-    neo4j_label = "gnps_library_spectrum"
+    neo4j_label = ["gnps_library_spectrum"]
     description = "Represents a GNPS library spectrum"
     uid = ["uid"]
     constraints_unique = ["uid"]
@@ -56,7 +56,7 @@ class GnpsLibrarySpectrumNode(Node):
 
 
 class IonSourceNode(Node):
-    neo4j_label = "ion_source"
+    neo4j_label = ["ion_source"]
     description = "Represents an ion source"
     property_specification = {
         "uid": str,
@@ -65,7 +65,7 @@ class IonSourceNode(Node):
 
 
 class InstrumentNode(Node):
-    neo4j_label = "instrument"
+    neo4j_label = ["instrument"]
     description = "Represents an instrument"
     property_specification = {
         "uid": str,
@@ -74,7 +74,7 @@ class InstrumentNode(Node):
 
 
 class OrganismNode(Node):
-    neo4j_label = "gnps_organism"
+    neo4j_label = ["gnps_organism"]
     description = "Represents an organism (as defined by GNPS)"
     property_specification = {
         "uid": str,

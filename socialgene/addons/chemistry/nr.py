@@ -1,18 +1,8 @@
 from socialgene.neo4j.neo4j_element import Node, Relationship
 
 
-class ChemicalFragment(Node):
-    neo4j_label = "chemical_fragment"
-    description = "Represents a chemical fragment as defined by rdkit.Chem.Descriptors"
-    required_properties = (["uid"],)
-    properties = {
-        "uid": str,
-    }
-    constraints_unique = ["uid"]
-
-
 class ChemicalCompoundNode(Node):
-    neo4j_label = "chemical_compound"
+    neo4j_label = ["chemical_compound"]
     description = "Represents a chemical compound"
     required_properties = ["inchi", "CanonicalSmiles"]
     property_specification = {
@@ -63,12 +53,6 @@ class ChemicalCompoundNode(Node):
     constraints_unique = ["inchi", "CanonicalSmiles"]
 
 
-class ContainsRel(Relationship):
-    neo4j_label = "CONTAINS"
-    description = "Connects a chemical compound to a chemical fragment"
-    start_class = ChemicalCompoundNode
-    end_class = ChemicalFragment
-
 
 class ChemicalSimilarity(Relationship):
     neo4j_label = "SIMILAR"
@@ -78,3 +62,35 @@ class ChemicalSimilarity(Relationship):
     property_specification = {
         "similarity": int,
     }
+
+
+
+class ChemicalSubstructure(ChemicalCompoundNode):
+    neo4j_label = ChemicalCompoundNode.neo4j_label + ["substructure"]
+    description = "Represents a chemical substructure"
+
+
+
+class ChemicalFragment(Node):
+    neo4j_label = ["chemical_fragment"]
+    description = "Represents a chemical fragment as defined by rdkit.Chem.Descriptors"
+    required_properties = (["uid"])
+    properties = {
+        "uid": str,
+    }
+    constraints_unique = ["uid"]
+
+
+class ContainsFragment(Relationship):
+    neo4j_label = "CONTAINS"
+    description = "Connects a chemical compound to a chemical fragment"
+    start_class = ChemicalCompoundNode
+    end_class = ChemicalFragment
+
+
+
+class ContainsSubstructure(Relationship):
+    neo4j_label = "CONTAINS"
+    description = "Connects a chemical compound to a chemical substructure"
+    start_class = ChemicalCompoundNode
+    end_class = ChemicalSubstructure

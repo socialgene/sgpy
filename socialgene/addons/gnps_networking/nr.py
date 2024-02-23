@@ -4,7 +4,7 @@ from socialgene.nextflow.nodes import ASSEMBLY
 
 
 class ClusterNode(Node):
-    neo4j_label = "gnps_cluster"
+    neo4j_label = ["gnps_cluster"]
     description = "Represents a GNPS molecular networking cluster"
     required_properties = ["cluster_index", "workflow_uuid"]
     property_specification = {
@@ -38,7 +38,7 @@ class ClusterNode(Node):
 
 
 class SpectrumNode(Node):
-    neo4j_label = "spectrum"
+    neo4j_label = ["spectrum"]
     description = "Represents a GNPS molecular networking spectrum"
     property_specification = {
         "uid": str,

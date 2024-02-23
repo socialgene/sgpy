@@ -9,7 +9,7 @@ from socialgene.utils.logging import log
 
 class Neo4jElement(ABC):
 
-    neo4j_label = None
+    neo4j_label = None # list for nodes because they can have multiple labels, string for relationships because they can only have one
     description = None
     property_specification = {}
     header = None
@@ -157,7 +157,7 @@ class Node(Neo4jElement):
             )
 
     def __hash__(self):
-        return hash((self.neo4j_label, frozenset(self.properties.items())))
+        return hash((frozenset(self.neo4j_label), frozenset(self.properties.items())))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -166,8 +166,9 @@ class Node(Neo4jElement):
                     return True
         return False
 
+
     def __str__(self) -> str:
-        return f"(:{self.neo4j_label})"
+        return f"(:{":".join(self.neo4j_label)})"
 
     def _neo4j_repr(
         self,
@@ -192,18 +193,20 @@ class Node(Neo4jElement):
         req_props = self._Neo4jElement__required_properties_dict.keys()
         req_props = [f"{i}: {map_key}.{i}" for i in req_props]
         req_props = ", ".join(req_props)
-        return f"({var}: {self.neo4j_label} {{{req_props}}})"
+        return f"({var}: {self.neo4j_label[0]} {{{req_props}}})"
 
     def add_constraints_to_neo4j(self):
         """Add constraints to Neo4j"""
         if not hasattr(self, "constraints_unique") or not self.constraints_unique:
             log.info(f"No unique constraints to add for {self.__str__()} nodes")
             return
+        # for now at least only use the first label
+        label = self.neo4j_label[0]
         with GraphDriver() as db:
             res = db.run(
                 f"""
-                CREATE CONSTRAINT python_added_index_{self.neo4j_label} IF NOT EXISTS
-                FOR (n:{self.neo4j_label})
+                CREATE CONSTRAINT python_added_index_{label} IF NOT EXISTS
+                FOR (n:{label})
                 REQUIRE ({", ".join([f"n.{i}" for i in self.constraints_unique])}) IS UNIQUE
                 """
             ).consume()
@@ -219,12 +222,18 @@ class Node(Neo4jElement):
 
     def add_to_neo4j(self, create=False):
         """Add a single node to Neo4j"""
-
-        merge_str = self._neo4j_repr_params(var="n", map_key="required_props")
+        var="n"
+        merge_str = self._neo4j_repr_params(var=var, map_key="required_props")
         paramsdict = {
             "optional_props": self._Neo4jElement__optional_properties_dict,
             "required_props": self._Neo4jElement__required_properties_dict,
         }
+        if len(self.neo4j_label) > 1:
+            # handle adding extra labels if they exist
+            add_label_str = ":".join(self.neo4j_label[1:])
+            add_label_str = f"SET {var}:{add_label_str}"
+        else:
+            add_label_str = ""
         if create:
             with GraphDriver() as db:
                 res = db.run(
@@ -233,6 +242,7 @@ class Node(Neo4jElement):
                     WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
                     CREATE {merge_str}
                     SET n += optional_props
+                    {add_label_str}
                     """,
                     paramsdict=paramsdict,
                 ).consume()
@@ -243,6 +253,11 @@ class Node(Neo4jElement):
                 except Exception:
                     pass
         else:
+            if len(self.neo4j_label) > 1:
+                add_label_str = ":".join(self.neo4j_label[1:])
+                add_label_str = f"ON CREATE SET {var}:{add_label_str}"
+            else:
+                add_label_str = ""
             with GraphDriver() as db:
                 res = db.run(
                     f"""
@@ -250,6 +265,7 @@ class Node(Neo4jElement):
                     WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
                     MERGE {merge_str}
                     ON CREATE SET n += optional_props
+                    {add_label_str}
                     """,
                     paramsdict=paramsdict,
                 ).consume()
@@ -271,7 +287,17 @@ class Node(Neo4jElement):
             )
         single = list_of_nodes[0]
         count_res = {"nodes_created": 0, "properties_set": 0}
-        merge_str = single._neo4j_repr_params(var="n", map_key="required_props")
+        var="n"
+        merge_str = single._neo4j_repr_params(var=var, map_key="required_props")
+        if len(single.neo4j_label) > 1:
+            # handle adding extra labels if they exist
+            add_label_str = ":".join(single.neo4j_label[1:])
+            if create:
+                add_label_str = f"SET {var}:{add_label_str}"
+            else:
+                add_label_str = f"ON CREATE SET {var}:{add_label_str}"
+        else:
+            add_label_str = ""
         for paramsdictlist in batched(
             (
                 {
@@ -291,6 +317,7 @@ class Node(Neo4jElement):
                         WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
                         CREATE {merge_str}
                         SET n += optional_props
+                        {add_label_str}
                         """,
                         paramsdictlist=paramsdictlist,
                     ).consume()
@@ -308,6 +335,7 @@ class Node(Neo4jElement):
                         WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
                         MERGE {merge_str}
                         ON CREATE SET n += optional_props
+                        {add_label_str}
                         """,
                         paramsdictlist=paramsdictlist,
                     ).consume()
@@ -336,7 +364,7 @@ class Relationship(Neo4jElement):
             )
 
     def __str__(self):
-        return f"(:{self.start.neo4j_label})-[:{self.neo4j_label}]->(:{self.end.neo4j_label})"
+        return f"(:{self.start.__str__()})-[:{self.neo4j_label}]->(:{self.end.__str__()})"
 
     def __hash__(self):
         return hash(
@@ -356,6 +384,9 @@ class Relationship(Neo4jElement):
                         if self.end == other.end:
                             return True
         return False
+    @property
+    def neo4j_label_str(self):
+        return str(self.neo4j_label)
 
     def _start_field(self):
         for i in self.header:

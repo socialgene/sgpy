@@ -1,13 +1,15 @@
 """https://mibig.secondarymetabolites.org/"""
 
 import re
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 
 from socialgene.nextflow.nodes import ASSEMBLY
+from socialgene.neo4j.neo4j_element import Node
 
 
 class Mibig(ASSEMBLY):
     # TODO: multiple labels
-    neo4j_label = "assembly"
+    neo4j_label = ["assembly"]
     description = "Represents a single Mibig entry"
     property_specification = {
         "uid": str,
@@ -31,3 +33,15 @@ class Mibig(ASSEMBLY):
             return temp
         else:
             raise ValueError(f"Unexpected mibig ID {uid}")
+
+
+
+class Substrate(ChemicalCompoundNode):
+    neo4j_label =  ChemicalCompoundNode.neo4j_label + ["substrate"]
+    description = "Mibig substrate (e.g. NRPS monomer)"
+
+
+
+
+# [ChemicalCompoundNode.neo4j_label]
+

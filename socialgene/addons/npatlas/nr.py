@@ -17,7 +17,7 @@ from socialgene.utils.logging import log
 
 
 class NPAtlasNode(Node):
-    neo4j_label = "npatlas"
+    neo4j_label = ["npatlas"]
     description = "Represents a single NPAtlas entry"
     property_specification = {
         "uid": str,

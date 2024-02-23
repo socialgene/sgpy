@@ -17,19 +17,28 @@ import socialgene.addons.npmrd.nr
 import socialgene.addons.publication.nr
 import socialgene.nextflow.nodes
 import socialgene.nextflow.relationships
-from socialgene.addons.chemistry.nr import ChemicalFragment, ContainsRel
+import socialgene.addons.chemistry.nr
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.lists_to_markdown import markdown_table_from_list
 from socialgene.utils.logging import log
 
+
 console = Console()
 builtins.print = print
 
 
+def recursive_get(x, levels=10):
+    if levels == 0:
+        return set(x)
+    else:
+        subclasses = [i.__subclasses__() for i in x]
+        flattened_subclasses = [subclass for sublist in subclasses for subclass in sublist]
+        return set(x) | recursive_get(flattened_subclasses, levels-1)
+
 class GraphSchema:
-    ALL_NODES = Node.__subclasses__()
-    ALL_RELATIONSHIPS = Relationship.__subclasses__()
+    ALL_NODES = recursive_get(Node.__subclasses__())
+    ALL_RELATIONSHIPS = recursive_get(Relationship.__subclasses__())
     NEXTFLOW_NODES = [
         x for x in ALL_NODES if x.__module__.startswith("socialgene.nextflow")
     ]
@@ -45,8 +54,6 @@ class GraphSchema:
         pass
 
     def _nodes_table(self):
-        node_dict = {i.__name__: i for i in self.ALL_NODES}
-        node_dict = dict(sorted(node_dict.items()))
         table = Table(title="Nodes", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column("From", justify="left", style="cyan", no_wrap=True, ratio=1)
@@ -60,18 +67,16 @@ class GraphSchema:
         )
         table.add_column("Properties", style="magenta", ratio=1)
         # sort by label which is the key
-        for i in node_dict.values():
+        for i in sorted(list(self.ALL_NODES), key=lambda x: x.neo4j_label[0]):
             table.add_row(
-                i.neo4j_label,
+                ":".join(i.neo4j_label),
                 i.__module__,
                 i.description,
-                "\n".join(wrap(", ".join(i().property_specification))),
+                "\n".join(wrap(", ".join(i.property_specification))),
             )
         yield table
 
     def _relationships_table(self):
-        rel_dict = {i.__name__: i for i in self.ALL_RELATIONSHIPS}
-        rel_dict = dict(sorted(rel_dict.items()))
         table = Table(title="Relationships", show_lines=True)
         table.add_column("Label", justify="left", style="cyan", no_wrap=True, ratio=1)
         table.add_column(
@@ -80,7 +85,7 @@ class GraphSchema:
         table.add_column("Relationship", style="magenta", ratio=1)
         table.add_column("NF results subdirectory", style="magenta", ratio=1)
         table.add_column("Neo4j header file", style="magenta", ratio=1)
-        for i in rel_dict.values():
+        for i in sorted(list(self.ALL_RELATIONSHIPS), key=lambda x: x.neo4j_label[0]):
             table.add_row(
                 i.neo4j_label,
                 i.__module__,
@@ -91,26 +96,26 @@ class GraphSchema:
         yield table
 
     def _markdown_table_nodes(nodelist):
-        node_dict = {i.__name__: i for i in nodelist}
-        node_dict = dict(sorted(node_dict.items()))
         cols = [
             (
                 "Label",
                 "Description",
                 "NF results subdirectory",
                 "Neo4j header file",
+                "Unique on",
                 "properties",
             )
         ]
         rows = [
             (
-                i.neo4j_label,
+                ":".join(i.neo4j_label),
                 i.description,
                 i.target_subdirectory,
                 i.header_filename,
-                i.property_specification,
+                ", ".join(i.constraints_unique),
+                [k for k in i.property_specification.keys()],
             )
-            for i in node_dict.values()
+            for i in sorted(list(nodelist), key=lambda x: x.neo4j_label[0])
         ]
         cols.extend(rows)
         print(
@@ -121,8 +126,6 @@ class GraphSchema:
         )
 
     def _markdown_table_rels(rellist):
-        rel_dict = {i.__name__: i for i in rellist}
-        rel_dict = dict(sorted(rel_dict.items()))
         cols = [
             (
                 "Label",
@@ -134,11 +137,11 @@ class GraphSchema:
         rows = [
             (
                 i.neo4j_label,
-                i._cypher_string,
+                 f"({":".join(i.start_class.neo4j_label)})-[:{i.neo4j_label}]->({":".join(i.end_class.neo4j_label)})",
                 i.target_subdirectory,
                 i.header_filename,
             )
-            for i in rel_dict.values()
+            for i in sorted(list(rellist), key=lambda x: x.neo4j_label[0])
         ]
         cols.extend(rows)
         print(
