@@ -80,7 +80,7 @@ def search_bgc(
     else:
         search_object.sg_object.add_sequences_from_neo4j()
     # return search_object
-    return search_object
+    # return search_object
     search_object._create_links(
         tool=analyze_with, argstring="--fast --max-hsps 1", cpus=10
     )
