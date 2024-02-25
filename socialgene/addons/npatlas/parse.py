@@ -117,7 +117,7 @@ class NPAtlasEntry:
         self._assign_classyfire_intermediate_nodes()
         self._assign_classyfire_alternative_parents()
         self._assign_npclassifier()
-
+        self._assign_publication()
     def _parse_single_entry(self):
         self.uid = self.entry.get("npaid", None)
         self.original_name = self.entry.get("original_name", None)
@@ -131,13 +131,27 @@ class NPAtlasEntry:
         self.inchi = self.entry.get("inchi", None)
         self.m_plus_h = self.entry.get("m_plus_h", None)
         self.m_plus_na = self.entry.get("m_plus_na", None)
-        if self.entry["origin_reference"]["doi"]:
-            self.origin_reference = NPAtlasPublication(
-                self.entry.get("origin_reference")
-            )
+        self.origin_reference =
         self.synonyms = None
         self._assign_taxon()
         self._assign_external_ids()
+
+
+    def _assign_publication(self):
+        self.origin_reference = NPAtlasPublication()
+        try:
+            self.origin_reference.properties["doi"] = self.origin_reference._extract_doi(
+                self.entry.get("origin_reference").get("doi", None)
+            )
+        except Exception as e:
+            log.debug(f"Failed to extract doi: {e}")
+
+        for i in ["pmid", "authors", "title", "journal", "year"]:
+            try:
+                self.origin_reference.properties[i] = self.entry.get("origin_reference").get(i, None)
+            except Exception as e:
+                log.debug(f"Failed to extract {i}: {e}")
+
 
     def _assign_lowest_classyfire(self):
         # not all entries have classyfire data at every level, just assign the most specific one

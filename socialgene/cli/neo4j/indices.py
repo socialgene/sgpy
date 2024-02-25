@@ -24,18 +24,30 @@ parser.add_argument(
 
 def main():
     args = parser.parse_args()
-    as_dict = {i.neo4j_label: i for i in GraphSchema.ALL_NODES}
+    as_dict = {}
+    log.info("Adding indices to Neo4j, this may take a while depending on how many of each label exist in the database.")
+    for i in GraphSchema.ALL_NODES:
+        if len(i.neo4j_label) == 1:
+            as_dict[i.neo4j_label[0]] = i
+        else:
+            as_dict[i.neo4j_label[-1]] = i
     if not any([i for i in args.__dict__.values()]):
         parser.print_help()
         print(f"Available labels: {sorted(list(as_dict.keys()))}")
         return
     if args.all:
         for i in GraphSchema.ALL_NODES:
-            i().add_constraints_to_neo4j()
+            try:
+                i().add_constraints_to_neo4j()
+            except Exception as e:
+                log.warning(f"Failed to add indices to {i.neo4j_label}: {e}")
     elif args.labels:
         for i in args.labels:
             if i in as_dict:
-                as_dict[i]().add_constraints_to_neo4j()
+                try:
+                    as_dict[i]().add_constraints_to_neo4j()
+                except Exception as e:
+                    log.warning(f"Failed to add indices to {i}: {e}")
             else:
                 log.warning(f"Label {i} not found in GraphSchema.ALL_NODES")
                 log.warning(f"Available labels: {as_dict.keys()}")

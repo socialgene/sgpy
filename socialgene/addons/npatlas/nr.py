@@ -62,35 +62,7 @@ class NPAtlasToGnps(Relationship):
 
 
 class NPAtlasPublication(Publication):
-    def __init__(self, origin_reference) -> None:
-        super().__init__()
-        try:
-            self.properties["doi"] = self._extract_doi(
-                origin_reference.get("doi", None)
-            )
-        except Exception as e:
-            log.debug(f"Failed to extract doi: {e}")
-        try:
-            self.properties["pmid"] = int(origin_reference.get("pmid", None))
-        except Exception as e:
-            log.debug(f"Failed to convert pmid to int: {e}")
-        try:
-            self.properties["authors"] = origin_reference.get("authors", None)
-        except Exception as e:
-            log.debug(f"Failed to extract authors: {e}")
-        try:
-            self.properties["title"] = origin_reference.get("title", None)
-        except Exception as e:
-            log.debug(f"Failed to extract title: {e}")
-        try:
-            self.properties["journal"] = origin_reference.get("journal", None)
-        except Exception as e:
-            log.debug(f"Failed to extract journal: {e}")
-        try:
-            self.properties["year"] = int(origin_reference.get("year", None))
-        except Exception as e:
-            log.debug(f"Failed to convert year to int: {e}")
-
+    pass
 
 class NPAtlasToPublication(Relationship):
     neo4j_label = "HAS"

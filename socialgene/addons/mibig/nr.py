@@ -9,16 +9,17 @@ from socialgene.neo4j.neo4j_element import Node
 
 class Mibig(ASSEMBLY):
     # TODO: multiple labels
-    neo4j_label = ["assembly"]
+    neo4j_label = ["assembly", "mibig"]
     description = "Represents a single Mibig entry"
     property_specification = {
         "uid": str,
     }
     required_properties = ["uid"]
 
-    def __init__(self, properties) -> None:
+    def __init__(self, properties=None) -> None:
         super().__init__()
-        self.properties["uid"] = self.attempt_to_fix_uid(properties["uid"])
+        if properties:
+            self.properties["uid"] = self.attempt_to_fix_uid(properties["uid"])
 
     @staticmethod
     def attempt_to_fix_uid(uid):
