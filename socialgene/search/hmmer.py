@@ -509,8 +509,11 @@ class SearchDomains(SearchBase, CompareDomains):
         table.add_column("Sum", justify="left", style="cyan", no_wrap=True, ratio=1)
         for i in self._outdegree_table_stats():
             table.add_row(*[str(i) for i in i])
-        console = CONSOLE
-        console.print(table)
+        before_width=CONSOLE.width
+        CONSOLE.width = 300
+        CONSOLE.print(table)
+        CONSOLE.width=before_width
+
 
     def _outdegree_table_stats(self):
         temp = (
