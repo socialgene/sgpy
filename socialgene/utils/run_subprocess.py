@@ -1,10 +1,8 @@
 import subprocess
 
-from rich.console import Console
 
-from socialgene.utils.logging import log
+from socialgene.utils.logging import CONSOLE, log
 
-console = Console()
 
 
 def run_subprocess(
@@ -34,7 +32,7 @@ def run_subprocess(
         command_list_string = command_list
     if status:
         log.info(f"Executing external program:\n{command_list_string}")
-        with console.status(
+        with CONSOLE.status(
             "",
             spinner="bouncingBar",
         ) as status:

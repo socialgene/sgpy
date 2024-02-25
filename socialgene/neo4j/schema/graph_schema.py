@@ -2,7 +2,6 @@
 import builtins
 from textwrap import wrap
 
-from rich.console import Console, ConsoleOptions, RenderResult
 from rich.table import Table
 
 import socialgene.addons.chebi.nr
@@ -21,10 +20,9 @@ import socialgene.addons.chemistry.nr
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.lists_to_markdown import markdown_table_from_list
-from socialgene.utils.logging import log
+from socialgene.utils.logging import CONSOLE, log
 
 
-console = Console()
 builtins.print = print
 
 
@@ -185,9 +183,9 @@ def main():  # pragma: no cover
             GraphSchema._markdown_table_rels(GraphSchema.ALL_RELATIONSHIPS)
     else:
         if args.nodes:
-            console.print(GraphSchema()._nodes_table().__next__())
+            CONSOLE.print(GraphSchema()._nodes_table().__next__())
         if args.rels:
-            console.print(GraphSchema()._relationships_table().__next__())
+            CONSOLE.print(GraphSchema()._relationships_table().__next__())
 
 
 if __name__ == "__main__":

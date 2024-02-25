@@ -7,7 +7,6 @@ from typing import List
 
 import pandas as pd
 from neo4j import AsyncGraphDatabase
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -22,7 +21,7 @@ from socialgene.compare_proteins.hmmer import CompareDomains
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.search.base import SearchBase
-from socialgene.utils.logging import log
+from socialgene.utils.logging import CONSOLE, log
 
 progress_bar = Progress(
     TextColumn("Ingesting target clusters from database..."),
@@ -510,7 +509,7 @@ class SearchDomains(SearchBase, CompareDomains):
         table.add_column("Sum", justify="left", style="cyan", no_wrap=True, ratio=1)
         for i in self._outdegree_table_stats():
             table.add_row(*[str(i) for i in i])
-        console = Console()
+        console = CONSOLE
         console.print(table)
 
     def _outdegree_table_stats(self):

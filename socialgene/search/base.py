@@ -4,7 +4,6 @@ from math import ceil
 from pathlib import Path
 
 import pandas as pd
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -19,7 +18,7 @@ from socialgene.base.socialgene import SocialGene
 from socialgene.clustermap.serialize import SerializeToClustermap
 from socialgene.compare_gene_clusters.compare_gene_clusters import BGCComparison
 from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.utils.logging import log
+from socialgene.utils.logging import CONSOLE, log
 
 progress_bar = Progress(
     TextColumn("Pulling target cluster data from database..."),
@@ -730,5 +729,5 @@ class SearchBase(ABC):
             ii += 1
             if ii == n:
                 break
-        console = Console()
+        console = CONSOLE
         console.print(table)
