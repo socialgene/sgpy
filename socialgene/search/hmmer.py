@@ -63,8 +63,8 @@ def _find_similar_proteins(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+                {'WHERE (a1)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
             domain_list=list(domain_list),
@@ -108,8 +108,8 @@ async def _find_similar_proteins_async(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+                {'WHERE (a1)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
             domain_list=list(domain_list),

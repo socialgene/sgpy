@@ -223,9 +223,12 @@ class SearchBase(ABC):
         )
 
     def annotate(self):
-        self._create_links()
-        self._choose_group()
-        self._rank_order_bgcs()
+        try:
+            self._create_links()
+            self._choose_group()
+            self._rank_order_bgcs()
+        except Exception as e:
+            log.warning(e)
 
     def _compare_two_gene_clusters(self, group, q_len):
         # levenshtein similarity of query proteins to target proteins
