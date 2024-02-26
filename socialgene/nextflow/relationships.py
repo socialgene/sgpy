@@ -252,6 +252,7 @@ class SOURCE_DB(Relationship):
         ":IGNORE",
         ":IGNORE",
         ":IGNORE",
+        ":IGNORE",
     ]
     start_class = Nodes.HMM
     end_class = Nodes.HMM_SOURCE
