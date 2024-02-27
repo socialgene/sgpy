@@ -141,7 +141,7 @@ class Neo4jElement(ABC):
 
 class Node(Neo4jElement):
     """Represents a single Node"""
-
+    nonunique_index = None
     def __init__(
         self,
         uid: List[str] = None,
@@ -219,6 +219,32 @@ class Node(Neo4jElement):
                     )
             except Exception:
                 pass
+
+
+    def add_nonunique_index_to_neo4j(self):
+        """Add non-unique indices to Neo4j"""
+        if not hasattr(self, "nonunique_index") or not self.nonunique_index:
+            log.info(f"No non-unique indices to add for {self.__str__()} nodes")
+            return
+        label = self.neo4j_label[0]
+        with GraphDriver() as db:
+            res = db.run(
+                f"""
+                CREATE INDEX python_added_non_unique_index_{label} IF NOT EXISTS
+                FOR (n:{label})
+                ON ({", ".join([f"n.{i}" for i in self.nonunique_index])})
+                """
+            ).consume()
+            try:
+                if res.counters:
+                    log.info(
+                        f"Created {res.counters.indexes_added} non-unique indices for {self.__str__()} nodes"
+                    )
+            except Exception:
+                pass
+
+
+
 
     def add_to_neo4j(self, create=False):
         """Add a single node to Neo4j"""

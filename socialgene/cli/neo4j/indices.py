@@ -50,6 +50,7 @@ def main():
                 progress.update(task, lab=i.neo4j_label)
                 try:
                     i().add_constraints_to_neo4j()
+                    i().add_nonunique_index_to_neo4j()
                 except Exception as e:
                     log.warning(f"Failed to add indices to {i.neo4j_label}: {e}")
 
@@ -63,9 +64,10 @@ def main():
             task = progress.add_task("Adding index for...", lab="")
             for i in args.labels:
                 if i in as_dict:
-                    progress.update(task, lab=i.neo4j_label)
+                    progress.update(task, lab=i)
                     try:
                         as_dict[i]().add_constraints_to_neo4j()
+                        as_dict[i]().add_nonunique_index_to_neo4j()
                     except Exception as e:
                         log.warning(f"Failed to add indices to {i}: {e}")
                 else:

@@ -40,6 +40,7 @@ class ChemicalCompound:
         self.morgan = AllChem.GetMorganFingerprintAsBitVect(
             self.mol, nBits=2048, radius=2
         )
+        self.inchi = Chem.MolToInchi(self.mol)
 
     def parse_compound(self, input):
         if isinstance(input, Chem.rdchem.Mol):
@@ -67,7 +68,7 @@ class ChemicalCompound:
             k: rdMolHash.MolHash(self.mol, v)
             for k, v in rdMolHash.HashFunction.names.items()
         }
-        temp["inchi"] = Chem.MolToInchi(self.mol)
+        temp["inchi"] = self.inchi
         return temp
 
     @property
