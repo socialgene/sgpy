@@ -34,7 +34,7 @@ expected_headers = {
     "tigrfam_to_role": ":START_ID(hmm_source)\t:END_ID(tigrfam_role)\r\n",
     "protein_to_go": ":START_ID(protein)\t:END_ID(goterm)\r\n",
     "protein_ids": "uid:ID(protein)\tcrc64\tsequence\r\n",
-    "hmm_source_relationships": ":END_ID(hmm_source)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:START_ID(hmm)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\r\n",
+    "hmm_source_relationships": ":END_ID(hmm_source)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:START_ID(hmm)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\r\n",
     "go_to_go": ":START_ID(goterm)\t:END_ID(goterm)\t:TYPE\r\n",
     "tigrfam_to_go": ":START_ID(hmm_source)\t:END_ID(goterm)\r\n",
     "tigrfam_role": "uid:ID(tigrfam_role)\r\n",
