@@ -11,7 +11,7 @@ authors =  [
     {name = "Chase M. Clark", email = "chasingmicrobes@gmail.com"},
 ]
 keywords = []  #! TODO
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 # Pypi classifiers: https://pypi.org/classifiers/
 classifiers = [  #! Update me
   "Development Status :: 3 - Alpha",
@@ -26,11 +26,12 @@ classifiers = [  #! Update me
   "Programming Language :: Python :: 3",
 ]
 dependencies = [
-        "pandas>=1.3",
-        "numpy>=1.21",
-        "neo4j>=5.9.0",
-        "biopython>=1.7",
-        "textdistance>=4.2.1",
+        "rdkit==2023.9.4",
+        "pandas>=2.2",
+        "numpy>=1.26",
+        "neo4j>=5.17.0",
+        "biopython>=1.83",
+        "textdistance>=4.6.1",
         "rich",
         "requests"
 ]
@@ -43,6 +44,7 @@ repository = "https://github.com/socialgene/sgpy"
 homepage = "https://socialgene.github.io"
 
 [project.optional-dependencies]
+chem= ["rdkit"]
 ci = ["pytest-cov"]
 cd = ["twine"]
 
@@ -69,11 +71,15 @@ sg_search_gc            = "socialgene.cli.search.gene_cluster:main"
 sgdb_import_classyfire = "socialgene.dbmodifiers.classyfire.import:main"
 
 # neo4j
-sg_indices              = "socialgene.cli.neo4j.indices:main"
+sg_index              = "socialgene.cli.neo4j.indices:main"
 sg_massage              = "socialgene.cli.neo4j.massage:main"
 
 # info
 sg_version              = "socialgene.utils.version:main"
-sg_neo4j_version        = "socialgene.utils.version:neo4j"
-sg_nodes                = "socialgene.neo4j.schema.nodes:printer"
-sg_relationships        = "socialgene.neo4j.schema.relationships:printer"
+sg_neo4j_version        = "socialgene.utils.version:main"
+sg_schema               = "socialgene.neo4j.schema.graph_schema:main"
+
+
+# addons
+sg_import_gnps          = "socialgene.addons.gnps_networking.cli:main"
+sg_import_npatlas       = "socialgene.addons.npatlas.cli:main"

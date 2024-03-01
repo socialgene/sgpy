@@ -2,15 +2,13 @@ import csv
 from pathlib import Path
 from typing import List
 
-from socialgene.neo4j.schema.modules import ModulesMixin
-from socialgene.neo4j.schema.nodes import NodesMixin
-from socialgene.neo4j.schema.relationships import RelationshipsMixin
+from socialgene.neo4j.schema.modules import Modules
 from socialgene.utils.logging import log
 
 
-class SocialgeneModules(ModulesMixin, NodesMixin, RelationshipsMixin):
+class SocialgeneModules(Modules):
     def __init__(self, *args, **kwargs):
-        super(SocialgeneModules, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.selected_nodes = set()
         self.selected_relationships = set()
 
@@ -20,20 +18,21 @@ class SocialgeneModules(ModulesMixin, NodesMixin, RelationshipsMixin):
         Args:
             module_list (List[str]): list of socialgene modules (e.g. ["base", "protein"])
         """
-        # if only a single module str is provided, make sure it's a lists
+        # if only a single module str is provided, make sure it's a list
         for module in list(module_list):
-            if module not in self.modules:
-                raise ValueError(
-                    f"Module {module} not found. Please select from: {list(self.modules.keys())}"
-                )
-            # add nodes of module to set
-            for node in self.modules.get(module).nodes:
-                if node_obj := self.nodes.get(node):
-                    self.selected_nodes.add(node_obj)
-            for rel in self.modules.get(module).relationships:
-                # add relationships of module to set
-                if rel_obj := self.relationships.get(rel):
-                    self.selected_relationships.add(rel_obj)
+            self.add_module(module)
+
+    def add_module(self, module_id: str):
+        if module_id not in self.modules:
+            raise ValueError(
+                f"Module {module_id} not found. Please select from: {list(self.modules.keys())}"
+            )
+        else:
+            log.debug(f"Adding module: {module_id}")
+            for node in self.modules.get(module_id).nodes:
+                self.selected_nodes.add(node)
+            for rel in self.modules.get(module_id).relationships:
+                self.selected_relationships.add(rel)
 
     def _writer(self, outdir, header, header_filename):
         outpath = Path(outdir, header_filename)
@@ -50,7 +49,13 @@ class SocialgeneModules(ModulesMixin, NodesMixin, RelationshipsMixin):
     def write_neo4j_headers(self, outdir: str):
         for node in self.selected_nodes:
             self._writer(
-                outdir, header=node.header, header_filename=node.header_filename
+                outdir,
+                header=node().header,
+                header_filename=node().header_filename,
             )
         for rel in self.selected_relationships:
-            self._writer(outdir, header=rel.header, header_filename=rel.header_filename)
+            self._writer(
+                outdir,
+                header=rel.header,
+                header_filename=rel.header_filename,
+            )

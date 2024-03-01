@@ -3,12 +3,10 @@ import importlib.resources
 from typing import Any
 
 from neo4j import GraphDatabase
-from rich.console import Console
 
 from socialgene.config import env_vars
-from socialgene.utils.logging import log
+from socialgene.utils.logging import CONSOLE, log
 
-console = Console()
 
 
 # Read in queries from cypher file, as dictionary
@@ -71,9 +69,9 @@ class GraphDriver(object):
     def __init__(self) -> None:
         self.session = None
         # self.spinner handled by class' context management protocol
-        # self.spinner = console.status(
-        #     "Executing Neo4j transaction", spinner="bouncingBar"
-        # )
+        self.spinner = CONSOLE.status(
+            "Executing Neo4j transaction", spinner="bouncingBar"
+        )
 
     def check_connection(self):
         self.driver.verify_connectivity()

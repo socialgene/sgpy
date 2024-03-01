@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from socialgene.neo4j.admin_import import Neo4jAdminImport
 from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
+from socialgene.neo4j.utils.admin_import import Neo4jAdminImport
 
 
 def read_in(fpath):
@@ -25,25 +25,20 @@ expected_headers = {
     "parameters": "uid:ID(when)\tSG_LOC_NEO4J\tSG_LOC_HMMS\tNEO4J_dbms_memory_pagecache_size\tNEO4J_dbms_memory_heap_initial__size\tNEO4J_dbms_memory_heap_max__size\tHMMSEARCH_IEVALUE\tHMMSEARCH_BACKGROUND\tHMMSEARCH_BIASFILTER\tHMMSEARCH_NULL2\tHMMSEARCH_SEED\tHMMSEARCH_Z\tHMMSEARCH_DOMZ\tHMMSEARCH_F1\tHMMSEARCH_F2\tHMMSEARCH_F3\tHMMSEARCH_E\tHMMSEARCH_DOME\tHMMSEARCH_INCE\tHMMSEARCH_INCDOME\tHMMSEARCH_BITCUTOFFS\tplatform\tarchitecture\tpy_executable\tpy_version\tgenome_download_command\r\n",
     "locus": "uid:ID(nucleotide)\texternal_id\taltitude\tbio_material\tbioproject\tbiosample\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tmol_type\tnote\torganelle\torganism\tpcr_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsubmitter_seqid\tsub_species\tsub_strain\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
     "taxid": "uid:ID(taxid)\tname\trank\r\n",
-    "mz_cluster_index_nodes": "uid:ID(mz_cluster_index)\tcomponent_index:Long\tparent_mass:Float\tprecursor_mass:Float\tsum_precursor_intensity:Float\tSmiles:String\trt_mean::Float\trt_std_err:Float\tlibrary_id:String\tmq_score:Float\tmz_error_ppm:Float\tmass_diff:String\r\n",
     "sg_hmm_nodes": "uid:ID(hmm)\r\n",
     "assembly_to_taxid": ":START_ID(assembly)\t:END_ID(taxid)\r\n",
-    "assembly_to_mz_file": ":START_ID(assembly)\t:END_ID(mz_source_file)\r\n",
     "tigrfamrole_to_mainrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_mainrole)\r\n",
     "assembly_to_locus": ":END_ID(assembly)\t:START_ID(nucleotide)\r\n",
     "locus_to_protein": ":START_ID(nucleotide)\t:END_ID(protein)\texternal_id\tlocus_tag\tstart:Long\tend:Long\tstrand:Long\tdescription\tpartial_on_complete_genome:Boolean\tmissing_start:Boolean\tmissing_stop:Boolean\tinternal_stop:Boolean\tpartial_in_the_middle_of_a_contig:Boolean\tmissing_N_terminus:Boolean\tmissing_C_terminus:Boolean\tframeshifted:Boolean\ttoo_short_partial_abutting_assembly_gap:Boolean\tincomplete:Boolean\r\n",
     "assembly": "uid:ID(assembly)\taltitude\tbio_material\tbioproject\tbiosample\tcell_line\tcell_type\tchromosome\tclone\tclone_lib\tcollected_by\tcollection_date\tcountry\tcultivar\tculture_collection\tdb_xref\tdev_stage\tecotype\tenvironmental_sample\tfocus\tgermline\thaplogroup\thaplotype\thost\tidentified_by\tisolate\tisolation_source\tlab_host\tlat_lon\tmacronuclear\tmap\tmating_type\tmetagenome_source\tmol_type\tnote\torganelle\torganism\tpcr_primers\tplasmid\tpop_variant\tproviral\trearranged\tsegment\tserotype\tserovar\tsex\tspecimen_voucher\tstrain\tsub_clone\tsub_species\tsub_strain\tsubmitter_seqid\ttissue_lib\ttissue_type\ttransgenic\ttype_material\tvariety\r\n",
     "tigrfam_to_role": ":START_ID(hmm_source)\t:END_ID(tigrfam_role)\r\n",
     "protein_to_go": ":START_ID(protein)\t:END_ID(goterm)\r\n",
-    "protein_ids": "uid:ID(protein)\tcrc64\r\n",
-    "mz_source_file": "uid:ID(mz_source_file)\r\n",
-    "hmm_source_relationships": ":END_ID(hmm_source)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:START_ID(hmm)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\r\n",
-    "cluster_to_source_file": ":END_ID(mz_cluster_index)\t:START_ID(mz_source_file)\r\n",
+    "protein_ids": "uid:ID(protein)\tcrc64\tsequence\r\n",
+    "hmm_source_relationships": ":END_ID(hmm_source)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:START_ID(hmm)\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\t:IGNORE\r\n",
     "go_to_go": ":START_ID(goterm)\t:END_ID(goterm)\t:TYPE\r\n",
     "tigrfam_to_go": ":START_ID(hmm_source)\t:END_ID(goterm)\r\n",
     "tigrfam_role": "uid:ID(tigrfam_role)\r\n",
     "hmm_source": "uid:ID(hmm_source)\t:LABEL\trel_path:String\tname:String\tacc:String\tnotes:String\tdescription:String\tdate:String\thash:String\thash_used:String\tmodel_length:String\tsuper_category:String\tcategory:String\tsubcategory:String\tga:String\ttc:String\tnc:String\r\n",
-    "molecular_network": ":START_ID(mz_cluster_index)\t:END_ID(mz_cluster_index)\tdelta_mz:Float\tmeh:Float\tcosine:Float\tother_score:Float\r\n",
     "tigrfamrole_to_subrole": ":START_ID(tigrfam_role)\t:END_ID(tigrfam_subrole)\r\n",
     "taxid_to_taxid": ":START_ID(taxid)\t:END_ID(taxid)\r\n",
     "goterms": "uid:ID(goterm)\tname\tnamespace\tdef\r\n",
@@ -59,29 +54,12 @@ def tempor_dir(tmpdir_factory):
     return fn
 
 
-# sg_mod = SocialgeneModules()
-# fn="/home/chase/Downloads/asd"
-# sg_mod.add_modules(list(sg_mod.modules.keys()))
-# sg_mod.write_neo4j_headers(outdir=fn)
-
-# p = Path("/home/chase/Downloads/asd").glob("**/*")
-# files = [x for x in p if x.is_file()]
-# vals = {i.stem: read_in(i) for i in files}
-# if k == "protein_ids":
-#     assert vals[k] == expected_headers[k]
-# else:
-#     assert vals[k] == expected_headers[k]
-
-
 @pytest.mark.parametrize("k", [k for k in expected_headers.keys()])
 def test_creation_and_writing_of_neo4j_headers(tempor_dir, k):
     p = Path(tempor_dir).glob("**/*")
     files = [x for x in p if x.is_file()]
     vals = {i.stem: read_in(i) for i in files}
-    if k == "protein_ids":
-        assert vals[k] == expected_headers[k]
-    else:
-        assert vals[k] == expected_headers[k]
+    assert vals[k] == expected_headers[k]
 
 
 def test_neo4j_admin_import_dir_creation():

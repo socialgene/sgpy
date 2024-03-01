@@ -165,11 +165,11 @@ class Compound:
         )
 
         if summary.metadata.get("stats"):
-            log.info(
+            log.debug(
                 f"{summary.metadata.get('stats').get('properties-set')} properties modified"
             )
         else:
-            log.info("No properties modified")
+            log.debug("No properties modified")
 
 
 class Mibig_Compound(Compound):
