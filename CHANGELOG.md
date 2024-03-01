@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/socialgene/sgpy/compare/v0.5.0...v0.5.1) (2024-03-01)
+
+
+### Bug Fixes
+
+* hmm_source_relationships.header ([#88](https://github.com/socialgene/sgpy/issues/88)) ([a500cb2](https://github.com/socialgene/sgpy/commit/a500cb2409df42b88b20e92929e35663c9818963))
+
 ## [0.5.0](https://github.com/socialgene/sgpy/compare/v0.4.0...v0.5.0) (2024-01-17)
 
 
