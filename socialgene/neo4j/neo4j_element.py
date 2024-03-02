@@ -388,7 +388,7 @@ class Relationship(Neo4jElement):
             )
 
     def __str__(self):
-        return f"(:{self.start.__str__()})-[:{self.neo4j_label}]->(:{self.end.__str__()})"
+        return f"{self.start.__str__()}-[:{self.neo4j_label}]->{self.end.__str__()}"
 
     def __hash__(self):
         return hash(

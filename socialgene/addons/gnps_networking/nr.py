@@ -62,7 +62,7 @@ class MassSpecFileNode(Node):
     constraints_unique  = ["original_filename", "workflow_uuid"]
 
 class MassSpecFileToSpectrum(Relationship):
-    neo4j_label = "CONTAINS"
+    neo4j_label = "HAS"
     description = "Connects a GNPS mass spectrum file to a GNPS spectrum"
     start_class = MassSpecFileNode
     end_class = SpectrumNode
@@ -70,7 +70,7 @@ class MassSpecFileToSpectrum(Relationship):
     required_properties = []
 
 class MassSpecFileToAssembly(Relationship):
-    neo4j_label = "CONTAINS"
+    neo4j_label = "ANALYSIS_OF"
     description = "Connects a GNPS mass spectrum file to an assembly"
     start_class = MassSpecFileNode
     end_class = ASSEMBLY

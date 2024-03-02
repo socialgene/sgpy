@@ -87,7 +87,7 @@ class GraphSchema:
             table.add_row(
                 i.neo4j_label,
                 i.__module__,
-                f"({i.start_class.neo4j_label})-[:{i.neo4j_label}]->({i.end_class.neo4j_label})",
+                i(i.start_class(), i.end_class()).__str__(),
                 i.target_subdirectory,
                 i.header_filename,
             )
@@ -135,13 +135,14 @@ class GraphSchema:
         rows = [
             (
                 i.neo4j_label,
-                 f"({":".join(i.start_class.neo4j_label)})-[:{i.neo4j_label}]->({":".join(i.end_class.neo4j_label)})",
+                i(i.start_class(), i.end_class()).__str__(),
                 i.target_subdirectory,
                 i.header_filename,
             )
             for i in sorted(list(rellist), key=lambda x: x.neo4j_label[0])
         ]
         cols.extend(rows)
+
         print(
             markdown_table_from_list(
                 cols,
@@ -182,10 +183,15 @@ def main():  # pragma: no cover
         if args.rels:
             GraphSchema._markdown_table_rels(GraphSchema.ALL_RELATIONSHIPS)
     else:
+        before_width=CONSOLE.width
+        CONSOLE.width = 300
         if args.nodes:
             CONSOLE.print(GraphSchema()._nodes_table().__next__())
+            CONSOLE.width=before_width
         if args.rels:
+
             CONSOLE.print(GraphSchema()._relationships_table().__next__())
+        CONSOLE.width=before_width
 
 
 if __name__ == "__main__":

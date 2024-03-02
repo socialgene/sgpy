@@ -28,7 +28,7 @@ parser.add_argument(
 def main():
     args = parser.parse_args()
     as_dict = {}
-    log.info("Adding indices to Neo4j. This can take some time, depending on how many of each label exist in the database.")
+    log.info("Adding indices to Neo4j. This can take some time, depending on how many of each label exists in the database.")
     for i in GraphSchema.ALL_NODES:
         if len(i.neo4j_label) == 1:
             as_dict[i.neo4j_label[0]] = i

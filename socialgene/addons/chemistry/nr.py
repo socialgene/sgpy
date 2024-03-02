@@ -54,9 +54,18 @@ class ChemicalCompoundNode(Node):
 
 
 
-class ChemicalSimilarity(Relationship):
-    neo4j_label = "SIMILAR"
+class TanimotoSimilarity(Relationship):
+    neo4j_label = "TANIMOTO_SIMILARITY"
     description = "Connects two chemical compounds that are similar"
+    start_class = ChemicalCompoundNode
+    end_class = ChemicalCompoundNode
+    property_specification = {
+        "similarity": int,
+    }
+
+class McsSimilarity(Relationship):
+    neo4j_label = "MCS_SIMILARITY"
+    description = "Connects two chemical compounds that have similar maximium common substructures"
     start_class = ChemicalCompoundNode
     end_class = ChemicalCompoundNode
     property_specification = {

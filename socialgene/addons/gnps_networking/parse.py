@@ -329,14 +329,15 @@ class GNPS_SNETS:
         map_df = self._validate_map()
         # merge map_df and clusterinfo_df, merge on mass_spec_file and original_filename
         df = self.clusterinfo_df.merge(map_df, left_on="original_filename", right_on="mass_spec_file", how="inner")
+        rels=set()
         for i in df.to_dict("records"):
             cn = MassSpecFileNode()
             d = {"workflow_uuid": self.workflow_uuid, "gnps_filename": i['filename'], "filename": i['original_filename']}
             cn.fill_from_dict(d)
             sn = ASSEMBLY()
-            d = {"uid": i.assembly}
+            d = {"uid": i['assembly']}
             sn.fill_from_dict(d)
-            rels.add(MassSpecFileToAssembly(start=sn, end=cn))
+            rels.add(MassSpecFileToAssembly(start=cn, end=sn))
         rels = list(rels)
         rels[0].add_multiple_to_neo4j(rels, create=False)
 
@@ -500,15 +501,14 @@ class GNPS_SNETS:
         all_rels = set()
         for i in self.library_nodes:
             chemstring = None
-            if "inchi" in i.properties and i.properties["inchi"]:
+            if "inchi" in i.properties and i.properties["inchi"].startswith("InChI"):
                 chemstring = i.properties["inchi"]
             elif "smiles" in i.properties and i.properties["smiles"]:
                 chemstring = i.properties["smiles"]
             if chemstring:
                 try:
                     cmpd = ChemicalCompound(chemstring)
-                    a = ChemicalCompoundNode()
-                    a.fill_from_dict(cmpd.base_properties | cmpd.hash_dict)
+                    a=cmpd.node
                     all_chem_nodes.add(a)
                     all_rels.add(GnpsLibraryToChem(start=i, end=a))
                 except Exception as e:

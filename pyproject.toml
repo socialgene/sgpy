@@ -79,7 +79,7 @@ sg_version              = "socialgene.utils.version:main"
 sg_neo4j_version        = "socialgene.utils.version:main"
 sg_schema               = "socialgene.neo4j.schema.graph_schema:main"
 
-
 # addons
 sg_import_gnps          = "socialgene.addons.gnps_networking.cli:main"
 sg_import_npatlas       = "socialgene.addons.npatlas.cli:main"
+sg_chem_sim             = "socialgene.addons.chemistry.cli_similarity:main"

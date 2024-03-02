@@ -6,7 +6,6 @@ from socialgene.utils.logging import log
 
 
 def create_arg_parser():
-    """ "Creates and returns the ArgumentParser object."""
     parser = argparse.ArgumentParser(
         description="Integrate a NPAtlas molecular network into a SocialGene Neo4j Database"
     )
@@ -147,3 +146,7 @@ def main():
     log.info(
         "GNPS molecular network has been integrated into the SocialGene Neo4j database"
     )
+
+
+if __name__ == "__main__":
+    main()
