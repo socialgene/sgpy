@@ -92,8 +92,8 @@ def search_bgc(
         threshold=gene_clusters_must_have_x_matches
     )
 
-    assemblies = [i.parent.parent for i in assemblies[:50]]
-    assemblies = [search_object.input_assembly] + assemblies
+    assemblies = set([i.parent.parent for i in assemblies[:50]])
+    assemblies = [search_object.input_assembly] + list(assemblies)
     z = SerializeToClustermap(
         sg_object=search_object.sg_object,
         sorted_bgcs=assemblies,

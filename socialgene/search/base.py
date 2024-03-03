@@ -329,7 +329,7 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        temp = temp.sort_values(by=["score", "modscore"], ascending=False)
+        temp = temp.sort_values(by=["modscore", "score"], ascending=True)
         return temp["query_gene_cluster_x"].to_list()
 
     def _bgc_regions_to_sg_object(self, collapsed_df):
