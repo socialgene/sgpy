@@ -214,11 +214,12 @@ class SearchBase(ABC):
     #     # assign clusters of proteins that aren't interrupted by a gap greater than break_bgc_on_gap_of
     #     self._label_clusters()
 
-    def _primary_bgc_regions(self):
+    def _primary_bgc_regions(self, limiter=None):
         return self._collapse_cluster(
             self._filter_clusters(
                 df=self.working_search_results_df,
                 threshold=self.gene_clusters_must_have_x_matches,
+                limiter=limiter
             )
         )
 
@@ -308,6 +309,12 @@ class SearchBase(ABC):
             .sort_values(ascending=False)
             .reset_index()
         )
+    
+    def _fraction_matched(self):
+        df = self.link_df.groupby(["target_gene_cluster"])["query"].nunique().apply(lambda x: x / len(self.input_bgc.proteins)).reset_index()
+        df.columns = ["gene_cluster", "fraction_matched"]
+        return df
+        
 
     def _rank_order_bgcs(self, threshold):
         """Sorts assemblies by comparing the jaccard and levenshtein distance of ordered
@@ -322,24 +329,31 @@ class SearchBase(ABC):
             self._compare_bgcs_by_jaccard_and_levenshtein(),
             self._compare_bgcs_by_median_bitscore(),
             left_on="query_gene_cluster",
-            right_on=["target_gene_cluster"],
+            right_on="target_gene_cluster",
+            how="inner",
         )
-        temp = temp[temp["jaccard"] >= threshold]
-
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        temp = temp.sort_values(by=["modscore", "score"], ascending=True)
+        temp = pd.merge(
+            temp,
+            self._fraction_matched(),
+            left_on="query_gene_cluster_x",
+            right_on="gene_cluster",
+            how="inner",
+        )
+        temp = temp[temp['fraction_matched'] > threshold]
+        temp = temp.sort_values(by=["modscore", "score"], ascending=False)
         return temp["query_gene_cluster_x"].to_list()
 
-    def _bgc_regions_to_sg_object(self, collapsed_df):
+    def _bgc_regions_to_sg_object(self, df):
         now = time.time()
         log.info(
-            f"Pulling data from the database for {len(collapsed_df)} putative BGCs"
+            f"Pulling data from the database for {df.nucleotide_uid.nunique()} putative BGCs"
         )
         with progress_bar as pg:
-            task = pg.add_task("Adding best hits...", total=len(collapsed_df))
-            for index, df_row in collapsed_df.iterrows():
+            task = pg.add_task("Adding best hits...", total=len(df))
+            for index, df_row in df.iterrows():
                 # pull in info from database to sg_object
                 _ = self.sg_object.fill_given_locus_range(
                     locus_uid=df_row.loc["nucleotide_uid"],
@@ -509,7 +523,7 @@ class SearchBase(ABC):
         if self.link_df.empty:
             log.info("Finish: Assigning target BGC proteins to input BGC groups")
             log.warning("No links to group by, no groups produced")
-            return
+            return None
         self.group_df = (
             self.link_df.sort_values(by="score", ascending=False)
             .groupby(["query"], observed=False)
@@ -579,9 +593,9 @@ class SearchBase(ABC):
         )
 
     def _count_unique_hits_per_cluster(self, df):
-        return df.groupby(["assembly_uid", "nucleotide_uid", "cluster"])[
+        return df.groupby(["cluster"])[
             "query"
-        ].transform("nunique")
+        ].nunique().sort_values(ascending=False)
 
     def _sort_genes_by_start(self):
         log.info("Sorting genes by start position")
@@ -641,7 +655,7 @@ class SearchBase(ABC):
             .reset_index()
         )
 
-    def _filter_clusters(self, df, threshold) -> pd.Index:
+    def _filter_clusters(self, df, threshold,limiter=None) -> pd.Index:
         """Filter the results for potential BGCs
         Args:
         Returns:
@@ -649,7 +663,13 @@ class SearchBase(ABC):
         """
         if threshold > 0 and threshold < 1:
             threshold = ceil(self.n_searched_proteins * threshold)
-        return df[self._count_unique_hits_per_cluster(df) >= threshold]
+        
+        tempdf = self._count_unique_hits_per_cluster(df)
+        if limiter:
+            tempdf = tempdf[0:limiter]
+        tempdf = tempdf[tempdf >= threshold]
+        df = df.filter(items=tempdf.index, axis=0)
+        return df
 
     def write_clustermap_json(self, outpath):
         cmap = SerializeToClustermap(
