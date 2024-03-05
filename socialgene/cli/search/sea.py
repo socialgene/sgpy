@@ -13,13 +13,13 @@ env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 
 # def limiter(search_object, max_outdegree):
-    
+
 #     # if df.nucleotide_uid.nunique() > 1000:
 #     # Limit the number of putative BGCs that are evalutated post first pass
-    
+
 #     len_input_bgc_proteins = len(search_object.input_bgc.proteins)
 #     len_input_bgc_proteins_with_domains = len([i for i in search_object.input_bgc.proteins.values() if i.domains])
-    
+
 
 
 def search_bgc(
@@ -42,7 +42,7 @@ def search_bgc(
     run_async: bool = True,
     analyze_with: str = "blastp",
     outpath_clinker: str = None,
-    limiter: int = 1000,    
+    limiter: int = 1000,
 ):
     log.info(f"Running search with args: {locals()}")
     search_object = SearchDomains(
@@ -74,7 +74,7 @@ def search_bgc(
     search_object.label_clusters()
     df = search_object._primary_bgc_regions(limiter=limiter)
     log.info(f"First pass resulted in {df.assembly_uid.nunique()} assemblies, {df.nucleotide_uid.nunique()} nucleotide sequences had {df.cluster.nunique()} putative BGCs")
- 
+
     df["n_start"] = df["n_start"] - search_object.target_bgc_padding
     df["n_end"] = df["n_end"] + search_object.target_bgc_padding
     search_object._bgc_regions_to_sg_object(df)
@@ -104,10 +104,12 @@ def search_bgc(
     # return search_object
     # Assigns protein groups for the clinker plot legend
     search_object._choose_group()
+    if not outpath_clinker:
+        return search_object
     # return search_object
     if gene_clusters_must_have_x_matches > 1:
         gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / 100
-        
+
     assemblies = search_object._rank_order_bgcs(
         threshold=gene_clusters_must_have_x_matches
     )

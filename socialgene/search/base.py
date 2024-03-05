@@ -309,12 +309,11 @@ class SearchBase(ABC):
             .sort_values(ascending=False)
             .reset_index()
         )
-    
+
     def _fraction_matched(self):
         df = self.link_df.groupby(["target_gene_cluster"])["query"].nunique().apply(lambda x: x / len(self.input_bgc.proteins)).reset_index()
         df.columns = ["gene_cluster", "fraction_matched"]
         return df
-        
 
     def _rank_order_bgcs(self, threshold):
         """Sorts assemblies by comparing the jaccard and levenshtein distance of ordered
@@ -335,14 +334,8 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        temp = pd.merge(
-            temp,
-            self._fraction_matched(),
-            left_on="query_gene_cluster_x",
-            right_on="gene_cluster",
-            how="inner",
-        )
-        temp = temp[temp['fraction_matched'] > threshold]
+
+        temp = temp[temp['jaccard'] > threshold]
         temp = temp.sort_values(by=["modscore", "score"], ascending=False)
         return temp["query_gene_cluster_x"].to_list()
 
@@ -663,7 +656,7 @@ class SearchBase(ABC):
         """
         if threshold > 0 and threshold < 1:
             threshold = ceil(self.n_searched_proteins * threshold)
-        
+
         tempdf = self._count_unique_hits_per_cluster(df)
         if limiter:
             tempdf = tempdf[0:limiter]
