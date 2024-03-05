@@ -8,7 +8,6 @@ from socialgene.neo4j.neo4j_element import Node
 
 
 class Mibig(ASSEMBLY):
-    # TODO: multiple labels
     neo4j_label = ["assembly", "mibig"]
     description = "Represents a single Mibig entry"
     property_specification = {
@@ -43,6 +42,4 @@ class Substrate(ChemicalCompoundNode):
 
 
 
-
-# [ChemicalCompoundNode.neo4j_label]
 

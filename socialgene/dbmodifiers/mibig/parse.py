@@ -9,12 +9,6 @@ from rich.progress import Progress, SpinnerColumn
 from socialgene.dbmodifiers.mibig.compound import Mibig_Compound
 from socialgene.neo4j.neo4j import GraphDriver
 
-# #
-
-
-# CREATE CONSTRAINT FOR (n:chemical) REQUIRE n.uid IS UNIQUE;
-
-
 MIBIG_URL = "https://dl.secondarymetabolites.org/mibig/mibig_json_3.1.tar.gz"
 
 
@@ -60,19 +54,3 @@ def add_mibig_info_to_neo4j():
 if __name__ == "__main__":
     add_mibig_info_to_neo4j()
 
-# for file in bgc_files:
-#     input_json = json.load(tarfile_object.extractfile(file))
-#     if "nrp" in input_json["cluster"]:
-#         if "cyclic" in input_json["cluster"]["nrp"]:
-#             raise
-#         input_json["cluster"]["polyketide"]
-
-
-# input_json["cluster"]["polyketide"]["synthases"][0]["subclass"]
-
-
-# for file in bgc_files:
-#     input_json = json.load(tarfile_object.extractfile(file))
-#     a = NRPS()
-#     a.assign(input_json)
-#     a.write_to_neo4j()

@@ -1,5 +1,6 @@
 """https://www.npatlas.org"""
 
+from socialgene.addons.chebi.nr import ChebiNode
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
@@ -132,3 +133,10 @@ class NPAtlasToChem(Relationship):
     description = "Connects an NPAtlas entry to a ChemicalCompound entry"
     start_class = NPAtlasNode
     end_class = ChemicalCompoundNode
+
+
+class NPAtlasToChebi(Relationship):
+    neo4j_label = "IS_A"
+    description = "Connects an NPAtlas entry to a ChEBI entry"
+    start_class = NPAtlasNode
+    end_class = ChebiNode

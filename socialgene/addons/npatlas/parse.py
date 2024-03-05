@@ -1,4 +1,5 @@
 from pathlib import Path
+from socialgene.addons.chebi.nr import ChebiNode
 
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
@@ -8,6 +9,7 @@ from socialgene.addons.npatlas.nr import (
     MibigToNPAtlas,
     NPAtlasNode,
     NPAtlasPublication,
+    NPAtlasToChebi,
     NPAtlasToChem,
     NPAtlasToClassyFireAlternativeParents,
     NPAtlasToClassyFireDirectParent,
@@ -101,7 +103,7 @@ class NPAtlasEntry:
         self.gnps_ids = set()
         self.mibig_ids = set()
         self.npmrd_ids = set()
-        self.predicted_chebi_terms = None
+        self.predicted_chebi_terms = {}
         self.classyfire_direct_parent = None
         self.classyfire_intermediate_nodes = None
         self.classyfire_alternative_parents = None
@@ -118,6 +120,7 @@ class NPAtlasEntry:
         self._assign_classyfire_alternative_parents()
         self._assign_npclassifier()
         self._assign_publication()
+
     def _parse_single_entry(self):
         self.uid = self.entry.get("npaid", None)
         self.original_name = self.entry.get("original_name", None)
@@ -135,6 +138,7 @@ class NPAtlasEntry:
         self.synonyms = None
         self._assign_taxon()
         self._assign_external_ids()
+        self._assign_chebi_terms()
 
 
     def _assign_publication(self):
@@ -224,6 +228,18 @@ class NPAtlasEntry:
             self.species = self.entry["origin_organism"]["species"]
         except Exception:
             pass
+
+    def _assign_chebi_terms(self):
+        try:
+            for term in self.entry['classyfire']["predicted_chebi_terms"]:
+                # extract name and uid as int from strings like "hydroxycoumarin (CHEBI:37912)"
+                uid = term.split(" ")[-1].removeprefix("(CHEBI:").removesuffix(")")
+                name = term.split("(")[0]
+                uid = uid.strip()
+                name = name.strip()
+                self.predicted_chebi_terms[uid] = name
+        except Exception as e:
+            log.debug(e)
 
     def _assign_external_ids(self):
         for external_id in self.entry["external_ids"]:
@@ -383,6 +399,18 @@ class NPAtlasEntry:
         except Exception:
             return set()
 
+    def link_chebi(self) -> set:
+        try:
+            return {
+                NPAtlasToChebi(
+                    start=self.node, end=ChebiNode(properties={"uid": int(k), "name": v})
+                )
+                for k,v in self.predicted_chebi_terms.items()
+            }
+        except Exception:
+            return set()
+
+
     def get_links(self):
         return {
             NPAtlasToPublication: self.link_publication(),
@@ -397,4 +425,6 @@ class NPAtlasEntry:
             NPAtlasToNpclassifierPathway: self.link_npclassifier_pathways(),
             NPAtlasToNpclassifierSuperclass: self.link_npclassifier_superclasses(),
             NPAtlasToChem: self.link_chem(),
+            NPAtlasToChebi: self.link_chebi(),
+
         }

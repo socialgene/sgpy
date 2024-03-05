@@ -8,5 +8,7 @@ class ChebiNode(Node):
     description = "Represents a ChEBI term"
     property_specification = {
         "uid": int,
+        "name": str,
     }
     constraints_unique = ["uid"]
+
