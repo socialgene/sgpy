@@ -372,7 +372,7 @@ class SearchDomains(SearchBase, CompareDomains):
             )
         elif max_outdegree is not None:
             raise ValueError
-        
+
     def _filter_max_domains_per_protein(self, max_domains_per_protein: int = None):
         """Filter out proteins with a higher outdegree than max_outdegree
 
@@ -399,7 +399,7 @@ class SearchDomains(SearchBase, CompareDomains):
             )
         elif max_domains_per_protein is not None:
             raise ValueError
-        
+
     def _filter_max_query_proteins(self, max_query_proteins: int = None):
         """Filter out proteins with a higher outdegree than max_outdegree
 
@@ -430,16 +430,14 @@ class SearchDomains(SearchBase, CompareDomains):
             )
         elif max_query_proteins is not None:
             raise ValueError
-    
+
     def _filter_scatter(self, max_query_proteins):
         """ Choose a random subset of proteins to search that are spread across the length of the input BGC.
         """
-        m_start = self.outdegree_df["outdegree"].sum()
         log.info(
             "Choosing query proteins that span across the input BGC"
         )
         temp = list(self.input_bgc.features_sorted_by_midpoint)
-        tot_prot=len(temp)
         temp = [
             temp[int(ceil(i * len(temp) / max_query_proteins))].uid
             for i in range(max_query_proteins)
@@ -453,7 +451,7 @@ class SearchDomains(SearchBase, CompareDomains):
         log.info(
                 f"'max_query_proteins' is set to {max_query_proteins:,}, will limit search to {max_query_proteins} of {len(self.outdegree_df['protein_uid'].unique())} input proteins"
         )
-    
+
     def prioritize_input_proteins(
         self,
         max_query_proteins: float = None,

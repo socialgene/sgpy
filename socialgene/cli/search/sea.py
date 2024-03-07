@@ -104,7 +104,6 @@ def search_bgc(
     # Assign protein groups for the clinker plot legend
     search_object._choose_group()
 
-
     if not outpath_clinker:
         return search_object
     # return search_object
@@ -124,3 +123,9 @@ def search_bgc(
     )
     z.write(outpath_clinker)
     return search_object
+
+
+#GCF_001905625.1
+
+
+
