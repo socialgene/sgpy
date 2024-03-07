@@ -76,9 +76,6 @@ class SerializeToClustermap:
         }
 
     def _loci(self, loci):
-        # return [
-        #     self._locus(locus_name=k, locus_obj=v) for k, v in assembly_obj.loci.items()
-        # ]
         return [
             self._locus(locus_name=gc.parent.external_id, locus_obj=gc) for gc in loci
         ]

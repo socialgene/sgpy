@@ -334,10 +334,16 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-
-        temp = temp[temp['jaccard'] > threshold]
         temp = temp.sort_values(by=["modscore", "score"], ascending=False)
-        return temp["query_gene_cluster_x"].to_list()
+        secondary = temp[temp['jaccard'] < threshold]
+        primary = temp[temp['jaccard'] >= threshold]
+        for i, row in secondary.iterrows():
+            # remove the gene cluster from the sg_object
+            z = row.query_gene_cluster_x
+            z.parent.gene_clusters = [i for i in z.parent.gene_clusters if i != z]
+        primary['query_gene_cluster_x_assembly'] = primary['query_gene_cluster_x'].apply(lambda x: x.parent.parent.uid)
+        primary.drop_duplicates(subset=["query_gene_cluster_x_assembly"], inplace=True)
+        return primary["query_gene_cluster_x"].to_list()
 
     def _bgc_regions_to_sg_object(self, df):
         now = time.time()
@@ -360,39 +366,6 @@ class SearchBase(ABC):
         then = time.time()
         log.info(f"Time to fill: {int(then - now)} seconds")
 
-    def _prune_links(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Takes query to target bgc protein comparison and filters "best" hits
-
-        Args:
-            df (pd.Dataframe): pd.DataFrame({"query": [], "target": [], "score": []})
-
-        Returns:
-            pd.Dataframe: pd.DataFrame({"query": [], "target": [], "score": []})
-        """
-        df_to_return = pd.DataFrame()
-        # Select identical protein matches first
-        df = df[df["score"] >= self.modscore_cutoff]
-        identical_proteins_index = df[df["query"] == df["target"]].index
-        if len(identical_proteins_index) > 0:
-            df_to_return = pd.concat([df_to_return, df.loc[identical_proteins_index]])
-            # Remove selected proteins
-            query_proteins_to_delete = set(
-                df.loc[identical_proteins_index]["query"].to_list()
-            )
-            target_proteins_to_delete = set(
-                df.loc[identical_proteins_index]["target"].to_list()
-            )
-            df = df[~df["query"].isin(query_proteins_to_delete)]
-            df = df[~df["target"].isin(target_proteins_to_delete)]
-        # For each query protein, select the target(s) with the max score
-        # this can be 1 or more target proteins
-        temp = df[df["score"] == df.groupby(["query"])["score"].transform("max")]
-        # Remove selected proteins
-        query_proteins_to_delete = set(df.loc[temp.index]["query"].to_list())
-        target_proteins_to_delete = set(df.loc[temp.index]["target"].to_list())
-        df_to_return = pd.concat([df_to_return, temp])
-        return df_to_return
-
     def _create_link_df(
         self, query_gene_cluster, target_gene_cluster, tool="blastp", **kwargs
     ):
@@ -412,13 +385,14 @@ class SearchBase(ABC):
         protein_comparisons_df = comparator.compare(
             query_gene_cluster.protein_iter, target_gene_cluster.protein_iter, **kwargs
         )
+        # Turn the protein uid in the blastp etc output into protein objects from the cluster sg_objects
         protein_comparisons_df["query_protein"] = protein_comparisons_df["query"].apply(
             lambda x: query_gene_cluster.proteins[x]
         )
         protein_comparisons_df["target_protein"] = protein_comparisons_df[
             "target"
         ].apply(lambda x: target_gene_cluster.proteins[x])
-        #   protein_comparisons_df.drop(columns=["query", "target"], inplace=True)
+        # expand to get one row per feature per protein (one non-redunant protein can have multiple features)
         q_obj = pd.DataFrame(
             [
                 {
@@ -431,6 +405,7 @@ class SearchBase(ABC):
                 for i in list(query_gene_cluster.features_sorted_by_midpoint)
             ]
         )
+        # expand to get one row per feature per protein (one non-redunant protein can have multiple features)
         t_obj = pd.DataFrame(
             [
                 {

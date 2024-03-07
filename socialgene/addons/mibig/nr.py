@@ -4,7 +4,7 @@ import re
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 
 from socialgene.nextflow.nodes import ASSEMBLY
-from socialgene.neo4j.neo4j_element import Node
+from socialgene.neo4j.neo4j_element import Node, Relationship
 
 
 class Mibig(ASSEMBLY):
@@ -43,3 +43,41 @@ class Substrate(ChemicalCompoundNode):
 
 
 
+
+class MibigCompound(Node):
+    neo4j_label = ["mibig_compound"]
+    description = "Represents a single Mibig compound"
+    property_specification = {
+        "name": str,
+        "smiles": str,
+        "inchi": str,
+    }
+    required_properties = ["uid"]
+    constraints_unique = ["uid"]
+
+
+class MibigActivity(Node):
+    neo4j_label = ["mibig_activity"]
+    description = "Represents a single Mibig bioactivity"
+    property_specification = {
+        "uid": str,
+    }
+    required_properties = ["uid"]
+    constraints_unique = ["uid"]
+
+
+class Mibig_Biosynthetic_Class(Node):
+    neo4j_label = ["mibig_biosynthetic_class"]
+    description = "Represents a single Mibig biosynthetic class"
+    property_specification = {
+        "uid": str,
+    }
+    required_properties = ["uid"]
+    constraints_unique = ["uid"]
+
+
+class MibigToMibigCompound(Relationship):
+    neo4j_label = "PRODUCES"
+    description = "Connects a Mibig BGC to a Mibig compound"
+    start_class = Mibig
+    end_class = MibigCompound

@@ -96,14 +96,15 @@ def search_bgc(
         )
     else:
         search_object.sg_object.add_sequences_from_neo4j()
-    # return search_object
-    # return search_object
+
+    # Find RBH between input BGC and putative BGCs
     search_object._create_links(
         tool=analyze_with, argstring="--fast --max-hsps 1", cpus=10
     )
-    # return search_object
-    # Assigns protein groups for the clinker plot legend
+    # Assign protein groups for the clinker plot legend
     search_object._choose_group()
+
+
     if not outpath_clinker:
         return search_object
     # return search_object
@@ -113,8 +114,8 @@ def search_bgc(
     assemblies = search_object._rank_order_bgcs(
         threshold=gene_clusters_must_have_x_matches
     )
-    assemblies = [i.parent.parent for i in assemblies[:50]]
-    assemblies = [search_object.input_assembly] + list(assemblies)
+    assemblies = [i.parent.parent for i in assemblies]
+    assemblies = [search_object.input_assembly] + list(assemblies)[:50]
     z = SerializeToClustermap(
         sg_object=search_object.sg_object,
         sorted_bgcs=assemblies,

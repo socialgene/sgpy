@@ -242,8 +242,6 @@ class Node(Neo4jElement):
                 pass
 
 
-
-
     def add_to_neo4j(self, create=False):
         """Add a single node to Neo4j"""
         var="n"
