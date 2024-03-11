@@ -6,7 +6,6 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 
-from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.gnps_library.nr import (
     GnpsLibrarySpectrumNode,
     GnpsLibrarySpectrumToNPClassifierClass,

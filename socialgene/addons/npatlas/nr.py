@@ -14,7 +14,6 @@ from socialgene.addons.npmrd.nr import Npmrd
 from socialgene.addons.publication.nr import Publication
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.nextflow.nodes import TAXID
-from socialgene.utils.logging import log
 
 
 class NPAtlasNode(Node):

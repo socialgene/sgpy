@@ -1,5 +1,3 @@
-import collections
-
 from socialgene.neo4j.schema.graph_schema import GraphSchema
 
 a = GraphSchema()

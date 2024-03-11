@@ -1,20 +1,11 @@
-from multiprocessing import Pool
-from pathlib import Path
-
 from socialgene.cli.search.sea import search_bgc
 from socialgene.config import env_vars
 import pandas as pd
+from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.base.socialgene import SocialGene
+from socialgene.utils.logging import log
 
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
-
-from socialgene.neo4j.neo4j import GraphDriver
-from pathlib import Path
-from socialgene.base.socialgene import SocialGene
-from socialgene.cli.search.sea import search_bgc
-from rich import inspect
-import pandas as pd
-
-from socialgene.utils.logging import log
 
 
 with GraphDriver() as db:
