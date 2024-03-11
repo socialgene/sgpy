@@ -142,6 +142,14 @@ def culture_collections_as_nodes_rels():
                 MERGE (a1)-[:FOUND_IN]->(cc);
             """
     )
+    _run_transaction_function(
+        """
+                MATCH (ccs:culture_collection)
+                MATCH (a1:assembly)
+                WHERE a1.strain starts with ccs.uid and not a1.uid starts with "BGC" and a1.culture_collection is null
+                MERGE (a1)-[:FOUND_IN]->(ccs)
+            """
+    )
 
 
 def set_mibig_bgc():

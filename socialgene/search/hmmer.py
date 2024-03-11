@@ -7,7 +7,6 @@ from typing import List
 
 import pandas as pd
 from neo4j import AsyncGraphDatabase
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -18,12 +17,11 @@ from rich.progress import (
 )
 from rich.table import Table
 
-from socialgene.base.socialgene import SocialGene
 from socialgene.compare_proteins.hmmer import CompareDomains
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.search.base import SearchBase
-from socialgene.utils.logging import log
+from socialgene.utils.logging import CONSOLE, log
 
 progress_bar = Progress(
     TextColumn("Ingesting target clusters from database..."),
@@ -65,8 +63,8 @@ def _find_similar_proteins(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+                {'WHERE (a1)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
             domain_list=list(domain_list),
@@ -110,8 +108,8 @@ async def _find_similar_proteins_async(
                 WITH input_protein_domains, prot1, count(DISTINCT(h0)) as initial_count
                 WHERE initial_count > size(input_protein_domains) * $frac
                 MATCH (n1:nucleotide)-[e1:ENCODES]->(prot1)
-                {'WHERE (n1)-[:ASSEMBLES_TO]->(:assembly)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 MATCH (a1:assembly)<-[:ASSEMBLES_TO]-(n1)
+                {'WHERE (a1)-[:FOUND_IN]->(:culture_collection)' if only_culture_collection else ''}
                 RETURN a1.uid as assembly_uid, n1.uid as nucleotide_uid, prot1.uid as target, e1.start as n_start, e1.end as n_end
                 """,
             domain_list=list(domain_list),
@@ -213,8 +211,6 @@ class SearchDomains(SearchBase, CompareDomains):
     Class search for similar BGCs in a SocialGene database, using domains
     Args:
         hmm_dir (str): Path to directory containing HMM profiles (used to annotate input BGC proteins if they aren't in the database).
-        sg_object (SocialGene): SocialGene object containing a single BGC to search (optional, must provide this or a gbk_path).
-        gbk_path (str): Path to GenBank file containing a single BGC to search (optional, must provide this or a sg_object).
         use_neo4j_precalc (bool): Try to pull domains from the database or annotate all input proteins with HMMER
         modscore_cutoff (float): Minimum score cutoff for a hit to be considered significant. (modified, combined Levenshtein + Jaccard)
         **kwargs: Additional keyword arguments to pass to the parent class.
@@ -225,24 +221,15 @@ class SearchDomains(SearchBase, CompareDomains):
     def __init__(
         self,
         hmm_dir: str = None,
-        sg_object: SocialGene = None,
-        gbk_path: str = None,
+        input=None,
         use_neo4j_precalc: bool = True,
         modscore_cutoff: float = 0.8,
         **kwargs,
     ) -> None:
-        super().__init__(modscore_cutoff=modscore_cutoff, **kwargs)
+        super().__init__(input=input, modscore_cutoff=modscore_cutoff, **kwargs)
         self.hmm_dir = hmm_dir
         self.outdegree_df = pd.DataFrame
-        self.gbk_path = gbk_path
         # input sg_object or gbk_path
-        if sg_object:
-            self.read_sg_object(sg_object)
-        elif gbk_path:
-            self.read_input_bgc(self.gbk_path)
-        else:
-            raise ValueError("Must provide either sg_object or gbk_path")
-        self.n_searched_proteins = len(self.sg_object.proteins)
         self._annotate(hmm_dir=self.hmm_dir, use_neo4j_precalc=use_neo4j_precalc)
         if not self._check_for_hmm_outdegree():
             self._set_hmm_outdegree()
@@ -363,6 +350,101 @@ class SearchDomains(SearchBase, CompareDomains):
         self.outdegree_df = temp.merge(db_res, how="left")
         self.outdegree_df.drop_duplicates(inplace=True, ignore_index=True)
 
+    def _filter_max_outdegree(self, max_outdegree: int = None):
+        """Filter out proteins with a higher outdegree than max_outdegree
+
+        Args:
+            max_outdegree (int): HMM model annotations with an outdegree higher than this will be dropped
+        """
+        # The elif != Nones are to prevent an incorrect argument from just returning the the full DF, which would be unintended
+        if isinstance(max_outdegree, int) or isinstance(max_outdegree, float):
+            m_start = self.outdegree_df["outdegree"].sum()
+            log.info(
+                f"'max_outdegree' is set to {max_outdegree:,}, will remove any domains with a higher outdegree"
+            )
+            self.outdegree_df = self.outdegree_df[
+                self.outdegree_df["outdegree"] <= max_outdegree
+            ]
+            log.info(
+                f"'max_outdegree' reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
+            )
+        elif max_outdegree is not None:
+            raise ValueError
+
+    def _filter_max_domains_per_protein(self, max_domains_per_protein: int = None):
+        """Filter out proteins with a higher outdegree than max_outdegree
+
+        Args:
+            max_domains_per_protein (int): HMM model annotations with an outdegree higher than this will be dropped
+        """
+        # The elif != Nones are to prevent an incorrect argument from just returning the the full DF, which would be unintended
+        if isinstance(max_domains_per_protein, int) or isinstance(
+            max_domains_per_protein, float
+        ):
+            m_start = self.outdegree_df["outdegree"].sum()
+            log.info(
+                f"'max_domains_per_protein' is set to {max_domains_per_protein:,}, will remove domains from proteins from highest to lowest outdegree"
+            )
+            self.outdegree_df = (
+                self.outdegree_df.sort_values(
+                    "outdegree", ascending=True, ignore_index=True
+                )
+                .groupby("protein_uid", observed=True)
+                .head(max_domains_per_protein)
+            )
+            log.info(
+                f"'max_domains_per_protein' reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
+            )
+        elif max_domains_per_protein is not None:
+            raise ValueError
+
+    def _filter_max_query_proteins(self, max_query_proteins: int = None):
+        """Filter out proteins with a higher outdegree than max_outdegree
+
+        Args:
+            max_query_proteins (int): HMM model annotations with an outdegree higher than this will be dropped
+        """
+        # The elif != Nones are to prevent an incorrect argument from just returning the the full DF, which would be unintended
+        if isinstance(max_query_proteins, int) or isinstance(max_query_proteins, float):
+            m_start = self.outdegree_df["outdegree"].sum()
+            log.info(
+                f"'max_query_proteins' is set to {max_query_proteins:,}, will limit search to {max_query_proteins} of {len(self.outdegree_df['protein_uid'].unique())} input proteins"
+            )
+            proteins_to_keep = (
+                self.outdegree_df.sort_values(
+                    "outdegree", ascending=True, ignore_index=True
+                )
+                .groupby("protein_uid", observed=True)
+                .sum("outdegree")
+                .sort_values("outdegree", ascending=True, ignore_index=False)
+                .head(max_query_proteins)
+                .index.to_list()
+            )
+            self.outdegree_df = self.outdegree_df[
+                self.outdegree_df["protein_uid"].isin(proteins_to_keep)
+            ]
+            log.info(
+                f"'max_query_proteins' reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
+            )
+        elif max_query_proteins is not None:
+            raise ValueError
+
+    def _filter_scatter(self, max_query_proteins):
+        """Choose a random subset of proteins to search that are spread across the length of the input BGC."""
+        log.info("Choosing query proteins that span across the input BGC")
+        temp = list(self.input_bgc.features_sorted_by_midpoint)
+        temp = [
+            temp[int(ceil(i * len(temp) / max_query_proteins))].uid
+            for i in range(max_query_proteins)
+        ]
+        self.outdegree_df = self.outdegree_df[
+            self.outdegree_df["protein_uid"].isin(temp)
+        ]
+        log.info("Scattering the search to proteins to and across the input BGC")
+        log.info(
+            f"'max_query_proteins' is set to {max_query_proteins:,}, will limit search to {max_query_proteins} of {len(self.outdegree_df['protein_uid'].unique())} input proteins"
+        )
+
     def prioritize_input_proteins(
         self,
         max_query_proteins: float = None,
@@ -403,6 +485,9 @@ class SearchDomains(SearchBase, CompareDomains):
                     if i.external_id in list(protein_id_bypass_list)
                 }
             )
+        bypass_df = self.outdegree_df[
+            self.outdegree_df["protein_uid"].isin(loci_protein_ids)
+        ]
         len_start = self.outdegree_df["outdegree"].sum()
         if self.outdegree_df["outdegree"].sum() == 0:
             raise ValueError(
@@ -416,87 +501,18 @@ class SearchDomains(SearchBase, CompareDomains):
                 f"Removed {prelen - len(self.outdegree_df)} domains from consideration (no connections in the DB), which reemoves {prelen_prot - len(self.outdegree_df['protein_uid'].unique())} proteins from consideration"
             )
 
-        # The elif != Nones are to prevent an incorrect argument from just returning the the full DF, which would be unintended
-        if isinstance(max_outdegree, int) or isinstance(max_outdegree, float):
-            m_start = self.outdegree_df["outdegree"].sum()
-            log.info(
-                f"'max_outdegree' is set to {max_outdegree:,}, will remove any domains with a higher outdegree"
-            )
-            self.outdegree_df = self.outdegree_df[
-                self.outdegree_df["outdegree"] <= max_outdegree
-            ]
-            log.info(
-                f"'max_outdegree' reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
-            )
-        elif max_outdegree is not None:
-            raise ValueError
+        if max_query_proteins and scatter:
+            self._filter_scatter(max_query_proteins)
 
-        if isinstance(max_domains_per_protein, int) or isinstance(
-            max_domains_per_protein, float
-        ):
-            m_start = self.outdegree_df["outdegree"].sum()
-            log.info(
-                f"'max_domains_per_protein' is set to {max_domains_per_protein:,}, will remove domains from proteins from highest to lowest outdegree"
-            )
-            self.outdegree_df = (
-                self.outdegree_df.sort_values(
-                    "outdegree", ascending=True, ignore_index=True
-                )
-                .groupby("protein_uid", observed=True)
-                .head(max_domains_per_protein)
-            )
-            log.info(
-                f"'max_domains_per_protein' reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
-            )
-        elif max_domains_per_protein is not None:
-            raise ValueError
-        if isinstance(max_query_proteins, int) or isinstance(max_query_proteins, float):
-            n_input_proteins = len(self.input_assembly.feature_uid_set)
-            if max_query_proteins > 0 and max_query_proteins < 1:
-                threshold = ceil(n_input_proteins * max_query_proteins)
-            else:
-                threshold = max_query_proteins
-            m_start = self.outdegree_df["outdegree"].sum()
-            if scatter:
-                temp = list(
-                    self.input_assembly.loci[
-                        self.input_bgc_id
-                    ].features_sorted_by_midpoint
-                )
-                temp = [
-                    temp[int(ceil(i * len(temp) / threshold))].uid
-                    for i in range(threshold)
-                ]
-                self.outdegree_df = self.outdegree_df[
-                    self.outdegree_df["protein_uid"].isin(temp)
-                    | self.outdegree_df["protein_uid"].isin(loci_protein_ids)
-                ]
-            else:
-                log.info(
-                    f"'max_query_proteins' is set to {threshold}, will limit search to {threshold} of {n_input_proteins} input proteins"
-                )
-                proteins_to_keep = (
-                    self.outdegree_df.sort_values(
-                        "outdegree", ascending=True, ignore_index=True
-                    )
-                    .groupby("protein_uid", observed=True)
-                    .sum("outdegree")
-                    .sort_values("outdegree", ascending=True, ignore_index=False)
-                    .head(threshold)
-                    .index.to_list()
-                )
-                self.outdegree_df = self.outdegree_df[
-                    self.outdegree_df["protein_uid"].isin(proteins_to_keep)
-                    | self.outdegree_df["protein_uid"].isin(loci_protein_ids)
-                ]
+        self._filter_max_outdegree(max_outdegree)
+        self._filter_max_domains_per_protein(max_domains_per_protein)
 
-            log.info(
-                f"`max_query_proteins` reduced the total outdegree from {m_start:,} to {self.outdegree_df['outdegree'].sum():,}"
-            )
-        elif max_query_proteins is not None:
-            raise ValueError
+        if max_query_proteins and not scatter:
+            self._filter_max_query_proteins(max_query_proteins)
+
         # Add back explicitly requested input proteins/loci
 
+        self.outdegree_df = pd.merge(self.outdegree_df, bypass_df, how="outer")
         log.info(
             f"The total outdegree was {len_start:,}; now it's {self.outdegree_df['outdegree'].sum():,}"
         )
@@ -521,8 +537,10 @@ class SearchDomains(SearchBase, CompareDomains):
         table.add_column("Sum", justify="left", style="cyan", no_wrap=True, ratio=1)
         for i in self._outdegree_table_stats():
             table.add_row(*[str(i) for i in i])
-        console = Console()
-        console.print(table)
+        before_width = CONSOLE.width
+        CONSOLE.width = 300
+        CONSOLE.print(table)
+        CONSOLE.width = before_width
 
     def _outdegree_table_stats(self):
         temp = (

@@ -1,4 +1,4 @@
-FROM mambaorg/micromamba:1.1.0
+FROM mambaorg/micromamba:1.5.0
 
 COPY environment.yaml /tmp/env.yaml
 
@@ -7,7 +7,7 @@ RUN micromamba install -y -n base -f /tmp/env.yaml && \
 
 ### Add Neo4j, remove then re-add the needed directories/files to avoid any potential permission issues
 # https://neo4j.com/docs/operations-manual/current/configuration/file-locations/
-RUN /opt/conda/bin/wget -q https://neo4j.com/artifact.php?name=neo4j-community-5.7.0-unix.tar.gz -O neo4j.tar.gz \
+RUN /opt/conda/bin/wget -q https://neo4j.com/artifact.php?name=neo4j-community-5.16.0-unix.tar.gz -O neo4j.tar.gz \
     && tar -xf neo4j.tar.gz \
     && rm neo4j.tar.gz \
     && mv neo4j* neo4j \
