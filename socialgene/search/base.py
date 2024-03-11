@@ -162,12 +162,12 @@ class SearchBase(ABC):
         # modify input BGC assembly name so if it also exists in the DB it won't be overridden
         self.input_bgc_id = list(self.sg_object.assemblies.keys())[0]
         self.modified_input_bgc_name = f"socialgene_query_{self.input_bgc_id}"
-        self.sg_object.assemblies[self.modified_input_bgc_name] = (
-            self.sg_object.assemblies.pop(self.input_bgc_id)
-        )
-        self.sg_object.assemblies[self.modified_input_bgc_name].uid = (
+        self.sg_object.assemblies[
             self.modified_input_bgc_name
-        )
+        ] = self.sg_object.assemblies.pop(self.input_bgc_id)
+        self.sg_object.assemblies[
+            self.modified_input_bgc_name
+        ].uid = self.modified_input_bgc_name
         self.input_assembly = self.sg_object.assemblies[self.modified_input_bgc_name]
 
     def create_input_bgcs(self):
@@ -219,7 +219,7 @@ class SearchBase(ABC):
             self._filter_clusters(
                 df=self.working_search_results_df,
                 threshold=self.gene_clusters_must_have_x_matches,
-                limiter=limiter
+                limiter=limiter,
             )
         )
 
@@ -311,7 +311,12 @@ class SearchBase(ABC):
         )
 
     def _fraction_matched(self):
-        df = self.link_df.groupby(["target_gene_cluster"])["query"].nunique().apply(lambda x: x / len(self.input_bgc.proteins)).reset_index()
+        df = (
+            self.link_df.groupby(["target_gene_cluster"])["query"]
+            .nunique()
+            .apply(lambda x: x / len(self.input_bgc.proteins))
+            .reset_index()
+        )
         df.columns = ["gene_cluster", "fraction_matched"]
         return df
 
@@ -335,13 +340,15 @@ class SearchBase(ABC):
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
         temp = temp.sort_values(by=["modscore", "score"], ascending=False)
-        secondary = temp[temp['jaccard'] < threshold]
-        primary = temp[temp['jaccard'] >= threshold]
+        secondary = temp[temp["jaccard"] < threshold]
+        primary = temp[temp["jaccard"] >= threshold]
         for i, row in secondary.iterrows():
             # remove the gene cluster from the sg_object
             z = row.query_gene_cluster_x
             z.parent.gene_clusters = [i for i in z.parent.gene_clusters if i != z]
-        primary['query_gene_cluster_x_assembly'] = primary['query_gene_cluster_x'].apply(lambda x: x.parent.parent.uid)
+        primary["query_gene_cluster_x_assembly"] = primary[
+            "query_gene_cluster_x"
+        ].apply(lambda x: x.parent.parent.uid)
         primary.drop_duplicates(subset=["query_gene_cluster_x_assembly"], inplace=True)
         return primary["query_gene_cluster_x"].to_list()
 
@@ -561,9 +568,7 @@ class SearchBase(ABC):
         )
 
     def _count_unique_hits_per_cluster(self, df):
-        return df.groupby(["cluster"])[
-            "query"
-        ].nunique().sort_values(ascending=False)
+        return df.groupby(["cluster"])["query"].nunique().sort_values(ascending=False)
 
     def _sort_genes_by_start(self):
         log.info("Sorting genes by start position")
@@ -623,7 +628,7 @@ class SearchBase(ABC):
             .reset_index()
         )
 
-    def _filter_clusters(self, df, threshold,limiter=None) -> pd.Index:
+    def _filter_clusters(self, df, threshold, limiter=None) -> pd.Index:
         """Filter the results for potential BGCs
         Args:
         Returns:

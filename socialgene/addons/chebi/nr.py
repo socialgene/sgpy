@@ -11,4 +11,3 @@ class ChebiNode(Node):
         "name": str,
     }
     constraints_unique = ["uid"]
-

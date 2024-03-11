@@ -8,7 +8,6 @@ from socialgene.config import env_vars
 from socialgene.utils.logging import CONSOLE, log
 
 
-
 # Read in queries from cypher file, as dictionary
 def import_queries():
     cypher_dictionary = {}

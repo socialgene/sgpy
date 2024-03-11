@@ -4,6 +4,7 @@ from pathlib import Path
 from socialgene.cli.search.sea import search_bgc
 from socialgene.config import env_vars
 import pandas as pd
+
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 from socialgene.neo4j.neo4j import GraphDriver
@@ -16,10 +17,8 @@ import pandas as pd
 from socialgene.utils.logging import log
 
 
-
-
 with GraphDriver() as db:
-    bgcs= db.run(
+    bgcs = db.run(
         """
         MATCH (n:nucleotide)
         WHERE n.external_id STARTS WITH "BGC"
@@ -28,16 +27,14 @@ with GraphDriver() as db:
     ).value()
 
 
-counter=0
+counter = 0
 threshold = 0.7
 
 for bgc in bgcs:
-    counter+=1
+    counter += 1
     log.warning(f"Running {counter} of {len(bgcs)}")
     sg = SocialGene()
-    sg.fill_given_locus_range(
-        locus_uid=bgc, start=float("-inf"), end=float("inf")
-    )
+    sg.fill_given_locus_range(locus_uid=bgc, start=float("-inf"), end=float("inf"))
     a = search_bgc(
         input=sg,
         hmm_dir="/home/chase/Documents/socialgene_data/v0_4_1/refseq_antismash_bgcs/socialgene_per_run/hmm_cache",
@@ -60,24 +57,30 @@ for bgc in bgcs:
         analyze_with="blastp",
     )
     temp = pd.merge(
-            a._compare_bgcs_by_jaccard_and_levenshtein(),
-            a._compare_bgcs_by_median_bitscore(),
-            left_on="query_gene_cluster",
-            right_on="target_gene_cluster",
-            how="inner",
-        ).sort_values(by=["modscore", "score"], ascending=False)
+        a._compare_bgcs_by_jaccard_and_levenshtein(),
+        a._compare_bgcs_by_median_bitscore(),
+        left_on="query_gene_cluster",
+        right_on="target_gene_cluster",
+        how="inner",
+    ).sort_values(by=["modscore", "score"], ascending=False)
 
-    temp['nuc']=temp['query_gene_cluster_x'].apply(lambda x: x.parent.uid)
+    temp["nuc"] = temp["query_gene_cluster_x"].apply(lambda x: x.parent.uid)
     # get best hit per nuc sequence
     temp = temp.groupby("nuc").head(1).reset_index(drop=True)
-    temp = temp[['query_gene_cluster_x', 'jaccard','levenshtein', 'modscore', 'score']]
-    temp = temp[temp['jaccard'] > threshold]
-    temp['start'] = temp['query_gene_cluster_x'].apply(lambda x: min(i.start for i in x.features))
-    temp['end'] = temp['query_gene_cluster_x'].apply(lambda x: max(i.end for i in x.features))
-    temp['query_gene_cluster_x'] = temp['query_gene_cluster_x'].apply(lambda x: x.parent.uid)
+    temp = temp[["query_gene_cluster_x", "jaccard", "levenshtein", "modscore", "score"]]
+    temp = temp[temp["jaccard"] > threshold]
+    temp["start"] = temp["query_gene_cluster_x"].apply(
+        lambda x: min(i.start for i in x.features)
+    )
+    temp["end"] = temp["query_gene_cluster_x"].apply(
+        lambda x: max(i.end for i in x.features)
+    )
+    temp["query_gene_cluster_x"] = temp["query_gene_cluster_x"].apply(
+        lambda x: x.parent.uid
+    )
     # remove rows if query_gene_cluster_x is the same as bgc
-    temp = temp[temp['query_gene_cluster_x'] != bgc]
-    temp = temp.to_dict(orient='records')
+    temp = temp[temp["query_gene_cluster_x"] != bgc]
+    temp = temp.to_dict(orient="records")
     if temp:
         log.info(f"Linking {len(temp)} assemblies to {bgc}")
         with GraphDriver() as db:

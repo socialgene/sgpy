@@ -31,8 +31,11 @@ def recursive_get(x, levels=10):
         return set(x)
     else:
         subclasses = [i.__subclasses__() for i in x]
-        flattened_subclasses = [subclass for sublist in subclasses for subclass in sublist]
-        return set(x) | recursive_get(flattened_subclasses, levels-1)
+        flattened_subclasses = [
+            subclass for sublist in subclasses for subclass in sublist
+        ]
+        return set(x) | recursive_get(flattened_subclasses, levels - 1)
+
 
 class GraphSchema:
     ALL_NODES = recursive_get(Node.__subclasses__())
@@ -183,15 +186,14 @@ def main():  # pragma: no cover
         if args.rels:
             GraphSchema._markdown_table_rels(GraphSchema.ALL_RELATIONSHIPS)
     else:
-        before_width=CONSOLE.width
+        before_width = CONSOLE.width
         CONSOLE.width = 300
         if args.nodes:
             CONSOLE.print(GraphSchema()._nodes_table().__next__())
-            CONSOLE.width=before_width
+            CONSOLE.width = before_width
         if args.rels:
-
             CONSOLE.print(GraphSchema()._relationships_table().__next__())
-        CONSOLE.width=before_width
+        CONSOLE.width = before_width
 
 
 if __name__ == "__main__":

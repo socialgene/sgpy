@@ -33,8 +33,7 @@ def morgan_fingerprint(rdkitmol, radius=2, nBits=2048):
 
 
 class ChemicalCompound:
-
-    def __init__(self, compound,**kwargs):
+    def __init__(self, compound, **kwargs):
         self.mol = None
         self.parse_compound(compound)
         self.morgan = morgan_fingerprint(self.mol, **kwargs)

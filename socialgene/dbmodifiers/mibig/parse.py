@@ -23,8 +23,8 @@ def dl_json():
         tarfile_object = tarfile.open(tar_path)
         bgc_files = tarfile_object.getnames()
         for i in bgc_files:
-           if i.endswith(".json"):
-               yield i
+            if i.endswith(".json"):
+                yield i
 
 
 single_file = "/home/chase/Downloads/mibig_json_3.1/BGC0001850.json"
@@ -34,53 +34,33 @@ with open(single_file, "r") as f:
     data = json.load(f)
 
 
-
-
-
 class MibigParse:
     def __init__(self, entry):
         self.entry = entry
 
     def get_class(self):
         try:
-            for i in self.entry['cluster']['biosyn_class']:
-                self.mibig_biosynthetic_class = Mibig_Biosynthetic_Class(properties={"uid": i})
+            for i in self.entry["cluster"]["biosyn_class"]:
+                self.mibig_biosynthetic_class = Mibig_Biosynthetic_Class(
+                    properties={"uid": i}
+                )
         except Exception as e:
             print(e)
 
     def get_compounds(self):
         try:
-            for i in self.entry['cluster']['compounds']:
+            for i in self.entry["cluster"]["compounds"]:
                 self.mibig_compound = Mibig_Compound(properties={"uid": i})
         except Exception as e:
             print(e)
 
 
-for i in data['cluster']['biosyn_class']:
+for i in data["cluster"]["biosyn_class"]:
     Mibig_Biosynthetic_Class(properties={"uid": i})
 
 
-
-data['cluster']['compounds'][0]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+data["cluster"]["compounds"][0]
 
 
 if __name__ == "__main__":
     add_mibig_info_to_neo4j()
-

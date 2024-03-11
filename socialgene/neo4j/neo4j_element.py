@@ -8,8 +8,7 @@ from socialgene.utils.logging import log
 
 
 class Neo4jElement(ABC):
-
-    neo4j_label = None # list for nodes because they can have multiple labels, string for relationships because they can only have one
+    neo4j_label = None  # list for nodes because they can have multiple labels, string for relationships because they can only have one
     description = None
     property_specification = {}
     header = None
@@ -141,7 +140,9 @@ class Neo4jElement(ABC):
 
 class Node(Neo4jElement):
     """Represents a single Node"""
+
     nonunique_index = None
+
     def __init__(
         self,
         uid: List[str] = None,
@@ -153,7 +154,6 @@ class Node(Neo4jElement):
                 f"property_specification must be defined for class {self.__class__.__name__}"
             )
 
-
     def __hash__(self):
         return hash((frozenset(self.neo4j_label), frozenset(self.properties.items())))
 
@@ -164,9 +164,8 @@ class Node(Neo4jElement):
                     return True
         return False
 
-
     def __str__(self) -> str:
-        return f"(:{":".join(self.neo4j_label)})"
+        return f'(:{":".join(self.neo4j_label)})'
 
     def _neo4j_repr(
         self,
@@ -218,7 +217,6 @@ class Node(Neo4jElement):
             except Exception:
                 pass
 
-
     def add_nonunique_index_to_neo4j(self):
         """Add non-unique indices to Neo4j"""
         if not hasattr(self, "nonunique_index") or not self.nonunique_index:
@@ -241,10 +239,9 @@ class Node(Neo4jElement):
             except Exception:
                 pass
 
-
     def add_to_neo4j(self, create=False):
         """Add a single node to Neo4j"""
-        var="n"
+        var = "n"
         merge_str = self._neo4j_repr_params(var=var, map_key="required_props")
         paramsdict = {
             "optional_props": self._Neo4jElement__optional_properties_dict,
@@ -309,7 +306,7 @@ class Node(Neo4jElement):
             )
         single = list_of_nodes[0]
         count_res = {"nodes_created": 0, "properties_set": 0}
-        var="n"
+        var = "n"
         merge_str = single._neo4j_repr_params(var=var, map_key="required_props")
         if len(single.neo4j_label) > 1:
             # handle adding extra labels if they exist
@@ -406,6 +403,7 @@ class Relationship(Neo4jElement):
                         if self.end == other.end:
                             return True
         return False
+
     @property
     def neo4j_label_str(self):
         return str(self.neo4j_label)

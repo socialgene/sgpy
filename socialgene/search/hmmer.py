@@ -350,8 +350,6 @@ class SearchDomains(SearchBase, CompareDomains):
         self.outdegree_df = temp.merge(db_res, how="left")
         self.outdegree_df.drop_duplicates(inplace=True, ignore_index=True)
 
-
-
     def _filter_max_outdegree(self, max_outdegree: int = None):
         """Filter out proteins with a higher outdegree than max_outdegree
 
@@ -432,11 +430,8 @@ class SearchDomains(SearchBase, CompareDomains):
             raise ValueError
 
     def _filter_scatter(self, max_query_proteins):
-        """ Choose a random subset of proteins to search that are spread across the length of the input BGC.
-        """
-        log.info(
-            "Choosing query proteins that span across the input BGC"
-        )
+        """Choose a random subset of proteins to search that are spread across the length of the input BGC."""
+        log.info("Choosing query proteins that span across the input BGC")
         temp = list(self.input_bgc.features_sorted_by_midpoint)
         temp = [
             temp[int(ceil(i * len(temp) / max_query_proteins))].uid
@@ -445,11 +440,9 @@ class SearchDomains(SearchBase, CompareDomains):
         self.outdegree_df = self.outdegree_df[
             self.outdegree_df["protein_uid"].isin(temp)
         ]
+        log.info("Scattering the search to proteins to and across the input BGC")
         log.info(
-            "Scattering the search to proteins to and across the input BGC"
-        )
-        log.info(
-                f"'max_query_proteins' is set to {max_query_proteins:,}, will limit search to {max_query_proteins} of {len(self.outdegree_df['protein_uid'].unique())} input proteins"
+            f"'max_query_proteins' is set to {max_query_proteins:,}, will limit search to {max_query_proteins} of {len(self.outdegree_df['protein_uid'].unique())} input proteins"
         )
 
     def prioritize_input_proteins(
@@ -507,17 +500,16 @@ class SearchDomains(SearchBase, CompareDomains):
             log.info(
                 f"Removed {prelen - len(self.outdegree_df)} domains from consideration (no connections in the DB), which reemoves {prelen_prot - len(self.outdegree_df['protein_uid'].unique())} proteins from consideration"
             )
-        
-        
+
         if max_query_proteins and scatter:
             self._filter_scatter(max_query_proteins)
-        
-        self._filter_max_outdegree(max_outdegree)        
+
+        self._filter_max_outdegree(max_outdegree)
         self._filter_max_domains_per_protein(max_domains_per_protein)
-        
+
         if max_query_proteins and not scatter:
             self._filter_max_query_proteins(max_query_proteins)
-        
+
         # Add back explicitly requested input proteins/loci
 
         self.outdegree_df = pd.merge(self.outdegree_df, bypass_df, how="outer")
@@ -545,11 +537,10 @@ class SearchDomains(SearchBase, CompareDomains):
         table.add_column("Sum", justify="left", style="cyan", no_wrap=True, ratio=1)
         for i in self._outdegree_table_stats():
             table.add_row(*[str(i) for i in i])
-        before_width=CONSOLE.width
+        before_width = CONSOLE.width
         CONSOLE.width = 300
         CONSOLE.print(table)
-        CONSOLE.width=before_width
-
+        CONSOLE.width = before_width
 
     def _outdegree_table_stats(self):
         temp = (

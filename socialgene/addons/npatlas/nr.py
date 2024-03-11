@@ -65,6 +65,7 @@ class NPAtlasToGnps(Relationship):
 class NPAtlasPublication(Publication):
     pass
 
+
 class NPAtlasToPublication(Relationship):
     neo4j_label = "HAS"
     description = "Connects an NPAtlas entry to a publication"

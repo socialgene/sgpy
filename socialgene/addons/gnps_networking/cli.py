@@ -108,10 +108,10 @@ def main():
             #         )
             ...
         else:
-
-            log.error("To link MS data to genomes, provide --map_path; to skip this step, use the --force flag.")
+            log.error(
+                "To link MS data to genomes, provide --map_path; to skip this step, use the --force flag."
+            )
             sys.exit(1)
-
 
     # loop through all the methods
     for i in [
@@ -133,7 +133,6 @@ def main():
             getattr(gnps, i)()
         except Exception as e:
             log.error(f"Failed to {i}: {e}")
-
 
     if args.map_path:
         try:

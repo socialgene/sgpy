@@ -70,6 +70,7 @@ class PARAMETERS(Node):
     }
     constraints_unique = ["uid"]
 
+
 class ASSEMBLY(Node):
     """Represents a single genome/assembly/BGC. If the input was a FASTA file or if assembly wasn't in the genbank metadata then this will represent the file the data came from."""
 

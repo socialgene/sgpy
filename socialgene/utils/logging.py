@@ -2,11 +2,11 @@ import logging
 import sys
 
 from rich.console import Console
+
 CONSOLE = Console(width=150)
 # If {rich} is installed use it, otherwise.... don't
 try:
     from rich.logging import RichHandler
-
 
     # https://rich.readthedocs.io/en/stable/logging.html
     logging.basicConfig(
@@ -15,7 +15,9 @@ try:
         format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[
-            RichHandler(rich_tracebacks=True, tracebacks_word_wrap=False, console=CONSOLE)
+            RichHandler(
+                rich_tracebacks=True, tracebacks_word_wrap=False, console=CONSOLE
+            )
         ],
     )
 

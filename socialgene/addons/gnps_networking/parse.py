@@ -21,7 +21,8 @@ from socialgene.addons.gnps_networking.nr import (
     MassSpecFileNode,
     MassSpecFileToAssembly,
     MassSpecFileToSpectrum,
-    MolecularNetwork,SpectrumNode
+    MolecularNetwork,
+    SpectrumNode,
 )
 from socialgene.addons.npclassifier.nr import (
     NPClassifierClass,
@@ -33,7 +34,6 @@ from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.nextflow.nodes import ASSEMBLY
 from socialgene.utils.file_handling import open_read
 from socialgene.utils.logging import log
-
 
 
 def capture_assembly_id(s, regex):
@@ -56,13 +56,13 @@ class GNPS_SNETS:
 
     def __init__(
         self,
-        gnps_dirpath:str =None,
-        params_xml_path:str = None,
-        specnets_path:str = None,
-        selfloop_path:str = None,
-        clustersummary_path:str = None,
-        clusterinfo_path:str = None,
-        map_path:str = None,
+        gnps_dirpath: str = None,
+        params_xml_path: str = None,
+        specnets_path: str = None,
+        selfloop_path: str = None,
+        clustersummary_path: str = None,
+        clusterinfo_path: str = None,
+        map_path: str = None,
     ):
         self.gnps_dirpath = gnps_dirpath
         if self.gnps_dirpath:
@@ -90,8 +90,6 @@ class GNPS_SNETS:
         ]:
             if getattr(self, i):
                 setattr(self, i, Path(getattr(self, i)))
-
-
 
     def _parse(self):
         self._get_gnps_filemapping()
@@ -145,13 +143,10 @@ class GNPS_SNETS:
                 except Exception as e:
                     log.debug(f"Error parsing file mapping: {e}")
 
-
     def _parse_clusterinfo(self):
         """Parses the clusterinfo file and replaces the mapped filename with the original filename"""
         with open_read(self.clusterinfo_path) as f:
-            clusterinfo_df = pd.read_csv(f, sep="\t").replace(
-                np.nan, None
-            )
+            clusterinfo_df = pd.read_csv(f, sep="\t").replace(np.nan, None)
         clusterinfo_df.columns = [
             name.lower()
             .replace("#", "")
@@ -246,23 +241,32 @@ class GNPS_SNETS:
             )
         return results
 
-
     # Add nodes to Neo4j
     def _add_input_spectra(self, create=False):
         def temp(i):
-            spec=SpectrumNode()
+            spec = SpectrumNode()
             d = i | {"workflow_uuid": self.workflow_uuid}
             spec.fill_from_dict(d)
             return spec
-        SpectrumNode.add_multiple_to_neo4j([temp(i) for i in self.clusterinfo_df.to_dict("records")], create=create)
+
+        SpectrumNode.add_multiple_to_neo4j(
+            [temp(i) for i in self.clusterinfo_df.to_dict("records")], create=create
+        )
 
     def _add_input_ms_files(self, create=False):
         def temp(i):
-            spec=MassSpecFileNode()
-            d = {"workflow_uuid": self.workflow_uuid, "gnps_filename": i['filename'], "filename": i['original_filename']}
+            spec = MassSpecFileNode()
+            d = {
+                "workflow_uuid": self.workflow_uuid,
+                "gnps_filename": i["filename"],
+                "filename": i["original_filename"],
+            }
             spec.fill_from_dict(d)
             return spec
-        MassSpecFileNode.add_multiple_to_neo4j([temp(i) for i in self.clusterinfo_df.to_dict("records")], create=create)
+
+        MassSpecFileNode.add_multiple_to_neo4j(
+            [temp(i) for i in self.clusterinfo_df.to_dict("records")], create=create
+        )
 
     def _create_library_hit_nodes(self):
         """Creates GNPS library hit nodes"""
@@ -291,14 +295,19 @@ class GNPS_SNETS:
         clusternodes = list(clusternodes)
         clusternodes[0].add_multiple_to_neo4j(clusternodes, create=create)
 
-
     # Add rels to Neo4j
 
     def _link_cluster_to_spectrum(self):
-        rels=set()
+        rels = set()
         for i in self.clusterinfo_df.to_dict("records"):
             cn = ClusterNode()
-            cn.fill_from_dict({"cluster_index": i['clusteridx'], "workflow_uuid": self.workflow_uuid, "task": self.task})
+            cn.fill_from_dict(
+                {
+                    "cluster_index": i["clusteridx"],
+                    "workflow_uuid": self.workflow_uuid,
+                    "task": self.task,
+                }
+            )
             sn = SpectrumNode()
             sn.fill_from_dict(i | {"workflow_uuid": self.workflow_uuid})
             rels.add(ClusterToSpectrum(start=sn, end=cn))
@@ -310,7 +319,11 @@ class GNPS_SNETS:
         if not self.map_path or not Path(self.map_path).exists():
             raise ValueError("No map file found")
         with open_read(self.map_path) as f:
-            map_df = pd.read_csv(f, sep="\t", header=None, ).replace(np.nan, None)
+            map_df = pd.read_csv(
+                f,
+                sep="\t",
+                header=None,
+            ).replace(np.nan, None)
         # should only have two columns
         if len(map_df.columns) != 2:
             raise ValueError("Map file should only have two columns")
@@ -324,29 +337,37 @@ class GNPS_SNETS:
         map_df.iloc[:, 1] = map_df.iloc[:, 1].apply(lambda x: Path(x).name)
         return map_df
 
-
     def _link_ms_file_to_assembly(self):
         map_df = self._validate_map()
         # merge map_df and clusterinfo_df, merge on mass_spec_file and original_filename
-        df = self.clusterinfo_df.merge(map_df, left_on="original_filename", right_on="mass_spec_file", how="inner")
-        rels=set()
+        df = self.clusterinfo_df.merge(
+            map_df, left_on="original_filename", right_on="mass_spec_file", how="inner"
+        )
+        rels = set()
         for i in df.to_dict("records"):
             cn = MassSpecFileNode()
-            d = {"workflow_uuid": self.workflow_uuid, "gnps_filename": i['filename'], "filename": i['original_filename']}
+            d = {
+                "workflow_uuid": self.workflow_uuid,
+                "gnps_filename": i["filename"],
+                "filename": i["original_filename"],
+            }
             cn.fill_from_dict(d)
             sn = ASSEMBLY()
-            d = {"uid": i['assembly']}
+            d = {"uid": i["assembly"]}
             sn.fill_from_dict(d)
             rels.add(MassSpecFileToAssembly(start=cn, end=sn))
         rels = list(rels)
         rels[0].add_multiple_to_neo4j(rels, create=False)
 
-
     def _link_spectrum_to_ms_file(self):
-        rels=set()
+        rels = set()
         for i in self.clusterinfo_df.to_dict("records"):
             cn = MassSpecFileNode()
-            d = {"workflow_uuid": self.workflow_uuid, "gnps_filename": i['filename'], "filename": i['original_filename']}
+            d = {
+                "workflow_uuid": self.workflow_uuid,
+                "gnps_filename": i["filename"],
+                "filename": i["original_filename"],
+            }
             cn.fill_from_dict(d)
             sn = SpectrumNode()
             d = i | {"workflow_uuid": self.workflow_uuid}
@@ -354,7 +375,6 @@ class GNPS_SNETS:
             rels.add(MassSpecFileToSpectrum(start=cn, end=sn))
         rels = list(rels)
         rels[0].add_multiple_to_neo4j(rels, create=False)
-
 
     def _link_npclassifiers(self):
         """Classifies GNPS library hits by linking them to NPClassifier nodes"""
@@ -413,7 +433,7 @@ class GNPS_SNETS:
                 properties={
                     "cluster_index": i["cluster_index"],
                     "workflow_uuid": self.workflow_uuid,
-                    "task": self.task
+                    "task": self.task,
                 }
             )
             e = GnpsLibrarySpectrumNode(properties={"uid": i["libraryid"]})
@@ -427,13 +447,14 @@ class GNPS_SNETS:
         for i in [s_set, e_set, r_set]:
             i[0].add_multiple_to_neo4j(i, create=False)
 
-
     def _link_cluster_to_library(self):
         if "spectrumid" not in self.clustersummary_df.columns:
             # not all GNPS results will have library hits
-            log.warn("Older versions of GNPS results may have library ids but not spectrumid? Skipping.")
+            log.warn(
+                "Older versions of GNPS results may have library ids but not spectrumid? Skipping."
+            )
             try:
-               self._link_cluster_to_library_no_spec_id()
+                self._link_cluster_to_library_no_spec_id()
             except Exception as e:
                 raise ValueError(f"Failed to link clusters to library hits: {e}")
             return
@@ -447,7 +468,7 @@ class GNPS_SNETS:
                 properties={
                     "cluster_index": i["cluster_index"],
                     "workflow_uuid": self.workflow_uuid,
-                    "task": self.task
+                    "task": self.task,
                 }
             )
             e = GnpsLibrarySpectrumNode(properties={"uid": i["spectrumid"]})
@@ -469,13 +490,15 @@ class GNPS_SNETS:
             s = ClusterNode(
                 properties={
                     "cluster_index": i["clusterid1"],
-                    "workflow_uuid": self.workflow_uuid,"task": self.task
+                    "workflow_uuid": self.workflow_uuid,
+                    "task": self.task,
                 }
             )
             e = ClusterNode(
                 properties={
                     "cluster_index": i["clusterid2"],
-                    "workflow_uuid": self.workflow_uuid,"task": self.task
+                    "workflow_uuid": self.workflow_uuid,
+                    "task": self.task,
                 }
             )
             r = MolecularNetwork(start=s, end=e)
@@ -494,8 +517,6 @@ class GNPS_SNETS:
             i[0].add_multiple_to_neo4j(i, create=False)
         r_set[0].add_multiple_to_neo4j(r_set, create=create)
 
-
-
     def _link_library_to_chem(self):
         all_chem_nodes = set()
         all_rels = set()
@@ -508,7 +529,7 @@ class GNPS_SNETS:
             if chemstring:
                 try:
                     cmpd = ChemicalCompound(chemstring)
-                    a=cmpd.node
+                    a = cmpd.node
                     all_chem_nodes.add(a)
                     all_rels.add(GnpsLibraryToChem(start=i, end=a))
                 except Exception as e:

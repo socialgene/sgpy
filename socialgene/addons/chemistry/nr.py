@@ -53,7 +53,6 @@ class ChemicalCompoundNode(Node):
     constraints_unique = ["inchi", "CanonicalSmiles"]
 
 
-
 class TanimotoSimilarity(Relationship):
     neo4j_label = "TANIMOTO_SIMILARITY"
     description = "Connects two chemical compounds that are similar"
@@ -62,6 +61,7 @@ class TanimotoSimilarity(Relationship):
     property_specification = {
         "similarity": int,
     }
+
 
 class McsSimilarity(Relationship):
     neo4j_label = "MCS_SIMILARITY"
@@ -73,17 +73,15 @@ class McsSimilarity(Relationship):
     }
 
 
-
 class ChemicalSubstructure(ChemicalCompoundNode):
     neo4j_label = ChemicalCompoundNode.neo4j_label + ["substructure"]
     description = "Represents a chemical substructure"
 
 
-
 class ChemicalFragment(Node):
     neo4j_label = ["chemical_fragment"]
     description = "Represents a chemical fragment as defined by rdkit.Chem.Descriptors"
-    required_properties = (["uid"])
+    required_properties = ["uid"]
     properties = {
         "uid": str,
     }
@@ -95,7 +93,6 @@ class ContainsFragment(Relationship):
     description = "Connects a chemical compound to a chemical fragment"
     start_class = ChemicalCompoundNode
     end_class = ChemicalFragment
-
 
 
 class ContainsSubstructure(Relationship):

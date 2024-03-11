@@ -28,7 +28,9 @@ parser.add_argument(
 def main():
     args = parser.parse_args()
     as_dict = {}
-    log.info("Adding indices to Neo4j. This can take some time, depending on how many of each label exists in the database.")
+    log.info(
+        "Adding indices to Neo4j. This can take some time, depending on how many of each label exists in the database."
+    )
     for i in GraphSchema.ALL_NODES:
         if len(i.neo4j_label) == 1:
             as_dict[i.neo4j_label[0]] = i
@@ -40,11 +42,11 @@ def main():
         return
     if args.all:
         with Progress(
-        SpinnerColumn(spinner_name="runner"),
-        TextColumn(text_format="Adding index for... {task.fields[lab]}"),
-        console=CONSOLE,
-        transient=True,
-    ) as progress:
+            SpinnerColumn(spinner_name="runner"),
+            TextColumn(text_format="Adding index for... {task.fields[lab]}"),
+            console=CONSOLE,
+            transient=True,
+        ) as progress:
             task = progress.add_task("Adding index for...", lab="")
             for i in GraphSchema.ALL_NODES:
                 progress.update(task, lab=i.neo4j_label)
@@ -56,11 +58,11 @@ def main():
 
     elif args.labels:
         with Progress(
-        SpinnerColumn(spinner_name="runner"),
-        TextColumn(text_format="Adding index for... {task.fields[lab]}"),
-        console=CONSOLE,
-        transient=True,
-    ) as progress:
+            SpinnerColumn(spinner_name="runner"),
+            TextColumn(text_format="Adding index for... {task.fields[lab]}"),
+            console=CONSOLE,
+            transient=True,
+        ) as progress:
             task = progress.add_task("Adding index for...", lab="")
             for i in args.labels:
                 if i in as_dict:

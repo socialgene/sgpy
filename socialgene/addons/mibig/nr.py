@@ -35,13 +35,9 @@ class Mibig(ASSEMBLY):
             raise ValueError(f"Unexpected mibig ID {uid}")
 
 
-
 class Substrate(ChemicalCompoundNode):
-    neo4j_label =  ChemicalCompoundNode.neo4j_label + ["substrate"]
+    neo4j_label = ChemicalCompoundNode.neo4j_label + ["substrate"]
     description = "Mibig substrate (e.g. NRPS monomer)"
-
-
-
 
 
 class MibigCompound(Node):

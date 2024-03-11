@@ -8,10 +8,6 @@ from socialgene.utils.logging import log
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 
-
-
-
-
 # def limiter(search_object, max_outdegree):
 
 #     # if df.nucleotide_uid.nunique() > 1000:
@@ -19,7 +15,6 @@ env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 #     len_input_bgc_proteins = len(search_object.input_bgc.proteins)
 #     len_input_bgc_proteins_with_domains = len([i for i in search_object.input_bgc.proteins.values() if i.domains])
-
 
 
 def search_bgc(
@@ -73,7 +68,9 @@ def search_bgc(
     # labels clusters with a unique id based on break_bgc_on_gap_of
     search_object.label_clusters()
     df = search_object._primary_bgc_regions(limiter=limiter)
-    log.info(f"First pass resulted in {df.assembly_uid.nunique()} assemblies, {df.nucleotide_uid.nunique()} nucleotide sequences had {df.cluster.nunique()} putative BGCs")
+    log.info(
+        f"First pass resulted in {df.assembly_uid.nunique()} assemblies, {df.nucleotide_uid.nunique()} nucleotide sequences had {df.cluster.nunique()} putative BGCs"
+    )
 
     df["n_start"] = df["n_start"] - search_object.target_bgc_padding
     df["n_end"] = df["n_end"] + search_object.target_bgc_padding
@@ -92,7 +89,7 @@ def search_bgc(
     # add input bgc as gene_cluster to the locus objects
     if analyze_with == "hmmer":
         _ = search_object.sg_object.annotate_proteins_with_neo4j(
-        protein_uids=None, annotate_all=True, progress=False
+            protein_uids=None, annotate_all=True, progress=False
         )
     else:
         search_object.sg_object.add_sequences_from_neo4j()
@@ -125,7 +122,4 @@ def search_bgc(
     return search_object
 
 
-#GCF_001905625.1
-
-
-
+# GCF_001905625.1

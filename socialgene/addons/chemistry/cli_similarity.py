@@ -11,6 +11,7 @@ from functools import partial
 
 cmpd_label = ChemicalCompoundNode.neo4j_label[0]
 
+
 def create_arg_parser():
     parser = argparse.ArgumentParser(
         description="Calculate chemical similarity between all the chemical nodes in a SocialGene Neo4j Database"
@@ -42,6 +43,7 @@ def get_db_inchis():
         ).value()
     return res
 
+
 def inchi_list_to_compound_dict(x):
     res = {}
     for i in x:
@@ -50,7 +52,7 @@ def inchi_list_to_compound_dict(x):
     return res
 
 
-def create_inchi_list_to_compound_dict(inchlist,cpus=1):
+def create_inchi_list_to_compound_dict(inchlist, cpus=1):
     group_size = len(inchlist) // cpus
     b = batched(inchlist, group_size)
     combined_dict = {}
@@ -58,7 +60,6 @@ def create_inchi_list_to_compound_dict(inchlist,cpus=1):
         for res in pool.imap_unordered(inchi_list_to_compound_dict, b):
             combined_dict.update(res)
     return combined_dict
-
 
 
 def calculate_similarity(tupgroup, threshold=0.5):
@@ -74,7 +75,6 @@ def calculate_similarity(tupgroup, threshold=0.5):
     return chemsim_set
 
 
-
 def calculate_similarity_parallel(combined_dict, threshold=0.5, cpus=1):
     id_list = list(combined_dict.keys())
     big_vec = [i[0].morgan for i in combined_dict.values()]
@@ -83,7 +83,9 @@ def calculate_similarity_parallel(combined_dict, threshold=0.5, cpus=1):
     groups[-1] = (groups[-1][0], len(id_list) - 1, big_vec)
     chemsim = set()
     with multiprocessing.Pool(processes=cpus) as pool:
-        calculate_similarity_partial = partial(calculate_similarity, threshold=threshold)
+        calculate_similarity_partial = partial(
+            calculate_similarity, threshold=threshold
+        )
         for i in pool.imap_unordered(calculate_similarity_partial, groups):
             chemsim.update(i)
     chemsim2 = set()
@@ -91,6 +93,7 @@ def calculate_similarity_parallel(combined_dict, threshold=0.5, cpus=1):
         # sorted prevents identical forward + reverse relationships
         chemsim2.add(tuple(sorted(i[0:2]) + [i[2]]))
     return chemsim2
+
 
 def combine(combined_dict, chemsim):
     df0 = pd.DataFrame(
@@ -114,14 +117,17 @@ def combine(combined_dict, chemsim):
     )
     return df
 
+
 def main():
     parser = create_arg_parser()
     args = parser.parse_args()
     if args.cpus == 1:
         print("Warning: Running with 1 cpu will be slow")
     inchis = get_db_inchis()
-    combined_dict = create_inchi_list_to_compound_dict(inchis,cpus=args.cpus)
-    chemsim = calculate_similarity_parallel(combined_dict, threshold=args.threshold, cpus=args.cpus)
+    combined_dict = create_inchi_list_to_compound_dict(inchis, cpus=args.cpus)
+    chemsim = calculate_similarity_parallel(
+        combined_dict, threshold=args.threshold, cpus=args.cpus
+    )
     df = combine(combined_dict, chemsim)
     del combined_dict, chemsim
     # remove self relationships

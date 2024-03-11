@@ -140,11 +140,12 @@ class NPAtlasEntry:
         self._assign_external_ids()
         self._assign_chebi_terms()
 
-
     def _assign_publication(self):
         self.origin_reference = NPAtlasPublication()
         try:
-            self.origin_reference.properties["doi"] = self.origin_reference._extract_doi(
+            self.origin_reference.properties[
+                "doi"
+            ] = self.origin_reference._extract_doi(
                 self.entry.get("origin_reference").get("doi", None)
             )
         except Exception as e:
@@ -152,10 +153,11 @@ class NPAtlasEntry:
 
         for i in ["pmid", "authors", "title", "journal", "year"]:
             try:
-                self.origin_reference.properties[i] = self.entry.get("origin_reference").get(i, None)
+                self.origin_reference.properties[i] = self.entry.get(
+                    "origin_reference"
+                ).get(i, None)
             except Exception as e:
                 log.debug(f"Failed to extract {i}: {e}")
-
 
     def _assign_lowest_classyfire(self):
         # not all entries have classyfire data at every level, just assign the most specific one
@@ -231,7 +233,7 @@ class NPAtlasEntry:
 
     def _assign_chebi_terms(self):
         try:
-            for term in self.entry['classyfire']["predicted_chebi_terms"]:
+            for term in self.entry["classyfire"]["predicted_chebi_terms"]:
                 # extract name and uid as int from strings like "hydroxycoumarin (CHEBI:37912)"
                 uid = term.split(" ")[-1].removeprefix("(CHEBI:").removesuffix(")")
                 name = term.split("(")[0]
@@ -403,13 +405,13 @@ class NPAtlasEntry:
         try:
             return {
                 NPAtlasToChebi(
-                    start=self.node, end=ChebiNode(properties={"uid": int(k), "name": v})
+                    start=self.node,
+                    end=ChebiNode(properties={"uid": int(k), "name": v}),
                 )
-                for k,v in self.predicted_chebi_terms.items()
+                for k, v in self.predicted_chebi_terms.items()
             }
         except Exception:
             return set()
-
 
     def get_links(self):
         return {
@@ -426,5 +428,4 @@ class NPAtlasEntry:
             NPAtlasToNpclassifierSuperclass: self.link_npclassifier_superclasses(),
             NPAtlasToChem: self.link_chem(),
             NPAtlasToChebi: self.link_chebi(),
-
         }

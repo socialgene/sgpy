@@ -51,6 +51,7 @@ class SpectrumNode(Node):
     }
     constraints_unique = ["original_filename", "specidx", "workflow_uuid"]
 
+
 class MassSpecFileNode(Node):
     neo4j_label = ["mass_spectrum_file"]
     description = "Represents a GNPS molecular networking spectrum file"
@@ -59,7 +60,8 @@ class MassSpecFileNode(Node):
         "gnps_filename": str,
         "workflow_uuid": str,
     }
-    constraints_unique  = ["original_filename", "workflow_uuid"]
+    constraints_unique = ["original_filename", "workflow_uuid"]
+
 
 class MassSpecFileToSpectrum(Relationship):
     neo4j_label = "HAS"
@@ -69,6 +71,7 @@ class MassSpecFileToSpectrum(Relationship):
     property_specification = {}
     required_properties = []
 
+
 class MassSpecFileToAssembly(Relationship):
     neo4j_label = "ANALYSIS_OF"
     description = "Connects a GNPS mass spectrum file to an assembly"
@@ -76,6 +79,7 @@ class MassSpecFileToAssembly(Relationship):
     end_class = ASSEMBLY
     property_specification = {}
     required_properties = []
+
 
 class ClusterToSpectrum(Relationship):
     neo4j_label = "CLUSTERS_TO"
@@ -107,5 +111,3 @@ class MolecularNetwork(Relationship):
         "edgeannotation": str,
     }
     required_properties = []
-
-

@@ -4,7 +4,6 @@ import subprocess
 from socialgene.utils.logging import CONSOLE, log
 
 
-
 def run_subprocess(
     command_list,
     check=True,

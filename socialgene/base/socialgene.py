@@ -119,7 +119,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             protein_uids = self.get_all_feature_uids()
         elif isinstance(protein_uids, str):
             protein_uids = [protein_uids]
-        log.info(f"Searching database for HMM annotations of {len(protein_uids)} proteins.")
+        log.info(
+            f"Searching database for HMM annotations of {len(protein_uids)} proteins."
+        )
         search_result = search_protein_hash(protein_uids)
         if not any([i for i in search_result.values()]):
             log.info("No identical proteins found in the database.")
