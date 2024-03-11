@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from typing import List
 
+import socialgene.nextflow.nodes as nodes
+import socialgene.nextflow.relationships as rels
+
 
 @dataclass
 class Single_Module:
@@ -11,80 +14,74 @@ class Single_Module:
     relationships: List[str]
 
 
-class ModulesMixin:
+class Modules:
     # These are used in Nextflow, here: https://github.com/socialgene/sgnf/blob/main/subworkflows/local/sg_modules.nf
-    # They simply group the different files/inputs into hopefully-sensible "modules"
-    # It could be coded differently, but this way will hopefully make it easier for contributors to extend
+    # They simply group the different nodes/relationships into somewhat sensible "modules"
     def __init__(self, *args, **kwargs):
-        super(ModulesMixin, self).__init__(*args, **kwargs)
         self.modules = {}
         self._add_module(
             module_id="base",
-            nodes=["assembly", "nucleotide", "protein"],
+            nodes=[nodes.ASSEMBLY, nodes.NUCLEOTIDE, nodes.PROTEIN],
             relationships=[
-                "CONTAINS",
-                "ASSEMBLES_TO",
-                "ENCODES",
-                "PROTEIN_SOURCE",
+                rels.ASSEMBLES_TO,
+                rels.ENCODES,
             ],
         )
         self._add_module(
             module_id="go",
-            nodes=["goterm"],
+            nodes=[nodes.GOTERM],
             relationships=[
-                "PROTEIN_TO_GO",
-                "GOTERM_RELS",
+                rels.PROTEIN_TO_GO,
+                rels.GOTERM_RELS,
             ],
         )
         self._add_module(
             module_id="protein",
-            nodes=["protein"],
-            relationships=["PROTEIN_SOURCE"],
+            nodes=[nodes.PROTEIN],
+            relationships=[],
         )
         self._add_module(
             module_id="parameters",
-            nodes=["parameters"],
+            nodes=[nodes.PARAMETERS],
             relationships=[],
         )
         self._add_module(
             module_id="base_hmm",
-            nodes=["hmm", "hmm_source"],
-            relationships=["ANNOTATES", "SOURCE_DB"],
+            nodes=[
+                nodes.HMM,
+                nodes.HMM_SOURCE,
+            ],
+            relationships=[rels.ANNOTATES, rels.SOURCE_DB],
         )
         self._add_module(
             module_id="ncbi_taxonomy",
-            nodes=["taxid"],
-            relationships=["TAXON_PARENT", "IS_TAXON"],
+            nodes=[nodes.TAXID],
+            relationships=[rels.TAXON_PARENT, rels.IS_TAXON],
         )
         self._add_module(
             module_id="tigrfam",
             nodes=[
-                "goterm",
-                "tigrfam_mainrole",
-                "tigrfam_subrole",
-                "tigrfam_role",
+                nodes.GOTERM,
+                nodes.TIGRFAM_MAINROLE,
+                nodes.TIGRFAM_SUBROLE,
+                nodes.TIGRFAM_ROLE,
             ],
             relationships=[
-                "MAINROLE_ANN",
-                "ROLE_ANN",
-                "SUBROLE_ANN",
-                "GO_ANN",
+                rels.MAINROLE_ANN,
+                rels.ROLE_ANN,
+                rels.SUBROLE_ANN,
+                rels.GO_ANN,
             ],
         )
         self._add_module(
             module_id="blastp",
             nodes=[],
-            relationships=["BLASTP"],
+            relationships=[rels.BLASTP],
         )
         self._add_module(
             module_id="mmseqs",
             nodes=[],
-            relationships=["MMSEQS2"],
-        )
-        self._add_module(
-            module_id="paired_omics",
-            nodes=["mz_cluster_index", "mz_source_file"],
-            relationships=["CLUSTER_TO_FILE", "MOLECULAR_NETWORK", "METABO"],
+            relationships=[rels.MMSEQS2],
         )
 
     def _add_module(self, **kwargs):

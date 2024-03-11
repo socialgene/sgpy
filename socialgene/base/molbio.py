@@ -38,15 +38,15 @@ class LocusAssemblyMetadata:
     # add a function that takes a dict as input and sets any attributes in the dict keys
     def update(self, d: dict):
         for k, v in d.items():
-            temp_v = None
+            temp_v = v
             if isinstance(v, list):
                 # if info is a list, collapse into a single string
                 if len(v) > 1:
                     temp_v = ";".join(v)
                 else:
                     temp_v = v[0]
-            else:
-                temp_v = v
+            if not isinstance(temp_v, str):
+                temp_v = str(temp_v)
             temp_v.replace("\t", "")
             temp_v.replace("\n", "")
             temp_v.replace("\r", "")
@@ -620,9 +620,11 @@ class Feature(Location):
         )
         self.incomplete = incomplete
         if self.feature_is_protein():
+            # Check if there is a SocialGene object in the parent chain
+            # If there is, link the feature protein attribute to the SocialGene protein object
             sg = None
             current_object = self
-            for i in range(1, 100):
+            for _ in range(1, 100):
                 if (
                     f"{current_object.__class__.__module__}.{current_object.__class__.__name__}"
                     == "socialgene.base.socialgene.SocialGene"
@@ -633,7 +635,8 @@ class Feature(Location):
                     if hasattr(current_object, "parent"):
                         current_object = current_object.parent
             if sg:
-                self.protein = Protein(uid=self.uid)
+                if self.uid in sg.proteins:
+                    self.protein = sg.proteins[self.uid]
 
     def all_attributes(self):
         return {s: getattr(self, s) for s in sorted(self.__slots__) if hasattr(self, s)}
@@ -661,7 +664,8 @@ class Feature(Location):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (
-            self.end == other.end
+            self.parent == other.parent
+            and self.end == other.end
             and self.start == other.start
             and self.uid == other.uid
             and self.strand == other.strand
@@ -669,7 +673,7 @@ class Feature(Location):
         )
 
     def __lt__(self, other):
-        return self.start < other.start
+        return self.start < other.start and self.parent == other.parent
 
 
 class FeatureCollection:
@@ -818,11 +822,20 @@ class GeneCluster(FeatureCollection):
         super().__init__()
         self.parent = parent
         self.features = features
-        self.uid = uid
+        if uid:
+            self.uid = uid
+        else:
+            self.uid = str(uuid4())
         # self.tool; e.g.antismash, gecco, etc
         self.tool = tool
         # flexible attributes
         self.__dict__.update(kwargs)
+
+    def __hash__(self):
+        return hash((self.parent, self.uid))
+
+    def __lt__(self, other):
+        return 1
 
     def write_genbank(self, outpath, sg):
         record = SeqRecord(

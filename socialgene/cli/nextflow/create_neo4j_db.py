@@ -1,6 +1,6 @@
 import argparse
 
-from socialgene.neo4j.admin_import import Neo4jAdminImport
+from socialgene.neo4j.utils.admin_import import Neo4jAdminImport
 
 parser = argparse.ArgumentParser(
     description="Write the header files for neo4j admin import"

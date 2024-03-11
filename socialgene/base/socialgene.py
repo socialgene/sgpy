@@ -14,7 +14,6 @@ from rich.progress import Progress
 
 from socialgene.base.compare_protein import CompareProtein
 from socialgene.base.molbio import Molbio
-from socialgene.clustermap.serialize import SerializeToClustermap
 from socialgene.hmm.hmmer import HMMER
 from socialgene.neo4j.neo4j import GraphDriver, Neo4jQuery
 from socialgene.neo4j.search.basic import search_protein_hash
@@ -120,6 +119,9 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             protein_uids = self.get_all_feature_uids()
         elif isinstance(protein_uids, str):
             protein_uids = [protein_uids]
+        log.info(
+            f"Searching database for HMM annotations of {len(protein_uids)} proteins."
+        )
         search_result = search_protein_hash(protein_uids)
         if not any([i for i in search_result.values()]):
             log.info("No identical proteins found in the database.")
@@ -304,12 +306,13 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 end=end,
             )
             for feature in res:
+                _ = self.add_protein(uid=feature.value().end_node["uid"])
                 self.assemblies[assembly_uid].loci[external_id].add_feature(
                     type="protein",
                     uid=feature.value().end_node["uid"],
                     **feature.value(),
                 )
-                _ = self.add_protein(uid=feature.value().end_node["uid"])
+
         return {"assembly": assembly_uid, "locus": external_id}
 
     def _drop_all_cross_origin(self):
@@ -522,16 +525,6 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         self._merge_assemblies(sg_object)
         self.protein_comparison.extend(sg_object.protein_comparison)
 
-    def write_clustermap_json(
-        self,
-        outpath,
-        gene_cluster_order=None,
-    ):
-        raise NotImplementedError("write_clustermap_json needs to be updated")
-        # TODO: Add link_df to clustermap
-        cmap = SerializeToClustermap(sorted_bgcs=gene_cluster_order, sg_object=self)
-        cmap.write(outpath=outpath)
-
     def write_genbank(self, outpath):
         for assembly in self.assemblies.values():
             for locus in assembly.loci.values():
@@ -543,7 +536,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     dbxrefs=[f"Assembly:{locus.parent.uid}"],
                 )
                 # Add annotation
-                for feature in locus.features:
+                for feature in locus.features_sorted_by_midpoint:
                     biofeat = SeqFeature(
                         FeatureLocation(
                             start=feature.start,
