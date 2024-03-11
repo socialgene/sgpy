@@ -1,6 +1,5 @@
 """https://np-mrd.org/"""
 
-
 from socialgene.neo4j.neo4j_element import Node
 
 

@@ -143,10 +143,10 @@ class NPAtlasEntry:
     def _assign_publication(self):
         self.origin_reference = NPAtlasPublication()
         try:
-            self.origin_reference.properties[
-                "doi"
-            ] = self.origin_reference._extract_doi(
-                self.entry.get("origin_reference").get("doi", None)
+            self.origin_reference.properties["doi"] = (
+                self.origin_reference._extract_doi(
+                    self.entry.get("origin_reference").get("doi", None)
+                )
             )
         except Exception as e:
             log.debug(f"Failed to extract doi: {e}")
