@@ -1,10 +1,10 @@
 """https://mibig.secondarymetabolites.org/"""
 
 import re
-from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 
-from socialgene.nextflow.nodes import ASSEMBLY
+from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.neo4j.neo4j_element import Node, Relationship
+from socialgene.nextflow.nodes import ASSEMBLY
 
 
 class Mibig(ASSEMBLY):

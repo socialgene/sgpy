@@ -6,6 +6,7 @@ from rich.table import Table
 
 import socialgene.addons.chebi.nr
 import socialgene.addons.chembl.nr
+import socialgene.addons.chemistry.nr
 import socialgene.addons.classyfire.nr
 import socialgene.addons.gnps_library.nr
 import socialgene.addons.gnps_networking.nr
@@ -16,12 +17,10 @@ import socialgene.addons.npmrd.nr
 import socialgene.addons.publication.nr
 import socialgene.nextflow.nodes
 import socialgene.nextflow.relationships
-import socialgene.addons.chemistry.nr
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j_element import Node, Relationship
 from socialgene.utils.lists_to_markdown import markdown_table_from_list
 from socialgene.utils.logging import CONSOLE, log
-
 
 builtins.print = print
 

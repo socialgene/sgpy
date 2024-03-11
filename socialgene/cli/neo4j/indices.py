@@ -1,9 +1,9 @@
 import argparse
 
-from socialgene.neo4j.schema.graph_schema import GraphSchema
-from socialgene.utils.logging import CONSOLE, log
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from socialgene.neo4j.schema.graph_schema import GraphSchema
+from socialgene.utils.logging import CONSOLE, log
 
 parser = argparse.ArgumentParser(
     description="Add indices to a SocialGene Neo4j Database"

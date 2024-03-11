@@ -1,13 +1,14 @@
+import argparse
+import multiprocessing
+from functools import partial
+from itertools import batched
+
+import pandas as pd
 from rdkit import DataStructs
 
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode, TanimotoSimilarity
 from socialgene.base.chem import ChemicalCompound
 from socialgene.neo4j.neo4j import GraphDriver
-import multiprocessing
-import pandas as pd
-from itertools import batched
-import argparse
-from functools import partial
 
 cmpd_label = ChemicalCompoundNode.neo4j_label[0]
 

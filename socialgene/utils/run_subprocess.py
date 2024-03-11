@@ -1,6 +1,5 @@
 import subprocess
 
-
 from socialgene.utils.logging import CONSOLE, log
 
 

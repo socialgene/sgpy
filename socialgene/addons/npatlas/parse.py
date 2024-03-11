@@ -1,6 +1,6 @@
 from pathlib import Path
-from socialgene.addons.chebi.nr import ChebiNode
 
+from socialgene.addons.chebi.nr import ChebiNode
 from socialgene.addons.chemistry.nr import ChemicalCompoundNode
 from socialgene.addons.classyfire.nr import ClassyFireNode
 from socialgene.addons.gnps_library.nr import GnpsLibrarySpectrumNode
