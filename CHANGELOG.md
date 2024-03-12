@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/socialgene/sgpy/compare/v0.6.0...v0.6.1) (2024-03-12)
+
+
+### Bug Fixes
+
+* missing init ([1aaa0a7](https://github.com/socialgene/sgpy/commit/1aaa0a747d5707710f4f13e42174461aac2db729))
+
 ## [0.6.0](https://github.com/socialgene/sgpy/compare/v0.5.1...v0.6.0) (2024-03-11)
 
 
