@@ -114,7 +114,7 @@ class Neo4jAdminImport(SocialgeneModules):
             # labels are set in-file
             cli_label = ""
         else:
-            cli_label = input.neo4j_label[0]
+            cli_label = f"{input.neo4j_label[0]}="
         return [
             f"--{type}={cli_label}",
             f"import/neo4j_headers/{input.header_filename}",
