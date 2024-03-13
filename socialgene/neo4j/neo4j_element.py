@@ -32,7 +32,6 @@ class Neo4jElement(ABC):
             target_subdirectory (str): subdirectory the import data can be found in  (e.g. for non-redundant protein nodes it would be 'protein_info' because data is within: `$outdir/socialgene_neo4j/import/protein_info`)
             target_extension (str): extension that is unique to the wanted data files (scoped within target_subdirectory)
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
-            multilabel(bool): are LABELS specified within the tsv?
         """
         # properties aren't required for relationships
         if self.property_specification is None:
