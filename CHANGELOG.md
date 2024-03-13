@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/socialgene/sgpy/compare/v0.6.2...v0.6.3) (2024-03-13)
+
+
+### Bug Fixes
+
+* multiline ([1e1c4ca](https://github.com/socialgene/sgpy/commit/1e1c4cadb8b715ddce8ca24fc0def1b560cae525))
+
 ## [0.6.2](https://github.com/socialgene/sgpy/compare/v0.6.1...v0.6.2) (2024-03-13)
 
 
