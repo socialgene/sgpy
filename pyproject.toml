@@ -26,7 +26,7 @@ classifiers = [  #! Update me
   "Programming Language :: Python :: 3",
 ]
 dependencies = [
-        "rdkit==2023.9.4",
+        "rdkit==2023.9.5",
         "pandas>=2.2",
         "numpy>=1.26",
         "neo4j>=5.17.0",
