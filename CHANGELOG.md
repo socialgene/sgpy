@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.4](https://github.com/socialgene/sgpy/compare/v0.6.3...v0.6.4) (2024-03-18)
+
+
+### Bug Fixes
+
+* neo4j admin import relationship labels ([83342e9](https://github.com/socialgene/sgpy/commit/83342e9be54fd4e2025d40c67b0df1ac28bf5f50))
+* node/rel neo4j admin import command ([d1d828e](https://github.com/socialgene/sgpy/commit/d1d828e2c41faa441128f9e9996ec64dcc6e6fdd))
+
 ## [0.6.3](https://github.com/socialgene/sgpy/compare/v0.6.2...v0.6.3) (2024-03-13)
 
 
