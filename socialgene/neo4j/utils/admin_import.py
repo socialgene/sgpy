@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from socialgene.neo4j.neo4j_element import Node
 from socialgene.neo4j.schema.socialgene_modules import SocialgeneModules
 from socialgene.utils.logging import log
 from socialgene.utils.run_subprocess import run_subprocess
@@ -110,11 +111,14 @@ class Neo4jAdminImport(SocialgeneModules):
             list: [first_part_of_arg_string, header_path_string, data_glob_string] want mutable because will check in later step for gz and append if needed
         """
         cli_label = ""
-        if len(input.neo4j_label) > 1:
-            # labels are set in-file
-            cli_label = ""
+        if isinstance(input, Node):
+            if len(input.neo4j_label) > 1:
+                # labels are set in-file
+                cli_label = ""
+            else:
+                cli_label = f"{input.neo4j_label[0]}="
         else:
-            cli_label = f"{input.neo4j_label[0]}="
+            cli_label = f"{input.neo4j_label}="
         return [
             f"--{type}={cli_label}",
             f"import/neo4j_headers/{input.header_filename}",
