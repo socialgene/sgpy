@@ -210,10 +210,6 @@ class SearchBase(ABC):
         if self.working_search_results_df.empty:
             raise ValueError("No hits found after filtering at the assembly level")
 
-    # def cluster(self):
-    #     # assign clusters of proteins that aren't interrupted by a gap greater than break_bgc_on_gap_of
-    #     self._label_clusters()
-
     def _primary_bgc_regions(self, limiter=None):
         return self._collapse_cluster(
             self._filter_clusters(
@@ -342,10 +338,10 @@ class SearchBase(ABC):
         temp = temp.sort_values(by=["modscore", "score"], ascending=False)
         secondary = temp[temp["jaccard"] < threshold]
         primary = temp[temp["jaccard"] >= threshold]
-        for i, row in secondary.iterrows():
-            # remove the gene cluster from the sg_object
-            z = row.query_gene_cluster_x
-            z.parent.gene_clusters = [i for i in z.parent.gene_clusters if i != z]
+        # for i, row in secondary.iterrows():
+        #     # remove the gene cluster from the sg_object
+        #     z = row.query_gene_cluster_x
+        #     z.parent.gene_clusters = [i for i in z.parent.gene_clusters if i != z]
         primary["query_gene_cluster_x_assembly"] = primary[
             "query_gene_cluster_x"
         ].apply(lambda x: x.parent.parent.uid)

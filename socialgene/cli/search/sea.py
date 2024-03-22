@@ -8,14 +8,6 @@ from socialgene.utils.logging import log
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 
-# def limiter(search_object, max_outdegree):
-
-#     # if df.nucleotide_uid.nunique() > 1000:
-#     # Limit the number of putative BGCs that are evalutated post first pass
-
-#     len_input_bgc_proteins = len(search_object.input_bgc.proteins)
-#     len_input_bgc_proteins_with_domains = len([i for i in search_object.input_bgc.proteins.values() if i.domains])
-
 
 def search_bgc(
     input,
