@@ -102,15 +102,13 @@ def open_write(filepath: str, mode="w", compression: str = None) -> IO:
         Iterator[IO]: context manager
     """
     filepath = Path(filepath)
-    if mode not in ["w", "a", "r"]:
-        raise ValueError
     match compression:
         case "gzip":
-            _open = gzip.open(filepath.with_suffix(".gz"), f"{mode}")
+            _open = gzip.open(filepath.with_suffix(filepath.suffix + ".gz"), f"{mode}")
         case "bzip":
-            _open = bz2.open(filepath.with_suffix(".bz2"), f"{mode}")
+            _open = bz2.open(filepath.with_suffix(filepath.suffix + ".bz2"), f"{mode}")
         case "xz":
-            _open = lzma.open(filepath.with_suffix(".xz"), f"{mode}")
+            _open = lzma.open(filepath.with_suffix(filepath.suffix + ".xz"), f"{mode}")
         case None:
             _open = open(filepath, mode)
         case _:
