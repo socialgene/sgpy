@@ -568,7 +568,7 @@ class SearchBase(ABC):
         )
 
     def _count_unique_hits_per_cluster(self, df):
-        return df.groupby(["cluster"])["query"].nunique().sort_values(ascending=False)
+        return df.groupby(["nucleotide_uid","cluster"])["query"].nunique().sort_values(ascending=False)
 
     def _sort_genes_by_start(self):
         log.info("Sorting genes by start position")
@@ -638,10 +638,11 @@ class SearchBase(ABC):
             threshold = ceil(self.n_searched_proteins * threshold)
 
         tempdf = self._count_unique_hits_per_cluster(df)
-        if limiter:
-            tempdf = tempdf[0:limiter]
+
         tempdf = tempdf[tempdf >= threshold]
-        df = df.filter(items=tempdf.index, axis=0)
+
+        # filter the df so that only rows with the same nucleotide_uid and cluster as the tempdf are kept
+        df = df[df.set_index(["nucleotide_uid", "cluster"]).index.isin(tempdf.index)]
         return df
 
     def write_clustermap_json(self, outpath):

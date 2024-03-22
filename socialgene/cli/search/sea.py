@@ -105,7 +105,8 @@ def search_bgc(
         return search_object
     # return search_object
     if gene_clusters_must_have_x_matches > 1:
-        gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / 100
+        # scale to 0-1
+        gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / len(search_object.input_bgc.proteins)
 
     assemblies = search_object._rank_order_bgcs(
         threshold=gene_clusters_must_have_x_matches
