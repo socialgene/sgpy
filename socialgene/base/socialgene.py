@@ -436,7 +436,10 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 fasta_gen = self.fasta_string_defline_uid
             for i in fasta_gen:
                 counter += 1
-                handle.writelines(i)
+                if "compression" in kwargs and kwargs["compression"]:
+                    handle.write(i.encode())
+                else:
+                    handle.writelines(i)
 
         log.info(f"Wrote {str(counter)} proteins to {outpath}")
 
