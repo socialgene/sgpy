@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.5](https://github.com/socialgene/sgpy/compare/v0.6.4...v0.6.5) (2024-04-08)
+
+
+### Bug Fixes
+
+* add outpath arg for bgc search cli ([36f2ad7](https://github.com/socialgene/sgpy/commit/36f2ad7d27eec6368ed56d277e548e16ebbbad26))
+
 ## [0.6.4](https://github.com/socialgene/sgpy/compare/v0.6.3...v0.6.4) (2024-03-18)
 
 
