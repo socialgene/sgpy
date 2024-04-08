@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.6](https://github.com/socialgene/sgpy/compare/v0.6.5...v0.6.6) (2024-04-08)
+
+
+### Bug Fixes
+
+* init ([d24eaa1](https://github.com/socialgene/sgpy/commit/d24eaa137dd081a03c72b87fb4448b7154fecf2a))
+
 ## [0.6.5](https://github.com/socialgene/sgpy/compare/v0.6.4...v0.6.5) (2024-04-08)
 
 
