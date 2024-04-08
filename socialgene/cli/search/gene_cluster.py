@@ -10,7 +10,6 @@ parser = argparse.ArgumentParser(
     description="Search a SocialGene database for gene clusters similar to an input gene cluster"
 )
 
-
 parser.add_argument(
     "--gbk_path",
     metavar="input_filepath",
@@ -26,24 +25,30 @@ parser.add_argument(
     required=True,
 )
 parser.add_argument(
+    "--clinker_outpath",
+    metavar="output_filepath",
+    type=Path,
+    help="Path to the output Clinker JSON file",
+)
+parser.add_argument(
     "--assemblies_must_have_x_matches",
     metavar="fraction",
     type=float,
-    default=0.6,
+    default=0.8,
     help="Minimum query proteins an assembly must have (<1 == fraction of query proteins)",
 )
 parser.add_argument(
     "--nucleotide_sequences_must_have_x_matches",
     metavar="fraction",
     type=float,
-    default=0.6,
+    default=0.8,
     help="Minimum query proteins a nucleotide sequence must have (<1 == fraction of query proteins)",
 )
 parser.add_argument(
     "--gene_clusters_must_have_x_matches",
     metavar="fraction",
     type=float,
-    default=0.6,
+    default=0.8,
     help="Minimum query proteins a target gene cluster sequence must have (<1 == fraction of query proteins)",
 )
 parser.add_argument(
@@ -142,6 +147,7 @@ def main():
     _ = search_bgc(
         input=args.gbk_path,
         hmm_dir=args.hmm_dir,
+        outpath_clinker=args.clinker_outpath,
         use_neo4j_precalc=True,
         assemblies_must_have_x_matches=args.assemblies_must_have_x_matches,
         nucleotide_sequences_must_have_x_matches=args.nucleotide_sequences_must_have_x_matches,
