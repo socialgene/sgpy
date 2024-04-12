@@ -4,6 +4,7 @@ from socialgene.utils.logging import log
 
 def _add_to_neo4j(statement, **kwargs):
     try:
+        log.info("\n".join([i.strip() for i in statement.split('\n') if i]))
         summary = (
             GraphDriver().driver.execute_query(
                 statement,
@@ -13,7 +14,7 @@ def _add_to_neo4j(statement, **kwargs):
         ).summary
         if summary.metadata.get("stats"):
             log.info(
-                f"{summary.metadata.get('stats').get('properties-set')} properties modified"
+                summary.metadata.get('stats')
             )
         else:
             log.info("No properties modified")
@@ -134,7 +135,7 @@ def add_antismash_regions_as_nodes():
 
 
 def culture_collections_as_nodes_rels():
-    _run_transaction_function(
+    _add_to_neo4j(
         """
                 MATCH (a1:assembly) where a1.culture_collection is not null
                 WITH a1, split(a1.culture_collection,":")[0] as cc_agency
@@ -142,14 +143,16 @@ def culture_collections_as_nodes_rels():
                 MERGE (a1)-[:FOUND_IN]->(cc);
             """
     )
-    _run_transaction_function(
+    _add_to_neo4j(
         """
                 MATCH (ccs:culture_collection)
                 MATCH (a1:assembly)
-                WHERE a1.strain starts with ccs.uid and not a1.uid starts with "BGC" and a1.culture_collection is null
+                WHERE a1.strain starts with ccs.uid and NOT (a1)-[:FOUND_IN]->(:culture_collection)
                 MERGE (a1)-[:FOUND_IN]->(ccs)
             """
     )
+
+
 
 
 def set_mibig_bgc():

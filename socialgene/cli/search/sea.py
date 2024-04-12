@@ -56,6 +56,9 @@ def search_bgc(
         only_culture_collection=only_culture_collection, frac=frac, run_async=run_async
     )
     # filters assemblies and nucleotide seqs that fall below threshold % of query proteins
+    if search_object.raw_search_results_df.empty:
+        log.warning("Stopping, no search results to process")
+        raise
     search_object.filter()
     # labels clusters with a unique id based on break_bgc_on_gap_of
     search_object.label_clusters()
@@ -104,6 +107,12 @@ def search_bgc(
         threshold=gene_clusters_must_have_x_matches
     )
     assemblies = [i.parent.parent for i in assemblies]
+    ids = [i.uid for i in assemblies]
+    if len(ids) == 1 and ids[0].uid == search_object.input_bgc_id:
+        raise ValueError("Only match was to self")
+    if len(ids) == 0:
+        raise ValueError("No matches found")
+
     assemblies = [search_object.input_assembly] + list(assemblies)[:50]
     z = SerializeToClustermap(
         sg_object=search_object.sg_object,

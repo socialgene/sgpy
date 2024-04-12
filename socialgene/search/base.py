@@ -323,7 +323,7 @@ class SearchBase(ABC):
         Args:
             threshold (float): The minimum jaccard score required for a BGC to be considered a hit. Think of this as the number of input bgc proteins a putative bgc must have to be considered a hit. (0 < threshold < 1)
         Returns:
-            list[Assembly]: LIst of SocialGene Assembly objects
+            list[Assembly]: List of SocialGene Assembly objects
         """
         temp = pd.merge(
             self._compare_bgcs_by_jaccard_and_levenshtein(),
@@ -335,16 +335,8 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        temp = temp.sort_values(by=["modscore", "score"], ascending=False)
-        secondary = temp[temp["jaccard"] < threshold]
-        primary = temp[temp["jaccard"] >= threshold]
-        # for i, row in secondary.iterrows():
-        #     # remove the gene cluster from the sg_object
-        #     z = row.query_gene_cluster_x
-        #     z.parent.gene_clusters = [i for i in z.parent.gene_clusters if i != z]
-        primary["query_gene_cluster_x_assembly"] = primary[
-            "query_gene_cluster_x"
-        ].apply(lambda x: x.parent.parent.uid)
+        primary = temp.loc[temp["jaccard"] >= threshold].sort_values(by=["modscore", "score"], ascending=False).copy()
+        primary.loc[:, "query_gene_cluster_x_assembly"] = primary.query_gene_cluster_x.apply(lambda x: x.parent.parent.uid)
         primary.drop_duplicates(subset=["query_gene_cluster_x_assembly"], inplace=True)
         return primary["query_gene_cluster_x"].to_list()
 
