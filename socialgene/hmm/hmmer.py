@@ -60,10 +60,7 @@ class HMMER:
     ):
         # hmmpress requires a decompressed hmm model file
         # This function checks if the decompressed file exists
-        if not str(self.input_path).endswith((".hmm", ".hmm.gz")):
-            raise ValueError(
-                f"HMM file must have an '.hmm' or '.hmm.gz' extension: {self.input_path}"
-            )
+
         is_compressed = fh.is_compressed(self.input_path).name == "gzip"
         if is_compressed and self.input_path.suffix != ".gz":
             raise ValueError(
