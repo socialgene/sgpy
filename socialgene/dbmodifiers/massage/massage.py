@@ -4,7 +4,7 @@ from socialgene.utils.logging import log
 
 def _add_to_neo4j(statement, **kwargs):
     try:
-        log.info("\n".join([i.strip() for i in statement.split('\n') if i]))
+        log.info("\n".join([i.strip() for i in statement.split("\n") if i]))
         summary = (
             GraphDriver().driver.execute_query(
                 statement,
@@ -13,9 +13,7 @@ def _add_to_neo4j(statement, **kwargs):
             )
         ).summary
         if summary.metadata.get("stats"):
-            log.info(
-                summary.metadata.get('stats')
-            )
+            log.info(summary.metadata.get("stats"))
         else:
             log.info("No properties modified")
     except Exception as e:
@@ -151,8 +149,6 @@ def culture_collections_as_nodes_rels():
                 MERGE (a1)-[:FOUND_IN]->(ccs)
             """
     )
-
-
 
 
 def set_mibig_bgc():

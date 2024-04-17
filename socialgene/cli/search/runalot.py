@@ -35,7 +35,7 @@ def run_individual_search(gbk_path):
                 frac=0.75,
                 run_async=True,
                 analyze_with="blastp",
-                limiter=1000
+                limiter=1000,
             )
             with open(
                 Path(

@@ -434,7 +434,7 @@ class SearchDomains(SearchBase, CompareDomains):
         log.info("Choosing query proteins that span across the input BGC")
         temp = list(self.input_bgc.features_sorted_by_midpoint)
         if max_query_proteins > len(temp):
-            max_query_proteins=len(temp)
+            max_query_proteins = len(temp)
         temp = [
             temp[int(ceil(i * len(temp) / max_query_proteins))].uid
             for i in range(max_query_proteins)

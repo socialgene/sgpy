@@ -335,8 +335,14 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        primary = temp.loc[temp["jaccard"] >= threshold].sort_values(by=["modscore", "score"], ascending=False).copy()
-        primary.loc[:, "query_gene_cluster_x_assembly"] = primary.query_gene_cluster_x.apply(lambda x: x.parent.parent.uid)
+        primary = (
+            temp.loc[temp["jaccard"] >= threshold]
+            .sort_values(by=["modscore", "score"], ascending=False)
+            .copy()
+        )
+        primary.loc[:, "query_gene_cluster_x_assembly"] = (
+            primary.query_gene_cluster_x.apply(lambda x: x.parent.parent.uid)
+        )
         primary.drop_duplicates(subset=["query_gene_cluster_x_assembly"], inplace=True)
         return primary["query_gene_cluster_x"].to_list()
 
@@ -556,7 +562,11 @@ class SearchBase(ABC):
         )
 
     def _count_unique_hits_per_cluster(self, df):
-        return df.groupby(["nucleotide_uid","cluster"])["query"].nunique().sort_values(ascending=False)
+        return (
+            df.groupby(["nucleotide_uid", "cluster"])["query"]
+            .nunique()
+            .sort_values(ascending=False)
+        )
 
     def _sort_genes_by_start(self):
         log.info("Sorting genes by start position")
