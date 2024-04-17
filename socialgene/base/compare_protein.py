@@ -1,4 +1,4 @@
-from itertools import combinations_with_replacement, product
+from itertools import combinations_with_replacement
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
@@ -87,7 +87,6 @@ class CompareProtein(Neo4jQuery):
         """
 
         return mod_score(protein_1.domain_vector, protein_2.domain_vector)
-
 
     def compare_proteins(
         self,
