@@ -16,7 +16,6 @@ class PARAMETERS(Node):
         "uid:ID(when)",
         "SG_LOC_NEO4J",
         "SG_LOC_HMMS",
-        "NEO4J_dbms_memory_pagecache_size",
         "NEO4J_dbms_memory_heap_initial__size",
         "NEO4J_dbms_memory_heap_max__size",
         "HMMSEARCH_IEVALUE",
@@ -39,12 +38,12 @@ class PARAMETERS(Node):
         "py_executable",
         "py_version",
         "genome_download_command",
+        "sgpy_version"
     ]
     property_specification = {
         "uid": str,
         "SG_LOC_NEO4J": str,
         "SG_LOC_HMMS": str,
-        "NEO4J_dbms_memory_pagecache_size": str,
         "NEO4J_dbms_memory_heap_initial__size": str,
         "NEO4J_dbms_memory_heap_max__size": str,
         "HMMSEARCH_IEVALUE": str,
@@ -67,6 +66,8 @@ class PARAMETERS(Node):
         "py_executable": str,
         "py_version": str,
         "genome_download_command": str,
+        "sgpy_version":str
+
     }
     constraints_unique = ["uid"]
 

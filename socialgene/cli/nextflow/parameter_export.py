@@ -21,7 +21,6 @@ parser.add_argument("--genome_download_command", required=False, default="None")
 fields = {
     "SG_LOC_NEO4J": None,
     "SG_LOC_HMMS": None,
-    "NEO4J_dbms_memory_pagecache_size": None,
     "NEO4J_dbms_memory_heap_initial__size": None,
     "NEO4J_dbms_memory_heap_max__size": None,
     "HMMSEARCH_IEVALUE": None,
@@ -47,25 +46,29 @@ def main():
 
     save_list = ["socialgene_parameter_export"]
 
-    with open(args.outpath, "a") as f:
-        for k, v in env_vars.items():
-            if k in fields:
-                fields[k] = v
-            else:
-                log.info(f"Unexpected parameter: '{k}'")
-        for v in fields.values():
-            save_list.append(v)
+    pp={k:v for k, v in env_vars.items() if k in fields}
 
-        # TODO: trycatch all this and check length at end
-        save_list.append(platform.sys.platform)
-        save_list.append(" ".join(platform.architecture()))
-        save_list.append(platform.sys.executable)
-        save_list.append(platform.sys.version)
-        save_list.append(args.genome_download_command)
-        save_list = [str(i) for i in save_list]
-        save_list = [i.strip('"') for i in save_list]
-        save_list = [i.replace("\n", "") for i in save_list]
-        save_list = [i.replace("\t", "") for i in save_list]
+    for k, v in env_vars.items():
+        if k in fields:
+            fields[k] = v
+        else:
+            log.info(f"Unexpected parameter: '{k}'")
+
+    for v in fields.values():
+        save_list.append(v)
+
+    # TODO: trycatch all this and check length at end
+    save_list.append(platform.sys.platform)
+    save_list.append(" ".join(platform.architecture()))
+    save_list.append(platform.sys.executable)
+    save_list.append(platform.sys.version)
+    save_list.append(args.genome_download_command)
+
+    save_list = [str(i) for i in save_list]
+    save_list = [i.strip('"') for i in save_list]
+    save_list = [i.replace("\n", "") for i in save_list]
+    save_list = [i.replace("\t", "") for i in save_list]
+    with open(args.outpath, "a") as f:
 
         writer = csv.writer(
             f,
