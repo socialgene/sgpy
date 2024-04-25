@@ -29,8 +29,22 @@ def search_bgc(
     analyze_with: str = "blastp",
     outpath_clinker: str = None,
     limiter: int = 1000,
+    blast_speed: str = 'fast',
+    blast_threads: int = 1,
 ):
     log.info(f"Running search with args: {locals()}")
+
+    match blast_speed:
+        case 'fast':
+            blastarg = "--fast"
+        case 'sensitive':
+            blastarg = "--sensitive"
+        case 'ultra-sensitive':
+            blastarg = "--ultra-sensitive"
+        case _:
+            raise ValueError(f"Invalid blast speed: {blast_speed}")
+
+
     search_object = SearchDomains(
         input=input,
         hmm_dir=hmm_dir,
@@ -89,8 +103,9 @@ def search_bgc(
         search_object.sg_object.add_sequences_from_neo4j()
 
     # Find RBH between input BGC and putative BGCs
+
     search_object._create_links(
-        tool=analyze_with, argstring="--fast --max-hsps 1", cpus=10
+        tool=analyze_with, argstring=f"--{blastarg} --max-hsps 1", threads=blast_threads
     )
     # Assign protein groups for the clinker plot legend
     search_object._choose_group()
