@@ -433,6 +433,8 @@ class SearchDomains(SearchBase, CompareDomains):
         """Choose a random subset of proteins to search that are spread across the length of the input BGC."""
         log.info("Choosing query proteins that span across the input BGC")
         temp = list(self.input_bgc.features_sorted_by_midpoint)
+        if max_query_proteins > len(temp):
+            max_query_proteins = len(temp)
         temp = [
             temp[int(ceil(i * len(temp) / max_query_proteins))].uid
             for i in range(max_query_proteins)
@@ -508,6 +510,11 @@ class SearchDomains(SearchBase, CompareDomains):
         self._filter_max_domains_per_protein(max_domains_per_protein)
 
         if max_query_proteins and not scatter:
+            # Make sure max_query_proteins accounts for bypassed proteins
+            if bypass_df.shape[0] > 0:
+                max_query_proteins = max_query_proteins - len(bypass_df)
+                if max_query_proteins < 0:
+                    max_query_proteins = 0
             self._filter_max_query_proteins(max_query_proteins)
 
         # Add back explicitly requested input proteins/loci

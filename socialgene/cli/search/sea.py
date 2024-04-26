@@ -8,15 +8,6 @@ from socialgene.utils.logging import log
 env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 
-# def limiter(search_object, max_outdegree):
-
-#     # if df.nucleotide_uid.nunique() > 1000:
-#     # Limit the number of putative BGCs that are evalutated post first pass
-
-#     len_input_bgc_proteins = len(search_object.input_bgc.proteins)
-#     len_input_bgc_proteins_with_domains = len([i for i in search_object.input_bgc.proteins.values() if i.domains])
-
-
 def search_bgc(
     input,
     hmm_dir: str = None,
@@ -38,8 +29,22 @@ def search_bgc(
     analyze_with: str = "blastp",
     outpath_clinker: str = None,
     limiter: int = 1000,
+    blast_speed: str = 'fast',
+    blast_threads: int = 1,
 ):
     log.info(f"Running search with args: {locals()}")
+
+    match blast_speed:
+        case 'fast':
+            blastarg = "--fast"
+        case 'sensitive':
+            blastarg = "--sensitive"
+        case 'ultra-sensitive':
+            blastarg = "--ultra-sensitive"
+        case _:
+            raise ValueError(f"Invalid blast speed: {blast_speed}")
+
+
     search_object = SearchDomains(
         input=input,
         hmm_dir=hmm_dir,
@@ -64,6 +69,9 @@ def search_bgc(
         only_culture_collection=only_culture_collection, frac=frac, run_async=run_async
     )
     # filters assemblies and nucleotide seqs that fall below threshold % of query proteins
+    if search_object.raw_search_results_df.empty:
+        log.warning("Stopping, no search results to process")
+        raise
     search_object.filter()
     # labels clusters with a unique id based on break_bgc_on_gap_of
     search_object.label_clusters()
@@ -95,8 +103,9 @@ def search_bgc(
         search_object.sg_object.add_sequences_from_neo4j()
 
     # Find RBH between input BGC and putative BGCs
+
     search_object._create_links(
-        tool=analyze_with, argstring="--fast --max-hsps 1", cpus=10
+        tool=analyze_with, argstring=f"--{blastarg} --max-hsps 1", threads=blast_threads
     )
     # Assign protein groups for the clinker plot legend
     search_object._choose_group()
@@ -105,12 +114,21 @@ def search_bgc(
         return search_object
     # return search_object
     if gene_clusters_must_have_x_matches > 1:
-        gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / 100
+        # scale to 0-1
+        gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / len(
+            search_object.input_bgc.proteins
+        )
 
     assemblies = search_object._rank_order_bgcs(
         threshold=gene_clusters_must_have_x_matches
     )
     assemblies = [i.parent.parent for i in assemblies]
+    ids = [i.uid for i in assemblies]
+    if len(ids) == 1 and ids[0].uid == search_object.input_bgc_id:
+        raise ValueError("Only match was to self")
+    if len(ids) == 0:
+        raise ValueError("No matches found")
+
     assemblies = [search_object.input_assembly] + list(assemblies)[:50]
     z = SerializeToClustermap(
         sg_object=search_object.sg_object,
