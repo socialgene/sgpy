@@ -210,10 +210,6 @@ class SearchBase(ABC):
         if self.working_search_results_df.empty:
             raise ValueError("No hits found after filtering at the assembly level")
 
-    # def cluster(self):
-    #     # assign clusters of proteins that aren't interrupted by a gap greater than break_bgc_on_gap_of
-    #     self._label_clusters()
-
     def _primary_bgc_regions(self, limiter=None):
         return self._collapse_cluster(
             self._filter_clusters(
@@ -327,7 +323,7 @@ class SearchBase(ABC):
         Args:
             threshold (float): The minimum jaccard score required for a BGC to be considered a hit. Think of this as the number of input bgc proteins a putative bgc must have to be considered a hit. (0 < threshold < 1)
         Returns:
-            list[Assembly]: LIst of SocialGene Assembly objects
+            list[Assembly]: List of SocialGene Assembly objects
         """
         temp = pd.merge(
             self._compare_bgcs_by_jaccard_and_levenshtein(),
@@ -339,16 +335,14 @@ class SearchBase(ABC):
         temp.drop(
             ["query_gene_cluster_y", "target_gene_cluster_y"], axis=1, inplace=True
         )
-        temp = temp.sort_values(by=["modscore", "score"], ascending=False)
-        secondary = temp[temp["jaccard"] < threshold]
-        primary = temp[temp["jaccard"] >= threshold]
-        for i, row in secondary.iterrows():
-            # remove the gene cluster from the sg_object
-            z = row.query_gene_cluster_x
-            z.parent.gene_clusters = [i for i in z.parent.gene_clusters if i != z]
-        primary["query_gene_cluster_x_assembly"] = primary[
-            "query_gene_cluster_x"
-        ].apply(lambda x: x.parent.parent.uid)
+        primary = (
+            temp.loc[temp["jaccard"] >= threshold]
+            .sort_values(by=["modscore", "score"], ascending=False)
+            .copy()
+        )
+        primary.loc[:, "query_gene_cluster_x_assembly"] = (
+            primary.query_gene_cluster_x.apply(lambda x: x.parent.parent.uid)
+        )
         primary.drop_duplicates(subset=["query_gene_cluster_x_assembly"], inplace=True)
         return primary["query_gene_cluster_x"].to_list()
 
@@ -568,7 +562,11 @@ class SearchBase(ABC):
         )
 
     def _count_unique_hits_per_cluster(self, df):
-        return df.groupby(["cluster"])["query"].nunique().sort_values(ascending=False)
+        return (
+            df.groupby(["nucleotide_uid", "cluster"])["query"]
+            .nunique()
+            .sort_values(ascending=False)
+        )
 
     def _sort_genes_by_start(self):
         log.info("Sorting genes by start position")
@@ -638,10 +636,11 @@ class SearchBase(ABC):
             threshold = ceil(self.n_searched_proteins * threshold)
 
         tempdf = self._count_unique_hits_per_cluster(df)
-        if limiter:
-            tempdf = tempdf[0:limiter]
+
         tempdf = tempdf[tempdf >= threshold]
-        df = df.filter(items=tempdf.index, axis=0)
+
+        # filter the df so that only rows with the same nucleotide_uid and cluster as the tempdf are kept
+        df = df[df.set_index(["nucleotide_uid", "cluster"]).index.isin(tempdf.index)]
         return df
 
     def write_clustermap_json(self, outpath):

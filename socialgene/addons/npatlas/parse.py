@@ -132,8 +132,8 @@ class NPAtlasEntry:
         self.cluster_id = int(self.entry.get("cluster_id", None))
         self.node_id = int(self.entry.get("node_id", None))
         self.inchi = self.entry.get("inchi", None)
-        self.m_plus_h = self.entry.get("m_plus_h", None)
-        self.m_plus_na = self.entry.get("m_plus_na", None)
+        self.m_plus_h = float(self.entry.get("m_plus_h", None))
+        self.m_plus_na = float(self.entry.get("m_plus_na", None))
         self.origin_reference = self.entry.get("origin_reference", None)
         self.synonyms = None
         self._assign_taxon()

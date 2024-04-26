@@ -17,7 +17,7 @@ from socialgene.nextflow.nodes import TAXID
 
 
 class NPAtlasNode(Node):
-    neo4j_label = ["npatlas"]
+    neo4j_label = ["npatlas_compound"]
     description = "Represents a single NPAtlas entry"
     property_specification = {
         "uid": str,
