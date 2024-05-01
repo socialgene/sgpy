@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Generator
 from uuid import uuid4
 
 from Bio import SeqIO
@@ -6,53 +7,16 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 
+from socialgene.base.locus_metadata import LocusAssemblyMetadata
 import socialgene.hashing.hashing as hasher
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
+from socialgene.nextflow.nodes import NUCLEOTIDE as NUCLEOTIDE_NODE, PROTEIN as PROTEIN_NODE, ASSEMBLY as ASSEMBLY_NODE, HMM as HMM_NODE, TAXID as TAXID_NODE
+from socialgene.nextflow.relationships import ASSEMBLES_TO as ASSEMBLES_TO_REL, ENCODES as ENCODES_REL, ANNOTATES as ANNOTATES_REL, IS_TAXON as IS_TAXON_REL
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
 
-
-class LocusAssemblyMetadata:
-    # fmt: off
-    __slots__= ["altitude","bio_material","bioproject","biosample","cell_line","cell_type","chromosome","clone","clone_lib","collected_by","collection_date","country","cultivar","culture_collection","db_xref","dev_stage","ecotype","environmental_sample","focus","germline","haplogroup","haplotype","host","identified_by","isolate","isolation_source","lab_host","lat_lon","macronuclear","map","mating_type","metagenome_source","mol_type","note","organelle","organism","pcr_primers","plasmid","pop_variant","proviral","rearranged","segment","serotype","serovar","sex","specimen_voucher","strain","sub_clone","submitter_seqid","sub_species","sub_strain","tissue_lib","tissue_type","transgenic","type_material","variety"]  # noqa: E231,E225
-    # fmt: on
-
-    def __init__(self, **kwargs) -> None:
-        self.update(kwargs)
-
-    def all_attributes(self):
-        return OrderedDict({i: self.__getitem__(i) for i in self.__slots__})
-
-    @property
-    def values(self):
-        return self.all_attributes().values()
-
-    def __getitem__(self, item):
-        try:
-            return self.__getattribute__(item)
-        except Exception as e:
-            log.debug(e)
-            return None
-
-    # add a function that takes a dict as input and sets any attributes in the dict keys
-    def update(self, d: dict):
-        for k, v in d.items():
-            temp_v = v
-            if isinstance(v, list):
-                # if info is a list, collapse into a single string
-                if len(v) > 1:
-                    temp_v = ";".join(v)
-                else:
-                    temp_v = v[0]
-            if not isinstance(temp_v, str):
-                temp_v = str(temp_v)
-            temp_v.replace("\t", "")
-            temp_v.replace("\n", "")
-            temp_v.replace("\r", "")
-            temp_v.strip()
-            if k in self.__slots__:
-                setattr(self, k, temp_v)
+from collections import OrderedDict
 
 
 class ProteinSequence:
@@ -511,6 +475,27 @@ class Protein(
     def fasta_string_defline_external_id(self):
         return f">{self.external_id}\n{self.sequence}\n"
 
+    def _neo4j_node(self, include_sequences=True) -> PROTEIN_NODE:
+        n = PROTEIN_NODE()
+        dict_to_add = {"uid":self.uid, "crc64":self.crc64}
+        if include_sequences:
+            dict_to_add["sequence"] = self.sequence
+        n.fill_from_dict(dict_to_add)
+        return n
+
+    def add_to_neo4j(self, include_sequences=True):
+        n=self._neo4j_node(include_sequences=include_sequences)
+        n.add_to_neo4j(create=False)
+        for i in self.domains:
+            print("sdfsd")
+            hmmnode=HMM_NODE()
+            hmmnode.fill_from_dict({"uid":i.hmm_id})
+            rel = ANNOTATES_REL(start=hmmnode, end=self._neo4j_node())
+            rel.fill_from_dict({k:v for k,v in i.all_attributes().items() if k in ANNOTATES_REL.property_specification})
+            rel.add_to_neo4j(create=False)
+
+
+
 
 class Feature(Location):
     """Container class for describing a feature on a locus"""
@@ -740,6 +725,40 @@ class FeatureCollection:
     def fasta_string_defline_external_id(self):
         for v in self.proteins.values():
             yield f">{v.external_id}\n{v.sequence}\n"
+
+    def _neo4j_node(self, **kwargs):
+        n = NUCLEOTIDE_NODE()
+        dict_to_add = {"uid":self.uid, "external_id":self.external_id}
+        dict_to_add = dict_to_add | dict(self.metadata.all_attributes())
+        n.fill_from_dict(dict_to_add)
+        return n
+
+
+    def add_to_neo4j(self):
+        # create node
+        n=self._neo4j_node()
+        n.add_to_neo4j(create=False)
+        protein_nodes=set()
+        encodes_rels=set()
+        # connect to proteins
+        for i in self.features:
+            protein_nodes.add(i.protein._neo4j_node())
+            temp_rel=ENCODES_REL(start=n, end=i.protein._neo4j_node())
+            properties = {k:v for k,v in i.all_attributes().items() if k in ENCODES_REL.property_specification}
+            properties = properties | {"start":i.start, "end":i.end, "strand":i.strand}
+            temp_rel.fill_from_dict(properties)
+            encodes_rels.add(temp_rel)
+        if protein_nodes:
+            protein_nodes=list(protein_nodes)
+            protein_nodes[0].add_multiple_to_neo4j(protein_nodes, create=False)
+        if encodes_rels:
+            encodes_rels=list(encodes_rels)
+            encodes_rels[0].add_multiple_to_neo4j(encodes_rels, create=False)
+        # connect to assembly
+        assembly_node = self.parent._neo4j_node()
+        assembly_node.add_to_neo4j(create=False)
+        ASSEMBLES_TO_REL(start=n, end=assembly_node).add_to_neo4j(create=False)
+
 
 
 class Locus(FeatureCollection):
@@ -1000,6 +1019,20 @@ class Assembly:
         for v in self.loci.values():
             yield v.fasta_string_defline_external_id
 
+    def _neo4j_node(self,):
+        n = ASSEMBLY_NODE()
+        dict_to_add = {"uid":self.uid}
+        dict_to_add = dict_to_add | {k:v for k,v in self.metadata.all_attributes().items() if k in ASSEMBLY_NODE.property_specification}
+        n.fill_from_dict(dict_to_add)
+        return n
+
+    def add_to_neo4j(self, create=False):
+        for i in self.loci.values():
+            i.add_to_neo4j()
+        if self.taxid:
+            taxnode = TAXID_NODE()
+            taxnode.fill_from_dict({"uid":self.taxid})
+            IS_TAXON_REL(start=self._neo4j_node(), end=taxnode).add_to_neo4j(create=False)
 
 class Molbio:
     """Class for inheriting by SocialGene()"""
