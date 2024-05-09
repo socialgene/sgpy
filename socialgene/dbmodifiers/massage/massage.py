@@ -99,18 +99,27 @@ def add_antismash_regions_as_nodes():
                 REQUIRE (n.uid) IS UNIQUE;
         """
     )
+    _run_transaction_function(
+        """
+                CREATE CONSTRAINT product IF NOT EXISTS
+                FOR (n:product)
+                REQUIRE (n.uid) IS UNIQUE;
+        """
+    )
     log.info("Parsing 'import/antismash_results.jsonl' as new antismash nodes")
     _run_transaction_function(
         """
-        CALL apoc.load.json("import/antismash_results.jsonl")
+        CALL apoc.load.jsonArray("import/antismash_results.jsonl")
         YIELD value AS jsonl
         UNWIND jsonl.records as record
         UNWIND keys(record) as nucleotide_id
+        CALL {
+            WITH record, nucleotide_id
         WITH record, nucleotide_id, range(0, size(record[nucleotide_id])-1) as cluster_indices
         UNWIND cluster_indices as cluster_index
         WITH record, record[nucleotide_id][cluster_index] as cluster, nucleotide_id,  cluster_index
-        MERGE (a:antismash {uid: nucleotide_id + "_antismash_" + cluster_index})
-        SET a:gene_cluster
+        MERGE (a:gene_cluster {uid: nucleotide_id + "_antismash_" + cluster_index})
+        SET a:antismash
         SET a += {start: cluster.start, end: cluster.end}
         WITH a, cluster, nucleotide_id
         MATCH (n:nucleotide {external_id: nucleotide_id})
@@ -127,6 +136,7 @@ def add_antismash_regions_as_nodes():
               MERGE (product)-[:IS_A]->(category)
               MERGE (a)-[r:IS_A {tool: protocluster.tool, start: protocluster.start, end: protocluster.end, core_start: protocluster.core_start, core_end: protocluster.core_end}]->(product)
            }
+        } IN TRANSACTIONS OF 10000 rows
 
             """
     )
