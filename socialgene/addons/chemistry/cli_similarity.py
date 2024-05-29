@@ -39,7 +39,7 @@ def get_db_inchis():
         res = db.run(
             f"""
             MATCH (c1:{cmpd_label})
-            RETURN c1.inchi as chem
+            RETURN c1.CanonicalSmiles as chem
             """,
         ).value()
     return res

@@ -33,6 +33,7 @@ class Neo4jElement(ABC):
             target_extension (str): extension that is unique to the wanted data files (scoped within target_subdirectory)
             header (List): list of strings, each string will make up a column in a tab separated header file for Neo4j admin import (basically column names, but not quite)
         """
+        self.override = False
         # properties aren't required for relationships
         if self.property_specification is None:
             self.property_specification = {}
@@ -111,6 +112,8 @@ class Neo4jElement(ABC):
             for k, v in self.properties.items()
             if k in self.property_specification and v is not None
         }
+        if self.override:
+            return
         self._check_required_properties()
         self._check_no_extra_properties()
         self._check_property_types()
@@ -132,7 +135,7 @@ class Neo4jElement(ABC):
 
                 self.properties[k] = v(d.get(k))
             except Exception as e:
-                log.debug(
+                log.error(
                     f"Failed to fill add property {k} from dictionary: {e} for {self.__class__}"
                 )
 
@@ -294,6 +297,88 @@ class Node(Neo4jElement):
                 except Exception:
                     pass
 
+    def update_properties(self):
+        """Update the properties of a node"""
+        var = "n"
+        merge_str = self._neo4j_repr_params(var=var, map_key="required_props")
+        paramsdict = {
+            "optional_props": self._Neo4jElement__optional_properties_dict,
+            "required_props": self._Neo4jElement__required_properties_dict,
+        }
+        if len(self.neo4j_label) > 1:
+            # handle adding extra labels if they exist
+            add_label_str = ":".join(self.neo4j_label[1:])
+            add_label_str = f"SET {var}:{add_label_str}"
+        else:
+            add_label_str = ""
+        with GraphDriver() as db:
+                res = db.run(
+                    f"""
+                    WITH $paramsdict as paramsdict
+                    WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
+                    MATCH {merge_str}
+                    SET n += optional_props
+                    {add_label_str}
+                    """,
+                    paramsdict=paramsdict,
+                ).consume()
+                try:
+                    log.info(
+                        f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties"
+                    )
+                except Exception:
+                    pass
+    @staticmethod
+    def update_properties_many(list_of_nodes, batch_size=1000):
+        """Update the properties of a node"""
+        """Add multiple nodes to Neo4j at a time in transactions of batch_size nodes at a time"""
+        if not all(
+            isinstance(sub, type(list_of_nodes[0])) for sub in list_of_nodes[1:]
+        ):
+            raise ValueError(
+                f"All nodes in list_of_nodes must be of the same type as the first element, found (not in order): {set([sub.__class__.__name__ for sub in list_of_nodes])}"
+            )
+        single = list_of_nodes[0]
+        count_res = {"nodes_created": 0, "properties_set": 0}
+        var = "n"
+        merge_str = single._neo4j_repr_params(var=var, map_key="required_props")
+        if len(single.neo4j_label) > 1:
+            # handle adding extra labels if they exist
+            add_label_str = ":".join(single.neo4j_label[1:])
+        else:
+            add_label_str = ""
+        for paramsdictlist in batched(
+            (
+                {
+                    "optional_props": i._Neo4jElement__optional_properties_dict,
+                    "required_props": i._Neo4jElement__required_properties_dict,
+                }
+                for i in list_of_nodes
+            ),
+            batch_size,
+        ):
+            with GraphDriver() as db:
+                res = db.run(
+                    f"""
+                    WITH $paramsdictlist as paramsdictlist
+                    UNWIND paramsdictlist as paramsdict
+                    WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
+                    MATCH {merge_str}
+                    SET n += optional_props
+                    {add_label_str}
+                    """,
+                    paramsdictlist=paramsdictlist,
+                ).consume()
+                try:
+                    count_res["nodes_created"] += res.counters.nodes_created
+                    count_res["properties_set"] += res.counters.properties_set
+                except Exception:
+                    pass
+        log.info(
+            f"Created {count_res['nodes_created']} {single.__str__()} nodes, set {count_res['properties_set']} properties"
+        )
+
+
     @staticmethod
     def add_multiple_to_neo4j(list_of_nodes, batch_size=1000, create=False):
         """Add multiple nodes to Neo4j at a time in transactions of batch_size nodes at a time"""
@@ -453,7 +538,6 @@ class Relationship(Neo4jElement):
                     WITH properties.required_props1 as required_props1, properties.required_props2 as required_props2, properties.properties as props
                     MATCH {match_start}
                     MATCH {match_end}
-                    CREATE (m1)-[r:{self.neo4j_label}]->(m2)
                     CALL apoc.create.relationship(m1, '{self.neo4j_label}', props, m2)
                     YIELD rel
                     RETURN count(rel) as relationships_created

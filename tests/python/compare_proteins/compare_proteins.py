@@ -21,7 +21,7 @@ def test_DiamondBlastp_compare_proteins_dataframe():
     a1 = SocialGene().eat_pickle(sg_1848)
     a2 = SocialGene().eat_pickle(sg_1850)
     z1 = DiamondBlastp()
-    z1 = z1.compare_proteins(a1.protein_list, a2.protein_list)
+    z1 = z1.compare_proteins(a1.proteins.values(), a2.proteins.values())
     z2 = pd.read_csv(
         Path(FIXTURE_DIR, "test_DiamondBlastp.csv"), dtype=BlastTab_COLUMNS
     )
@@ -32,7 +32,7 @@ def test_MMseqsEasySearch_compare_proteins_dataframe():
     a1 = SocialGene().eat_pickle(sg_1848)
     a2 = SocialGene().eat_pickle(sg_1850)
     z1 = MMseqsEasySearch()
-    z1 = z1.compare_proteins(a1.protein_list, a2.protein_list)
+    z1 = z1.compare_proteins(a1.proteins.values(), a2.proteins.values())
     z2 = pd.read_csv(
         Path(FIXTURE_DIR, "test_MMseqsEasySearch.csv"), dtype=BlastTab_COLUMNS
     )
@@ -43,6 +43,6 @@ def test_CompareDomains_compare_proteins_dataframe():
     a1 = SocialGene().eat_pickle(sg_1848)
     a2 = SocialGene().eat_pickle(sg_1850)
     z1 = CompareDomains()
-    z1 = z1.compare_proteins(a1.protein_list, a2.protein_list)
+    z1 = z1.compare_proteins(a1.proteins.values(), a2.proteins.values())
     z2 = pd.read_csv(Path(FIXTURE_DIR, "test_CompareDomains.csv"))
     pd.testing.assert_frame_equal(z1, z2, check_names=False)

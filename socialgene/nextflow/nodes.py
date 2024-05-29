@@ -114,7 +114,7 @@ class PROTEIN(Node):
     target_subdirectory = "protein_info"
     target_extension = "protein_ids"
     constraints_unique = ["uid"]
-    required_properties = ["uid", "crc64"]
+    required_properties = ["uid"]
     def __init__(
         self,
         include_sequences=True,

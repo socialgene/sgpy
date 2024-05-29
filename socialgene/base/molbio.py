@@ -636,6 +636,22 @@ class Feature(Location):
         types_list = ["protein", "CDS"]
         return any([True for i in types_list if i == self.type])
 
+    @property
+    def fasta_string_defline_uid(self):
+        try:
+            if self.protein:
+                return f">{self.protein.uid}\n{self.protein.sequence}\n"
+        except AttributeError:
+            log.debug(f"Erorr in fasta_string_defline_uid for {self}")
+
+    @property
+    def fasta_string_defline_external_id(self):
+        try:
+            if self.protein:
+                return f">{self.protein.external_id}\n{self.protein.sequence}\n"
+        except AttributeError:
+            log.debug(f"Erorr in fasta_string_defline_external_id for {self}")
+
     def __hash__(self):
         """Used to prevent adding duplicate features to a locus (for hash in set() in Assembly.add_locus())
 
