@@ -242,10 +242,10 @@ class SearchBase(ABC):
         ) / len(only_matched)
         lev = a if a < b else b
         lev = 1 - lev
-        jac = (len(group[group["target_feature"].notnull()])) / len(
-            group["query_feature"].unique()
-        )
-
+        query_len = len(group.query_gene_cluster[0].features)
+        target_len = len(group.target_gene_cluster[0].features)
+        intersection = group.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
+        jac = intersection / (query_len + target_len - intersection)
         return self._compare_two_gene_clusters_score(
             jac, lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len)
         )
