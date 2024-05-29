@@ -57,6 +57,7 @@ class ChemicalCompound:
                 except Exception:
                     continue
         if not isinstance(self.mol, Chem.rdchem.Mol):
+            log.error(input)
             raise ValueError("Wasn't able to parse the compound")
 
     @property

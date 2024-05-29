@@ -8,7 +8,7 @@ from socialgene.nextflow.nodes import ASSEMBLY
 
 
 class Mibig(ASSEMBLY):
-    neo4j_label = ["assembly", "mibig"]
+    neo4j_label = ["assembly", "mibig_bgc"]
     description = "Represents a single Mibig entry"
     property_specification = {
         "uid": str,

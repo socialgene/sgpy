@@ -124,7 +124,8 @@ def search_bgc(
     )
     assemblies = [i.parent.parent for i in assemblies]
     ids = [i.uid for i in assemblies]
-    if len(ids) == 1 and ids[0].uid == search_object.input_bgc_id:
+    log.warning(ids)
+    if len(ids) == 1 and ids[0] == search_object.input_bgc_id:
         raise ValueError("Only match was to self")
     if len(ids) == 0:
         raise ValueError("No matches found")
@@ -140,4 +141,3 @@ def search_bgc(
     return search_object
 
 
-# GCF_001905625.1

@@ -349,7 +349,7 @@ class SearchBase(ABC):
     def _bgc_regions_to_sg_object(self, df):
         now = time.time()
         log.info(
-            f"Pulling data from the database for {df.nucleotide_uid.nunique()} putative BGCs"
+            f"Pulling data from the database for {df.cluster.nunique()} putative BGCs"
         )
         with progress_bar as pg:
             task = pg.add_task("Adding best hits...", total=len(df))
