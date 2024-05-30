@@ -2,7 +2,9 @@ import time
 from abc import ABC, abstractmethod
 from math import ceil
 from pathlib import Path
+import uuid
 
+import numpy as np
 import pandas as pd
 from rich.progress import (
     BarColumn,
@@ -31,11 +33,17 @@ progress_bar = Progress(
 
 
 class BgcComp2:
-    def __init__(self, jaccard, levenshtein, modscore):
+    def __init__(self,
+                levenshtein_include_internal_nonortholog,
+                levenshtein_only_orthologs,
+                percent_of_query,
+                jaccard,
+                modscore):
+        self.levenshtein_include_internal_nonortholog = levenshtein_include_internal_nonortholog
+        self.levenshtein_only_orthologs = levenshtein_only_orthologs
+        self.percent_of_query = percent_of_query
         self.jaccard = jaccard
-        self.levenshtein = levenshtein
         self.modscore = modscore
-
 
 def truncate_string(str_input, max_length):
     str_end = ".."
@@ -227,32 +235,61 @@ class SearchBase(ABC):
         except Exception as e:
             log.warning(e)
 
-    def _compare_two_gene_clusters(self, group, q_len):
-        # levenshtein similarity of query proteins to target proteins
-        # compares the order of query proteins to query proteins ordered by rbh to target
-        only_matched = group.dropna(subset=["query"])
-        a = levenshtein(
-            list(only_matched.sort_values(["t_start"], ascending=True)["query"]),
-            list(only_matched.sort_values(["q_start"], ascending=True)["query"]),
-        ) / len(only_matched)
-        # levenshtein similarity of query proteins to target proteins in reverse order
-        b = levenshtein(
-            list(only_matched.sort_values(["t_start"], ascending=True)["query"]),
-            list(only_matched.sort_values(["q_start"], ascending=False)["query"]),
-        ) / len(only_matched)
-        lev = a if a < b else b
-        lev = 1 - lev
-        query_len = len(group.query_gene_cluster[0].features)
-        target_len = len(group.target_gene_cluster[0].features)
-        intersection = group.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
-        jac = intersection / (query_len + target_len - intersection)
-        return self._compare_two_gene_clusters_score(
-            jac, lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len)
+    def _compare_two_gene_clusters(self, t_obj):
+        target_cluster_min_start = t_obj.target_feature.dropna().apply(lambda x: x.start).min()
+        target_cluster_max_end = t_obj.target_feature.dropna().apply(lambda x: x.end).max()
+        non_orthologs = [i for i in t_obj.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start > target_cluster_min_start and i.end < target_cluster_max_end and i not in t_obj.target_feature.to_list()]
+        # add the non-orthologs to the t_obj dataframe as new rows with the same columns and a random uuid as the query
+        non_ortholog_df = pd.DataFrame(
+            [
+                {
+                    "query": np.nan,
+                    "target": str(uuid.uuid4()),
+                    "target_feature": i,
+                    "q_start": np.inf,
+                    "t_start": i.start,
+                    "strand_y": i.strand,
+                }
+                for i in non_orthologs
+            ]
         )
-
-        # return self._compare_two_gene_clusters_score(
-        #     jac, lev, (jac * 2) + lev - (abs(len(group) - q_len) / q_len)
-        # )
+        if not non_ortholog_df.empty:
+            non_ortholog_df['query'] = non_ortholog_df['target']
+            full_t_obj = pd.concat([t_obj, non_ortholog_df], ignore_index=True)
+        else:
+            full_t_obj = t_obj
+        levenshtein_include_internal_nonortholog_for = levenshtein(
+                    list(full_t_obj.sort_values(["t_start"], ascending=True)["query"]),
+                    list(full_t_obj.sort_values(["q_start"], ascending=True)["query"]),
+                ) / len(full_t_obj)
+        levenshtein_only_orthologs_for = levenshtein(
+                    list(t_obj.sort_values(["t_start"], ascending=True)["query"]),
+                    list(t_obj.sort_values(["q_start"], ascending=True)["query"]),
+                ) / len(t_obj)
+        levenshtein_include_internal_nonortholog_rev = levenshtein(
+                    list(full_t_obj.sort_values(["t_start"], ascending=True)["query"]),
+                    list(full_t_obj.sort_values(["q_start"], ascending=False)["query"]),
+                ) / len(full_t_obj)
+        levenshtein_only_orthologs_rev = levenshtein(
+                    list(t_obj.sort_values(["t_start"], ascending=True)["query"]),
+                    list(t_obj.sort_values(["q_start"], ascending=False)["query"]),
+                ) / len(t_obj)
+        levenshtein_include_internal_nonortholog = 1- min(levenshtein_include_internal_nonortholog_for,levenshtein_include_internal_nonortholog_rev)
+        levenshtein_only_orthologs = 1- min(levenshtein_only_orthologs_for,levenshtein_only_orthologs_rev)
+        percent_of_query = len(t_obj.dropna(subset="target_gene_cluster")) / t_obj['query_feature'].nunique()  * 100
+        percent_of_query = int(round(percent_of_query, 0))
+        query_len = len(t_obj.dropna(subset="target_gene_cluster").query_gene_cluster.iloc[0].features)
+        target_len = len([i for i in t_obj.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start >= target_cluster_min_start and i.end <= target_cluster_max_end])
+        intersection = t_obj.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
+        jac = intersection / (query_len + target_len - intersection)
+        modscore = (jac * 2) + levenshtein_include_internal_nonortholog - (abs(target_len - query_len) / query_len)
+        return self._compare_two_gene_clusters_score(
+            levenshtein_include_internal_nonortholog=levenshtein_include_internal_nonortholog,
+            levenshtein_only_orthologs=levenshtein_only_orthologs,
+            percent_of_query=percent_of_query,
+            jaccard=jac,
+            modscore=modscore,
+        )
 
     def _compare_all_gcs_to_input_gc(self):
         # create a 3-column dataframe that represents the input gene cluster's features (proteins)
@@ -266,24 +303,25 @@ class SearchBase(ABC):
                 for i in list(self.input_bgc.features_sorted_by_midpoint)
             ]
         )
-        for k, group in self.link_df.groupby(
+        for k, t_obj in self.link_df.groupby(
             ["query_gene_cluster", "target_gene_cluster"], sort=False
         ):
             score = self._compare_two_gene_clusters(
                 pd.merge(
                     q_obj,
-                    group,
+                    t_obj,
                     on="query_feature",
                     how="outer",
                     suffixes=("", "_delme"),
                 ),
-                len(self.input_bgc.features),
             )
             yield {
                 "query_gene_cluster": k[1],
                 "target_gene_cluster": k[0],
+                "levenshtein_include_internal_nonortholog": score.levenshtein_include_internal_nonortholog,
+                "levenshtein_only_orthologs": score.levenshtein_only_orthologs,
+                "percent_of_query": score.percent_of_query,
                 "jaccard": score.jaccard,
-                "levenshtein": score.levenshtein,
                 "modscore": score.modscore,
             }
 
