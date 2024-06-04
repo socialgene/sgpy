@@ -105,7 +105,7 @@ def search_bgc(
     # Find RBH between input BGC and putative BGCs
 
     search_object._create_links(
-        tool=analyze_with, argstring=f"--{blastarg} --max-hsps 1", threads=blast_threads
+        tool=analyze_with, argstring=f"{blastarg} --max-hsps 1", threads=blast_threads
     )
     # Assign protein groups for the clinker plot legend
     search_object._choose_group()
