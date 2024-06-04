@@ -51,23 +51,23 @@ class Neo4jElement(ABC):
 
     @property
     def __required_properties_dict(self):
-        return {i: self.properties.get(i) for i in self.required_properties}
+        return {i: self.santized_properties.get(i) for i in self.required_properties}
 
     @property
     def __optional_properties_dict(self):
         return {
-            i: self.properties.get(i)
+            i: self.santized_properties.get(i)
             for i in self.properties
             if i not in self.required_properties
         }
 
     def __hash__(self):
-        return hash((self.neo4j_label, frozenset(self.properties.items())))
+        return hash((self.neo4j_label, frozenset(self.santized_properties.items())))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             if self.neo4j_label == other.neo4j_label:
-                if self.properties == other.properties:
+                if self.santized_properties == other.santized_properties:
                     return True
         return False
 
@@ -102,6 +102,16 @@ class Neo4jElement(ABC):
             for k, v in self.properties.items()
             if isinstance(v, self.property_specification.get(k))
         }
+
+    @property
+    def santized_properties(self):
+        """Remove any properties that are None"""
+        temp = {}
+        for k, v in self.properties.items():
+            if isinstance(v, str):
+                v = v.replace("\\", "\\\\")
+            temp[k] = v
+        return temp
 
     def _clean_properties(
         self,
@@ -157,12 +167,12 @@ class Node(Neo4jElement):
             )
 
     def __hash__(self):
-        return hash((frozenset(self.neo4j_label), frozenset(self.properties.items())))
+        return hash((frozenset(self.neo4j_label), frozenset(self.santized_properties.items())))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             if self.neo4j_label == other.neo4j_label:
-                if self.properties == other.properties:
+                if self.santized_properties == other.santized_properties:
                     return True
         return False
 
@@ -174,7 +184,7 @@ class Node(Neo4jElement):
         var="n",
     ):
         """Create a string of the form (var:LABEL {uid: 'uid', ...})"""
-        uids = {i: self.properties.get(i) for i in self._Node__uid}
+        uids = {i: self.santized_properties.get(i) for i in self._Node__uid}
         uids_as_str = ", ".join(
             f"{k}: '{v}'" if isinstance(v, str) else f"{k}: {v}"
             for k, v in uids.items()
@@ -473,7 +483,7 @@ class Relationship(Neo4jElement):
         return hash(
             (
                 self.neo4j_label,
-                frozenset(self.properties.items()),
+                frozenset(self.santized_properties.items()),
                 self.start,
                 self.end,
             )
@@ -482,7 +492,7 @@ class Relationship(Neo4jElement):
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             if self.neo4j_label == other.neo4j_label:
-                if self.properties == other.properties:
+                if self.santized_properties == other.santized_properties:
                     if self.start == other.start:
                         if self.end == other.end:
                             return True
@@ -528,7 +538,7 @@ class Relationship(Neo4jElement):
         the_json = {
             "required_props1": self.start._Neo4jElement__required_properties_dict,
             "required_props2": self.end._Neo4jElement__required_properties_dict,
-            "properties": self.properties,
+            "properties": self.santized_properties,
         }
         if create:
             with GraphDriver() as db:
@@ -578,7 +588,7 @@ class Relationship(Neo4jElement):
                 {
                     "required_props1": i.start._Neo4jElement__required_properties_dict,
                     "required_props2": i.end._Neo4jElement__required_properties_dict,
-                    "properties": i.properties,
+                    "properties": i.santized_properties,
                 }
                 for i in list_of_rels
             ),
