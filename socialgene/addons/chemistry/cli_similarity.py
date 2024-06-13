@@ -42,13 +42,13 @@ def get_db_inchis():
             RETURN c1.CanonicalSmiles as chem
             """,
         ).value()
-    return res
+    return [i.replace("\\\\", "\\") for i in res if i is not None]
 
 
 def inchi_list_to_compound_dict(x):
     res = {}
     for i in x:
-        temp = ChemicalCompound(i)
+        temp = ChemicalCompound(i, sanitize=True)
         res[i] = (temp, temp.node)
     return res
 
@@ -139,3 +139,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
