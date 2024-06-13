@@ -49,7 +49,7 @@ class ChemicalCompoundNode(Node):
         "inchi": str,
         "CanonicalSmiles": str,
     }
-    constraints_unique = ["inchi", "CanonicalSmiles"]
+    constraints_unique = ["inchi"]
 
 
 class TanimotoSimilarity(Relationship):
