@@ -829,13 +829,17 @@ class Locus(FeatureCollection):
             if end:
                 if int(feature.end) > int(end):
                     continue
+            if feature.type == "protein":
+                feat_type="CDS"
+            else:
+                feat_type=feature.type
             biofeat = SeqFeature(
                 FeatureLocation(
-                    start=feature.start,
+                    start=feature.start - 1,
                     end=feature.end,
                     strand=feature.strand,
                 ),
-                type=feature.type,
+                type=feat_type,
                 qualifiers={
                     k: v
                     for k, v in feature.all_attributes().items()
@@ -872,7 +876,7 @@ class GeneCluster(FeatureCollection):
     def __lt__(self, other):
         return 1
 
-    def write_genbank(self, outpath, sg):
+    def write_genbank(self, outpath):
         record = SeqRecord(
             Seq(""),
             id=self.parent.external_id,
@@ -882,19 +886,23 @@ class GeneCluster(FeatureCollection):
         )
         # Add annotation
         for feature in self.features:
+            if feature.type == "protein":
+                feat_type="CDS"
+            else:
+                feat_type=feature.type
             biofeat = SeqFeature(
                 FeatureLocation(
-                    start=feature.start,
+                    start=feature.start - 1,
                     end=feature.end,
                     strand=feature.strand,
                 ),
-                type=feature.type,
+                type=feat_type,
                 qualifiers={
                     k: v
                     for k, v in feature.all_attributes().items()
                     if v and k != "parent"
                 }
-                | {"translation": sg.proteins[feature.uid].sequence},
+                | {"translation": self.proteins[feature.uid].sequence},
             )
             record.features.append(biofeat)
         record.annotations["molecule_type"] = "DNA"
