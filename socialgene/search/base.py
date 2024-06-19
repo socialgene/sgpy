@@ -242,11 +242,11 @@ class SearchBase(ABC):
         except Exception as e:
             log.warning(e)
 
-    def _compare_two_gene_clusters(self, t_obj):
-        target_cluster_min_start = t_obj.target_feature.dropna().apply(lambda x: x.start).min()
-        target_cluster_max_end = t_obj.target_feature.dropna().apply(lambda x: x.end).max()
-        non_orthologs = [i for i in t_obj.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start > target_cluster_min_start and i.end < target_cluster_max_end and i not in t_obj.target_feature.to_list()]
-        # add the non-orthologs to the t_obj dataframe as new rows with the same columns and a random uuid as the query
+    def _compare_two_gene_clusters(self, df):
+        target_cluster_min_start = df.target_feature.dropna().apply(lambda x: x.start).min()
+        target_cluster_max_end = df.target_feature.dropna().apply(lambda x: x.end).max()
+        non_orthologs = [i for i in df.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start > target_cluster_min_start and i.end < target_cluster_max_end and i not in df.target_feature.to_list()]
+        # add the non-orthologs to the df dataframe as new rows with the same columns and a random uuid as the query
         non_ortholog_df = pd.DataFrame(
             [
                 {
@@ -262,34 +262,37 @@ class SearchBase(ABC):
         )
         if not non_ortholog_df.empty:
             non_ortholog_df['query'] = non_ortholog_df['target']
-            full_t_obj = pd.concat([t_obj, non_ortholog_df], ignore_index=True)
+            full_t_obj = pd.concat([df, non_ortholog_df], ignore_index=True)
         else:
-            full_t_obj = t_obj
+            full_t_obj = df
         levenshtein_include_internal_nonortholog_for = levenshtein(
-                    list(full_t_obj.sort_values(["t_start"], ascending=True)["query"]),
-                    list(full_t_obj.sort_values(["q_start"], ascending=True)["query"]),
+                    list(full_t_obj.dropna(subset="target_feature").sort_values(["t_start"], ascending=True)["query"]),
+                    list(full_t_obj.dropna(subset="query_feature").sort_values(["q_start"], ascending=True)["query"]),
+                ) / len(full_t_obj)
+        levenshtein_include_internal_nonortholog_rev = levenshtein(
+                    list(full_t_obj.dropna(subset="target_feature").sort_values(["t_start"], ascending=True)["query"]),
+                    list(full_t_obj.dropna(subset="query_feature").sort_values(["q_start"], ascending=False)["query"]),
                 ) / len(full_t_obj)
         levenshtein_only_orthologs_for = levenshtein(
-                    list(t_obj.sort_values(["t_start"], ascending=True)["query"]),
-                    list(t_obj.sort_values(["q_start"], ascending=True)["query"]),
-                ) / len(t_obj)
-        levenshtein_include_internal_nonortholog_rev = levenshtein(
-                    list(full_t_obj.sort_values(["t_start"], ascending=True)["query"]),
-                    list(full_t_obj.sort_values(["q_start"], ascending=False)["query"]),
-                ) / len(full_t_obj)
+                    list(df.dropna().sort_values(["t_start"], ascending=True)["query"]),
+                    list(df.dropna().sort_values(["q_start"], ascending=True)["query"]),
+                ) / len(df.dropna())
         levenshtein_only_orthologs_rev = levenshtein(
-                    list(t_obj.sort_values(["t_start"], ascending=True)["query"]),
-                    list(t_obj.sort_values(["q_start"], ascending=False)["query"]),
-                ) / len(t_obj)
-        levenshtein_include_internal_nonortholog = 1- min(levenshtein_include_internal_nonortholog_for,levenshtein_include_internal_nonortholog_rev)
-        levenshtein_only_orthologs = 1- min(levenshtein_only_orthologs_for,levenshtein_only_orthologs_rev)
-        percent_of_query = len(t_obj.dropna(subset="target_gene_cluster")) / t_obj['query_feature'].nunique()  * 100
+                    list(df.dropna().sort_values(["t_start"], ascending=True)["query"]),
+                    list(df.dropna().sort_values(["q_start"], ascending=False)["query"]),
+                ) / len(df.dropna())
+
+        levenshtein_include_internal_nonortholog = 1 - min(levenshtein_include_internal_nonortholog_for,levenshtein_include_internal_nonortholog_rev)
+        levenshtein_only_orthologs = 1 - min(levenshtein_only_orthologs_for,levenshtein_only_orthologs_rev)
+        # percent_of_query = how many query proteins were seen / total query proteins * 100
+        percent_of_query = df.dropna().query_feature.nunique() / len(df[~df.query_gene_cluster.isna()].query_gene_cluster.iloc[0].features)  * 100
         percent_of_query = int(round(percent_of_query, 0))
-        query_len = len(t_obj.dropna(subset="target_gene_cluster").query_gene_cluster.iloc[0].features)
-        target_len = len([i for i in t_obj.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start >= target_cluster_min_start and i.end <= target_cluster_max_end])
-        intersection = t_obj.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
+        query_len =  len(df[~df.query_gene_cluster.isna()].query_gene_cluster.iloc[0].features)
+        # this is more complicated than just retrieving all the target proteins because any proteins in the added window must be removed first
+        target_len = len([i for i in df.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start >= target_cluster_min_start and i.end <= target_cluster_max_end])
+        intersection = df.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
         jac = intersection / (query_len + target_len - intersection)
-        modscore = (jac * 2) + levenshtein_include_internal_nonortholog - (abs(target_len - query_len) / query_len)
+        modscore = (jac * 2) + levenshtein_include_internal_nonortholog
         return self._compare_two_gene_clusters_score(
             levenshtein_include_internal_nonortholog=levenshtein_include_internal_nonortholog,
             levenshtein_only_orthologs=levenshtein_only_orthologs,
