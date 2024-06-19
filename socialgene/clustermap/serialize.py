@@ -42,7 +42,7 @@ class SerializeToClustermap:
             "clusters": [
                 {
                     "uid": self._get_uid(obj=assembly),
-                    "name": assembly.uid,
+                    "name": assembly.name,
                     "loci": self._loci([i for i in assembly.gene_clusters]),
                 }
                 for assembly in self.sorted_bgcs
