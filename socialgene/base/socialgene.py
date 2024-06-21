@@ -542,7 +542,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                 for feature in locus.features_sorted_by_midpoint:
                     biofeat = SeqFeature(
                         FeatureLocation(
-                            start=feature.start,
+                            start=feature.start - 1,
                             end=feature.end,
                             strand=feature.strand,
                         ),

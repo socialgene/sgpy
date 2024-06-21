@@ -28,7 +28,6 @@ def search_bgc(
     run_async: bool = True,
     analyze_with: str = "blastp",
     outpath_clinker: str = None,
-    limiter: int = 1000,
     blast_speed: str = 'fast',
     blast_threads: int = 1,
     adaptive_padding: bool = True,
@@ -77,7 +76,7 @@ def search_bgc(
     search_object.filter()
     # labels clusters with a unique id based on break_bgc_on_gap_of
     search_object.label_clusters()
-    df = search_object._primary_bgc_regions(limiter=limiter)
+    df = search_object._primary_bgc_regions()
     log.info(
         f"First pass resulted in {df.assembly_uid.nunique()} assemblies, {df.nucleotide_uid.nunique()} nucleotide sequences had {df.cluster.nunique()} putative BGCs"
     )
@@ -105,9 +104,12 @@ def search_bgc(
         search_object.sg_object.add_sequences_from_neo4j()
 
     # Find RBH between input BGC and putative BGCs
-
+    if analyze_with == "blastp":
+        argstring=f"{blastarg} --max-hsps 1"
+    else:
+        argstring=""
     search_object._create_links(
-        tool=analyze_with, argstring=f"{blastarg} --max-hsps 1", threads=blast_threads
+        tool=analyze_with, argstring=argstring, threads=blast_threads
     )
     # Assign protein groups for the clinker plot legend
     search_object._choose_group()
