@@ -60,9 +60,8 @@ class CompareDomains(HMMDataFrame):
         # have to use _calculate_mod_score_not_named because named tuple can't pickle "protein_comparison_modscore"
         with Pool(cpus) as p:
             for i in p.starmap(
-                picklable_modscore,
+                mod_score,
                 combinations(p1_obj_list, 2),
             ):
-                if not only_hits or i["jaccard"] > 0.001:
-                    temp = _mod_score_tupler(**i)
-                    yield temp
+                if not only_hits or i.jaccard > 0.001:
+                    yield i

@@ -6,18 +6,37 @@ from socialgene.base.molbio import Protein
 
 # Note: there is technically no query/target as the comparison methods are order-independent
 # this is just to keep things consistent between tools
-_mod_score_tupler = namedtuple(
-    "protein_comparison_modscore",
-    (
-        "query",
-        "target",
-        "query_n_domains",
-        "target_n_domains",
-        "levenshtein",
-        "jaccard",
-        "mod_score",
-    ),
-)
+# _mod_score_tupler = namedtuple(
+#     "protein_comparison_modscore",
+#     (
+#         "query",
+#         "target",
+#         "query_n_domains",
+#         "target_n_domains",
+#         "levenshtein",
+#         "jaccard",
+#         "mod_score",
+#     ),
+# )
+
+class _mod_score_tupler:
+    __slots__ = ("query", "target", "query_n_domains", "target_n_domains", "levenshtein", "jaccard", "mod_score")
+    def __init__(self, query:str, target:str, query_n_domains:int, target_n_domains:int, levenshtein:int, jaccard:int, mod_score:int):
+        for i in self.__slots__:
+            setattr(self, i, locals()[i])
+    def __dict__(self):
+        return {
+            "query": self.query.uid,
+            "target": self.target.uid,
+            "query_n_domains": self.query_n_domains,
+            "target_n_domains": self.target_n_domains,
+            "levenshtein": self.levenshtein,
+            "jaccard": self.jaccard,
+            "mod_score": self.mod_score
+        }
+    def to_dict(self):
+        return self.__dict__()
+
 
 
 def mod_score(p1, p2):
