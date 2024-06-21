@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.7](https://github.com/socialgene/sgpy/compare/v0.6.6...v0.6.7) (2024-06-21)
+
+
+### Miscellaneous Chores
+
+* release 0.6.7 ([c14da50](https://github.com/socialgene/sgpy/commit/c14da50c75b4594f275b7c6a2fe16b0a2a72800f))
+
 ## [0.6.6](https://github.com/socialgene/sgpy/compare/v0.6.5...v0.6.6) (2024-04-08)
 
 
