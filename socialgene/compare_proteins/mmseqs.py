@@ -145,7 +145,7 @@ class MMseqsEasySearch(BlastTab):
                     .reset_index(drop=True)
                 )
 
-    def compare_proteins(self, queries, targets, cpus=1, argstring="", index=False):
+    def compare_proteins(self, queries, targets, cpus=1, argstring="", index=False, **kwargs):
         # loop through protein list and write to temporary fasta file
         if isinstance(queries, Protein):
             queries = [queries]

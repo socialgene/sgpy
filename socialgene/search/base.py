@@ -226,12 +226,11 @@ class SearchBase(ABC):
         if self.working_search_results_df.empty:
             raise ValueError("No hits found after filtering at the assembly level")
 
-    def _primary_bgc_regions(self, limiter=None):
+    def _primary_bgc_regions(self):
         return self._collapse_cluster(
             self._filter_clusters(
                 df=self.working_search_results_df,
                 threshold=self.gene_clusters_must_have_x_matches,
-                limiter=limiter,
             )
         )
 
@@ -672,7 +671,7 @@ class SearchBase(ABC):
             .reset_index()
         )
 
-    def _filter_clusters(self, df, threshold, limiter=None) -> pd.Index:
+    def _filter_clusters(self, df, threshold) -> pd.Index:
         """Filter the results for potential BGCs
         Args:
         Returns:
