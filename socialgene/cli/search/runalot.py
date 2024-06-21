@@ -6,7 +6,7 @@ from socialgene.cli.search.sea import search_bgc
 from socialgene.config import env_vars
 import sys
 
-env_vars["NEO4J_URI"] = "bolt://localhost:7687"
+env_vars["NEO4J_URI"] = "bolt://localhost:7688"
 
 outdir = "/media/socialgene_nvme/culture_search_results"
 
@@ -37,7 +37,7 @@ def run_individual_search(gbk_path):
                 target_bgc_padding=10000,
                 max_domains_per_protein=3,
                 max_outdegree=300000,
-                max_query_proteins=10,
+                max_query_proteins=50,
                 scatter=True,
                 locus_tag_bypass_list=None,
                 protein_id_bypass_list=None,

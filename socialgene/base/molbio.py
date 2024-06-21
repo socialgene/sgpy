@@ -487,7 +487,6 @@ class Protein(
         n=self._neo4j_node(include_sequences=include_sequences)
         n.add_to_neo4j(create=False)
         for i in self.domains:
-            print("sdfsd")
             hmmnode=HMM_NODE()
             hmmnode.fill_from_dict({"uid":i.hmm_id})
             rel = ANNOTATES_REL(start=hmmnode, end=self._neo4j_node())

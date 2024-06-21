@@ -142,6 +142,16 @@ def add_antismash_regions_as_nodes():
     )
 
 
+
+def delete_antismash_regions_as_nodes():
+    _run_transaction_function(
+        """
+            MATCH (n:gene_cluster)
+            WHERE n:antismash
+            DETACH DELETE n;
+        """
+    )
+
 def culture_collections_as_nodes_rels():
     _add_to_neo4j(
         """

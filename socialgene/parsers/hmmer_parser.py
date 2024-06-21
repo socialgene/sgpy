@@ -104,7 +104,6 @@ class ParsedDomtblout:
                 self.add_protein(
                     uid=line[0],
                 )
-                print(bool(line[14]))
                 self.proteins[line[0]].add_domain(
                     uid=line[1],
                     env_from=int(line[2]),

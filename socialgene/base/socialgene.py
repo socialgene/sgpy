@@ -222,6 +222,23 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
             # parse the resulting domtblout file, saving results to the class proteins/domains
             self.parse_hmmout(temp_path.name, hmmsearch_or_hmmscan="hmmscan")
 
+    def get_proteins_from_neo4j(self):
+        try:
+            ncount=0
+            with GraphDriver() as db:
+                for i in db.run(
+                    """
+                    MATCH (p1:protein)
+                    RETURN p1.uid as uid
+                    """,
+                ):
+                    _=self.add_protein(uid=i["uid"])
+                    ncount+=1
+            log.info(f"Retrieved {ncount} proteins from Neo4j")
+        except Exception:
+            log.debug("Error trying to retrieve proteins from Neo4j")
+
+
     def add_sequences_from_neo4j(self):
         try:
             with GraphDriver() as db:

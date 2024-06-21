@@ -8,20 +8,6 @@ from socialgene.neo4j.neo4j import Neo4jQuery
 from socialgene.utils.logging import log
 
 
-def _mod_return(i1, i2):
-    """for running mod_score() in parallel"""
-    return (
-        i1[0],  # hash of protein 1
-        i2[0],  # hash of protein 2
-        *(
-            mod_score(
-                i1[1],
-                i2[1].domain_vector,
-            ).values()
-        ),
-    )
-
-
 def append_or_not(result_list, result, append=False):
     if append:
         result_list.extend(result)
@@ -125,9 +111,9 @@ class CompareProtein(Neo4jQuery):
                 append_or_not(
                     result_list=self.protein_comparison,
                     result=[
-                        _mod_return(i1=i1, i2=i2)
+                        mod_score(i1=i1, i2=i2)
                         for i1, i2 in combinations_with_replacement(
-                            self.proteins.items(), r=2
+                            self.proteins.values(), r=2
                         )
                     ],
                     append=append,
@@ -145,8 +131,8 @@ class CompareProtein(Neo4jQuery):
                     append_or_not(
                         result_list=self.protein_comparison,
                         result=p.starmap(
-                            _mod_return,
-                            combinations_with_replacement(self.proteins.items(), r=2),
+                            mod_score,
+                            combinations_with_replacement(self.proteins.values(), r=2),
                         ),
                         append=append,
                     )
