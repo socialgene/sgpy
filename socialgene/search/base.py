@@ -104,6 +104,7 @@ class SearchBase(ABC):
         modscore_cutoff: float = 0.8,
         target_bgc_padding=10000,
         break_bgc_on_gap_of: int = 20000,
+        adaptive_padding: bool = True,
     ) -> None:
         super().__init__()
         self.gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches
@@ -122,11 +123,11 @@ class SearchBase(ABC):
         self.group_df = pd.DataFrame()
         self.n_searched_proteins = None
         self.target_bgc_padding = target_bgc_padding
+        self.search_padding = self.target_bgc_padding
         self.working_search_results_df = pd.DataFrame()
         self.outdegree_df = pd.DataFrame()
         self.bgc_df = pd.DataFrame()
         self.primary_bgc_regions = pd.DataFrame()
-
         if (
             isinstance(input, SocialGene)
             or isinstance(input, str)
@@ -136,6 +137,13 @@ class SearchBase(ABC):
             self.gbk_path = input
         else:
             raise ValueError("Must provide either sg_object or gbk_path")
+
+        if adaptive_padding:
+            input_len = max(i.end for i in self.input_bgc.features) - min(i.start for i in self.input_bgc.features)
+            input_len += 500
+            if input_len > self.target_bgc_padding:
+                log.error(f"Adaptive padding: {input_len}")
+                self.search_padding = input_len
         self.n_searched_proteins = len(self.sg_object.proteins)
         self._compare_two_gene_clusters_score = BgcComp2
 
@@ -395,8 +403,8 @@ class SearchBase(ABC):
                 # pull in info from database to sg_object
                 _ = self.sg_object.fill_given_locus_range(
                     locus_uid=df_row.loc["nucleotide_uid"],
-                    start=df_row.loc["n_start"] - self.target_bgc_padding,
-                    end=df_row.loc["n_end"] + self.target_bgc_padding,
+                    start=df_row.loc["n_start"] - self.search_padding,
+                    end=df_row.loc["n_end"] + self.search_padding,
                 )
                 # add bgc to locus
                 pg.update(task, advance=1)

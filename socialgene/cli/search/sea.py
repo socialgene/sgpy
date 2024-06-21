@@ -31,6 +31,7 @@ def search_bgc(
     limiter: int = 1000,
     blast_speed: str = 'fast',
     blast_threads: int = 1,
+    adaptive_padding: bool = True,
 ):
     log.info(f"Running search with args: {locals()}")
 
@@ -54,6 +55,7 @@ def search_bgc(
         gene_clusters_must_have_x_matches=gene_clusters_must_have_x_matches,
         break_bgc_on_gap_of=break_bgc_on_gap_of,
         target_bgc_padding=target_bgc_padding,
+        adaptive_padding=adaptive_padding
     )
     search_object.outdegree_table
     search_object.prioritize_input_proteins(
@@ -80,8 +82,8 @@ def search_bgc(
         f"First pass resulted in {df.assembly_uid.nunique()} assemblies, {df.nucleotide_uid.nunique()} nucleotide sequences had {df.cluster.nunique()} putative BGCs"
     )
 
-    df["n_start"] = df["n_start"] - search_object.target_bgc_padding
-    df["n_end"] = df["n_end"] + search_object.target_bgc_padding
+    df["n_start"] = df["n_start"] - search_object.search_padding
+    df["n_end"] = df["n_end"] + search_object.search_padding
     search_object._bgc_regions_to_sg_object(df)
 
     ########
@@ -90,8 +92,8 @@ def search_bgc(
         search_object.sg_object.assemblies[row["assembly_uid"]].get_locus_by_uid(
             row["nucleotide_uid"]
         ).add_bgcs_by_start_end(
-            start=row["n_start"] - search_object.target_bgc_padding,
-            end=row["n_end"] + search_object.target_bgc_padding,
+            start=row["n_start"] - search_object.search_padding,
+            end=row["n_end"] + search_object.search_padding,
             uid=row["cluster"],
         )
     # add input bgc as gene_cluster to the locus objects
@@ -118,13 +120,19 @@ def search_bgc(
         gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / len(
             search_object.input_bgc.proteins
         )
+    for group,df in search_object.link_df.groupby("target_gene_cluster"):
+        minstart = df.target_feature.apply(lambda x: x.start).min() - search_object.target_bgc_padding
+        group.features = {i for i in group.features if i.start > minstart}
+        maxend = df.target_feature.apply(lambda x: x.end).max() + search_object.target_bgc_padding
+        group.features = {i for i in group.features if i.end < maxend}
+
 
     assemblies = search_object._rank_order_bgcs(
         threshold=gene_clusters_must_have_x_matches
     )
     assemblies = [i.parent.parent for i in assemblies]
     ids = [i.uid for i in assemblies]
-    log.warning(ids)
+    # log.warning(ids)
     if len(ids) == 1 and ids[0] == search_object.input_bgc_id:
         raise ValueError("Only match was to self")
     if len(ids) == 0:
