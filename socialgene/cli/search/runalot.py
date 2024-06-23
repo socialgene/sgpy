@@ -4,9 +4,9 @@ import pickle
 from pathlib import Path
 from socialgene.cli.search.sea import search_bgc
 from socialgene.config import env_vars
-import sys 
+import sys
 
-env_vars["NEO4J_URI"] = "bolt://localhost:7688"
+env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 outdir = "/media/socialgene_nvme/culture_search_results"
 
