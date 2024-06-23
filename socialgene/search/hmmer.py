@@ -490,6 +490,13 @@ class SearchDomains(SearchBase, CompareDomains):
         bypass_df = self.outdegree_df[
             self.outdegree_df["protein_uid"].isin(loci_protein_ids)
         ]
+        bypass_df = (
+                bypass_df.sort_values(
+                    "outdegree", ascending=True, ignore_index=True
+                )
+                .groupby("protein_uid", observed=True)
+                .head(max_domains_per_protein)
+            )
         len_start = self.outdegree_df["outdegree"].sum()
         if self.outdegree_df["outdegree"].sum() == 0:
             raise ValueError(
@@ -511,8 +518,9 @@ class SearchDomains(SearchBase, CompareDomains):
 
         if max_query_proteins and not scatter:
             # Make sure max_query_proteins accounts for bypassed proteins
-            if bypass_df.shape[0] > 0:
-                max_query_proteins = max_query_proteins - len(bypass_df)
+            if bypass_df.protein_uid.nunique() > 0:
+                log.warning(bypass_df)
+                max_query_proteins = max_query_proteins - bypass_df.protein_uid.nunique()
                 if max_query_proteins < 0:
                     max_query_proteins = 0
             self._filter_max_query_proteins(max_query_proteins)
