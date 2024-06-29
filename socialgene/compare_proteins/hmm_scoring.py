@@ -72,7 +72,7 @@ def mod_score(p1, p2):
             p2,
             length_input_list_1,
             length_input_list_2,
-            round(100, 2),
+            round(0, 2),
             round(0, 2),
             round(0, 2),
         )
