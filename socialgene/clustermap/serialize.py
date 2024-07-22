@@ -128,7 +128,7 @@ class SerializeToClustermap:
                         "uid": self.feature_to_cmap_uid_dict[i["query_feature"]],
                         "name": self.feature_to_cmap_uid_dict[i["query_feature"]],
                     },
-                    "identity": i.pident if "pident" in i else i.score,
+                    "identity": i.pident / 100 if "pident" in i else i.score,
                 }
                 for x, i in self._link_df.iterrows()
                 if i["query_feature"] in self.feature_to_cmap_uid_dict
