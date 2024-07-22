@@ -2,9 +2,7 @@ import argparse
 from pathlib import Path
 
 from socialgene.cli.search.sea import search_bgc
-from socialgene.config import env_vars
 
-env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 parser = argparse.ArgumentParser(
     description="Search a SocialGene database for gene clusters similar to an input gene cluster"
@@ -132,7 +130,6 @@ parser.add_argument(
     default="hmmer",
     help="Tool to use for reciprocal best hit comparison; one of 'hmmer', 'blastp', 'mmseqs2'",
 )
-args = parser.parse_args()
 
 
 def main():

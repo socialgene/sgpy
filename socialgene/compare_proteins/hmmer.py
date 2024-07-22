@@ -4,7 +4,7 @@ from multiprocessing import Pool
 import pandas as pd
 
 from socialgene.compare_proteins.base import HMMDataFrame
-from socialgene.compare_proteins.hmm_scoring import _mod_score_tupler, mod_score
+from socialgene.compare_proteins.hmm_scoring import  mod_score
 
 
 def picklable_modscore(p1, p2):
@@ -35,8 +35,7 @@ class CompareDomains(HMMDataFrame):
         ).drop_duplicates(subset=["query", "target"])
 
     def compare_one_to_one(self, p1, p2):
-        protein_comparisons = set()
-        return self.protein_comparisons_df(protein_comparisons)
+        return mod_score(p1, p2)
 
     def compare_one_to_many(self, p1_obj, p2_obj_list, filter_non_hits=True):
         for i in p2_obj_list:

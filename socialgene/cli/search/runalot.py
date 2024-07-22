@@ -6,14 +6,8 @@ from socialgene.cli.search.sea import search_bgc
 from socialgene.config import env_vars
 import sys
 
-env_vars["NEO4J_URI"] = "bolt://localhost:7688"
 
-outdir = "/media/socialgene_nvme/culture_search_results"
 
-Path(outdir).mkdir(exist_ok=True)
-Path(outdir, "jsons").mkdir(exist_ok=True)
-Path(outdir, "pickles").mkdir(exist_ok=True)
-Path(outdir, "errors").mkdir(exist_ok=True)
 
 
 def run_individual_search(gbk_path):
@@ -68,4 +62,10 @@ def run_individual_search(gbk_path):
 if __name__ == "__main__":
     # run run_individual_search() using a command line input as the gbk_path
     gbk_path = Path(sys.argv[1])
+    outdir = "/media/socialgene_nvme/culture_search_results"
+
+    Path(outdir).mkdir(exist_ok=True)
+    Path(outdir, "jsons").mkdir(exist_ok=True)
+    Path(outdir, "pickles").mkdir(exist_ok=True)
+    Path(outdir, "errors").mkdir(exist_ok=True)
     run_individual_search(gbk_path)

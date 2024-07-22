@@ -7,11 +7,13 @@ from socialgene.compare_proteins.hmmer import CompareDomains
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "test_genomes")
 gbk_path = os.path.join(FIXTURE_DIR, "lagriamide_mibig_bgc0001946.gbk")
 
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
+FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
 FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "hmms")
 hmm_path = os.path.join(FIXTURE_DIR, "pks.hmm")
@@ -22,13 +24,13 @@ def test_CompareDomains_compare_one_to_one():
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
     sg_object.annotate_proteins_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
+        protein_id_list=protein_id_list, hmm_filepath=hmm_path, cpus=1
     )
     a = CompareDomains()
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     p2 = sg_object.proteins["iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh"]
     res = a.compare_one_to_one(p1, p2)
-    assert res._asdict() == {
+    assert res.to_dict() == {
         "query": "Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5",
         "target": "iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh",
         "query_n_domains": 36,
@@ -44,7 +46,7 @@ def test_CompareDomains_compare_one_to_many():
     sg_object.parse(gbk_path)
     protein_id_list = list(sg_object.proteins.keys())
     sg_object.annotate_proteins_with_hmmscan(
-        protein_id_list=protein_id_list, hmm_directory=hmm_path, cpus=1
+        protein_id_list=protein_id_list, hmm_filepath=hmm_path, cpus=1
     )
     a = CompareDomains()
     p1 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]

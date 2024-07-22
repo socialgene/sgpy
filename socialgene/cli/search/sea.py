@@ -1,11 +1,9 @@
 from typing import List
 
 from socialgene.clustermap.serialize import SerializeToClustermap
-from socialgene.config import env_vars
 from socialgene.search.hmmer import SearchDomains
 from socialgene.utils.logging import log
 
-env_vars["NEO4J_URI"] = "bolt://localhost:7687"
 
 
 def search_bgc(
