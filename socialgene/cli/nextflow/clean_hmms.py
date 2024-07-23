@@ -12,14 +12,13 @@ parser.add_argument(
     "--input_dir",
     metavar="input filepath",
     type=Path,
-    help="input_dir",
+    help="input directory filepath",
     required=True,
 )
 parser.add_argument(
     "--outdir",
-    metavar="output directory",
     type=Path,
-    help="outdir",
+    help="output directory filepath",
     required=True,
 )
 

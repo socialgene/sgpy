@@ -4,6 +4,7 @@ import pytest
 
 from socialgene.base.socialgene import SocialGene
 from socialgene.compare_proteins.hmm_scoring import _mod_score_tupler, mod_score
+from socialgene.base.molbio import Protein
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -19,27 +20,23 @@ FIXTURE_DIR = os.path.join(FIXTURE_DIR, "data", "hmms")
 hmm_dir = FIXTURE_DIR
 
 
+def create_mod_score_tupler():
+    return _mod_score_tupler(Protein(uid="a"), Protein(uid="b"), *[i for i in range(5)])
+
 @pytest.mark.parametrize("n", [0, 1, 2, 3, 4, 5, 6])
 def test_mod_score_tupler(n):
     with pytest.raises(TypeError):
         _mod_score_tupler(*[i for i in range(n)])
 
 
-def test_create_tuple_len():
-    assert _mod_score_tupler(*[i for i in range(7)])
-
-
 def test_create_tuple_type():
-    a = _mod_score_tupler(*[i for i in range(7)])
-    assert (
-        str(type(a))
-        == "<class 'socialgene.compare_proteins.hmm_scoring.protein_comparison_modscore'>"
-    )
+    a = create_mod_score_tupler()
+    assert isinstance(a,_mod_score_tupler)
 
 
 def test_create_tuple_fields():
-    a = _mod_score_tupler(*[i for i in range(7)])
-    assert a._fields == (
+    a = create_mod_score_tupler()
+    assert a.__slots__ == (
         "query",
         "target",
         "query_n_domains",
@@ -51,10 +48,22 @@ def test_create_tuple_fields():
 
 
 def test_create_tuple_repr():
-    a = _mod_score_tupler(*[i for i in range(7)])
+    a = create_mod_score_tupler()
     assert a.__repr__() == (
-        "protein_comparison_modscore(query=0, target=1, query_n_domains=2, target_n_domains=3, levenshtein=4, jaccard=5, mod_score=6)"
+        "_mod_score_tupler(query=Protein(uid='a'), target=Protein(uid='b'), query_n_domains=0, target_n_domains=1, levenshtein=2, jaccard=3, mod_score=4)"
     )
+
+def test_create_tuple_dict():
+    a = create_mod_score_tupler()
+    assert a.__dict__() == {
+        "query": "a",
+        "target": "b",
+        "query_n_domains": 0,
+        "target_n_domains": 1,
+        "levenshtein": 2,
+        "jaccard": 3,
+        "mod_score": 4,
+    }
 
 
 def test_mod_score():
@@ -90,7 +99,7 @@ def test_mod_score_no_domains():
     p2 = sg_object.proteins["iI7aI2dI9vaha9f0rVTi_YFrfMXjY1eh"]
     res = mod_score(p1, p2)
     assert res.jaccard == 0
-    assert res.levenshtein == 100
+    assert res.levenshtein == 0
     assert res.mod_score == 0
     assert res.query_n_domains == 0
     assert res.target_n_domains == 0
@@ -116,7 +125,7 @@ def test_mod_score_same_hash_with_domains():
     )
     res = mod_score(p1, p2)
     assert res.jaccard == 1
-    assert res.levenshtein == 0
+    assert res.levenshtein == 1
     assert res.mod_score == 1.5
     assert res.query_n_domains == 31
     assert res.target_n_domains == 31
@@ -131,7 +140,7 @@ def test_mod_score_same_hash_no_domains():
     p2 = sg_object.proteins["Ia6RrYNflQpEjxBCKTb5azk9_FTDvB-5"]
     res = mod_score(p1, p2)
     assert res.jaccard == 1
-    assert res.levenshtein == 0
+    assert res.levenshtein == 1
     assert res.mod_score == 1.5
     assert res.query_n_domains == 0
     assert res.target_n_domains == 0
