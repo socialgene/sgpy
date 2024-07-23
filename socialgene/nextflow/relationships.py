@@ -43,7 +43,7 @@ class ANNOTATES(Relationship):
         "ali_from": float,
         "ali_to": float,
         "exponentialized": bool,
-        }
+    }
     start_class = Nodes.HMM
     end_class = Nodes.PROTEIN
 

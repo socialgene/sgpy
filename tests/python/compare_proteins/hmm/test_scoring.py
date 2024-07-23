@@ -2,9 +2,9 @@ import os
 
 import pytest
 
+from socialgene.base.molbio import Protein
 from socialgene.base.socialgene import SocialGene
 from socialgene.compare_proteins.hmm_scoring import _mod_score_tupler, mod_score
-from socialgene.base.molbio import Protein
 
 FIXTURE_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURE_DIR = os.path.dirname(FIXTURE_DIR)
@@ -23,6 +23,7 @@ hmm_dir = FIXTURE_DIR
 def create_mod_score_tupler():
     return _mod_score_tupler(Protein(uid="a"), Protein(uid="b"), *[i for i in range(5)])
 
+
 @pytest.mark.parametrize("n", [0, 1, 2, 3, 4, 5, 6])
 def test_mod_score_tupler(n):
     with pytest.raises(TypeError):
@@ -31,7 +32,7 @@ def test_mod_score_tupler(n):
 
 def test_create_tuple_type():
     a = create_mod_score_tupler()
-    assert isinstance(a,_mod_score_tupler)
+    assert isinstance(a, _mod_score_tupler)
 
 
 def test_create_tuple_fields():
@@ -52,6 +53,7 @@ def test_create_tuple_repr():
     assert a.__repr__() == (
         "_mod_score_tupler(query=Protein(uid='a'), target=Protein(uid='b'), query_n_domains=0, target_n_domains=1, levenshtein=2, jaccard=3, mod_score=4)"
     )
+
 
 def test_create_tuple_dict():
     a = create_mod_score_tupler()

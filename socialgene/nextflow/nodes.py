@@ -108,6 +108,7 @@ class NUCLEOTIDE(Node):
 
 class PROTEIN(Node):
     """Represents a non-redundant protein"""
+
     neo4j_label = ["protein"]
     description = "Represents a non-redundant protein"
     header_filename = "protein_ids.header"
@@ -115,6 +116,7 @@ class PROTEIN(Node):
     target_extension = "protein_ids"
     constraints_unique = ["uid"]
     required_properties = ["uid"]
+
     def __init__(
         self,
         include_sequences=True,
@@ -124,6 +126,7 @@ class PROTEIN(Node):
             self.header = ["uid:ID(protein)", "crc64", "sequence"]
         else:
             self.header = ["uid:ID(protein)", "crc64"]
+
     property_specification = {"uid": str, "crc64": str, "sequence": str}
 
 

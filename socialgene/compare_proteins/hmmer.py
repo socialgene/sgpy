@@ -4,7 +4,7 @@ from multiprocessing import Pool
 import pandas as pd
 
 from socialgene.compare_proteins.base import HMMDataFrame
-from socialgene.compare_proteins.hmm_scoring import  mod_score
+from socialgene.compare_proteins.hmm_scoring import mod_score
 
 
 def picklable_modscore(p1, p2):

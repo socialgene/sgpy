@@ -5,7 +5,6 @@ from socialgene.search.hmmer import SearchDomains
 from socialgene.utils.logging import log
 
 
-
 def search_bgc(
     input,
     hmm_dir: str = None,
@@ -26,22 +25,21 @@ def search_bgc(
     run_async: bool = True,
     analyze_with: str = "blastp",
     outpath_clinker: str = None,
-    blast_speed: str = 'fast',
+    blast_speed: str = "fast",
     blast_threads: int = 1,
     adaptive_padding: bool = True,
 ):
     log.info(f"Running search with args: {locals()}")
 
     match blast_speed:
-        case 'fast':
+        case "fast":
             blastarg = "--fast"
-        case 'sensitive':
+        case "sensitive":
             blastarg = "--sensitive"
-        case 'ultra-sensitive':
+        case "ultra-sensitive":
             blastarg = "--ultra-sensitive"
         case _:
             raise ValueError(f"Invalid blast speed: {blast_speed}")
-
 
     search_object = SearchDomains(
         input=input,
@@ -52,7 +50,7 @@ def search_bgc(
         gene_clusters_must_have_x_matches=gene_clusters_must_have_x_matches,
         break_bgc_on_gap_of=break_bgc_on_gap_of,
         target_bgc_padding=target_bgc_padding,
-        adaptive_padding=adaptive_padding
+        adaptive_padding=adaptive_padding,
     )
     search_object.outdegree_table
     search_object.prioritize_input_proteins(
@@ -103,9 +101,9 @@ def search_bgc(
 
     # Find RBH between input BGC and putative BGCs
     if analyze_with == "blastp":
-        argstring=f"{blastarg} --max-hsps 1"
+        argstring = f"{blastarg} --max-hsps 1"
     else:
-        argstring=""
+        argstring = ""
     search_object._create_links(
         tool=analyze_with, argstring=argstring, threads=blast_threads
     )
@@ -120,12 +118,17 @@ def search_bgc(
         gene_clusters_must_have_x_matches = gene_clusters_must_have_x_matches / len(
             search_object.input_bgc.proteins
         )
-    for group,df in search_object.link_df.groupby("target_gene_cluster"):
-        minstart = df.target_feature.apply(lambda x: x.start).min() - search_object.target_bgc_padding
+    for group, df in search_object.link_df.groupby("target_gene_cluster"):
+        minstart = (
+            df.target_feature.apply(lambda x: x.start).min()
+            - search_object.target_bgc_padding
+        )
         group.features = {i for i in group.features if i.start > minstart}
-        maxend = df.target_feature.apply(lambda x: x.end).max() + search_object.target_bgc_padding
+        maxend = (
+            df.target_feature.apply(lambda x: x.end).max()
+            + search_object.target_bgc_padding
+        )
         group.features = {i for i in group.features if i.end < maxend}
-
 
     assemblies = search_object._rank_order_bgcs(
         threshold=gene_clusters_must_have_x_matches
@@ -147,5 +150,3 @@ def search_bgc(
     )
     z.write(outpath_clinker)
     return search_object
-
-

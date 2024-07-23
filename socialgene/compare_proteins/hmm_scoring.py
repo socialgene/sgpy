@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 from textdistance import jaccard, levenshtein
 
 from socialgene.base.molbio import Protein
@@ -19,15 +17,35 @@ from socialgene.base.molbio import Protein
 #     ),
 # )
 
+
 class _mod_score_tupler:
-    __slots__ = ("query", "target", "query_n_domains", "target_n_domains", "levenshtein", "jaccard", "mod_score")
-    def __init__(self, query:str, target:str, query_n_domains:int, target_n_domains:int, levenshtein:int, jaccard:int, mod_score:int):
+    __slots__ = (
+        "query",
+        "target",
+        "query_n_domains",
+        "target_n_domains",
+        "levenshtein",
+        "jaccard",
+        "mod_score",
+    )
+
+    def __init__(
+        self,
+        query: str,
+        target: str,
+        query_n_domains: int,
+        target_n_domains: int,
+        levenshtein: int,
+        jaccard: int,
+        mod_score: int,
+    ):
         for i in self.__slots__:
             setattr(self, i, locals()[i])
         if not isinstance(query, Protein):
             raise TypeError(f"query type: {type(query)}")
         if not isinstance(target, Protein):
             raise TypeError(f"target type: {type(target)}")
+
     def __dict__(self):
         return {
             "query": self.query.uid,
@@ -36,10 +54,12 @@ class _mod_score_tupler:
             "target_n_domains": self.target_n_domains,
             "levenshtein": self.levenshtein,
             "jaccard": self.jaccard,
-            "mod_score": self.mod_score
+            "mod_score": self.mod_score,
         }
+
     def to_dict(self):
         return self.__dict__()
+
     def __repr__(self):
         return f"_mod_score_tupler(query=Protein(uid='{self.query.uid}'), target=Protein(uid='{self.target.uid}'), query_n_domains={self.query_n_domains}, target_n_domains={self.target_n_domains}, levenshtein={self.levenshtein}, jaccard={self.jaccard}, mod_score={self.mod_score})"
 

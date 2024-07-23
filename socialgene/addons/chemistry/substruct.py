@@ -62,11 +62,3 @@
 #                 nodes.update(i[0])
 #                 rels.update(i[1])
 #                 update_progress()
-
-
-
-
-
-
-
-

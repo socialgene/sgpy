@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from typing import Generator
 from uuid import uuid4
 
 from Bio import SeqIO
@@ -7,16 +6,21 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 
-from socialgene.base.locus_metadata import LocusAssemblyMetadata
 import socialgene.hashing.hashing as hasher
+from socialgene.base.locus_metadata import LocusAssemblyMetadata
 from socialgene.config import env_vars
 from socialgene.neo4j.neo4j import GraphDriver
-from socialgene.nextflow.nodes import NUCLEOTIDE as NUCLEOTIDE_NODE, PROTEIN as PROTEIN_NODE, ASSEMBLY as ASSEMBLY_NODE, HMM as HMM_NODE, TAXID as TAXID_NODE
-from socialgene.nextflow.relationships import ASSEMBLES_TO as ASSEMBLES_TO_REL, ENCODES as ENCODES_REL, ANNOTATES as ANNOTATES_REL, IS_TAXON as IS_TAXON_REL
+from socialgene.nextflow.nodes import ASSEMBLY as ASSEMBLY_NODE
+from socialgene.nextflow.nodes import HMM as HMM_NODE
+from socialgene.nextflow.nodes import NUCLEOTIDE as NUCLEOTIDE_NODE
+from socialgene.nextflow.nodes import PROTEIN as PROTEIN_NODE
+from socialgene.nextflow.nodes import TAXID as TAXID_NODE
+from socialgene.nextflow.relationships import ANNOTATES as ANNOTATES_REL
+from socialgene.nextflow.relationships import ASSEMBLES_TO as ASSEMBLES_TO_REL
+from socialgene.nextflow.relationships import ENCODES as ENCODES_REL
+from socialgene.nextflow.relationships import IS_TAXON as IS_TAXON_REL
 from socialgene.utils.logging import log
 from socialgene.utils.simple_math import find_exp
-
-from collections import OrderedDict
 
 
 class ProteinSequence:
@@ -477,23 +481,27 @@ class Protein(
 
     def _neo4j_node(self, include_sequences=True) -> PROTEIN_NODE:
         n = PROTEIN_NODE()
-        dict_to_add = {"uid":self.uid, "crc64":self.crc64}
+        dict_to_add = {"uid": self.uid, "crc64": self.crc64}
         if include_sequences:
             dict_to_add["sequence"] = self.sequence
         n.fill_from_dict(dict_to_add)
         return n
 
     def add_to_neo4j(self, include_sequences=True):
-        n=self._neo4j_node(include_sequences=include_sequences)
+        n = self._neo4j_node(include_sequences=include_sequences)
         n.add_to_neo4j(create=False)
         for i in self.domains:
-            hmmnode=HMM_NODE()
-            hmmnode.fill_from_dict({"uid":i.hmm_id})
+            hmmnode = HMM_NODE()
+            hmmnode.fill_from_dict({"uid": i.hmm_id})
             rel = ANNOTATES_REL(start=hmmnode, end=self._neo4j_node())
-            rel.fill_from_dict({k:v for k,v in i.all_attributes().items() if k in ANNOTATES_REL.property_specification})
+            rel.fill_from_dict(
+                {
+                    k: v
+                    for k, v in i.all_attributes().items()
+                    if k in ANNOTATES_REL.property_specification
+                }
+            )
             rel.add_to_neo4j(create=False)
-
-
 
 
 class Feature(Location):
@@ -743,30 +751,38 @@ class FeatureCollection:
 
     def _neo4j_node(self, **kwargs):
         n = NUCLEOTIDE_NODE()
-        dict_to_add = {"uid":self.uid, "external_id":self.external_id}
+        dict_to_add = {"uid": self.uid, "external_id": self.external_id}
         dict_to_add = dict_to_add | dict(self.metadata.all_attributes())
         n.fill_from_dict(dict_to_add)
         return n
 
     def add_to_neo4j(self):
         # create node
-        n=self._neo4j_node()
+        n = self._neo4j_node()
         n.add_to_neo4j(create=False)
-        protein_nodes=set()
-        encodes_rels=set()
+        protein_nodes = set()
+        encodes_rels = set()
         # connect to proteins
         for i in self.features:
             protein_nodes.add(i.protein._neo4j_node())
-            temp_rel=ENCODES_REL(start=n, end=i.protein._neo4j_node())
-            properties = {k:v for k,v in i.all_attributes().items() if k in ENCODES_REL.property_specification}
-            properties = properties | {"start":i.start, "end":i.end, "strand":i.strand}
+            temp_rel = ENCODES_REL(start=n, end=i.protein._neo4j_node())
+            properties = {
+                k: v
+                for k, v in i.all_attributes().items()
+                if k in ENCODES_REL.property_specification
+            }
+            properties = properties | {
+                "start": i.start,
+                "end": i.end,
+                "strand": i.strand,
+            }
             temp_rel.fill_from_dict(properties)
             encodes_rels.add(temp_rel)
         if protein_nodes:
-            protein_nodes=list(protein_nodes)
+            protein_nodes = list(protein_nodes)
             protein_nodes[0].add_multiple_to_neo4j(protein_nodes, create=False)
         if encodes_rels:
-            encodes_rels=list(encodes_rels)
+            encodes_rels = list(encodes_rels)
             encodes_rels[0].add_multiple_to_neo4j(encodes_rels, create=False)
         # connect to assembly
         assembly_node = self.parent._neo4j_node()
@@ -774,42 +790,44 @@ class FeatureCollection:
         ASSEMBLES_TO_REL(start=n, end=assembly_node).add_to_neo4j(create=False)
 
     def write_genbank(self, outpath, start=float("-inf"), end=float("inf")):
-            record = SeqRecord(
-                Seq(""),
-                id=self.external_id,
-                name=self.external_id,
-                description="A GenBank file generated by SocialGene.",
-                dbxrefs=[f"Assembly:{self.parent.uid}"],
+        record = SeqRecord(
+            Seq(""),
+            id=self.external_id,
+            name=self.external_id,
+            description="A GenBank file generated by SocialGene.",
+            dbxrefs=[f"Assembly:{self.parent.uid}"],
+        )
+        # Add annotation
+        for feature in self.features_sorted_by_midpoint:
+            if start:
+                if int(feature.start) < int(start):
+                    continue
+            if end:
+                if int(feature.end) > int(end):
+                    continue
+            biofeat = SeqFeature(
+                FeatureLocation(
+                    start=feature.start
+                    - 1,  # biopython modifies the start position by 1
+                    end=feature.end,
+                    strand=feature.strand,
+                ),
+                type=feature.type,
+                qualifiers={
+                    k: v
+                    for k, v in feature.all_attributes().items()
+                    if v and k != "parent"
+                }
+                | {"translation": self.protein.sequence},
             )
-            # Add annotation
-            for feature in self.features_sorted_by_midpoint:
-                if start:
-                    if int(feature.start) < int(start):
-                        continue
-                if end:
-                    if int(feature.end) > int(end):
-                        continue
-                biofeat = SeqFeature(
-                    FeatureLocation(
-                        start=feature.start - 1, # biopython modifies the start position by 1
-                        end=feature.end,
-                        strand=feature.strand,
-                    ),
-                    type=feature.type,
-                    qualifiers={
-                        k: v
-                        for k, v in feature.all_attributes().items()
-                        if v and k != "parent"
-                    }
-                    | {"translation": self.protein.sequence},
-                )
-                record.features.append(biofeat)
-            record.annotations["molecule_type"] = "DNA"
-            SeqIO.write(
-                record,
-                outpath,
-                "genbank",
-            )
+            record.features.append(biofeat)
+        record.annotations["molecule_type"] = "DNA"
+        SeqIO.write(
+            record,
+            outpath,
+            "genbank",
+        )
+
 
 class Locus(FeatureCollection):
     """Container holding a set() of genomic features"""
@@ -864,9 +882,9 @@ class Locus(FeatureCollection):
                 if int(feature.end) > int(end):
                     continue
             if feature.type == "protein":
-                feat_type="CDS"
+                feat_type = "CDS"
             else:
-                feat_type=feature.type
+                feat_type = feature.type
             biofeat = SeqFeature(
                 FeatureLocation(
                     start=feature.start - 1,
@@ -921,9 +939,9 @@ class GeneCluster(FeatureCollection):
         # Add annotation
         for feature in self.features:
             if feature.type == "protein":
-                feat_type="CDS"
+                feat_type = "CDS"
             else:
-                feat_type=feature.type
+                feat_type = feature.type
             biofeat = SeqFeature(
                 FeatureLocation(
                     start=feature.start - 1,
@@ -1077,10 +1095,16 @@ class Assembly:
         for v in self.loci.values():
             yield v.fasta_string_defline_external_id
 
-    def _neo4j_node(self,):
+    def _neo4j_node(
+        self,
+    ):
         n = ASSEMBLY_NODE()
-        dict_to_add = {"uid":self.uid}
-        dict_to_add = dict_to_add | {k:v for k,v in self.metadata.all_attributes().items() if k in ASSEMBLY_NODE.property_specification}
+        dict_to_add = {"uid": self.uid}
+        dict_to_add = dict_to_add | {
+            k: v
+            for k, v in self.metadata.all_attributes().items()
+            if k in ASSEMBLY_NODE.property_specification
+        }
         n.fill_from_dict(dict_to_add)
         return n
 
@@ -1089,8 +1113,11 @@ class Assembly:
             i.add_to_neo4j()
         if self.taxid:
             taxnode = TAXID_NODE()
-            taxnode.fill_from_dict({"uid":self.taxid})
-            IS_TAXON_REL(start=self._neo4j_node(), end=taxnode).add_to_neo4j(create=False)
+            taxnode.fill_from_dict({"uid": self.taxid})
+            IS_TAXON_REL(start=self._neo4j_node(), end=taxnode).add_to_neo4j(
+                create=False
+            )
+
 
 class Molbio:
     """Class for inheriting by SocialGene()"""

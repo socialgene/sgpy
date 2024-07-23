@@ -115,7 +115,11 @@ class DiamondBlastp(BlastTab):
                 )
 
     def compare_proteins(
-        self, queries, targets, threads=1, argstring="--fast --no-self-hits --max-hsps 1"
+        self,
+        queries,
+        targets,
+        threads=1,
+        argstring="--fast --no-self-hits --max-hsps 1",
     ):
         # loop through protein list and write to temporary fasta file
         if isinstance(queries, Protein):

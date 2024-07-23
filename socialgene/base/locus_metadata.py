@@ -1,6 +1,7 @@
-
 from collections import OrderedDict
+
 from socialgene.utils.logging import log
+
 
 class LocusAssemblyMetadata:
     # fmt: off

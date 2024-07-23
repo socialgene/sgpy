@@ -83,11 +83,9 @@ class ChemicalSubstructure(ChemicalCompoundNode):
     }
     constraints_unique = ["inchi", "CanonicalSmiles"]
 
+
 class ContainsSubstructure(Relationship):
     neo4j_label = "SUBSTRUCTURE"
     description = "Connects a chemical compound to a chemical substructure"
     start_class = ChemicalCompoundNode
     end_class = ChemicalSubstructure
-
-
-

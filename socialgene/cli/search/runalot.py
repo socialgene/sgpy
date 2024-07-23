@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 
 import pickle
-from pathlib import Path
-from socialgene.cli.search.sea import search_bgc
-from socialgene.config import env_vars
 import sys
+from pathlib import Path
 
-
-
+from socialgene.cli.search.sea import search_bgc
 
 
 def run_individual_search(gbk_path):
     outpath_clinker = Path(
         "/media/socialgene_nvme/culture_search_results/jsons", gbk_path.stem + ".json"
     )
-    if not outpath_clinker.exists() and not Path(
-                    "/media/socialgene_nvme/culture_search_results/errors",
-                    gbk_path.stem + ".error",
-                ).exists():
+    if (
+        not outpath_clinker.exists()
+        and not Path(
+            "/media/socialgene_nvme/culture_search_results/errors",
+            gbk_path.stem + ".error",
+        ).exists()
+    ):
         try:
             a = search_bgc(
                 input=gbk_path,
@@ -39,7 +39,7 @@ def run_individual_search(gbk_path):
                 frac=0.75,
                 run_async=True,
                 analyze_with="blastp",
-                blast_speed='ultra-sensitive',
+                blast_speed="ultra-sensitive",
             )
             with open(
                 Path(
@@ -58,6 +58,7 @@ def run_individual_search(gbk_path):
                 "w",
             ) as handle:
                 handle.write(str(e))
+
 
 if __name__ == "__main__":
     # run run_individual_search() using a command line input as the gbk_path

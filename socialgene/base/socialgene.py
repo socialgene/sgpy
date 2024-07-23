@@ -224,7 +224,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
 
     def get_proteins_from_neo4j(self):
         try:
-            ncount=0
+            ncount = 0
             with GraphDriver() as db:
                 for i in db.run(
                     """
@@ -232,12 +232,11 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     RETURN p1.uid as uid
                     """,
                 ):
-                    _=self.add_protein(uid=i["uid"])
-                    ncount+=1
+                    _ = self.add_protein(uid=i["uid"])
+                    ncount += 1
             log.info(f"Retrieved {ncount} proteins from Neo4j")
         except Exception:
             log.debug("Error trying to retrieve proteins from Neo4j")
-
 
     def add_sequences_from_neo4j(self):
         try:

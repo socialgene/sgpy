@@ -3,7 +3,6 @@ from pathlib import Path
 
 from socialgene.cli.search.sea import search_bgc
 
-
 parser = argparse.ArgumentParser(
     description="Search a SocialGene database for gene clusters similar to an input gene cluster"
 )

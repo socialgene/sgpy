@@ -3,10 +3,10 @@ import argparse
 from socialgene.dbmodifiers.massage.massage import (
     add_antismash_regions_as_edges,
     add_antismash_regions_as_nodes,
-    delete_antismash_regions_as_nodes,
     add_protein_descriptions,
     add_taxonomic_name_to_assembly,
     culture_collections_as_nodes_rels,
+    delete_antismash_regions_as_nodes,
     fix_mibig_taxonomy,
     set_mibig_bgc,
 )

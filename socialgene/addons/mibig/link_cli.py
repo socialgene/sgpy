@@ -5,7 +5,6 @@ from socialgene.cli.search.sea import search_bgc
 from socialgene.neo4j.neo4j import GraphDriver
 from socialgene.utils.logging import log
 
-
 if __name__ == "__main__":
 
     with GraphDriver() as db:
@@ -16,7 +15,6 @@ if __name__ == "__main__":
             RETURN n.uid as uid
             """,
         ).value()
-
 
     counter = 0
     threshold = 0.7
@@ -58,7 +56,9 @@ if __name__ == "__main__":
         temp["nuc"] = temp["query_gene_cluster_x"].apply(lambda x: x.parent.uid)
         # get best hit per nuc sequence
         temp = temp.groupby("nuc").head(1).reset_index(drop=True)
-        temp = temp[["query_gene_cluster_x", "jaccard", "levenshtein", "modscore", "score"]]
+        temp = temp[
+            ["query_gene_cluster_x", "jaccard", "levenshtein", "modscore", "score"]
+        ]
         temp = temp[temp["jaccard"] > threshold]
         temp["start"] = temp["query_gene_cluster_x"].apply(
             lambda x: min(i.start for i in x.features)

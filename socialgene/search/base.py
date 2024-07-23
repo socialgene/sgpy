@@ -1,8 +1,8 @@
 import time
+import uuid
 from abc import ABC, abstractmethod
 from math import ceil
 from pathlib import Path
-import uuid
 
 import numpy as np
 import pandas as pd
@@ -33,17 +33,22 @@ progress_bar = Progress(
 
 
 class BgcComp2:
-    def __init__(self,
-                levenshtein_include_internal_nonortholog,
-                levenshtein_only_orthologs,
-                percent_of_query,
-                jaccard,
-                modscore):
-        self.levenshtein_include_internal_nonortholog = levenshtein_include_internal_nonortholog
+    def __init__(
+        self,
+        levenshtein_include_internal_nonortholog,
+        levenshtein_only_orthologs,
+        percent_of_query,
+        jaccard,
+        modscore,
+    ):
+        self.levenshtein_include_internal_nonortholog = (
+            levenshtein_include_internal_nonortholog
+        )
         self.levenshtein_only_orthologs = levenshtein_only_orthologs
         self.percent_of_query = percent_of_query
         self.jaccard = jaccard
         self.modscore = modscore
+
 
 def truncate_string(str_input, max_length):
     str_end = ".."
@@ -139,7 +144,9 @@ class SearchBase(ABC):
             raise ValueError("Must provide either sg_object or gbk_path")
 
         if adaptive_padding:
-            input_len = max(i.end for i in self.input_bgc.features) - min(i.start for i in self.input_bgc.features)
+            input_len = max(i.end for i in self.input_bgc.features) - min(
+                i.start for i in self.input_bgc.features
+            )
             input_len += 500
             if input_len > self.target_bgc_padding:
                 log.error(f"Adaptive padding: {input_len}")
@@ -243,9 +250,18 @@ class SearchBase(ABC):
             log.warning(e)
 
     def _compare_two_gene_clusters(self, df):
-        target_cluster_min_start = df.target_feature.dropna().apply(lambda x: x.start).min()
+        target_cluster_min_start = (
+            df.target_feature.dropna().apply(lambda x: x.start).min()
+        )
         target_cluster_max_end = df.target_feature.dropna().apply(lambda x: x.end).max()
-        non_orthologs = [i for i in df.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start > target_cluster_min_start and i.end < target_cluster_max_end and i not in df.target_feature.to_list()]
+        non_orthologs = [
+            i
+            for i in df.target_gene_cluster.dropna().iloc[0].features
+            if i.feature_is_protein()
+            and i.start > target_cluster_min_start
+            and i.end < target_cluster_max_end
+            and i not in df.target_feature.to_list()
+        ]
         # add the non-orthologs to the df dataframe as new rows with the same columns and a random uuid as the query
         non_ortholog_df = pd.DataFrame(
             [
@@ -261,36 +277,73 @@ class SearchBase(ABC):
             ]
         )
         if not non_ortholog_df.empty:
-            non_ortholog_df['query'] = non_ortholog_df['target']
+            non_ortholog_df["query"] = non_ortholog_df["target"]
             full_t_obj = pd.concat([df, non_ortholog_df], ignore_index=True)
         else:
             full_t_obj = df
         levenshtein_include_internal_nonortholog_for = levenshtein(
-                    list(full_t_obj.dropna(subset="target_feature").sort_values(["t_start"], ascending=True)["query"]),
-                    list(full_t_obj.dropna(subset="query_feature").sort_values(["q_start"], ascending=True)["query"]),
-                ) / len(full_t_obj)
+            list(
+                full_t_obj.dropna(subset="target_feature").sort_values(
+                    ["t_start"], ascending=True
+                )["query"]
+            ),
+            list(
+                full_t_obj.dropna(subset="query_feature").sort_values(
+                    ["q_start"], ascending=True
+                )["query"]
+            ),
+        ) / len(full_t_obj)
         levenshtein_include_internal_nonortholog_rev = levenshtein(
-                    list(full_t_obj.dropna(subset="target_feature").sort_values(["t_start"], ascending=True)["query"]),
-                    list(full_t_obj.dropna(subset="query_feature").sort_values(["q_start"], ascending=False)["query"]),
-                ) / len(full_t_obj)
+            list(
+                full_t_obj.dropna(subset="target_feature").sort_values(
+                    ["t_start"], ascending=True
+                )["query"]
+            ),
+            list(
+                full_t_obj.dropna(subset="query_feature").sort_values(
+                    ["q_start"], ascending=False
+                )["query"]
+            ),
+        ) / len(full_t_obj)
         levenshtein_only_orthologs_for = levenshtein(
-                    list(df.dropna().sort_values(["t_start"], ascending=True)["query"]),
-                    list(df.dropna().sort_values(["q_start"], ascending=True)["query"]),
-                ) / len(df.dropna())
+            list(df.dropna().sort_values(["t_start"], ascending=True)["query"]),
+            list(df.dropna().sort_values(["q_start"], ascending=True)["query"]),
+        ) / len(df.dropna())
         levenshtein_only_orthologs_rev = levenshtein(
-                    list(df.dropna().sort_values(["t_start"], ascending=True)["query"]),
-                    list(df.dropna().sort_values(["q_start"], ascending=False)["query"]),
-                ) / len(df.dropna())
+            list(df.dropna().sort_values(["t_start"], ascending=True)["query"]),
+            list(df.dropna().sort_values(["q_start"], ascending=False)["query"]),
+        ) / len(df.dropna())
 
-        levenshtein_include_internal_nonortholog = 1 - min(levenshtein_include_internal_nonortholog_for,levenshtein_include_internal_nonortholog_rev)
-        levenshtein_only_orthologs = 1 - min(levenshtein_only_orthologs_for,levenshtein_only_orthologs_rev)
+        levenshtein_include_internal_nonortholog = 1 - min(
+            levenshtein_include_internal_nonortholog_for,
+            levenshtein_include_internal_nonortholog_rev,
+        )
+        levenshtein_only_orthologs = 1 - min(
+            levenshtein_only_orthologs_for, levenshtein_only_orthologs_rev
+        )
         # percent_of_query = how many query proteins were seen / total query proteins * 100
-        percent_of_query = df.dropna().query_feature.nunique() / len(df[~df.query_gene_cluster.isna()].query_gene_cluster.iloc[0].features)  * 100
+        percent_of_query = (
+            df.dropna().query_feature.nunique()
+            / len(df[~df.query_gene_cluster.isna()].query_gene_cluster.iloc[0].features)
+            * 100
+        )
         percent_of_query = int(round(percent_of_query, 0))
-        query_len =  len(df[~df.query_gene_cluster.isna()].query_gene_cluster.iloc[0].features)
+        query_len = len(
+            df[~df.query_gene_cluster.isna()].query_gene_cluster.iloc[0].features
+        )
         # this is more complicated than just retrieving all the target proteins because any proteins in the added window must be removed first
-        target_len = len([i for i in df.target_gene_cluster.dropna().iloc[0].features if i.feature_is_protein() and i.start >= target_cluster_min_start and i.end <= target_cluster_max_end])
-        intersection = df.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
+        target_len = len(
+            [
+                i
+                for i in df.target_gene_cluster.dropna().iloc[0].features
+                if i.feature_is_protein()
+                and i.start >= target_cluster_min_start
+                and i.end <= target_cluster_max_end
+            ]
+        )
+        intersection = (
+            df.groupby("target_gene_cluster")["query_feature"].nunique().iloc[0]
+        )
         jac = intersection / (query_len + target_len - intersection)
         modscore = (jac * 2) + levenshtein_include_internal_nonortholog
         return self._compare_two_gene_clusters_score(

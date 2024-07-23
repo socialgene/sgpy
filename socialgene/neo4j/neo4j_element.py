@@ -167,7 +167,9 @@ class Node(Neo4jElement):
             )
 
     def __hash__(self):
-        return hash((frozenset(self.neo4j_label), frozenset(self.santized_properties.items())))
+        return hash(
+            (frozenset(self.neo4j_label), frozenset(self.santized_properties.items()))
+        )
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -322,22 +324,23 @@ class Node(Neo4jElement):
         else:
             add_label_str = ""
         with GraphDriver() as db:
-                res = db.run(
-                    f"""
+            res = db.run(
+                f"""
                     WITH $paramsdict as paramsdict
                     WITH paramsdict.optional_props as optional_props, paramsdict.required_props as required_props
                     MATCH {merge_str}
                     SET n += optional_props
                     {add_label_str}
                     """,
-                    paramsdict=paramsdict,
-                ).consume()
-                try:
-                    log.info(
-                        f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties"
-                    )
-                except Exception:
-                    pass
+                paramsdict=paramsdict,
+            ).consume()
+            try:
+                log.info(
+                    f"Created {res.counters.nodes_created} {self.__str__()} nodes, set {res.counters.properties_set} properties"
+                )
+            except Exception:
+                pass
+
     @staticmethod
     def update_properties_many(list_of_nodes, batch_size=1000):
         """Update the properties of a node"""
@@ -387,7 +390,6 @@ class Node(Neo4jElement):
         log.info(
             f"Created {count_res['nodes_created']} {single.__str__()} nodes, set {count_res['properties_set']} properties"
         )
-
 
     @staticmethod
     def add_multiple_to_neo4j(list_of_nodes, batch_size=1000, create=False):

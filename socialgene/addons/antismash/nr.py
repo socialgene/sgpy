@@ -1,8 +1,4 @@
 from socialgene.neo4j.neo4j_element import Node, Relationship
-from socialgene.nextflow.nodes import NUCLEOTIDE
-
-
-
 
 
 class Product(Node):
@@ -22,6 +18,7 @@ class Category(Node):
     }
     constraints_unique = ["uid"]
 
+
 class ProductToCategory(Relationship):
     neo4j_label = "IS_A"
     description = "Connects an antiSMASH product to category "
@@ -36,9 +33,8 @@ class GeneClusterToProduct(Relationship):
     end_class = Category
     property_specification = {
         "tool": str,
-        "start":int,
-        "end":int,
-        "core_start":int,
-        "core_end":int,
+        "start": int,
+        "end": int,
+        "core_start": int,
+        "core_end": int,
     }
-
