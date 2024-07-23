@@ -14,7 +14,6 @@ parser.add_argument(
 
 parser.add_argument(
     "--sg_modules",
-    metavar="socialgene module list",
     help="List of relationship labels to not create arguments for; e.g. to add mmseqs: base,mmseqs2 ",
     required=True,
     default="base",

@@ -10,7 +10,6 @@ from socialgene.utils.logging import log
 parser = argparse.ArgumentParser(description="Parse NcbiAssembliessdsd taxonomy")
 parser.add_argument(
     "--input_dir",
-    metavar="input filepath",
     type=Path,
     help="input directory filepath",
     required=True,

@@ -113,7 +113,6 @@ parser.add_argument(
 parser.add_argument(
     "--taxa",
     nargs="+",
-    metavar="N",
     type=str,
     help="Adds taxon as a node property of the given rank for each assembly (eg: genus family)",
     required=False,
