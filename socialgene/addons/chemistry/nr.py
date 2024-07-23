@@ -31,7 +31,6 @@ class ChemicalCompoundNode(Node):
         "MolMR": float,
         "AnonymousGraph": str,
         "ElementGraph": str,
-        "CanonicalSmiles": str,
         "MurckoScaffold": str,
         "ExtendedMurcko": str,
         "MolFormula": str,
@@ -50,7 +49,7 @@ class ChemicalCompoundNode(Node):
         "inchi": str,
         "CanonicalSmiles": str,
     }
-    constraints_unique = ["inchi", "CanonicalSmiles"]
+    constraints_unique = ["inchi"]
 
 
 class TanimotoSimilarity(Relationship):
@@ -74,29 +73,19 @@ class McsSimilarity(Relationship):
 
 
 class ChemicalSubstructure(ChemicalCompoundNode):
-    neo4j_label = ChemicalCompoundNode.neo4j_label + ["substructure"]
+    neo4j_label = ["substructure"]
     description = "Represents a chemical substructure"
-
-
-class ChemicalFragment(Node):
-    neo4j_label = ["chemical_fragment"]
-    description = "Represents a chemical fragment as defined by rdkit.Chem.Descriptors"
-    required_properties = ["uid"]
-    properties = {
+    required_properties = ["inchi", "CanonicalSmiles"]
+    property_specification = {
         "uid": str,
+        "inchi": str,
+        "CanonicalSmiles": str,
     }
-    constraints_unique = ["uid"]
-
-
-class ContainsFragment(Relationship):
-    neo4j_label = "CONTAINS"
-    description = "Connects a chemical compound to a chemical fragment"
-    start_class = ChemicalCompoundNode
-    end_class = ChemicalFragment
+    constraints_unique = ["inchi", "CanonicalSmiles"]
 
 
 class ContainsSubstructure(Relationship):
-    neo4j_label = "CONTAINS"
+    neo4j_label = "SUBSTRUCTURE"
     description = "Connects a chemical compound to a chemical substructure"
     start_class = ChemicalCompoundNode
     end_class = ChemicalSubstructure

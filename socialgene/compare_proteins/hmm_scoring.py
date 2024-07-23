@@ -1,14 +1,25 @@
-from collections import namedtuple
-
 from textdistance import jaccard, levenshtein
 
 from socialgene.base.molbio import Protein
 
 # Note: there is technically no query/target as the comparison methods are order-independent
 # this is just to keep things consistent between tools
-_mod_score_tupler = namedtuple(
-    "protein_comparison_modscore",
-    (
+# _mod_score_tupler = namedtuple(
+#     "protein_comparison_modscore",
+#     (
+#         "query",
+#         "target",
+#         "query_n_domains",
+#         "target_n_domains",
+#         "levenshtein",
+#         "jaccard",
+#         "mod_score",
+#     ),
+# )
+
+
+class _mod_score_tupler:
+    __slots__ = (
         "query",
         "target",
         "query_n_domains",
@@ -16,8 +27,41 @@ _mod_score_tupler = namedtuple(
         "levenshtein",
         "jaccard",
         "mod_score",
-    ),
-)
+    )
+
+    def __init__(
+        self,
+        query: str,
+        target: str,
+        query_n_domains: int,
+        target_n_domains: int,
+        levenshtein: int,
+        jaccard: int,
+        mod_score: int,
+    ):
+        for i in self.__slots__:
+            setattr(self, i, locals()[i])
+        if not isinstance(query, Protein):
+            raise TypeError(f"query type: {type(query)}")
+        if not isinstance(target, Protein):
+            raise TypeError(f"target type: {type(target)}")
+
+    def __dict__(self):
+        return {
+            "query": self.query.uid,
+            "target": self.target.uid,
+            "query_n_domains": self.query_n_domains,
+            "target_n_domains": self.target_n_domains,
+            "levenshtein": self.levenshtein,
+            "jaccard": self.jaccard,
+            "mod_score": self.mod_score,
+        }
+
+    def to_dict(self):
+        return self.__dict__()
+
+    def __repr__(self):
+        return f"_mod_score_tupler(query=Protein(uid='{self.query.uid}'), target=Protein(uid='{self.target.uid}'), query_n_domains={self.query_n_domains}, target_n_domains={self.target_n_domains}, levenshtein={self.levenshtein}, jaccard={self.jaccard}, mod_score={self.mod_score})"
 
 
 def mod_score(p1, p2):
@@ -41,7 +85,7 @@ def mod_score(p1, p2):
             p2,
             length_input_list_1,
             length_input_list_2,
-            round(0, 2),
+            round(1, 2),
             round(1, 2),
             round(1.5, 2),
         )
@@ -53,7 +97,7 @@ def mod_score(p1, p2):
             p2,
             length_input_list_1,
             length_input_list_2,
-            round(100, 2),
+            round(0, 2),
             round(0, 2),
             round(0, 2),
         )
@@ -66,7 +110,7 @@ def mod_score(p1, p2):
     # change levenshtein so 0=worst, 1 = best
     max_edit = max(length_input_list_1, length_input_list_2)
     if max_edit == 0:
-        # Neither protein had HMMs
+        # Neither protein had HMMs (case is actually handled above (if not p1.domains or not p2.domains:))
         mod_score_value = 0
         mod_levenshtein_score = 0
     elif length_input_list_1 == 0 or length_input_list_2 == 0:

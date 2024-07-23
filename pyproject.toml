@@ -26,14 +26,14 @@ classifiers = [  #! Update me
   "Programming Language :: Python :: 3",
 ]
 dependencies = [
-        "rdkit==2023.9.4",
+        "rdkit==2024.3.3",
         "pandas>=2.2",
-        "numpy>=1.26",
-        "neo4j>=5.17.0",
-        "biopython>=1.83",
-        "textdistance>=4.6.1",
-        "rich",
-        "requests"
+        "numpy>=1.26", # rdkit requires <2.0
+        "neo4j>=5.22.0",
+        "biopython>=1.84",
+        "textdistance>=4.6.3",
+        "rich>=13.7.1",
+        "requests>=2.32.3"
 ]
 
 [project.license]

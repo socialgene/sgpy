@@ -4,7 +4,7 @@ from multiprocessing import Pool
 import pandas as pd
 
 from socialgene.compare_proteins.base import HMMDataFrame
-from socialgene.compare_proteins.hmm_scoring import _mod_score_tupler, mod_score
+from socialgene.compare_proteins.hmm_scoring import mod_score
 
 
 def picklable_modscore(p1, p2):
@@ -35,8 +35,7 @@ class CompareDomains(HMMDataFrame):
         ).drop_duplicates(subset=["query", "target"])
 
     def compare_one_to_one(self, p1, p2):
-        protein_comparisons = set()
-        return self.protein_comparisons_df(protein_comparisons)
+        return mod_score(p1, p2)
 
     def compare_one_to_many(self, p1_obj, p2_obj_list, filter_non_hits=True):
         for i in p2_obj_list:
@@ -60,9 +59,8 @@ class CompareDomains(HMMDataFrame):
         # have to use _calculate_mod_score_not_named because named tuple can't pickle "protein_comparison_modscore"
         with Pool(cpus) as p:
             for i in p.starmap(
-                picklable_modscore,
+                mod_score,
                 combinations(p1_obj_list, 2),
             ):
-                if not only_hits or i["jaccard"] > 0.001:
-                    temp = _mod_score_tupler(**i)
-                    yield temp
+                if not only_hits or i.jaccard > 0.001:
+                    yield i

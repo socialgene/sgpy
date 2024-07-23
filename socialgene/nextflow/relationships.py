@@ -29,6 +29,21 @@ class ANNOTATES(Relationship):
         "ali_to:Long",
         "exponentialized:Boolean",
     ]
+    property_specification = {
+        "env_from": float,
+        "env_to": float,
+        "seq_pro_score": float,
+        "evalue": float,
+        "i_evalue": float,
+        "domain_bias": float,
+        "domain_score": float,
+        "seq_pro_bias": float,
+        "hmm_from": float,
+        "hmm_to": float,
+        "ali_from": float,
+        "ali_to": float,
+        "exponentialized": bool,
+    }
     start_class = Nodes.HMM
     end_class = Nodes.PROTEIN
 
@@ -76,6 +91,24 @@ class ENCODES(Relationship):
         "too_short_partial_abutting_assembly_gap:Boolean",
         "incomplete:Boolean",
     ]
+    property_specification = {
+        "external_id": str,
+        "locus_tag": str,
+        "start": int,
+        "end": int,
+        "strand": int,
+        "description": str,
+        "partial_on_complete_genome": bool,
+        "missing_start": bool,
+        "missing_stop": bool,
+        "internal_stop": bool,
+        "partial_in_the_middle_of_a_contig": bool,
+        "missing_N_terminus": bool,
+        "missing_C_terminus": bool,
+        "frameshifted": bool,
+        "too_short_partial_abutting_assembly_gap": bool,
+        "incomplete": bool,
+    }
     start_class = Nodes.NUCLEOTIDE
     end_class = Nodes.PROTEIN
 

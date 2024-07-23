@@ -433,6 +433,8 @@ class SearchDomains(SearchBase, CompareDomains):
         """Choose a random subset of proteins to search that are spread across the length of the input BGC."""
         log.info("Choosing query proteins that span across the input BGC")
         temp = list(self.input_bgc.features_sorted_by_midpoint)
+        if max_query_proteins > len(temp):
+            max_query_proteins = len(temp)
         temp = [
             temp[int(ceil(i * len(temp) / max_query_proteins))].uid
             for i in range(max_query_proteins)
@@ -488,6 +490,11 @@ class SearchDomains(SearchBase, CompareDomains):
         bypass_df = self.outdegree_df[
             self.outdegree_df["protein_uid"].isin(loci_protein_ids)
         ]
+        bypass_df = (
+            bypass_df.sort_values("outdegree", ascending=True, ignore_index=True)
+            .groupby("protein_uid", observed=True)
+            .head(max_domains_per_protein)
+        )
         len_start = self.outdegree_df["outdegree"].sum()
         if self.outdegree_df["outdegree"].sum() == 0:
             raise ValueError(
@@ -508,6 +515,14 @@ class SearchDomains(SearchBase, CompareDomains):
         self._filter_max_domains_per_protein(max_domains_per_protein)
 
         if max_query_proteins and not scatter:
+            # Make sure max_query_proteins accounts for bypassed proteins
+            if bypass_df.protein_uid.nunique() > 0:
+                log.warning(bypass_df)
+                max_query_proteins = (
+                    max_query_proteins - bypass_df.protein_uid.nunique()
+                )
+                if max_query_proteins < 0:
+                    max_query_proteins = 0
             self._filter_max_query_proteins(max_query_proteins)
 
         # Add back explicitly requested input proteins/loci

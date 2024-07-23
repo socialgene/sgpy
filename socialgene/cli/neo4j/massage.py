@@ -6,6 +6,7 @@ from socialgene.dbmodifiers.massage.massage import (
     add_protein_descriptions,
     add_taxonomic_name_to_assembly,
     culture_collections_as_nodes_rels,
+    delete_antismash_regions_as_nodes,
     fix_mibig_taxonomy,
     set_mibig_bgc,
 )
@@ -74,6 +75,13 @@ parser.add_argument(
     action=argparse.BooleanOptionalAction,
 )
 parser.add_argument(
+    "--delete_antismash_regions_as_nodes",
+    help="",
+    default=False,
+    required=False,
+    action=argparse.BooleanOptionalAction,
+)
+parser.add_argument(
     "--protein_descriptions",
     help="",
     default=False,
@@ -105,7 +113,6 @@ parser.add_argument(
 parser.add_argument(
     "--taxa",
     nargs="+",
-    metavar="N",
     type=str,
     help="Adds taxon as a node property of the given rank for each assembly (eg: genus family)",
     required=False,
@@ -124,6 +131,8 @@ def main():
         add_antismash_regions_as_edges()
     if args.antismash_as_nodes:
         add_antismash_regions_as_nodes()
+    if args.delete_antismash_regions_as_nodes:
+        delete_antismash_regions_as_nodes()
     if args.protein_descriptions:
         add_protein_descriptions()
     if args.fix_mibig_taxonomy:

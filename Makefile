@@ -56,7 +56,7 @@ install:
 
 ## pytest	:	Run Python pacakge unit tests
 pytest: clean install
-	pytest tests -v --ignore=socialgene/entrypoints/export_protein_loci_assembly_tables.py 	 --cov=./socialgene --cov-report=xml:./coverage.xml --cov-report html
+	pytest tests/python -v --ignore=socialgene/entrypoints/export_protein_loci_assembly_tables.py 	 --cov=./socialgene --cov-report=xml:./coverage.xml --cov-report html tests/python
 	xdg-open htmlcov/index.html
 
 ## pytestnf :	Run Nextflow pytest tests (first runs clean, install python and  nextflow test run)

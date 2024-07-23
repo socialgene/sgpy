@@ -115,7 +115,6 @@ def test_AltRel():
 
 def test_parse():
     with tempfile.TemporaryDirectory() as tmpdirname:
-        print(tmpdirname)
         parse(
             outdir=tmpdirname,
             filepath=gofile,

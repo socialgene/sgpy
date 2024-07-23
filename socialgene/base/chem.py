@@ -33,13 +33,13 @@ def morgan_fingerprint(rdkitmol, radius=2, nBits=2048):
 
 
 class ChemicalCompound:
-    def __init__(self, compound, **kwargs):
+    def __init__(self, compound, sanitize=True, **kwargs):
         self.mol = None
-        self.parse_compound(compound)
+        self.parse_compound(compound, sanitize=sanitize)
         self.morgan = morgan_fingerprint(self.mol, **kwargs)
         self.inchi = Chem.MolToInchi(self.mol)
 
-    def parse_compound(self, input):
+    def parse_compound(self, input, sanitize=True):
         if isinstance(input, Chem.rdchem.Mol):
             self.mol = input
         elif isinstance(input, str):
@@ -47,7 +47,7 @@ class ChemicalCompound:
             for method in method_list:
                 log.debug(f"Trying to parse compound with {method.__name__}")
                 try:
-                    temp = method(input, sanitize=True)
+                    temp = method(input, sanitize=sanitize)
                     if isinstance(temp, Chem.rdchem.Mol):
                         self.mol = temp
                         log.debug(
