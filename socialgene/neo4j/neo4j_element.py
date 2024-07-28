@@ -165,6 +165,8 @@ class Node(Neo4jElement):
             raise ValueError(
                 f"property_specification must be defined for class {self.__class__.__name__}"
             )
+        if isinstance(self.neo4j_label, str):
+            self.neo4j_label = [self.neo4j_label]
 
     def __hash__(self):
         return hash(
