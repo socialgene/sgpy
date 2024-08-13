@@ -1,10 +1,16 @@
 # parse gff file into socialgene object
+import re
+import zlib
+from collections import Counter
+from io import StringIO
 from pathlib import Path
+from typing import Dict, List
+from uuid import uuid4
 
-from Bio import SeqIO
+from Bio import Seq, SeqIO
 
 import socialgene.utils.file_handling as fh
-
+from socialgene.utils.logging import log
 
 class GFFParserMixin:
     def __init__(self):
@@ -32,6 +38,8 @@ class GFFParserMixin:
                 raise ValueError("No sequences found in FASTA section")
         return fasta_dict
 
+
+
     def parse_gff_file(self, input_path: str, keep_sequence: bool = True):
         # name of file without extension
         assembly_uid = Path(input_path).name
@@ -47,17 +55,7 @@ class GFFParserMixin:
                 parts = line.strip().split("\t")
                 if len(parts) != 9:
                     continue
-                (
-                    seq_id,
-                    source,
-                    feature_type,
-                    start,
-                    end,
-                    score,
-                    strand,
-                    phase,
-                    attributes,
-                ) = parts
+                seq_id, source, feature_type, start, end, score, strand, phase, attributes = parts
                 if feature_type not in ["protein", "CDS", "pseudogene"]:
                     continue
                 # get the translated sequence using biopython's translate after extracting the sequence
@@ -73,7 +71,7 @@ class GFFParserMixin:
                     return_uid=True,
                 )
                 if not keep_sequence:
-                    self.proteins[uid].sequence = None
+                        self.proteins[uid].sequence = None
                 if strand == "-":
                     strand = -1
                 elif strand == "+":
@@ -89,4 +87,5 @@ class GFFParserMixin:
                     start=int(start),
                     end=int(end),
                     strand=strand,
+
                 )
