@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/socialgene/sgpy/compare/v1.0.0...v1.0.1) (2024-08-13)
+
+
+### Bug Fixes
+
+* neo4j node addons ([a557e9c](https://github.com/socialgene/sgpy/commit/a557e9c802f9f12e4831bfada9288690806d480e))
+
 ## [1.0.0](https://github.com/socialgene/sgpy/compare/v0.7.0...v1.0.0) (2024-07-24)
 
 
