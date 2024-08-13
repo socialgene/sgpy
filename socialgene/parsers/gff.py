@@ -1,16 +1,10 @@
 # parse gff file into socialgene object
-import re
-import zlib
-from collections import Counter
-from io import StringIO
 from pathlib import Path
-from typing import Dict, List
-from uuid import uuid4
 
-from Bio import Seq, SeqIO
+from Bio import SeqIO
 
 import socialgene.utils.file_handling as fh
-from socialgene.utils.logging import log
+
 
 class GFFParserMixin:
     def __init__(self):
