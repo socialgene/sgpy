@@ -135,7 +135,6 @@ def guess_filetype(filepath):
     """
     with open_read(filepath) as f:
         l1 = f.readline()
-
     if l1.startswith("LOCUS "):
         return "genbank"
     if l1.startswith(">"):
@@ -147,3 +146,5 @@ def guess_filetype(filepath):
         == "#---fullsequence-----------------thisdomain-------------hmmcoordalicoordenvcoord\n"
     ):
         return "domtblout"
+    if l1.startswith("##gff-version 3"):
+        return "gff"
