@@ -544,7 +544,7 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
         self._merge_assemblies(sg_object)
         self.protein_comparison.extend(sg_object.protein_comparison)
 
-    def write_genbank(self, outpath, mode="wt", compression=None):
+    def write_genbank(self, outpath,  compression=None):
         for assembly in self.assemblies.values():
             for locus in assembly.loci.values():
                 record = SeqRecord(
@@ -572,12 +572,12 @@ class SocialGene(Molbio, CompareProtein, SequenceParser, Neo4jQuery, HmmerParser
                     )
                     record.features.append(biofeat)
                 record.annotations["molecule_type"] = "DNA"
-            with open_write(outpath, mode, compression) as h:
-                SeqIO.write(
-                    record,
-                    h,
-                    "genbank",
-                )
+                with open_write(outpath, 'a', compression) as h:
+                    SeqIO.write(
+                        record,
+                        h,
+                        "genbank",
+                    )
 
     def drop_all_non_protein_features(self, **kwargs):
         """Drop features from all assembly/loci that aren't proteins/pseudo-proteins
