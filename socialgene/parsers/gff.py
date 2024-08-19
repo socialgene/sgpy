@@ -32,7 +32,7 @@ class GFFParserMixin:
                 raise ValueError("No sequences found in FASTA section")
         return fasta_dict
 
-    def parse_gff_file(self, input_path: str, keep_sequence: bool = True):
+    def parse_gff_file(self, input_path: str, keep_sequence: bool = True, **kwargs):
         # name of file without extension
         assembly_uid = Path(input_path).name
         assembly_uid = assembly_uid.split(".gff")[0]
