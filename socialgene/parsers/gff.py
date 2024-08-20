@@ -29,7 +29,7 @@ class GFFParserMixin:
             # read the remaining lines into fasta dictionary using biopython
             fasta_dict = SeqIO.to_dict(SeqIO.parse(file, "fasta"))
             if not fasta_dict:
-                log.warining("No sequences found in FASTA section")
+                log.warning("No sequences found in FASTA section")
         return fasta_dict
 
     def parse_gff_file(self, input_path: str, keep_sequence: bool = True, **kwargs):
