@@ -6,6 +6,7 @@ from Bio import SeqIO
 import socialgene.utils.file_handling as fh
 from socialgene.utils.logging import log
 
+
 class GFFParserMixin:
     def __init__(self):
         pass
