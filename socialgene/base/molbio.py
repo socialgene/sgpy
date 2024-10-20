@@ -149,6 +149,8 @@ class ProteinSequence:
         amino acids, raising an error if an unknown character is found.
         """
         self.sequence = self.sequence.upper()
+        self.sequence = self.sequence.replace(" ", "")
+        self.sequence = self.sequence.strip("*")
         if not all([i in self._amino_acids for i in set(self.sequence)]):
             log.error(self.sequence)
             raise ValueError("Unknown character/letter in protein sequence")
