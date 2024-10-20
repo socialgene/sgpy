@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.1.0](https://github.com/socialgene/sgpy/compare/v1.0.1...v1.1.0) (2024-10-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* changes protein hashing behavior
+
+### Features
+
+* GFF input ([367c3a6](https://github.com/socialgene/sgpy/commit/367c3a6b1b6fda963f7fd58a689686e4476b4750))
+
+
+### Bug Fixes
+
+* changes protein hashing behavior ([f638f1d](https://github.com/socialgene/sgpy/commit/f638f1d89d12ca2003e8a4259db9f1eb6b060d4b))
+* error on no fasta ([428dd4a](https://github.com/socialgene/sgpy/commit/428dd4a215892f6193be222eebf82f070014b946))
+* kwargs ([78fb849](https://github.com/socialgene/sgpy/commit/78fb849fd1ca257831e2b2815a097a9cd72ef6b7))
+* socialgene object genbank output ([1d9d935](https://github.com/socialgene/sgpy/commit/1d9d9352b07721988f20c51a67c91df3f6a53c99))
+* typo ([8a41d74](https://github.com/socialgene/sgpy/commit/8a41d74fbf218ff06213d43203a286da25727978))
+
+
+### Miscellaneous Chores
+
+* release 1.1.0 ([9bc7d39](https://github.com/socialgene/sgpy/commit/9bc7d39741249c339f3b42c8e62c799f226cb5fd))
+
 ## [1.0.1](https://github.com/socialgene/sgpy/compare/v1.0.0...v1.0.1) (2024-08-13)
 
 
