@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/socialgene/sgpy/compare/v1.1.1...v1.1.2) (2024-10-20)
+
+
+### Bug Fixes
+
+* protein hashing ([4ee41be](https://github.com/socialgene/sgpy/commit/4ee41bea0d94d7a059c6943b017fd64aea589391))
+
 ## [1.1.1](https://github.com/socialgene/sgpy/compare/v1.1.0...v1.1.1) (2024-10-20)
 
 
