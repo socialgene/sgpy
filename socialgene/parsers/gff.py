@@ -4,6 +4,7 @@ from pathlib import Path
 from Bio import SeqIO
 
 import socialgene.utils.file_handling as fh
+from socialgene.utils.logging import log
 
 
 class GFFParserMixin:
@@ -29,10 +30,10 @@ class GFFParserMixin:
             # read the remaining lines into fasta dictionary using biopython
             fasta_dict = SeqIO.to_dict(SeqIO.parse(file, "fasta"))
             if not fasta_dict:
-                raise ValueError("No sequences found in FASTA section")
+                log.warning("No sequences found in FASTA section")
         return fasta_dict
 
-    def parse_gff_file(self, input_path: str, keep_sequence: bool = True):
+    def parse_gff_file(self, input_path: str, keep_sequence: bool = True, **kwargs):
         # name of file without extension
         assembly_uid = Path(input_path).name
         assembly_uid = assembly_uid.split(".gff")[0]
