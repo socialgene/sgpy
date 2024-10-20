@@ -29,7 +29,7 @@ def hash_aminos(input, **kwargs):
     cleaned = "".join(cleaned.split())
     # remove "*" if it's at the beginning or end of the string but not in the middle
     cleaned = cleaned.strip("*")
-    return hasher(input=input.upper(), **kwargs)
+    return hasher(input=cleaned, **kwargs)
 
 
 def use_hashlib(input, algo):
