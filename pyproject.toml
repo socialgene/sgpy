@@ -27,13 +27,13 @@ classifiers = [  #! Update me
 ]
 dependencies = [
         "rdkit==2025.3.3",
-        "pandas>=2.2",
-        "numpy>=1.26", # rdkit requires <2.0
+        "pandas>=2",
+        "numpy>=2",
         "neo4j>=5.22.0",
         "biopython>=1.84",
         "textdistance>=4.6.3",
-        "rich>=13.7.1",
-        "requests>=2.32.3"
+        "rich>=13.7",
+        "requests>=2.32"
 ]
 
 [project.license]
