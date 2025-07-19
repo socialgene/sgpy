@@ -969,6 +969,7 @@ class GeneCluster(FeatureCollection):
 
 class Taxonomy:
     "Class is a reserved word so just underscore all ranks to be consistent"
+
     __slots__ = [
         "species_",
         "genus_",
