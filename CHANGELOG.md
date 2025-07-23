@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/socialgene/sgpy/compare/v2.0.0...v2.0.1) (2025-07-23)
+
+
+### Bug Fixes
+
+* max_query_proteins cli arg input ([5562b76](https://github.com/socialgene/sgpy/commit/5562b76680a632cd794117da06a6c47deff83336))
+
 ## [2.0.0](https://github.com/socialgene/sgpy/compare/v1.1.2...v2.0.0) (2025-07-19)
 
 
