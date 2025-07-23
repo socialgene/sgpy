@@ -67,7 +67,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--max_query_proteins",
-    type=float,
+    type=int,
     default=10,
     help="Maximum number of query proteins to use in search; 0 for all",
 )
